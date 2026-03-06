@@ -1,6 +1,8 @@
-# Real Life Stack – Architektur-Spezifikation
+# Real Life Stack – Architektur-Spezifikation (v2 — Zusammenführung)
 
 > Modularer Frontend-Baukasten mit backend-agnostischer Connector-Architektur
+>
+> *Zusammenführung aus: architektur.md (Workshop 5. März) + architektur2.md (Sebastian)*
 
 ---
 
@@ -13,22 +15,23 @@ Real Life Stack ist ein modularer UI-Baukasten für lokale Vernetzung. Die Archi
 │                       UI-Module                             │
 │           (Kanban, Kalender, Karte, Feed, ...)              │
 ├─────────────────────────────────────────────────────────────┤
-│                      Data Layer                             │
-│  Query State, Mutations, Pagination, Subscriptions          │
-│  (React Hooks: useQuery, useMutation, useSubscription)      │
+│                    React Hooks                              │
+│  useItems(), useItem(), useCreateItem(), useUpdateItem()    │
+│  → Einheitliche API, liefert { data, isLoading, error }    │
 ├─────────────────────────────────────────────────────────────┤
 │                    Daten-Schnittstelle                      │
-│  DataInterface: getItems(), createItem(), getUser(), ...    │
-│  FeatureInterface: getDocument(), getCollection(), ...      │
+│  DataInterface: observe(), createItem(), getUser(), ...     │
+│  Alles ist ein Item — auch Features und Capabilities        │
 ├─────────────────────────────────────────────────────────────┤
 │                      Connector(s)                           │
-│               (implementiert die Schnittstelle)             │
+│         (implementiert die Schnittstelle vollständig)       │
+│     Caching, Optimistic Updates, Reaktivität — alles intern │
 ├────────────────┬────────────────┬───────────────────────────┤
 │ REST-Connector │ WoT-Connector  │   Weitere Connectoren     │
 │                │                │                           │
 │ - Server-Login │ - wot-core    │   - GraphQL               │
 │ - REST API     │ - DID-basiert  │   - Local-only            │
-│ - Sessions     │ - Local-first  │   - ActivityPub           │
+│ - TanStack Q.  │ - Local-first  │   - ActivityPub           │
 └────────────────┴────────────────┴───────────────────────────┘
 ```
 
@@ -38,7 +41,7 @@ Real Life Stack ist ein modularer UI-Baukasten für lokale Vernetzung. Die Archi
 2. **Generische Items** – Ein Item kann in mehreren Modulen erscheinen
 3. **Connector-Pattern** – Jeder Connector implementiert die komplette Schnittstelle
 4. **Daten-Mixing** – Daten aus verschiedenen Quellen können kombiniert werden
-5. **Data Layer** – Zwischen UI und Schnittstelle liegt eine reaktive Datenschicht, die Ladezustände, Caching, Mutations und Subscriptions verwaltet
+5. **Connector-Verantwortung** – Der Connector ist vollständig verantwortlich für Caching, Optimistic Updates und Reaktivität. Die Hooks sind dünn — sie konsumieren nur die Connector-API
 
 ---
 
@@ -47,25 +50,26 @@ Real Life Stack ist ein modularer UI-Baukasten für lokale Vernetzung. Die Archi
 ### 1. UI-Module
 
 Module sind reine Darstellungskomponenten. Sie:
-- Rufen Daten über die Schnittstelle ab
-- Rendern Items basierend auf deren Attributen
-- Senden Änderungen zurück über die Schnittstelle
+- Rufen Daten über Hooks ab (`useItems`, `useItem`)
+- Rendern Items basierend auf deren Daten-Feldern
+- Senden Änderungen über Hooks zurück (`useCreateItem`, `useUpdateItem`)
 - Kennen weder Backend noch Authentifizierung
 
 **Verfügbare Module:**
 
-| Modul | Zeigt Items mit | Beschreibung |
-|-------|-----------------|--------------|
+| Modul | Zeigt Items die `data` enthält | Beschreibung |
+|-------|-------------------------------|--------------|
 | Kanban | `status` | Aufgaben in Spalten organisieren |
-| Kalender | `start`, `end` | Termine zeitlich darstellen |
+| Kalender | `start` (und optional `end`) | Termine zeitlich darstellen |
 | Karte | `location` | Orte geografisch visualisieren |
-| Feed | `createdAt` | Chronologischer Aktivitäts-Stream |
-| Profil | `type: "profile"` | Nutzerprofile anzeigen |
+| Feed | *(alle Items)* | Chronologischer Aktivitäts-Stream |
+| Profil | *(via User-ID)* | Nutzerprofile anzeigen |
 
 ### 2. Daten-Schnittstelle
 
-Die zentrale API, die alle Module nutzen. Sie abstrahiert:
+Die zentrale API, die von den Hooks konsumiert und von Connectoren implementiert wird. Sie abstrahiert:
 - **Daten** – Items, Profile, Gruppen
+- **Reaktivität** – Observables für Live-Updates
 - **Identität** – Aktueller Nutzer, Authentifizierung
 - **Quellen** – Woher Daten kommen (für Anzeige)
 
@@ -76,20 +80,35 @@ interface DataInterface {
   getCurrentGroup(): Group | null
   setCurrentGroup(id: string): void
 
-  // Items (immer im Kontext der aktuellen Gruppe)
+  // Items — einmalig laden
   getItems(filter?: ItemFilter): Promise<Item[]>
   getItem(id: string): Promise<Item | null>
-  createItem(item: Omit<Item, 'id' | 'createdAt'>): Promise<Item>  // Connector vergibt id + createdAt
-  updateItem(id: string, updates: { title?: string; data?: object }): Promise<Item>
+
+  // Items — reaktiv beobachten (bevorzugter Weg)
+  observe(filter: ItemFilter): Observable<Item[]>
+  observeItem(id: string): Observable<Item | null>
+
+  // Items — schreiben (Connector vergibt id + createdAt)
+  createItem(item: Omit<Item, 'id' | 'createdAt'>): Promise<Item>
+  updateItem(id: string, updates: Partial<Item>): Promise<Item>
   deleteItem(id: string): Promise<void>
+
+  // Relations
+  getRelatedItems(
+    itemId: string,
+    predicate?: string,
+    options?: RelatedItemsOptions
+  ): Promise<Item[]>
 
   // Nutzer
   getCurrentUser(): Promise<User | null>
   getUser(id: string): Promise<User | null>
 
-  // Subscriptions (optional — nicht jeder Connector unterstützt dies)
-  subscribeItems?(filter: ItemFilter, callback: (items: Item[]) => void): Unsubscribe
-  subscribeItem?(id: string, callback: (item: Item | null) => void): Unsubscribe
+  // Auth
+  getAuthState(): Observable<AuthState>
+  getAuthMethods(): AuthMethod[]
+  authenticate(method: string, credentials: unknown): Promise<User>
+  logout(): Promise<void>
 
   // Quellen (für Multi-Source)
   getSources(): Source[]
@@ -97,7 +116,27 @@ interface DataInterface {
   setActiveSource(sourceId: string): void
 }
 
+type AuthState =
+  | { status: 'authenticated'; user: User }
+  | { status: 'unauthenticated' }
+  | { status: 'loading' }
+
+interface AuthMethod {
+  method: string        // "password", "did", "oauth-google", "passkey", ...
+  label: string         // Anzeigename für die UI
+}
+
+interface Observable<T> {
+  current: T                                  // Aktueller Wert (synchron)
+  subscribe(callback: (value: T) => void): Unsubscribe  // Bei Änderungen benachrichtigen
+}
+
 type Unsubscribe = () => void
+
+interface RelatedItemsOptions {
+  direction?: "from" | "to" | "both"   // Default: "to"
+  depth?: number                        // Verschachtelte Relations auflösen
+}
 
 interface Group {
   id: string
@@ -107,147 +146,160 @@ interface Group {
 
 interface ItemFilter {
   type?: string
-  hasAttribute?: string[]
+  hasField?: string[]              // Items filtern die bestimmte Felder in data haben
   createdBy?: string
   source?: string
+  include?: IncludeDirective[]     // Relations inline mitladen
+}
+
+interface IncludeDirective {
+  predicate: string                // Welche Relation auflösen?
+  as: string                       // Feld-Name in _included
+  limit?: number                   // Max. Anzahl
 }
 ```
 
-### 3. Data Layer
+### 3. Hooks (dünne Schicht zwischen UI und Connector)
 
-Zwischen UI-Modulen und der Daten-Schnittstelle liegt die **Data Layer**. Sie ist dafür verantwortlich, den Zustand der Daten gegenüber der UI zu verwalten: Ladezustände, Caching, Pagination und reaktive Updates. UI-Module arbeiten ausschließlich mit der Data Layer — nie direkt mit der Connector-Schicht.
+Die Hooks sind die einzige Schicht zwischen UI-Modulen und dem Connector. Sie sind bewusst **dünn** — ihre Aufgabe ist nur, die Connector-API in React-kompatible Hooks zu übersetzen. Caching, Optimistic Updates und Reaktivität liegen in der Verantwortung des Connectors.
 
 ```
-┌─────────────┐       ┌─────────────────────┐       ┌──────────────┐
-│  UI-Modul   │──────►│     Data Layer      │──────►│  Connector   │
-│             │◄──────│                     │◄──────│              │
-│ useQuery()  │       │ Query State         │       │ getItems()   │
-│ useMutation │       │ Mutation Pipeline   │       │ createItem() │
-│             │       │ Subscriptions       │       │ subscribe()  │
-└─────────────┘       └─────────────────────┘       └──────────────┘
+┌─────────────┐       ┌──────────────────┐       ┌──────────────┐
+│  UI-Modul   │──────►│     Hooks        │──────►│  Connector   │
+│             │◄──────│                  │◄──────│              │
+│ useItems()  │       │ Observable→State │       │ observe()    │
+│ useCreate() │       │ Promise→mutate() │       │ createItem() │
+└─────────────┘       └──────────────────┘       └──────────────┘
 ```
 
-#### Query State
+#### Lesen: Observable → React State
 
-Jede Datenanfrage wird in der Data Layer als **Query** mit explizitem Ladezustand verwaltet. Die UI muss jederzeit wissen, in welchem Zustand sich eine Abfrage befindet.
+Der bevorzugte Weg, Daten zu lesen, ist `observe()` — es liefert ein lebendes Objekt zurück, das sich automatisch aktualisiert, wenn sich Daten ändern (lokal oder durch andere Nutzer).
 
 ```typescript
-interface QueryState<T> {
-  data: T | undefined          // Die geladenen Daten
-  status: 'idle' | 'loading' | 'success' | 'error'
-  error: Error | undefined
-  isLoading: boolean
-  isFetching: boolean          // true bei Hintergrund-Aktualisierung
-}
-```
+// Observable liefert immer den aktuellen Stand
+const tasks = connector.observe({ type: "task", hasField: ["status"] })
+tasks.current  // → [task1, task2, ...]  (synchroner Zugriff)
 
-Für **Collections** (Listen) erweitert die Data Layer den Zustand um Pagination-Informationen:
-
-```typescript
-interface CollectionQueryState<T> extends QueryState<T[]> {
-  loadedCount: number          // Anzahl aktuell geladener Elemente
-  totalCount?: number          // Gesamtanzahl — kann undefined sein,
-                               // wenn der Connector dies nicht effizient
-                               // ermitteln kann
-  hasMore: boolean             // Gibt es weitere Elemente zum Nachladen?
-  loadMore(): void             // Nächste Seite laden
-  refresh(): void              // Collection komplett neu laden
-}
-```
-
-**Wichtig:** `totalCount` ist optional. Es liegt in der Verantwortung des jeweiligen Connectors, ob und wie er die Gesamtanzahl liefert. Manche Backends können dies nicht effizient berechnen — die UI muss damit umgehen können (z.B. "Weitere laden" statt "12 von 48").
-
-#### Mutations
-
-Schreiboperationen (Erstellen, Ändern, Löschen) laufen als **Mutations** durch die Data Layer. Eine Mutation ist unabhängig von Queries — es muss keine Liste geladen sein, um ein neues Item zu erstellen.
-
-```typescript
-// Item erstellen — direkt über die Data Layer, ohne vorheriges Laden
-const { mutate: createItem } = useMutation({
-  mutationFn: (newItem: Omit<Item, 'id' | 'createdAt'>) =>
-    connector.createItem(newItem)
-})
-
-createItem({ title: "Neuer Eintrag", ... })
-```
-
-**ID-Vergabe durch den Connector:** Beim Erstellen eines neuen Items kennt die UI die ID noch nicht — diese wird vom Connector vergeben. Die Data Layer handhabt diesen Übergang:
-
-1. Die UI übergibt das Item ohne `id` und `createdAt` an die Data Layer
-2. Die Data Layer leitet es an den Connector weiter
-3. Der Connector vergibt die ID und gibt das vollständige Item zurück
-4. Die Data Layer aktualisiert den Cache und benachrichtigt betroffene Queries
-
-Optional kann die Data Layer ein **Optimistic Update** durchführen: Das Item wird sofort in der UI angezeigt (mit temporärem Zustand), noch bevor der Connector geantwortet hat. Nach der Antwort wird es durch das echte Item ersetzt.
-
-```typescript
-const { mutate: createItem } = useMutation({
-  mutationFn: (newItem) => connector.createItem(newItem),
-  // Optimistic: Item sofort in der Liste anzeigen
-  onMutate: (newItem) => {
-    cache.addOptimistic('items', { ...newItem, _pending: true })
-  },
-  // Nach Erfolg: Cache mit echtem Item (inkl. ID) aktualisieren
-  onSuccess: (createdItem) => {
-    cache.replaceOptimistic('items', createdItem)
-  },
-  // Bei Fehler: Optimistic Update zurückrollen
-  onError: () => {
-    cache.rollbackOptimistic('items')
-  }
+// Bei Änderungen benachrichtigt werden
+const unsub = tasks.subscribe((updatedTasks) => {
+  renderBoard(updatedTasks)
 })
 ```
 
-#### Snapshot vs. Subscription (Daten-Liefermodus)
+`getItems()` und `getItem()` existieren weiterhin für einmalige Abfragen (Snapshots), z.B. beim Export oder für Hintergrund-Operationen.
 
-Connectoren können Daten auf zwei Arten liefern. Welchen Modus ein Connector unterstützt, liegt in seiner Verantwortung — die Schnittstelle definiert beide Möglichkeiten:
-
-| Modus | Beschreibung | Verhalten in der UI |
-|---|---|---|
-| **Snapshot** | Einmaliger Abruf. Die Daten sind eine Momentaufnahme und werden nicht automatisch aktualisiert. | Die UI zeigt die Daten an. Aktualisierung nur durch explizites Neuladen (Pull-to-Refresh, Timer, Benutzeraktion). |
-| **Subscription** | Reaktiver Datenstrom. Der Connector liefert Updates, sobald sich die Daten ändern. | Die UI aktualisiert sich automatisch. React re-rendert bei jeder Änderung. |
-
-Die Daten-Schnittstelle unterstützt beide Modi:
+**React-Hook:**
 
 ```typescript
-interface DataInterface {
-  // Snapshot: Einmaliger Abruf
-  getItems(filter?: ItemFilter): Promise<Item[]>
-
-  // Subscription: Reaktiver Datenstrom (optional)
-  subscribeItems?(filter: ItemFilter, callback: (items: Item[]) => void): Unsubscribe
-}
-
-type Unsubscribe = () => void
-```
-
-**Ob ein Connector Subscriptions unterstützt, ist Sache des Connectors.** Die `subscribe*`-Methoden sind optional. Die Data Layer prüft, ob der Connector Subscriptions anbietet, und fällt andernfalls auf Snapshots mit optionalem Polling zurück.
-
-```typescript
-// Die Data Layer entscheidet automatisch:
-// - Connector mit Subscription → Live-Updates
-// - Connector ohne Subscription → Snapshot + optionales Polling
 function useItems(filter?: ItemFilter) {
   const connector = useConnector()
+  const observable = useMemo(() => connector.observe(filter), [filter])
+  const [data, setData] = useState(observable.current)
 
-  if (connector.subscribeItems) {
-    return useSubscription(filter, connector.subscribeItems)
-  }
-  return useQuery(['items', filter], () => connector.getItems(filter))
+  useEffect(() => observable.subscribe(setData), [observable])
+
+  return { data, isLoading: !data, error: undefined }
+}
+
+// Nutzung — die UI ist automatisch reaktiv:
+function KanbanBoard() {
+  const { data: tasks, isLoading } = useItems({ type: "task", hasField: ["status"] })
+  if (isLoading) return <Spinner />
+  // Re-rendert automatisch wenn sich Items ändern
 }
 ```
 
-Beispiele:
+#### Schreiben: Einfache Mutations
 
-| Connector | Snapshot | Subscription | Bemerkung |
-|---|---|---|---|
-| REST | Ja | Optional (via WebSocket) | Abhängig vom Server |
-| WoT (Evolu) | Ja | Ja (Live Queries) | Evolu liefert reaktive Daten |
-| Google Calendar | Ja | Nein | Nur Polling möglich |
+Schreiboperationen sind direkte Aufrufe an den Connector. Der Connector gibt ein `Promise<Item>` zurück — die UI bekommt ein fertiges Item mit ID und kann sofort damit arbeiten.
+
+```typescript
+function useCreateItem() {
+  const connector = useConnector()
+  return {
+    mutate: (item: Omit<Item, 'id' | 'createdAt'>) => connector.createItem(item)
+  }
+}
+
+function useUpdateItem() {
+  const connector = useConnector()
+  return {
+    mutate: (id: string, updates: Partial<Item>) => connector.updateItem(id, updates)
+  }
+}
+
+// Nutzung:
+function AddTaskButton() {
+  const { mutate: createItem } = useCreateItem()
+
+  const handleClick = async () => {
+    const newItem = await createItem({
+      type: "task",
+      createdBy: userId,
+      data: { title: "Neuer Task", status: "todo" }
+    })
+    // newItem hat id, createdAt — sofort nutzbar
+  }
+}
+```
+
+**Was darunter passiert, ist Connector-Sache:**
+
+| Connector | Was passiert bei `createItem()` |
+|---|---|
+| WoT (Automerge) | Sofort ins lokale CRDT geschrieben, Observable feuert automatisch, Sync im Hintergrund |
+| REST | Request an Server, Response mit ID, Connector aktualisiert internen Cache, Observable feuert |
+| REST (optimistisch) | Item sofort im Cache anzeigen, Request abschicken, bei Fehler rollback |
+
+Die UI muss sich nicht um Caching, Optimistic Updates oder Rollback kümmern — der Connector handhabt das intern. Bei Local-First-Connectors (Automerge) existiert das Problem gar nicht: Writes sind instant, das Observable feuert sofort.
+
+#### Connector-interne Hilfsmittel
+
+Server-basierte Connectors können intern Libraries wie **TanStack Query** nutzen, um Caching, Retry-Logic und Optimistic Updates zu implementieren. Das ist ein Implementierungsdetail des Connectors — die Hooks und die UI wissen nichts davon.
+
+```typescript
+// Beispiel: RestConnector nutzt intern TanStack Query
+class RestConnector implements DataInterface {
+  private queryClient = new QueryClient()
+
+  observe(filter: ItemFilter): Observable<Item[]> {
+    // TanStack Query als internes Caching + Polling
+    return {
+      current: this.queryClient.getQueryData(['items', filter]) ?? [],
+      subscribe: (cb) => {
+        return this.queryClient.getQueryCache().subscribe(() => {
+          cb(this.queryClient.getQueryData(['items', filter]) ?? [])
+        })
+      }
+    }
+  }
+
+  async createItem(item): Promise<Item> {
+    const created = await fetch(...)  // Server-Request
+    this.queryClient.invalidateQueries({ queryKey: ['items'] })
+    return created
+  }
+}
+```
+
+#### Reaktivität: Connector entscheidet den Mechanismus
+
+Jeder Connector implementiert `observe()` — **wie** er das intern macht, ist seine Sache:
+
+| Connector | Mechanismus | Latenz |
+|-----------|-------------|--------|
+| WoT (Automerge) | CRDT-Events, alles lokal | Sofort |
+| WoT (Evolu) | SQLite Live-Queries | Sofort |
+| GraphQL | GraphQL Subscriptions | Sofort |
+| REST + WebSocket | WS für Push, REST für Daten, lokaler Cache | Sofort |
+| REST (minimal) | Polling-Fallback | Sekunden |
+
+Die Observable-API ist für alle Backends gleich — nur der Mechanismus dahinter unterscheidet sich. Ein REST-Server ohne WebSocket funktioniert trotzdem, pollt aber statt zu pushen.
 
 ### 4. Connector
 
-Ein Connector implementiert die Daten-Schnittstelle für ein spezifisches Backend. Es ist die Verantwortung des Connectors, die Schnittstelle korrekt zu bedienen — einschließlich ID-Vergabe, Pagination, und der Entscheidung, ob Subscriptions unterstützt werden. Jeder Connector ist eigenständig und bringt alles mit:
+Ein Connector implementiert die Daten-Schnittstelle für ein spezifisches Backend. Es ist die Verantwortung des Connectors, die Schnittstelle korrekt zu bedienen — einschließlich ID-Vergabe, Pagination, und die Implementierung der Observables. Jeder Connector ist eigenständig und bringt alles mit:
 
 - Authentifizierung / Identität
 - Datenspeicherung
@@ -260,68 +312,236 @@ Ein Connector implementiert die Daten-Schnittstelle für ein spezifisches Backen
 
 ## Das generische Item
 
-Items sind die universelle Datenstruktur. Module interpretieren sie basierend auf Attributen.
+Items sind die universelle Datenstruktur. Module interpretieren sie basierend auf ihren Daten-Feldern.
 
 ```typescript
 interface Item {
   // Pflichtfelder
   id: string
-  title: string
+  type: string             // Was IST das Item? ("task", "event", "post", "place", ...)
   createdAt: Date
-  createdBy: string      // User-ID (DID oder Server-ID)
+  createdBy: string        // User-ID (DID oder Server-ID)
 
-  data: object // plain object oder ReactiveObject
+  // Schema-Versionierung
+  schema?: string          // Schema-Bezeichner (z.B. "rls:task")
+  schemaVersion?: number   // Version des Schemas
+
+  // Typ-spezifische Daten (inkl. title, description, etc.)
+  data: Record<string, unknown>
+
+  // Beziehungen zu anderen Items/Usern
+  relations?: Relation[]
 
   // Metadaten (nur lesen)
-  _source?: string       // Woher kommt das Item?
+  _source?: string         // Woher kommt das Item?
+  _included?: Record<string, Item[]>  // Aufgelöste Relations (bei include-Abfragen)
 }
 ```
 
-### Das `data`-Feld
+**Hinweis:** `title` und `description` sind keine Pflichtfelder auf Item-Ebene, sondern leben in `data`. Nicht jeder Item-Typ hat einen Titel (z.B. ein GPS-Wegpunkt oder ein Sensor-Messwert). Module die einen Anzeigenamen brauchen, lesen `data.title` — ist keiner vorhanden, nutzen sie einen Fallback (z.B. den `type` oder `id`).
 
-Das `data`-Feld enthält die fachlichen Daten des Items als offenes Objekt. Die Schnittstelle erzwingt keine Struktur — es liegt in der Verantwortung des jeweiligen Connectors, welche Felder ein Item enthält, und in der Verantwortung der UI-Module, die für sie relevanten Felder zu interpretieren.
+### Typ vs. Daten-Felder: Zwei Achsen
+
+Items haben zwei orthogonale Eigenschaften:
+
+- **`type`** bestimmt, **was** ein Item ist und **wie** es dargestellt wird (Rendering)
+- **Daten-Felder** in `data` bestimmen, **wo** ein Item erscheint (Modul-Routing)
 
 ```typescript
-// Dieses Item erscheint in Kanban UND Kalender
+// Dieses Item erscheint in Kanban UND Kalender UND Karte
 const item: Item = {
   id: "abc123",
-  title: "Team-Meeting vorbereiten",
+  type: "event",                      // → UI weiß: als Event rendern
   createdAt: new Date(),
   createdBy: "did:key:z6Mk...",
   data: {
-    status: "doing",           // → Kanban zeigt es
-    start: "2024-01-15T10:00", // → Kalender zeigt es
-    end: "2024-01-15T11:00",
-    tags: ["arbeit", "wichtig"]
-  }
+    title: "Gartentreffen",
+    description: "Gemeinsam ernten",
+    status: "confirmed",               // → Kanban zeigt es
+    start: "2026-03-10T10:00",         // → Kalender zeigt es
+    end: "2026-03-10T12:00",
+    location: { lat: 50.5, lng: 9.6 }, // → Karte zeigt es
+    tags: ["garten", "gemeinschaft"]
+  },
+  relations: [
+    { predicate: "assignedTo", target: "did:key:z6Mk..." }
+  ]
 }
 ```
 
-### Datenfeld-basierte Modul-Zuordnung
+Ein Modul prüft nicht den `type`, sondern die vorhandenen Daten-Felder. Der `type` wird vom Modul genutzt, um zu entscheiden **wie** das Item innerhalb des Moduls dargestellt wird — z.B. zeigt der Kalender ein Event anders als einen Task mit Deadline.
 
-Ein Item erscheint in Modulen basierend auf den Feldern in `data`. Module prüfen, ob die für sie relevanten Felder vorhanden sind:
+### Bekannte Daten-Felder
+
+Module definieren, welche Felder in `data` sie verstehen:
 
 | Feld | Typ | Genutzt von |
 |------|-----|-------------|
+| `title` | string | Alle (Anzeigename) |
+| `description` | string | Alle (Detailansicht) |
 | `status` | string | Kanban |
+| `position` | number | Kanban (Sortierung innerhalb Spalte) |
 | `start` | ISO DateTime | Kalender |
 | `end` | ISO DateTime | Kalender |
 | `location` | GeoJSON | Karte |
 | `address` | string | Karte |
 | `tags` | string[] | Alle (Filter) |
-| `type` | string | Routing/Filter |
+| `content` | string | Feed (Fließtext) |
 | `visibility` | string | Berechtigungen |
 
 **Validierung:** Module sind verantwortlich für die Validierung der Felder, die sie aus `data` lesen. Die Schnittstelle erzwingt keine Struktur — das ist bewusst so, damit verschiedene Connectoren unterschiedliche Datenmodelle bedienen können.
+
+### Schema-Versionierung
+
+Schemas entwickeln sich über die Zeit. Die optionalen Felder `schema` und `schemaVersion` ermöglichen Connectoren, Daten bei Bedarf zu migrieren oder der UI anzuzeigen, dass ein Item in einem älteren Format vorliegt.
+
+```typescript
+{
+  type: "task",
+  schema: "rls:task",
+  schemaVersion: 2,      // Version 2 hat "priority" als Feld hinzugefügt
+  data: {
+    title: "Build Pipeline",
+    status: "doing",
+    priority: "high"      // Neu in Schema v2
+  }
+}
+```
+
+Connectoren können bei Bedarf ältere Versionen on-the-fly migrieren.
+
+---
+
+## Relations
+
+Items können Beziehungen zu anderen Items und Usern haben. Relations folgen dem RDF-Tripel-Modell (Subject → Predicate → Object) und sind damit kompatibel mit Linked Data / JSON-LD.
+
+### Struktur
+
+```typescript
+interface Relation {
+  predicate: string                 // Was für eine Beziehung? ("childOf", "assignedTo", ...)
+  target: string                    // Wohin? (Item-ID, User-ID, externe URI)
+  meta?: Record<string, unknown>    // Optionale Metadaten (z.B. { role: "reviewer" })
+}
+```
+
+Das Item selbst ist das Subject — zusammen mit `predicate` und `target` ergibt sich ein vollständiges RDF-Tripel:
+
+```
+item:task-123  →  assignedTo  →  did:key:z6Mk...
+item:task-123  →  childOf     →  item:task-100
+item:post-abc  →  commentOn   →  item:post-xyz   (umgekehrt: Kommentar zeigt auf Post)
+```
+
+### Einbetten vs. eigenes Item
+
+Nicht alle zusammengehörigen Daten müssen eigene Items mit Relations sein. Die Faustregel:
+
+| Einbetten (in `data`) | Eigenes Item (mit Relation) |
+| --- | --- |
+| Gehört fest zum Item | Ist eigenständig |
+| Wenige, begrenzte Einträge | Kann unbegrenzt wachsen |
+| Kein eigener Lifecycle | Eigener Lifecycle (editierbar, löschbar) |
+| Von einem User erstellt | Von verschiedenen Usern |
+
+**Beispiel Post:**
+- Bilder → **einbetten** (gehören zum Post, ändern sich nicht)
+- Likes → **einbetten** (einfache Liste von User-IDs)
+- Kommentare → **eigene Items** (eigener Text, eigener Autor, editierbar, können Replies haben)
+
+### Prädikat-Katalog
+
+Prädikate sind definierte Strings, kein Freitext. Der Katalog wächst mit den Anforderungen:
+
+| Prädikat | Bedeutung | Beispiel |
+| --- | --- | --- |
+| `childOf` | Untergeordnet / Sub-Item | Sub-Task → Task |
+| `assignedTo` | Zugewiesen an Person | Task → User |
+| `commentOn` | Kommentar zu Item | Comment → Post |
+| `likedBy` | Gefällt einer Person | Post → User |
+| `blocks` | Blockiert anderes Item | Task → Task |
+| `relatedTo` | Allgemeine Verknüpfung | Item → Item |
+| `locatedAt` | Verortung | Event → Place |
+
+### Relations abfragen
+
+Das DataInterface bietet zwei Wege, Relations aufzulösen:
+
+**1. Explizit — verwandte Items laden:**
+
+```typescript
+// Alle Kommentare zu einem Post
+const comments = await connector.getRelatedItems("post-abc", "commentOn")
+
+// Alle Sub-Tasks (auch verschachtelt)
+const subtasks = await connector.getRelatedItems("task-100", "childOf", { depth: 2 })
+```
+
+**2. Inline — beim Laden von Items Relations mitauflösen:**
+
+```typescript
+// Feed laden mit Kommentaren und Likes in einem Aufruf
+const posts = await connector.getItems({
+  type: "post",
+  include: [
+    { predicate: "commentOn", as: "comments", limit: 3 },
+    { predicate: "likedBy", as: "likes" }
+  ]
+})
+
+// Ergebnis: Jeder Post hat _included.comments und _included.likes
+posts[0]._included?.comments  // → [{ id: "comment-1", ... }, ...]
+posts[0]._included?.likes     // → [{ id: "did:key:...", ... }, ...]
+```
+
+### Backend-Umsetzung
+
+Wie ein Connector Relations intern auflöst, ist ihm überlassen:
+
+| Connector | Umsetzung |
+| --- | --- |
+| REST | `GET /items/post-abc/relations?predicate=commentOn` |
+| GraphQL | `query { item(id: "post-abc") { comments { ... } } }` |
+| WoT (Automerge) | Index-Dokument lesen → referenzierte Dokumente laden |
+
+Die Schnittstelle ist identisch — nur die Implementierung unterscheidet sich.
+
+### JSON-LD Kompatibilität
+
+Die Item-Struktur ist so gestaltet, dass sie mit minimalem Aufwand als JSON-LD exportiert werden kann:
+
+```typescript
+// Internes Item:
+{
+  id: "task-123", type: "task",
+  data: { title: "Build Pipeline", status: "doing" },
+  relations: [{ predicate: "childOf", target: "task-100" }]
+}
+
+// Als JSON-LD Export:
+{
+  "@context": "https://reallifestack.org/context.json",
+  "@id": "item:task-123",
+  "@type": "rls:Task",
+  "rls:title": "Build Pipeline",
+  "rls:status": "doing",
+  "rls:childOf": { "@id": "item:task-100" }
+}
+```
+
+Die Konvertierung erfordert keine Änderung an der Datenstruktur — nur das Hinzufügen eines `@context`.
 
 ---
 
 ## Connectoren
 
-Jeder Connector implementiert das `DataInterface` und ist verantwortlich für:
+Jeder Connector implementiert das `DataInterface` vollständig und ist verantwortlich für:
 - **ID-Vergabe** bei `createItem()` — die ID wird vom Connector erzeugt und im zurückgegebenen Item mitgeliefert
 - **Pagination** — der Connector entscheidet, ob `totalCount` in Collections geliefert wird
-- **Snapshot vs. Subscription** — der Connector entscheidet, ob er `subscribe*`-Methoden implementiert
+- **Observable-Implementierung** — der Connector entscheidet, wie er Observables intern umsetzt (CRDT-Events, WebSocket, Polling)
+- **Caching** — der Connector verwaltet seinen eigenen Cache (z.B. via TanStack Query, eigener Store, oder CRDT-State)
+- **Optimistic Updates** — bei Server-basierten Connectors optional: Item sofort im Cache anzeigen, bei Fehler rollback. Bei Local-First-Connectors unnötig (Writes sind instant)
 - **Datenstruktur** — der Connector bestimmt, welche Felder in `item.data` enthalten sind
 
 ### REST-Connector
@@ -339,14 +559,15 @@ class RestConnector implements DataInterface {
   logout(): Promise<void>
 
   // Implementiert DataInterface...
-  // subscribe*-Methoden optional (nur wenn Server WebSockets bietet)
+  // observe() intern via WebSocket + Cache oder Polling-Fallback
 }
 ```
 
 **Eigenschaften:**
 - Server speichert Daten und vergibt IDs
 - Session-basierte Auth (JWT, Cookies)
-- Liefert Snapshots; Subscriptions optional via WebSockets
+- `observe()` intern via WebSocket (wenn verfügbar) oder Polling-Fallback
+- Kann intern **TanStack Query** nutzen für Caching, Retry, Optimistic Updates
 - `totalCount` in Collections typischerweise verfügbar (SQL COUNT)
 - Klassisches Rechte-Management
 
@@ -363,14 +584,15 @@ class WotConnector implements DataInterface {
   // Keine separates Login — DID ist die Identität
   // Identity wird beim ersten Start generiert oder wiederhergestellt
 
-  // Implementiert DataInterface inkl. subscribe*-Methoden
+  // Implementiert DataInterface inkl. observe()
+  // Observables nativ über CRDT-Events / Live Queries
 }
 ```
 
 **Eigenschaften:**
 - Nutzt `wot-core` für DID, Kryptografie, Signaturen
 - Local-first: ID-Vergabe lokal (z.B. UUID), Sync im Hintergrund
-- Liefert Subscriptions (Live Queries über die Storage-Schicht)
+- `observe()` nativ über CRDT-Events (Automerge) oder Live Queries (Evolu)
 - `totalCount` ggf. nicht effizient ermittelbar (dezentrale Daten)
 - E2E-verschlüsselt
 - Vertrauen durch persönliche Verifizierung
@@ -398,196 +620,123 @@ class WotConnector implements DataInterface {
 
 ---
 
-## Generisches Feature-Interface
+## Feature-Erkennung (Capabilities als Items)
 
-Das `DataInterface` (Abschnitt 2) deckt die Kern-Entitäten Items, Gruppen und Nutzer ab. Darüber hinaus gibt es Features, die nicht in dieses Schema passen – z.B. ein personalisierter Feed, Freundschaftsvorschläge oder Statistiken. Gleichzeitig muss nicht jedes Backend den vollen Funktionsumfang unterstützen.
+Nicht jeder Connector unterstützt dieselben Features. Die UI muss **vorher** wissen, welche Funktionen verfügbar sind — ohne Daten erst abfragen und auf Fehler reagieren zu müssen.
 
-Das generische Feature-Interface löst beide Probleme: Es bietet eine einheitliche Schnittstelle für beliebige Features und ermöglicht es der UI, sich dynamisch an den Funktionsumfang des verbundenen Backends anzupassen.
+### Feature-Item
 
-### Schnittstelle
+Der Connector liefert ein Item vom Typ `"feature"` mit einem verschachtelten Objektbaum in `data`. Jedes Feld das truthy ist, wird unterstützt. Jedes Feld das falsy oder nicht vorhanden ist, wird nicht unterstützt.
 
 ```typescript
-interface FeatureInterface {
-  // Lesen
-  getDocument(featureKey: string, request?: object): Promise<Document>
-  getCollection(featureKey: string, request?: object, options?: CollectionOptions): Promise<Collection>
-
-  // Schreiben
-  setDocument(featureKey: string, request: object): Promise<Document>
-  addDocument(featureKey: string, request: object): Promise<Document>
-  removeDocument(featureKey: string, request: object): Promise<void>
-
-  // Feature-Erkennung
-  isSupported(...featureKeys: string[]): Record<string, boolean>
-}
-
-interface CollectionOptions {
-  pagination?: {
-    cursor?: string
-    limit?: number
+// Der Connector liefert bei Initialisierung:
+{
+  id: "capabilities",
+  type: "feature",
+  createdAt: new Date(),
+  createdBy: "system",
+  data: {
+    feed: {
+      filter: true,
+      sort: true,
+      sortOptions: ["date", "relevance"]
+    },
+    kanban: {
+      dragDrop: true,
+      customColumns: false
+    },
+    calendar: {
+      recurring: false
+    },
+    map: true,
+    offline: true,
+    realtime: true,
+    friends: {
+      suggestions: false
+    }
   }
-  resolve?: {
-    relations?: boolean
-    depth?: number          // Wie tief Relationen aufgelöst werden
-  }
-}
-
-interface Collection {
-  items: Document[]
-  nextCursor?: string       // Für Pagination
-  total?: number            // Falls vom Backend bekannt
-}
-
-type Document = Record<string, unknown>
-```
-
-### Feature-Keys
-
-Feature-Keys sind hierarchisch durch Punkte gegliedert. Sie benennen das Feature, nicht die Datenstruktur.
-
-```
-user.feed                    // Persönlicher Feed
-user.friends                 // Freundesliste
-user.friends.suggestions     // Freundschaftsvorschläge
-group.stats                  // Gruppenstatistiken
-group.activity               // Aktivitäts-Log einer Gruppe
-moderation.reports           // Gemeldete Inhalte
-```
-
-Die Punkt-Hierarchie dient der Namensorganisation – übergeordnete Keys implizieren **nicht** automatisch die Unterstützung untergeordneter Keys. `isSupported("user.friends")` kann `true` sein, während `isSupported("user.friends.suggestions")` `false` ist.
-
-### Lese-Operationen
-
-**`getDocument`** gibt ein einzelnes Objekt zurück (Snapshot). Das `request`-Objekt enthält feature-spezifische Parameter. Die Data Layer wickelt den Query State ab:
-
-```typescript
-// Schnittstellen-Ebene (Connector implementiert dies)
-getDocument(featureKey: string, request?: object): Promise<Document>
-
-// Data Layer (UI nutzt dies)
-function UserProfile({ userId }: { userId: string }) {
-  const { data: profile, isLoading, error } = useQuery(
-    ['user.profile', userId],
-    () => connector.getDocument("user.profile", { userId })
-  )
-
-  if (isLoading) return <Spinner />
-  if (error) return <ErrorMessage error={error} />
-
-  return <ProfileCard profile={profile} />
 }
 ```
 
-**`getCollection`** gibt eine Liste zurück, mit optionalem Paging. Die Data Layer bildet daraus einen `CollectionQueryState`:
+**Regel:** Truthy = unterstützt, falsy = nicht unterstützt. Die UI muss keine komplexen Untersuchungen vornehmen.
+
+### Hook
 
 ```typescript
-// Schnittstellen-Ebene (Connector implementiert dies)
-getCollection(featureKey: string, request?: object, options?: CollectionOptions): Promise<Collection>
+function useFeatures() {
+  const { data } = useItems({ type: "feature" })
+  return data?.[0]?.data ?? {}
+}
 
-// Data Layer (UI nutzt dies)
-function FeedView() {
-  const {
-    data: feedItems,
-    isLoading,
-    hasMore,       // Gibt es weitere Seiten?
-    totalCount,    // Kann undefined sein, wenn Connector es nicht liefert
-    loadMore       // Nächste Seite nachladen
-  } = useCollectionQuery("user.feed", {}, { pagination: { limit: 20 } })
-
-  if (isLoading) return <Spinner />
-
-  return (
-    <>
-      {feedItems.map(item => <FeedCard key={item.id} item={item} />)}
-      {hasMore && <button onClick={loadMore}>Weitere laden</button>}
-    </>
-  )
+// Convenience-Hook für einzelne Feature-Prüfungen
+function useFeature(path: string): boolean {
+  const features = useFeatures()
+  return path.split('.').reduce((obj, key) => obj?.[key], features) ? true : false
 }
 ```
 
-### Schreib-Operationen
+### Adaptive UI
 
-Schreib-Operationen laufen als **Mutations** durch die Data Layer. Sie sind unabhängig von Queries — es muss keine Collection geladen sein, um ein Dokument hinzuzufügen.
-
-**`setDocument`** erstellt oder aktualisiert ein Dokument.
+Module passen sich dynamisch an den Feature-Baum an:
 
 ```typescript
-// Mutation: Profilbild aktualisieren
-const { mutate: updateProfile } = useMutation({
-  mutationFn: (data) => connector.setDocument("user.profile", data),
-  onSuccess: () => cache.invalidate(['user.profile'])
-})
-
-updateProfile({ userId: "did:key:z6Mk...", avatarUrl: "https://..." })
-```
-
-**`addDocument`** fügt ein neues Dokument zu einer Collection hinzu. Der Connector vergibt die ID.
-
-```typescript
-// Mutation: Freundschaftsanfrage — unabhängig davon, ob die Liste geladen ist
-const { mutate: sendRequest } = useMutation({
-  mutationFn: (data) => connector.addDocument("user.friends.requests", data),
-  onSuccess: () => cache.invalidate(['user.friends.requests'])
-})
-
-sendRequest({ targetUserId: "did:key:z6Mk..." })
-```
-
-**`removeDocument`** entfernt ein Dokument.
-
-```typescript
-// Mutation: Freundschaft entfernen mit Optimistic Update
-const { mutate: removeFriend } = useMutation({
-  mutationFn: (data) => connector.removeDocument("user.friends", data),
-  onMutate: ({ friendId }) => {
-    cache.removeOptimistic(['user.friends'], item => item.id === friendId)
-  },
-  onError: () => cache.rollbackOptimistic(['user.friends'])
-})
-
-removeFriend({ friendId: "did:key:z6Mk..." })
-```
-
-### Feature-Erkennung und adaptive UI
-
-`isSupported` ermöglicht der UI, sich dynamisch an das Backend anzupassen. Da sich die Feature-Unterstützung während der Laufzeit nicht ändert, ist dies ein synchroner Aufruf — kein Query State nötig.
-
-```typescript
-// Schnittstellen-Ebene (synchron, kein Ladezustand)
-const support = connector.isSupported(
-  "user.feed",
-  "user.friends",
-  "user.friends.suggestions",
-  "moderation.reports"
-)
-// → { "user.feed": true, "user.friends": true,
-//     "user.friends.suggestions": false, "moderation.reports": false }
-```
-
-**UI-Konsequenz:** Für jedes Feature muss definiert werden, ob es **obligatorisch** oder **optional** ist. Die UI reagiert darauf:
-
-| Kategorie | Verhalten | Beispiel |
-|-----------|-----------|----------|
-| **Obligatorisch** | Feature muss vorhanden sein, Connector ist ohne es nicht nutzbar | Items, Gruppen, Nutzer-Identität |
-| **Optional** | UI blendet Bereich aus oder zeigt Fallback | Freundschaftsvorschläge, Statistiken |
-
-```typescript
-function FriendsSection() {
-  const support = useFeatureSupport("user.friends", "user.friends.suggestions")
-
-  // Feature nicht verfügbar → gar nicht rendern
-  if (!support["user.friends"]) return null
+function FeedToolbar() {
+  const features = useFeatures()
 
   return (
     <div>
-      {/* FriendsList nutzt intern useCollectionQuery mit Query State */}
+      {features.feed?.filter && <FilterButton />}
+      {features.feed?.sort && (
+        <SortDropdown options={features.feed.sortOptions} />
+      )}
+    </div>
+  )
+}
+
+function AppNavigation() {
+  const features = useFeatures()
+
+  return (
+    <nav>
+      <Link to="/kanban">Kanban</Link>
+      <Link to="/feed">Feed</Link>
+      {features.calendar && <Link to="/calendar">Kalender</Link>}
+      {features.map && <Link to="/map">Karte</Link>}
+    </nav>
+  )
+}
+
+function FriendsSection() {
+  const features = useFeatures()
+
+  if (!features.friends) return null
+
+  return (
+    <div>
       <FriendsList />
-      {/* Nur rendern, wenn der Connector Vorschläge unterstützt */}
-      {support["user.friends.suggestions"] && <SuggestionsList />}
+      {features.friends?.suggestions && <SuggestionsList />}
     </div>
   )
 }
 ```
+
+### Feature-Vergleich pro Connector
+
+| Feature | REST-Connector | WoT-Connector |
+|---|---|---|
+| `feed.filter` | true | true |
+| `feed.sort` | true | false |
+| `kanban.dragDrop` | true | true |
+| `kanban.customColumns` | true | false |
+| `calendar.recurring` | true | false |
+| `map` | true | true |
+| `offline` | false | true |
+| `realtime` | true | true |
+| `friends.suggestions` | true | false |
+
+### Warum kein separates FeatureInterface
+
+Alles läuft über dasselbe `DataInterface` — Features sind Items wie alles andere. Kein zweites Interface, kein `isSupported()`, kein `getDocument()`. Ein Connector muss nur **ein** Interface implementieren. Die UI nutzt für Features dieselben Hooks wie für Tasks, Events oder Profile.
 
 ---
 
@@ -609,8 +758,8 @@ const aggregator = new SourceAggregator(sources)
 - **Lesen:** Items aus allen Quellen werden zusammengeführt. Jedes Item trägt `_source` für die Herkunft.
 - **Schreiben:** Mutations gehen an die aktive Quelle. Der Connector vergibt die ID.
 - **Sync:** Jede Quelle synchronisiert sich selbst.
-- **Ladezustand:** Die Data Layer aggregiert den Query State aller Quellen. Die UI sieht einen kombinierten `CollectionQueryState` — `hasMore` ist `true`, solange mindestens eine Quelle weitere Daten hat.
-- **Subscriptions:** Bietet eine Quelle Subscriptions an, werden deren Updates automatisch in den aggregierten Datenstrom eingefügt. Quellen ohne Subscriptions werden per Snapshot behandelt.
+- **Observables:** Der Aggregator kombiniert die Observables aller Quellen zu einem gemeinsamen Stream.
+- **Ladezustand:** Der Aggregator kombiniert den Zustand aller Quellen.
 
 ```
 ┌──────────────────────────────────────────────┐
@@ -618,9 +767,8 @@ const aggregator = new SourceAggregator(sources)
 │          (implementiert DataInterface)        │
 ├──────────────────────────────────────────────┤
 │                                              │
-│  getItems() ───► Merge aus allen Quellen     │
-│  subscribe*() ─► Weiterleitung an Quellen    │
-│                  die Subscriptions bieten     │
+│  observe() ────► Merge Observables           │
+│                  aus allen Quellen            │
 │                                              │
 │  createItem() ──► Mutation an aktive Quelle  │
 │                   (Connector vergibt ID)     │
@@ -651,11 +799,10 @@ Gruppen sind der zentrale Kontext, in dem Items geteilt werden. Eine Gruppe ist 
 
 ### Gruppen-Wechsel
 
-Ein Nutzer kann Mitglied mehrerer Gruppen sein und zwischen ihnen wechseln. Die Data Layer stellt dafür Hooks bereit:
+Ein Nutzer kann Mitglied mehrerer Gruppen sein und zwischen ihnen wechseln:
 
 ```typescript
 function GroupSwitcher() {
-  // Query: Gruppen laden (mit Ladezustand)
   const { data: groups, isLoading } = useQuery(['groups'], () => connector.getGroups())
 
   if (isLoading) return <Spinner />
@@ -717,20 +864,132 @@ Je nach Connector unterschiedlich:
 | REST      | Server-Account | E-Mail/Passwort, OAuth |
 | WoT       | DID (did:key)  | Keypair (Ed25519)      |
 
+### Authentifizierung
+
+Die Auth-Architektur trennt strikt zwischen **Connector** (Daten) und **Frontend** (UI-Komponenten). Der Connector liefert über `getAuthMethods()` nur Daten darüber, welche Authentifizierungsverfahren er unterstützt — die zugehörigen UI-Komponenten leben im Frontend.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  App Shell                                                  │
+│                                                             │
+│  authState.status === 'authenticated'?                      │
+│    → App anzeigen (mit User-Menü)                           │
+│    → Auth-Screen anzeigen                                   │
+│                                                             │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │  Auth-Screen                                          │  │
+│  │                                                       │  │
+│  │  connector.getAuthMethods()                           │  │
+│  │  → ["password", "did"]                                │  │
+│  │                                                       │  │
+│  │  authComponentRegistry["password"] → PasswordForm     │  │
+│  │  authComponentRegistry["did"]      → DIDAuthScreen    │  │
+│  └───────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Connector** — liefert nur Daten:
+
+```typescript
+// REST-Connector
+getAuthMethods(): AuthMethod[] {
+  return [
+    { method: 'password', label: 'E-Mail & Passwort' },
+    { method: 'oauth-google', label: 'Mit Google anmelden' },
+  ]
+}
+
+// WoT-Connector
+getAuthMethods(): AuthMethod[] {
+  return [
+    { method: 'did', label: 'Web of Trust (DID)' },
+  ]
+}
+```
+
+**Frontend** — Auth-Komponenten-Registry:
+
+```typescript
+// Im Frontend: Zuordnung Auth-Methode → UI-Komponente
+const authComponentRegistry: Record<string, ComponentType> = {
+  'password': PasswordLoginForm,
+  'did': DIDAuthScreen,
+  'oauth-google': GoogleOAuthButton,
+  'passkey': PasskeyAuth,
+}
+
+// App Shell
+function AppShell() {
+  const connector = useConnector()
+  const authState = useObservable(connector.getAuthState())
+
+  if (authState.status === 'authenticated') {
+    return (
+      <Layout>
+        <UserMenu user={authState.user} onLogout={() => connector.logout()} />
+        <Outlet />
+      </Layout>
+    )
+  }
+
+  const methods = connector.getAuthMethods()
+  return <AuthScreen methods={methods} />
+}
+
+function AuthScreen({ methods }: { methods: AuthMethod[] }) {
+  return (
+    <div>
+      {methods.map(m => {
+        const Component = authComponentRegistry[m.method]
+        return Component ? <Component key={m.method} /> : null
+      })}
+    </div>
+  )
+}
+```
+
+**Prinzipien:**
+
+1. **Connector liefert nur Daten** — `getAuthMethods()` gibt Strings zurück, keine Komponenten
+2. **Frontend besitzt die UI** — Auth-Komponenten leben in einer Registry im Frontend
+3. **Neuer Connector = neue Auth-Komponente** — wird im Frontend registriert, nicht im Connector
+4. **Plattformbetreiber kann einschränken** — über Connector-Konfiguration (`allowedAuthMethods`)
+5. **AuthState als Observable** — App reagiert reaktiv auf Login/Logout
+
+**Plattformbetreiber-Konfiguration:**
+
+```typescript
+const connector = new RestConnector({
+  baseUrl: 'https://api.example.org',
+  allowedAuthMethods: ['password']  // Kein OAuth — nur Passwort erlaubt
+})
+// getAuthMethods() liefert dann nur "password"
+```
+
 ---
 
 ## Offene Fragen
 
 Diese Aspekte werden in der Implementierung geklärt:
 
-1. **Auth-Abstraktion** – Wie abstrahieren wir Keypair-Auth (WoT) und Server-Auth (REST) so, dass Module davon nichts wissen müssen?
-2. **User-Profil als Item?** – Ist ein Nutzerprofil ein Item oder eine eigene Entität? (Hinweis: Über das FeatureInterface wäre ein Profil ein Document unter `"user.profile"` – unabhängig von der Item-Frage.)
-3. **Migration** – Kann man von einem Connector zu einem anderen wechseln?
-4. **Hybrid-Szenarien** – Können verschiedene Connector-Typen sinnvoll kombiniert werden?
-5. **Feature-Katalog** – Welche Feature-Keys sind obligatorisch, welche optional? Ein verbindlicher Katalog muss definiert werden, sobald die ersten Connectoren implementiert werden.
-6. **Typisierung** – Wie wird TypeScript-Typsicherheit für `item.data` und feature-spezifische Request/Response-Strukturen hergestellt? (z.B. über eine generische Registry `FeatureKey → RequestType, ResponseType` bzw. typisierte Item-Varianten)
-7. **Data Layer Implementierung** – Eigene Implementierung oder Nutzung einer bestehenden Library (z.B. TanStack Query)? Die Schnittstelle (Query State, Mutations, Optimistic Updates) ist definiert, die Implementierung offen.
-8. **Optimistic Update Strategie** – Welche Mutations bekommen Optimistic Updates, welche nicht? Leitlinie: Schnelle, häufige Aktionen (Item erstellen, Status ändern) profitieren davon; seltene, komplexe Aktionen (Gruppeneinstellungen ändern) können auf die Connector-Antwort warten.
+1. **Migration** – Kann man von einem Connector zu einem anderen wechseln?
+2. **Hybrid-Szenarien** – Können verschiedene Connector-Typen sinnvoll kombiniert werden?
+3. **Feature-Katalog** – Welcher Feature-Baum ist verbindlich? Ein initialer Katalog muss definiert werden, sobald die ersten Connectoren implementiert werden.
+4. **Typisierung** – Wie wird TypeScript-Typsicherheit für `item.data` und den Feature-Baum hergestellt? (z.B. über typisierte Item-Varianten oder eine generische Registry)
+5. **Prädikat-Katalog erweitern** – Der initiale Katalog deckt Kanban und Feed ab. Weitere Prädikate werden ergänzt, sobald neue Module entstehen.
+
+### Entschiedene Fragen
+
+- **Reaktivität** → Observable-Pattern: `observe()` liefert ein lebendes Objekt mit `current` und `subscribe()`. Connector-intern umgesetzt via CRDT-Events, WebSocket, GraphQL Subscriptions oder Polling-Fallback. *(Entschieden: 5. März 2026)*
+- **title in data vs. top-level** → `title` lebt in `data`, nicht als Pflichtfeld. Nicht jeder Item-Typ hat einen Titel. Module nutzen Fallbacks. *(Entschieden: 5. März 2026)*
+- **Item-Typ** → `type` ist Pflichtfeld auf Item-Ebene. Bestimmt Rendering (wie dargestellt), während Daten-Felder das Modul-Routing bestimmen (wo dargestellt). *(Entschieden: 5. März 2026)*
+- **Relations** → RDF-kompatibles Tripel-Modell, eingebettet am Item als `relations[]`. Abfrage via `getRelatedItems()` und `include`-Direktive. *(Entschieden: 5. März 2026)*
+- **Schema-Versionierung** → Optionale Felder `schema` und `schemaVersion` am Item. *(Entschieden: 5. März 2026)*
+- **Kein separater Data Layer** → Der Connector ist vollständig verantwortlich für Caching, Optimistic Updates und Reaktivität. Die Hooks sind dünn — sie übersetzen nur Observable → React State und Mutations → `Promise<Item>`. Server-Connectors können intern TanStack Query nutzen. Bei Local-First ist Caching/Optimistic Update unnötig, da Writes instant sind. *(Entschieden: 6. März 2026)*
+- **Mutations-Vertrag** → `createItem()` und `updateItem()` geben `Promise<Item>` zurück — ein vollständiges Item mit ID und allen Feldern, sofort nutzbar. Der Connector garantiert die Zustände. *(Entschieden: 6. März 2026)*
+- **User-Profil ist ein Item** → Ein Nutzerprofil ist ein generisches Item (z.B. `type: "profile"`), keine eigene Entität. *(Entschieden: 6. März 2026)*
+- **Auth-Abstraktion** → Connector liefert nur Daten (`getAuthMethods()` → Strings), Frontend besitzt die Auth-UI-Komponenten in einer Registry. `AuthState` als Observable. Plattformbetreiber kann Auth-Methoden über Connector-Konfiguration einschränken. *(Entschieden: 6. März 2026)*
+- **FeatureInterface gestrichen** → Kein separates Interface. Feature-Erkennung über ein generisches Item (`type: "feature"`) mit verschachteltem Objektbaum in `data`. Truthy = unterstützt, falsy = nicht unterstützt. Alles läuft über das DataInterface. *(Entschieden: 6. März 2026)*
 
 ---
 
