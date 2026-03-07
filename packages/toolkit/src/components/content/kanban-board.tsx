@@ -1,5 +1,5 @@
 import { useState, useCallback, type DragEvent } from "react"
-import type { Item, User } from "@real-life-stack/data-interface"
+import type { Item, User, Relation } from "@real-life-stack/data-interface"
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
 import { cn } from "../../lib/utils"
@@ -34,8 +34,8 @@ function getInitials(name: string): string {
 
 function getAssigneeIds(item: Item): string[] {
   return (item.relations ?? [])
-    .filter((r) => r.predicate === "assignedTo")
-    .map((r) => r.target.replace(/^global:/, ""))
+    .filter((r: Relation) => r.predicate === "assignedTo")
+    .map((r: Relation) => r.target.replace(/^global:/, ""))
 }
 
 function getTagColor(tag: string): string {
