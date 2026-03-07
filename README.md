@@ -37,38 +37,38 @@ Real Life Stack unterstützt den gesamten Kreislauf: von der Idee über die Vera
 
 ## Architektur
 
-```
+```text
 ┌──────────────────────────────────────────────────────────┐
-|                            UI                            |
-|  ┌────────────────────────────────────────────────────┐  |
-│  |                     App-Shell                      |  │
-|  └────────────────────────────────────────────────────┘  |
-│  ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐  │
-│  │Kalender│ │ Karte  │ │  Feed  │ │Gruppen │ │Profile │  │
-│  └────────┘ └────────┘ └────────┘ └────────┘ └────────┘  │
+│                          UI                              │
+│  ┌────────────────────────────────────────────────────┐  │
+│  │                    App-Shell                       │  │
+│  └────────────────────────────────────────────────────┘  │
+│  ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌──────┐  │
+│  │ Kanban │ │Kalender│ │ Karte  │ │  Feed  │ │ ...  │  │
+│  └────────┘ └────────┘ └────────┘ └────────┘ └──────┘  │
 ├──────────────────────────────────────────────────────────┤
-│              Daten- & Identitätsschnittstelle            │
+│                    Hooks (dünn)                          │
 ├──────────────────────────────────────────────────────────┤
-│                     Connector-Schicht                    │
+│                   DataInterface                          │
 ├──────────────────────────────────────────────────────────┤
-│                         Backend                          │
-│     ┌────────┐ ┌───────────┐ ┌───────────┐ ┌───────┐     │
-│     │  REST  │ │Sync-Engine│ │Local First│ │  P2P  │     │
-│     └────────┘ └───────────┘ └───────────┘ └───────┘     │
+│                    Connectoren                           │
+│  ┌────────┐ ┌───────────┐ ┌────────────────────────┐    │
+│  │  Mock  │ │   REST    │ │  WoT (Automerge+E2EE)  │    │
+│  └────────┘ └───────────┘ └────────────────────────┘    │
 └──────────────────────────────────────────────────────────┘
 ```
 
 ### App-Shell + UI-Module
 
-Die oberste Schicht enthält die **App-Shell** als Container und die austauschbaren **UI-Module** (Kalender, Karte, Feed, Gruppen, Profile). Jede Community wählt die Module, die sie braucht.
+Die **App-Shell** ist der Container, die **UI-Module** (Kanban, Kalender, Karte, Feed, ...) sind austauschbar. Jede Gruppe wählt, welche Module sie nutzt. Module prüfen nicht den Item-Typ, sondern welche Daten-Felder vorhanden sind (`status` → Kanban, `start`/`end` → Kalender, `location` → Karte).
 
-### Daten- & Identitätsschnittstelle
+### Hooks + DataInterface
 
-Einheitliche API für Datenmodelle (Posts, Events, Orte, Profile) und Identität (Login, Vertrauensbeziehungen). Die Module kennen nur diese Schnittstelle, nicht das Backend.
+Die Hooks sind eine dünne Schicht zwischen UI und Connector — sie übersetzen Observables in React State und Mutations in Promises. Das **DataInterface** definiert den Vertrag: Items, Gruppen, Identität, Reaktivität. Module kennen nur dieses Interface, nicht das Backend.
 
-### Connector-Schicht
+### Connectoren
 
-Adapter-Pattern für verschiedene Backend-Anbindungen. Referenzimplementierung mitgeliefert, weitere Connectoren durch Community erweiterbar.
+Jeder Connector implementiert das DataInterface für ein spezifisches Backend. Der **MockConnector** (in-memory) dient zur Entwicklung, ein **REST-Connector** für klassische Server, der **WoT-Connector** (Automerge + E2EE) für dezentrale, verschlüsselte Zusammenarbeit.
 
 ---
 
