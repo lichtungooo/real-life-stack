@@ -54,6 +54,12 @@ importers:
 
   apps/reference:
     dependencies:
+      '@real-life-stack/data-interface':
+        specifier: workspace:*
+        version: link:../../packages/data-interface
+      '@real-life-stack/mock-connector':
+        specifier: workspace:*
+        version: link:../../packages/mock-connector
       '@real-life-stack/toolkit':
         specifier: workspace:*
         version: link:../../packages/toolkit

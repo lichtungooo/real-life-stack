@@ -11,6 +11,7 @@ import {
   MapPin,
   Sun,
   Moon,
+  Columns3,
 } from "lucide-react"
 
 import {
@@ -28,6 +29,7 @@ import {
   PostCard,
   StatCard,
   ActionCard,
+  KanbanBoard,
   Card,
   CardContent,
   CardHeader,
@@ -35,11 +37,16 @@ import {
   Button,
   Avatar,
   AvatarFallback,
+  ConnectorProvider,
+  useItems,
+  useUpdateItem,
+  useMembers,
   type Workspace,
   type UserData,
   type Module,
   type Post,
 } from "@real-life-stack/toolkit"
+import { MockConnector } from "@real-life-stack/mock-connector"
 
 // Base path for assets (configured via Vite)
 const basePath = import.meta.env.BASE_URL
@@ -60,6 +67,7 @@ const user: UserData = {
 
 const modules: Module[] = [
   { id: "feed", label: "Feed", icon: Newspaper },
+  { id: "kanban", label: "Kanban", icon: Columns3 },
   { id: "map", label: "Karte", icon: Map },
   { id: "calendar", label: "Kalender", icon: Calendar },
 ]
@@ -421,6 +429,29 @@ function CalendarView() {
   )
 }
 
+function KanbanView() {
+  const { data: tasks } = useItems({ type: "task" })
+  const { data: members } = useMembers("group-1")
+  const { mutate: updateItem } = useUpdateItem()
+
+  const handleMoveItem = (itemId: string, newStatus: string) => {
+    const item = tasks.find((t) => t.id === itemId)
+    if (!item) return
+    updateItem(itemId, { data: { ...item.data, status: newStatus } })
+  }
+
+  return (
+    <div className="space-y-4">
+      <KanbanBoard
+        items={tasks}
+        users={members}
+        onMoveItem={handleMoveItem}
+        onItemClick={(item) => console.log("Clicked:", item.id)}
+      />
+    </div>
+  )
+}
+
 function Home() {
   const [activeWorkspace, setActiveWorkspace] = useState(workspaces[0])
   const [activeModule, setActiveModule] = useState("feed")
@@ -475,8 +506,9 @@ function Home() {
         </NavbarEnd>
       </Navbar>
 
-      <AppShellMain withBottomNav className="container mx-auto max-w-2xl px-4 py-6">
+      <AppShellMain withBottomNav className={`container mx-auto px-4 py-6 ${activeModule === "kanban" ? "max-w-5xl" : "max-w-2xl"}`}>
         {activeModule === "feed" && <FeedView />}
+        {activeModule === "kanban" && <KanbanView />}
         {activeModule === "map" && <MapView />}
         {activeModule === "calendar" && <CalendarView />}
       </AppShellMain>
@@ -490,10 +522,14 @@ function Home() {
   )
 }
 
+const connector = new MockConnector()
+
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-    </Routes>
+    <ConnectorProvider connector={connector}>
+      <Routes>
+        <Route path="/" element={<Home />} />
+      </Routes>
+    </ConnectorProvider>
   )
 }
