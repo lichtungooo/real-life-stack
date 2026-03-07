@@ -1,6 +1,6 @@
 import { GraphQLScalarType, Kind } from "graphql"
 
-export const DateTime = new GraphQLScalarType({
+export const DateTimeScalar = new GraphQLScalarType({
   name: "DateTime",
   description: "DateTime scalar — ISO 8601 string ↔ Date",
   serialize(value: unknown): string {
@@ -18,7 +18,7 @@ export const DateTime = new GraphQLScalarType({
   },
 })
 
-export const JSON_SCALAR = new GraphQLScalarType({
+export const JSONScalar = new GraphQLScalarType({
   name: "JSON",
   description: "Arbitrary JSON value",
   serialize(value: unknown): unknown {

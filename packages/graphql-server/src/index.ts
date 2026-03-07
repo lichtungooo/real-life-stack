@@ -1,8 +1,7 @@
 import Fastify from "fastify"
 import cors from "@fastify/cors"
 import mercurius from "mercurius"
-import { typeDefs } from "./schema.js"
-import { resolvers } from "./resolvers/index.js"
+import { schema } from "./schema/index.js"
 
 const PORT = Number(process.env.PORT ?? 4000)
 
@@ -14,8 +13,7 @@ async function main() {
   })
 
   await app.register(mercurius, {
-    schema: typeDefs,
-    resolvers,
+    schema,
     subscription: true,
     graphiql: true,
   })
