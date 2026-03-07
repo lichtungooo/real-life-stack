@@ -1,5 +1,5 @@
 import type { Item, Group, User, AuthState, Relation } from "@real-life-stack/data-interface"
-import { demoItems, demoGroups, demoUsers, demoGroupMembers } from "@real-life-stack/mock-connector"
+import { demoItems, demoGroups, demoUsers, demoGroupMembers } from "@real-life-stack/data-interface/demo-data"
 import { publish } from "./pubsub.js"
 
 // Deep-copy demo data so mutations don't affect the originals

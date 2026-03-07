@@ -131,9 +131,6 @@ importers:
       '@real-life-stack/data-interface':
         specifier: workspace:*
         version: link:../data-interface
-      '@real-life-stack/mock-connector':
-        specifier: workspace:*
-        version: link:../mock-connector
       fastify:
         specifier: ^5.2.0
         version: 5.8.2
