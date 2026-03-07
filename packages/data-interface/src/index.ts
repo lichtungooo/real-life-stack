@@ -6,7 +6,7 @@
 export interface Item {
   id: string
   type: string
-  createdAt: Date
+  createdAt: string
   createdBy: string
 
   schema?: string

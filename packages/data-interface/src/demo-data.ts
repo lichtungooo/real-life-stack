@@ -9,9 +9,4 @@ export const demoUsers: User[] = rawUsers
 export const demoGroups: Group[] = rawGroups as Group[]
 export const demoGroupMembers: Record<string, string[]> = rawGroupMembers
 
-export const demoItems: Item[] = rawItems.map((item) => ({
-  ...item,
-  createdAt: new Date(item.createdAt),
-  data: item.data as Record<string, unknown>,
-  relations: item.relations as Item["relations"],
-}))
+export const demoItems: Item[] = rawItems as unknown as Item[]

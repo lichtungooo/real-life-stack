@@ -167,7 +167,7 @@ export class MockConnector implements DataInterface {
     const newItem: Item = {
       ...item,
       id: `item-${this.nextItemId++}`,
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
     }
     this.items.push(newItem)
     this.notifyObservers()

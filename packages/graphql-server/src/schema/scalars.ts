@@ -2,18 +2,17 @@ import { GraphQLScalarType, Kind } from "graphql"
 
 export const DateTimeScalar = new GraphQLScalarType({
   name: "DateTime",
-  description: "DateTime scalar — ISO 8601 string ↔ Date",
+  description: "DateTime scalar — ISO 8601 string",
   serialize(value: unknown): string {
-    if (value instanceof Date) return value.toISOString()
     if (typeof value === "string") return value
-    throw new Error("DateTime serialize: expected Date or string")
+    throw new Error("DateTime serialize: expected string")
   },
-  parseValue(value: unknown): Date {
-    if (typeof value === "string") return new Date(value)
+  parseValue(value: unknown): string {
+    if (typeof value === "string") return value
     throw new Error("DateTime parseValue: expected string")
   },
-  parseLiteral(ast): Date {
-    if (ast.kind === Kind.STRING) return new Date(ast.value)
+  parseLiteral(ast): string {
+    if (ast.kind === Kind.STRING) return ast.value
     throw new Error("DateTime parseLiteral: expected StringValue")
   },
 })

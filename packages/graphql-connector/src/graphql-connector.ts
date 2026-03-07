@@ -43,10 +43,7 @@ import {
 } from "./queries.js"
 
 function parseItem(raw: Record<string, unknown>): Item {
-  return {
-    ...raw,
-    createdAt: new Date(raw.createdAt as string),
-  } as Item
+  return raw as unknown as Item
 }
 
 export class GraphQLConnector implements DataInterface {

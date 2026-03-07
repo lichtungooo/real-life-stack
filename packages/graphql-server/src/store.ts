@@ -4,18 +4,12 @@ import { publish } from "./pubsub.js"
 
 // Deep-copy demo data so mutations don't affect the originals
 function clone<T>(obj: T): T {
-  return JSON.parse(JSON.stringify(obj, (_key, value) => {
-    if (value instanceof Date) return value.toISOString()
-    return value
-  }))
+  return JSON.parse(JSON.stringify(obj))
 }
 
 // --- State ---
 
-let items: Item[] = clone(demoItems).map((item: Item) => ({
-  ...item,
-  createdAt: new Date(item.createdAt),
-}))
+let items: Item[] = clone(demoItems)
 let groups: Group[] = clone(demoGroups)
 const users: User[] = clone(demoUsers)
 let groupMembers: Record<string, string[]> = clone(demoGroupMembers)
@@ -48,7 +42,7 @@ export function createItem(input: { type: string; createdBy: string; data: Recor
   const item: Item = {
     id: `item-${nextItemId++}`,
     type: input.type,
-    createdAt: new Date(),
+    createdAt: new Date().toISOString(),
     createdBy: input.createdBy,
     data: input.data,
     relations: input.relations,
