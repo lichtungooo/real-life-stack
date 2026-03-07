@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, useScroll, useMotionValueEvent, useMotionValue, animate } from 'framer-motion';
 import { useDrag } from '@use-gesture/react';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@real-life-stack/toolkit';
 import { Element as ScrollElement, scroller } from 'react-scroll';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import ProfileNavTabs from '@/components/profile/ProfileNavTabs';
@@ -489,8 +489,8 @@ const ProfileView = ({
             className={cn(
               "bg-transparent border-none p-0 shadow-none",
               isMobile
-                ? "w-full h-screen max-w-full max-h-screen m-0"
-                : "max-w-[95vw] w-full h-[95vh] max-h-[95vh]"
+                ? "w-full h-screen max-w-full sm:max-w-full max-h-screen m-0"
+                : "max-w-[95vw] sm:max-w-[95vw] w-full h-[95vh] max-h-[95vh]"
             )}
             style={{ display: 'block' }}
           >

@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
+import { Button, Input } from '@real-life-stack/toolkit';
 import { Search, Clock } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 
 // Default recent emojis (Telegram-style defaults)
 const DEFAULT_RECENT_EMOJIS = ['❤️', '👍', '👎', '😂', '😢', '😮', '😡', '🔥'];

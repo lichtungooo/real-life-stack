@@ -6,8 +6,7 @@ import Sidebar from '@/components/layout/Sidebar';
 import BottomMenu from '@/components/layout/BottomMenu';
 import MainContent from '@/components/layout/MainContent';
 import { Toaster } from '@/components/ui/toaster';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Button, Dialog, DialogContent, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@real-life-stack/toolkit';
 import SmartPostWidget, { POST_TYPES } from '@/components/SmartPostWidget';
 import { initializeMockData } from '@/data/mockData';
 import { DndProvider } from 'react-dnd';
@@ -16,12 +15,6 @@ import { DndProvider } from 'react-dnd';
 initializeMockData();
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Plus } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { useNotifications } from '@/hooks/useNotifications';
 import NotificationPanel from '@/components/notifications/NotificationPanel';
 import { useMessages } from '@/hooks/useMessages';
@@ -392,7 +385,7 @@ function App() {
           if (!open) handleCloseMessaging();
         }}>
           <DialogContent
-            className="max-w-full w-screen h-dvh border-none bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 p-0 shadow-none rounded-none m-0"
+            className="max-w-full sm:max-w-full w-screen h-dvh border-none bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 p-0 shadow-none rounded-none m-0"
             showCloseButton={false}
           >
             <motion.div
@@ -464,7 +457,7 @@ function App() {
                 </DropdownMenu>
           </motion.div>
           <DialogContent 
-            className="max-w-full w-screen h-dvh border-none bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 p-0 shadow-none rounded-none m-0" 
+            className="max-w-full sm:max-w-full w-screen h-dvh border-none bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 p-0 shadow-none rounded-none m-0" 
             showCloseButton={false}
           >
             <motion.div 

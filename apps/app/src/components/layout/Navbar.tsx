@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Menu, Calendar, Map, Rss, User, Settings, LogOut, Sprout } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Button, Avatar, AvatarFallback, AvatarImage, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@real-life-stack/toolkit';
 import { toast } from '@/components/ui/use-toast';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import NotificationPanel from '@/components/notifications/NotificationPanel';

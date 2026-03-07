@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@real-life-stack/toolkit';
 import { Send, Paperclip, X, Image as ImageIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 

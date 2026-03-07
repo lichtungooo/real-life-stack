@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Map, Rss, Filter, ArrowDownUp, MapPin } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@real-life-stack/toolkit';
 import { toast } from '@/components/ui/use-toast';
 import FeedView from '@/components/views/FeedView';
 import MapView from '@/components/views/MapView';
@@ -14,7 +14,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@real-life-stack/toolkit'
 
 const MainContent = ({ currentView, onSelectPost, selectedPost, onCloseDetail, postToOpenOnMap, postToOpenOnCalendar, setSelectedPost, onCreatePost, onSwitchToMapView, onSwitchToMapViewFromProfile, onSwitchToCalendarView, onBackToFeed, onBackToCalendar, showBackToFeed, showBackToCalendar, onCreateEvent }) => {
   const [posts, setPosts] = useState([]);

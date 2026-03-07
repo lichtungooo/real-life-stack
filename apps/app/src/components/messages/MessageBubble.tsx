@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage, Button } from '@real-life-stack/toolkit';
 import { formatDistanceToNow } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { Smile, Reply, MoreVertical, Check, CheckCheck } from 'lucide-react';
@@ -12,7 +11,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@real-life-stack/toolkit';
 import { COMMON_REACTIONS } from '@/data/messageTypes';
 
 const MessageBubble = ({

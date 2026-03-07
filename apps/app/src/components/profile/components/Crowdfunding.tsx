@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { DollarSign, Users, Target } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@real-life-stack/toolkit';
 import { toast } from '@/components/ui/use-toast';
 
 const Crowdfunding = ({ crowdfunding }) => {

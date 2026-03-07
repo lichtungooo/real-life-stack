@@ -3,11 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { Calendar } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import {
+  Button,
   Dialog,
   DialogContent,
-} from '@/components/ui/dialog';
+} from '@real-life-stack/toolkit';
 
 const ConfirmEventDialog = ({ isOpen, onClose, onConfirm, selectedDate }) => {
   const handleConfirm = () => {

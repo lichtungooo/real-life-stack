@@ -20,10 +20,7 @@
     "allowJs": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@real-life-stack/toolkit": ["../../packages/toolkit/src"],
-      "@real-life-stack/data-interface": ["../../packages/data-interface/src"],
-      "@real-life-stack/mock-connector": ["../../packages/mock-connector/src"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src"]

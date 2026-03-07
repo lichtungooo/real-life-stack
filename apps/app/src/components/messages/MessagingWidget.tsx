@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { X, Plus, Search } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@real-life-stack/toolkit';
 import ConversationList from './ConversationList';
 import MessageThread from './MessageThread';
 import NewChatDialog from './NewChatDialog';

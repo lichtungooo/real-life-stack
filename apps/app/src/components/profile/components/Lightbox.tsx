@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Button, Dialog, DialogContent, DialogTitle, DialogDescription } from '@real-life-stack/toolkit';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 const Lightbox = ({ isOpen, onClose, images = [] as Array<{src: string; alt?: string; description?: string}>, initialIndex = 0 }) => {
@@ -108,7 +107,7 @@ const Lightbox = ({ isOpen, onClose, images = [] as Array<{src: string; alt?: st
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="max-w-full w-screen h-screen p-0 m-0 bg-black/95 backdrop-blur-md border-none rounded-none !z-[9999]"
+        className="max-w-full sm:max-w-full w-screen h-screen p-0 m-0 bg-black/95 backdrop-blur-md border-none rounded-none !z-[9999]"
         showCloseButton={false}
       >
         <VisuallyHidden>

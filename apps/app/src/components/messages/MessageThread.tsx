@@ -1,18 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, MoreVertical, Phone, Video } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import MessageBubble from './MessageBubble';
-import MessageInput from './MessageInput';
-import { CURRENT_USER_ID } from '@/data/mockMessages';
 import {
+  Button,
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@real-life-stack/toolkit';
+import MessageBubble from './MessageBubble';
+import MessageInput from './MessageInput';
+import { CURRENT_USER_ID } from '@/data/mockMessages';
 
 const MessageThread = ({
   conversation,

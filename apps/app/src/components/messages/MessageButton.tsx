@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@real-life-stack/toolkit';
 
 const MessageButton = ({ unreadCount, onClick, isOpen }) => {
   return (

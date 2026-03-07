@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, List, Grid3x3, Columns, Filter } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@real-life-stack/toolkit';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 

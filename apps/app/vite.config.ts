@@ -7,9 +7,10 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
     extensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
+    conditions: ['import', 'module', 'browser', 'default'],
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@real-life-stack/toolkit': path.resolve(__dirname, '../../packages/toolkit/src'),
+      '@real-life-stack/toolkit': path.resolve(__dirname, '../../packages/toolkit/dist/index.js'),
       '@real-life-stack/data-interface': path.resolve(__dirname, '../../packages/data-interface/src'),
       '@real-life-stack/mock-connector': path.resolve(__dirname, '../../packages/mock-connector/src'),
     },

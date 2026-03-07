@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Navigation, User, Share2, Facebook, Twitter, Mail, Link as LinkIcon, MessageCircle, UserPlus, CalendarPlus, PlusCircle, Target, X, ArrowLeft, Maximize2, Minimize2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@real-life-stack/toolkit';
 import { toast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
 import Lightbox from './components/Lightbox';

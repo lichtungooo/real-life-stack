@@ -1,9 +1,8 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
+import { Button, Label } from '@real-life-stack/toolkit';
 import { toast } from '@/components/ui/use-toast';
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { 
   Type, Image as ImageIcon, MapPin, Calendar, Users, Tag, Globe, Lock, Send, Trash2, Eye, Edit, X
 } from 'lucide-react';

@@ -1,9 +1,8 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
+import { Button, Label } from '@real-life-stack/toolkit';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 
 const ProfileControls = ({ config, onChange }) => {
   const itemTypes = [

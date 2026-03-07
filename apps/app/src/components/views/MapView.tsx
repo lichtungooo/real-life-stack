@@ -1,12 +1,23 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { AnimatePresence, motion } from 'framer-motion';
 import ProfileView from '@/components/profile/ProfileView';
 import { postToProfileData } from '@/lib/profileAdapter';
 import { generateProfileConfig } from '@/lib/profileConfig';
-import { Button } from '@/components/ui/button';
+import { Button } from '@real-life-stack/toolkit';
 import { ArrowLeft } from 'lucide-react';
 import L from 'leaflet';
+
+// Patch Leaflet to handle React 19 StrictMode / remounts
+// Without this, MapContainer throws "Map container is already initialized"
+const origInitContainer = (L.Map.prototype as any)._initContainer;
+(L.Map.prototype as any)._initContainer = function (id: any) {
+  const container = typeof id === 'string' ? document.getElementById(id) : id;
+  if (container && (container as any)._leaflet_id) {
+    (container as any)._leaflet_id = undefined;
+  }
+  origInitContainer.call(this, id);
+};
 
 const icon = L.icon({
     iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -120,8 +131,8 @@ const MapView = ({ posts, onSelectPost, postToOpen, setSelectedPost, selectedPos
         />
         <MapController center={mapCenter} detailWidth={controllerDetailWidth} detailHeight={detailHeight} isMobile={isMobile} />
         {postsWithLocation.map(post => (
-          <Marker 
-            key={post.id} 
+          <Marker
+            key={post.id}
             position={[post.location.lat, post.location.lon]}
             icon={icon}
             eventHandlers={{
