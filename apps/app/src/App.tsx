@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { Post } from '@/types';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
@@ -20,8 +21,17 @@ import NotificationPanel from '@/components/notifications/NotificationPanel';
 import { useMessages } from '@/hooks/useMessages';
 import MessagingWidget from '@/components/messages/MessagingWidget';
 
+const VIEWS = ['feed', 'map', 'calendar'] as const;
+type View = typeof VIEWS[number];
+
 function App() {
-  const [currentView, setCurrentView] = useState('feed');
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Derive currentView from URL path
+  const pathSegment = location.pathname.split('/')[1] || 'feed';
+  const currentView: View = VIEWS.includes(pathSegment as View) ? (pathSegment as View) : 'feed';
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [postToOpenOnMap, setPostToOpenOnMap] = useState<Post | null>(null);
@@ -29,7 +39,7 @@ function App() {
   const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [composerPostType, setComposerPostType] = useState(POST_TYPES.POST);
   const [composerInitialData, setComposerInitialData] = useState<Record<string, unknown> | null>(null);
-  const [previousView, setPreviousView] = useState('feed');
+  const [previousView, setPreviousView] = useState<View>('feed');
   const [previousScrollPosition, setPreviousScrollPosition] = useState(0);
   const [isButtonVisible, setIsButtonVisible] = useState(true);
   const [navigationSource, setNavigationSource] = useState<string | null>(null);
@@ -149,7 +159,7 @@ function App() {
   const handleSwitchToMapView = (post) => {
     // Simple switch to map view and open the post (no back button)
     setPostToOpenOnMap(post);
-    setCurrentView('map');
+    navigate('/map');
   };
 
   const handleSwitchToMapViewFromProfile = (post) => {
@@ -167,19 +177,19 @@ function App() {
     }
 
     setPostToOpenOnMap(post);
-    setCurrentView('map');
+    navigate('/map');
   };
 
   const handleBackToFeed = () => {
     // Return to feed from map view
-    setCurrentView('feed');
+    navigate('/feed');
     // Keep navigationSource so scroll can be restored when closing detail
     setPostToOpenOnMap(null);
   };
 
   const handleBackToCalendar = () => {
     // Return to calendar from map view
-    setCurrentView('calendar');
+    navigate('/calendar');
     setPostToOpenOnMap(null);
     // Keep selectedPost to show the modal in feed view
   };
@@ -187,7 +197,7 @@ function App() {
   const handleSwitchToCalendarView = (post) => {
     // Switch to calendar view and open the post
     setPostToOpenOnCalendar(post);
-    setCurrentView('calendar');
+    navigate('/calendar');
   };
 
   const handleNotificationClick = (notification) => {
@@ -206,12 +216,12 @@ function App() {
         // Open post in appropriate view
         if (post.location && post.type === 'event') {
           // Events with location open in map
-          setCurrentView('map');
+          navigate('/map');
           setPostToOpenOnMap(post);
         } else {
           // Other posts open in feed modal
           if (currentView !== 'feed') {
-            setCurrentView('feed');
+            navigate('/feed');
           }
           setSelectedPost(post);
         }
@@ -234,13 +244,13 @@ function App() {
       setActiveConversationId(null);
     }, 200);
   };
-  
-  const handleViewChange = (view) => {
+
+  const handleViewChange = (view: string) => {
     // Close detail view when changing main view
     handleCloseDetail();
     setIsComposerOpen(false);
     setNavigationSource(null); // Clear navigation source on manual view change
-    setCurrentView(view);
+    navigate(`/${view}`);
   }
 
   const handleCreatePostFromFeed = () => {
@@ -292,18 +302,18 @@ function App() {
       if (postData.postType === POST_TYPES.EVENT && (postData.data as Record<string, unknown>)?.location) {
         // For events with location, go to map view
         setPostToOpenOnMap(postData as unknown as Post);
-        setCurrentView('map');
+        navigate('/map');
       } else if (postData.postType === POST_TYPES.EVENT) {
         // For events without location, go to calendar view
         setPostToOpenOnCalendar(postData as unknown as Post);
-        setCurrentView('calendar');
+        navigate('/calendar');
       } else {
         // For all other posts, go to feed
-        setCurrentView('feed');
+        navigate('/feed');
       }
     } else {
       // On cancel, return to previous view and restore scroll
-      setCurrentView(previousView);
+      navigate(`/${previousView}`);
       // Restore scroll position after view change
       setTimeout(() => {
         const scrollElement = document.querySelector('.overflow-y-auto');
@@ -312,6 +322,25 @@ function App() {
         }
       }, 100);
     }
+  };
+
+  const mainContentProps = {
+    currentView,
+    onSelectPost: handleSelectPost,
+    selectedPost,
+    onCloseDetail: handleCloseDetail,
+    postToOpenOnMap,
+    postToOpenOnCalendar,
+    setSelectedPost,
+    onCreatePost: handleCreatePostFromFeed,
+    onCreateEvent: handleCreateEvent,
+    onSwitchToMapView: handleSwitchToMapView,
+    onSwitchToMapViewFromProfile: handleSwitchToMapViewFromProfile,
+    onSwitchToCalendarView: handleSwitchToCalendarView,
+    onBackToFeed: handleBackToFeed,
+    onBackToCalendar: handleBackToCalendar,
+    showBackToFeed: navigationSource === 'feed',
+    showBackToCalendar: navigationSource === 'calendar',
   };
 
   return (
@@ -339,7 +368,7 @@ function App() {
           <div className="flex flex-1 min-h-0 pt-16">
             <AnimatePresence>
               {sidebarOpen && (
-                <Sidebar 
+                <Sidebar
                   isOpen={sidebarOpen}
                   onClose={() => setSidebarOpen(false)}
                 />
@@ -353,24 +382,13 @@ function App() {
               }}
               transition={{ type: "spring", damping: 30, stiffness: 250 }}
             >
-              <MainContent
-                currentView={currentView}
-                onSelectPost={handleSelectPost}
-                selectedPost={selectedPost}
-                onCloseDetail={handleCloseDetail}
-                postToOpenOnMap={postToOpenOnMap}
-                postToOpenOnCalendar={postToOpenOnCalendar}
-                setSelectedPost={setSelectedPost}
-                onCreatePost={handleCreatePostFromFeed}
-                onCreateEvent={handleCreateEvent}
-                onSwitchToMapView={handleSwitchToMapView}
-                onSwitchToMapViewFromProfile={handleSwitchToMapViewFromProfile}
-                onSwitchToCalendarView={handleSwitchToCalendarView}
-                onBackToFeed={handleBackToFeed}
-                onBackToCalendar={handleBackToCalendar}
-                showBackToFeed={navigationSource === 'feed'}
-                showBackToCalendar={navigationSource === 'calendar'}
-              />
+              <Routes>
+                <Route path="/" element={<Navigate to="/feed" replace />} />
+                <Route path="/feed" element={<MainContent {...mainContentProps} />} />
+                <Route path="/map" element={<MainContent {...mainContentProps} />} />
+                <Route path="/calendar" element={<MainContent {...mainContentProps} />} />
+                <Route path="*" element={<Navigate to="/feed" replace />} />
+              </Routes>
             </motion.div>
           </div>
         </div>
@@ -456,11 +474,11 @@ function App() {
                   </DropdownMenuContent>
                 </DropdownMenu>
           </motion.div>
-          <DialogContent 
-            className="max-w-full sm:max-w-full w-screen h-dvh border-none bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 p-0 shadow-none rounded-none m-0" 
+          <DialogContent
+            className="max-w-full sm:max-w-full w-screen h-dvh border-none bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 p-0 shadow-none rounded-none m-0"
             showCloseButton={false}
           >
-            <motion.div 
+            <motion.div
               className="h-full overflow-y-auto flex flex-col"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
