@@ -1,7 +1,7 @@
 // @real-life-stack/data-interface
 // Zentrale Typdefinitionen für das DataInterface (Connector-Schnittstelle)
 
-export { BaseConnector } from "./base-connector.js"
+export { BaseConnector, createObservable, matchesFilter, type ReactiveObservable } from "./base-connector.js"
 
 // --- Core Types ---
 

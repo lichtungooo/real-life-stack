@@ -5,17 +5,15 @@ import type {
   Group,
   User,
   Observable,
-  Unsubscribe,
   AuthState,
   AuthMethod,
   RelatedItemsOptions,
   Source,
 } from "@real-life-stack/data-interface"
+import { createObservable, matchesFilter } from "@real-life-stack/data-interface"
 import { get, set, del, createStore } from "idb-keyval"
 
 // --- Types ---
-
-type Callback<T> = (value: T) => void
 
 interface StoredState {
   items: SerializedItem[]
@@ -34,38 +32,6 @@ interface SerializedItem extends Omit<Item, "createdAt"> {
 interface BroadcastMessage {
   type: "items-changed" | "groups-changed" | "full-sync"
   senderId: string
-}
-
-// --- Observable ---
-
-function createObservable<T>(initial: T): Observable<T> & { set(value: T): void } {
-  let current = initial
-  const subscribers = new Set<Callback<T>>()
-
-  return {
-    get current() {
-      return current
-    },
-    subscribe(callback: Callback<T>): Unsubscribe {
-      subscribers.add(callback)
-      return () => subscribers.delete(callback)
-    },
-    set(value: T) {
-      current = value
-      subscribers.forEach((cb) => cb(value))
-    },
-  }
-}
-
-function matchesFilter(item: Item, filter: ItemFilter): boolean {
-  if (filter.type && item.type !== filter.type) return false
-  if (filter.createdBy && item.createdBy !== filter.createdBy) return false
-  if (filter.hasField) {
-    for (const field of filter.hasField) {
-      if (!(field in item.data)) return false
-    }
-  }
-  return true
 }
 
 // --- Serialization helpers ---

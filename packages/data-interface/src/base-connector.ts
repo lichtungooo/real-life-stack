@@ -12,15 +12,41 @@ import type {
   Source,
 } from "./index.js"
 
-function createStaticObservable<T>(value: T): Observable<T> {
+// --- Shared Helpers for Connector implementations ---
+
+export type ReactiveObservable<T> = Observable<T> & { set(value: T): void; destroy(): void }
+
+export function createObservable<T>(initial: T): ReactiveObservable<T> {
+  let current = initial
+  const subscribers = new Set<(value: T) => void>()
+
   return {
     get current() {
-      return value
+      return current
     },
-    subscribe(_callback: (value: T) => void): Unsubscribe {
-      return () => {}
+    subscribe(callback: (value: T) => void): Unsubscribe {
+      subscribers.add(callback)
+      return () => subscribers.delete(callback)
+    },
+    set(value: T) {
+      current = value
+      subscribers.forEach((cb) => cb(value))
+    },
+    destroy() {
+      subscribers.clear()
     },
   }
+}
+
+export function matchesFilter(item: Item, filter: ItemFilter): boolean {
+  if (filter.type && item.type !== filter.type) return false
+  if (filter.createdBy && item.createdBy !== filter.createdBy) return false
+  if (filter.hasField) {
+    for (const field of filter.hasField) {
+      if (!(field in item.data)) return false
+    }
+  }
+  return true
 }
 
 const DEFAULT_GROUP: Group = { id: "default", name: "Default" }
@@ -51,18 +77,14 @@ export abstract class BaseConnector implements DataInterface {
   // --- Observables (Default: kein Live-Update) ---
 
   observe(filter: ItemFilter): Observable<Item[]> {
-    const observable = createStaticObservable<Item[]>([])
-    this.getItems(filter).then((items) => {
-      ;(observable as { current: Item[] }).current = items
-    })
+    const observable = createObservable<Item[]>([])
+    this.getItems(filter).then((items) => observable.set(items))
     return observable
   }
 
   observeItem(id: string): Observable<Item | null> {
-    const observable = createStaticObservable<Item | null>(null)
-    this.getItem(id).then((item) => {
-      ;(observable as { current: Item | null }).current = item
-    })
+    const observable = createObservable<Item | null>(null)
+    this.getItem(id).then((item) => observable.set(item))
     return observable
   }
 
@@ -137,7 +159,7 @@ export abstract class BaseConnector implements DataInterface {
   // --- Auth (Default: unauthenticated) ---
 
   getAuthState(): Observable<AuthState> {
-    return createStaticObservable<AuthState>({ status: "unauthenticated" })
+    return createObservable<AuthState>({ status: "unauthenticated" })
   }
 
   getAuthMethods(): AuthMethod[] {

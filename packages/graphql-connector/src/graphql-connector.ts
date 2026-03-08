@@ -12,7 +12,7 @@ import type {
   RelatedItemsOptions,
   Source,
 } from "@real-life-stack/data-interface"
-import { createObservable } from "./observable.js"
+import { createObservable } from "@real-life-stack/data-interface"
 import {
   ITEMS_QUERY,
   ITEM_QUERY,
