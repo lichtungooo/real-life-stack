@@ -90,6 +90,17 @@ Jeder Connector haengt NUR von `data-interface` + eigenen Libraries ab. Connecto
 - Jede App uebergibt ihren Connector via `<ConnectorProvider connector={...}>`.
 - Hooks sind duenn: Observable → React State, Mutations → Promise. Kein Caching oder Business-Logik in Hooks.
 
+### Feature-Erkennung (Capabilities als Items)
+
+Die UI erfaehrt ueber ein **Feature-Item** (`type: "feature"`), welche Funktionen der Connector unterstuetzt. Feature-Items sind normale Items — kein separates Interface noetig.
+
+- Connector liefert ein Item mit `id: "capabilities"`, `type: "feature"`, `createdBy: "system"`
+- `data` enthaelt einen verschachtelten Objektbaum: truthy = unterstuetzt, falsy = nicht unterstuetzt
+- Hooks: `useFeatures()` gibt den ganzen Baum, `useFeature("kanban.dragDrop")` prueft einen Pfad
+- UI blendet Features dynamisch ein/aus basierend auf dem Feature-Baum
+- **Feature-Items gehoeren in die Demo-Daten** (`data/items.json`), nicht hardcoded in Connectors
+- Siehe `docs/spec/architektur2.md` Abschnitt "Feature-Erkennung" fuer Details
+
 ### Relations: Scope-Prefix-System
 
 Relation-Targets nutzen Scope-Prefixe:
@@ -145,7 +156,7 @@ WebSocket via `graphql-ws` (npm-Paket), NICHT `graphql-sse`. Mercurius nutzt das
 - UI-Komponenten basierend auf shadcn/ui (Radix + Tailwind)
 - Layout: AppShell, Navbar, WorkspaceSwitcher, ModuleTabs, BottomNav, UserMenu
 - Content: PostCard, StatCard, ActionCard, SimplePostWidget, KanbanBoard
-- Hooks: useItems, useItem, useCreateItem, useUpdateItem, useDeleteItem, useGroups, useMembers, useAuthState, useCurrentUser
+- Hooks: useItems, useItem, useCreateItem, useUpdateItem, useDeleteItem, useGroups, useMembers, useAuthState, useCurrentUser, useFeatures, useFeature
 - ConnectorProvider fuer React Context
 - Storybook fuer Komponentenentwicklung (`pnpm storybook`)
 

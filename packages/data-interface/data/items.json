@@ -156,5 +156,37 @@
       "address": "Nachbarweg 12, 60000 Frankfurt",
       "tags": ["treffpunkt"]
     }
+  },
+  {
+    "id": "capabilities",
+    "type": "feature",
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "createdBy": "system",
+    "data": {
+      "feed": {
+        "filter": true,
+        "sort": true,
+        "sortOptions": ["date", "relevance"]
+      },
+      "kanban": {
+        "dragDrop": true,
+        "customColumns": true
+      },
+      "calendar": {
+        "recurring": false
+      },
+      "map": true,
+      "groups": {
+        "create": true,
+        "invite": true
+      },
+      "items": {
+        "create": true,
+        "edit": true,
+        "delete": true
+      },
+      "offline": false,
+      "realtime": false
+    }
   }
 ]
