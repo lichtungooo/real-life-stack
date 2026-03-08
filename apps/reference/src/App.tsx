@@ -101,7 +101,10 @@ function FeedView() {
   const { mutate: createItem } = useCreateItem()
 
   const mappedPosts = useMemo(
-    () => posts.map((item) => itemToPost(item, members)),
+    () =>
+      [...posts]
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .map((item) => itemToPost(item, members)),
     [posts, members]
   )
 
