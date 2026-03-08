@@ -47,10 +47,10 @@ import {
   type Module,
   type Post,
 } from "@real-life-stack/toolkit"
-import type { Item, User } from "@real-life-stack/data-interface"
-import { MockConnector, demoItems, demoGroups, demoUsers, demoGroupMembers } from "@real-life-stack/mock-connector"
+import type { Item, User, DataInterface } from "@real-life-stack/data-interface"
+import { demoItems, demoGroups, demoUsers, demoGroupMembers } from "@real-life-stack/data-interface/demo-data"
+import { MockConnector } from "@real-life-stack/mock-connector"
 import { LocalConnector } from "@real-life-stack/local-connector"
-import type { DataInterface } from "@real-life-stack/data-interface"
 
 const modules: Module[] = [
   { id: "feed", label: "Feed", icon: Newspaper },
