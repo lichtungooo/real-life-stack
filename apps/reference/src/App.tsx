@@ -48,7 +48,9 @@ import {
   type Post,
 } from "@real-life-stack/toolkit"
 import type { Item, User } from "@real-life-stack/data-interface"
-import { MockConnector } from "@real-life-stack/mock-connector"
+import { MockConnector, demoItems, demoGroups, demoUsers, demoGroupMembers } from "@real-life-stack/mock-connector"
+import { LocalConnector } from "@real-life-stack/local-connector"
+import type { DataInterface } from "@real-life-stack/data-interface"
 
 const modules: Module[] = [
   { id: "feed", label: "Feed", icon: Newspaper },
@@ -491,7 +493,24 @@ function Home() {
   )
 }
 
-const connector = new MockConnector()
+// Connector selection via URL parameter: ?connector=local or ?connector=mock (default)
+function createConnector(): DataInterface {
+  const params = new URLSearchParams(window.location.search)
+  const type = params.get("connector")
+
+  if (type === "local") {
+    return new LocalConnector({
+      items: demoItems,
+      groups: demoGroups,
+      users: demoUsers,
+      groupMembers: demoGroupMembers,
+    })
+  }
+
+  return new MockConnector()
+}
+
+const connector = createConnector()
 
 export default function App() {
   return (

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@real-life-stack/data-interface": "workspace:*",
+    "@real-life-stack/local-connector": "workspace:*",
     "@real-life-stack/mock-connector": "workspace:*",
     "@real-life-stack/toolkit": "workspace:*",
     "react": "^19.0.0",

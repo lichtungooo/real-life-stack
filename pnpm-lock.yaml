@@ -57,6 +57,9 @@ importers:
       '@real-life-stack/data-interface':
         specifier: workspace:*
         version: link:../../packages/data-interface
+      '@real-life-stack/local-connector':
+        specifier: workspace:*
+        version: link:../../packages/local-connector
       '@real-life-stack/mock-connector':
         specifier: workspace:*
         version: link:../../packages/mock-connector
@@ -102,6 +105,19 @@ importers:
         version: 6.4.1(jiti@2.6.1)(lightningcss@1.30.2)
 
   packages/data-interface:
+    devDependencies:
+      typescript:
+        specifier: ~5.7.2
+        version: 5.7.3
+
+  packages/local-connector:
+    dependencies:
+      '@real-life-stack/data-interface':
+        specifier: workspace:*
+        version: link:../data-interface
+      idb-keyval:
+        specifier: ^6.2.1
+        version: 6.2.2
     devDependencies:
       typescript:
         specifier: ~5.7.2
@@ -1682,6 +1698,9 @@ packages:
   he@1.2.0:
     resolution: {integrity: sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==}
     hasBin: true
+
+  idb-keyval@6.2.2:
+    resolution: {integrity: sha512-yjD9nARJ/jb1g+CvD0tlhUHOrJ9Sy0P8T9MF3YaLlHnSRpwPfpTX0XIvpmw3gAJUmEu3FiICLBDPXVwyEvrleg==}
 
   import-lazy@4.0.0:
     resolution: {integrity: sha512-rKtvo6a868b5Hu3heneU+L4yEQ4jYKLtjpnPeUdK7h0yzXGmyBTypknlkCvHFBqfX9YlorEiMM6Dnq/5atfHkw==}
@@ -3739,6 +3758,8 @@ snapshots:
       function-bind: 1.1.2
 
   he@1.2.0: {}
+
+  idb-keyval@6.2.2: {}
 
   import-lazy@4.0.0: {}
 
