@@ -143,3 +143,108 @@ export const WithoutUsers: Story = {
     items: tasks,
   },
 }
+
+export const MobileLayout: Story = {
+  parameters: {
+    viewport: { defaultViewport: "mobile1" },
+    chromatic: { viewports: [375] },
+  },
+  render: () => {
+    const [items, setItems] = useState(tasks)
+
+    const handleMoveItem = (itemId: string, newStatus: string, position: number) => {
+      setItems((prev) => {
+        const item = prev.find((t) => t.id === itemId)
+        if (!item) return prev
+
+        const columnItems = prev
+          .filter((t) => (t.data.status as string) === newStatus && t.id !== itemId)
+          .sort((a, b) => ((a.data.position as number) ?? 0) - ((b.data.position as number) ?? 0))
+
+        const movedItem = { ...item, data: { ...item.data, status: newStatus } }
+        columnItems.splice(position, 0, movedItem)
+
+        const updated = columnItems.map((t, i) => ({
+          ...t,
+          data: { ...t.data, position: i },
+        }))
+
+        const otherItems = prev.filter(
+          (t) => (t.data.status as string) !== newStatus && t.id !== itemId
+        )
+        return [...otherItems, ...updated]
+      })
+    }
+
+    return (
+      <div style={{ maxWidth: 375 }}>
+        <KanbanBoard
+          items={items}
+          users={users}
+          onMoveItem={handleMoveItem}
+          onItemClick={(item) => console.log("Clicked:", item.id)}
+        />
+      </div>
+    )
+  },
+}
+
+export const ManyColumns: Story = {
+  render: () => {
+    const manyColumns = [
+      { id: "backlog", label: "Backlog" },
+      { id: "todo", label: "To Do" },
+      { id: "doing", label: "In Arbeit" },
+      { id: "review", label: "Review" },
+      { id: "testing", label: "Testing" },
+      { id: "done", label: "Fertig" },
+    ]
+
+    const manyItems: Item[] = [
+      { id: "m-1", type: "task", createdAt: new Date(), createdBy: "user-1", data: { title: "Feature planen", status: "backlog", position: 0 } },
+      { id: "m-2", type: "task", createdAt: new Date(), createdBy: "user-1", data: { title: "API Design", status: "backlog", position: 1, tags: ["backend"] } },
+      { id: "m-3", type: "task", createdAt: new Date(), createdBy: "user-2", data: { title: "UI Mockups", status: "todo", position: 0, tags: ["design"] } },
+      { id: "m-4", type: "task", createdAt: new Date(), createdBy: "user-1", data: { title: "Datenbank Schema", status: "doing", position: 0, tags: ["backend"] } },
+      { id: "m-5", type: "task", createdAt: new Date(), createdBy: "user-3", data: { title: "Code Review Auth", status: "review", position: 0 } },
+      { id: "m-6", type: "task", createdAt: new Date(), createdBy: "user-2", data: { title: "E2E Tests", status: "testing", position: 0, tags: ["qa"] } },
+      { id: "m-7", type: "task", createdAt: new Date(), createdBy: "user-1", data: { title: "Deploy Pipeline", status: "done", position: 0, tags: ["infra"] } },
+      { id: "m-8", type: "task", createdAt: new Date(), createdBy: "user-2", data: { title: "Monitoring Setup", status: "done", position: 1, tags: ["infra"] } },
+    ]
+
+    const [items, setItems] = useState(manyItems)
+
+    const handleMoveItem = (itemId: string, newStatus: string, position: number) => {
+      setItems((prev) => {
+        const item = prev.find((t) => t.id === itemId)
+        if (!item) return prev
+
+        const columnItems = prev
+          .filter((t) => (t.data.status as string) === newStatus && t.id !== itemId)
+          .sort((a, b) => ((a.data.position as number) ?? 0) - ((b.data.position as number) ?? 0))
+
+        const movedItem = { ...item, data: { ...item.data, status: newStatus } }
+        columnItems.splice(position, 0, movedItem)
+
+        const updated = columnItems.map((t, i) => ({
+          ...t,
+          data: { ...t.data, position: i },
+        }))
+
+        const otherItems = prev.filter(
+          (t) => (t.data.status as string) !== newStatus && t.id !== itemId
+        )
+        return [...otherItems, ...updated]
+      })
+    }
+
+    return (
+      <KanbanBoard
+        items={items}
+        columns={manyColumns}
+        users={users}
+        onMoveItem={handleMoveItem}
+        onItemClick={(item) => console.log("Clicked:", item.id)}
+      />
+    )
+  },
+}

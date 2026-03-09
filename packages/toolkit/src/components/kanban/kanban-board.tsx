@@ -1,4 +1,4 @@
-import { useState, useCallback, type DragEvent } from "react"
+import { useState, useCallback, useMemo, type DragEvent } from "react"
 import type { Item, User, Relation } from "@real-life-stack/data-interface"
 import { Card, CardContent, CardHeader, CardTitle } from "../primitives/card"
 import { Avatar, AvatarFallback, AvatarImage } from "../primitives/avatar"
@@ -61,10 +61,11 @@ interface KanbanCardProps {
   users?: User[]
   isDragged: boolean
   onDragStart: (e: DragEvent, itemId: string) => void
+  onDragEnd?: () => void
   onClick?: (item: Item) => void
 }
 
-function KanbanCard({ item, users, isDragged, onDragStart, onClick }: KanbanCardProps) {
+function KanbanCard({ item, users, isDragged, onDragStart, onDragEnd, onClick }: KanbanCardProps) {
   const assigneeIds = getAssigneeIds(item)
   const assignees = (users ?? []).filter((u) => assigneeIds.includes(u.id))
   const tags = (item.data.tags as string[]) ?? []
@@ -73,6 +74,7 @@ function KanbanCard({ item, users, isDragged, onDragStart, onClick }: KanbanCard
     <div
       draggable
       onDragStart={(e) => onDragStart(e, item.id)}
+      onDragEnd={onDragEnd}
       onClick={() => onClick?.(item)}
       className={cn(
         "rounded-lg border bg-card p-3 shadow-sm cursor-grab active:cursor-grabbing",
@@ -148,6 +150,7 @@ export function KanbanBoard({
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null)
   const [dropTarget, setDropTarget] = useState<DropTarget | null>(null)
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null)
+  const [floatingHoverColumn, setFloatingHoverColumn] = useState<string | null>(null)
   const handleDragStart = useCallback((e: DragEvent, itemId: string) => {
     e.dataTransfer.setData("text/plain", itemId)
     e.dataTransfer.effectAllowed = "move"
@@ -210,70 +213,141 @@ export function KanbanBoard({
     [onMoveItem, dropTarget]
   )
 
-  const itemsByColumn = new Map<string, Item[]>()
-  for (const col of columns) {
-    itemsByColumn.set(col.id, [])
-  }
-  for (const item of items) {
-    const status = (item.data.status as string) ?? columns[0]?.id
-    const list = itemsByColumn.get(status)
-    if (list) list.push(item)
-  }
-  for (const list of itemsByColumn.values()) {
-    list.sort((a, b) => ((a.data.position as number) ?? 0) - ((b.data.position as number) ?? 0))
-  }
+  const handleDragEnd = useCallback(() => {
+    setDraggedItemId(null)
+    setDragOverColumn(null)
+    setDropTarget(null)
+    setFloatingHoverColumn(null)
+  }, [])
+
+  const itemsByColumn = useMemo(() => {
+    const map = new Map<string, Item[]>()
+    for (const col of columns) {
+      map.set(col.id, [])
+    }
+    for (const item of items) {
+      const status = (item.data.status as string) ?? columns[0]?.id
+      const list = map.get(status)
+      if (list) list.push(item)
+    }
+    for (const list of map.values()) {
+      list.sort((a, b) => ((a.data.position as number) ?? 0) - ((b.data.position as number) ?? 0))
+    }
+    return map
+  }, [items, columns])
+
+  const handleFloatingDrop = useCallback(
+    (e: DragEvent, columnId: string) => {
+      e.preventDefault()
+      const itemId = e.dataTransfer.getData("text/plain")
+      const columnItems = itemsByColumn.get(columnId) ?? []
+      setDraggedItemId(null)
+      setDragOverColumn(null)
+      setDropTarget(null)
+      setFloatingHoverColumn(null)
+      if (itemId && onMoveItem) {
+        onMoveItem(itemId, columnId, columnItems.length)
+      }
+    },
+    [onMoveItem, itemsByColumn]
+  )
+
+  // Derive the source column of the dragged item (no extra state needed)
+  const draggedItemColumnId = useMemo(() => {
+    if (!draggedItemId) return null
+    for (const [colId, colItems] of itemsByColumn) {
+      if (colItems.some((item) => item.id === draggedItemId)) return colId
+    }
+    return null
+  }, [draggedItemId, itemsByColumn])
 
   return (
-    <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}>
-      {columns.map((column) => {
-        const columnItems = itemsByColumn.get(column.id) ?? []
-        return (
-          <Card
-            key={column.id}
-            className={cn(
-              "transition-colors",
-              dragOverColumn === column.id && "border-primary/50 bg-primary/5"
-            )}
-            onDragOver={(e) => handleColumnDragOver(e, column.id, columnItems.length)}
-            onDragLeave={handleDragLeave}
-            onDrop={(e) => handleDrop(e, column.id, columnItems.length)}
-          >
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center justify-between">
-                <span>{column.label}</span>
-                <span className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5">
-                  {columnItems.length}
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-0 min-h-[100px]">
-              <DropIndicator
-                visible={dropTarget?.columnId === column.id && dropTarget.index === 0}
-              />
-              {columnItems.map((item, idx) => (
-                <div
-                  key={item.id}
-                  onDragOver={(e) => handleCardDragOver(e, column.id, idx)}
-                  className="py-1"
-                >
-                  <KanbanCard
-                    item={item}
-                    users={users}
-                    isDragged={draggedItemId === item.id}
-                    onDragStart={handleDragStart}
-                    onClick={onItemClick}
-                  />
-                  <DropIndicator
-                    visible={
-                      dropTarget?.columnId === column.id && dropTarget.index === idx + 1
-                    }
-                  />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        )
-      })}
-    </div>
+    <>
+      <div
+        className="grid gap-4 grid-cols-1 md:[grid-template-columns:var(--kanban-cols)]"
+        style={{ '--kanban-cols': `repeat(${columns.length}, minmax(0, 1fr))` } as React.CSSProperties}
+      >
+        {columns.map((column) => {
+          const columnItems = itemsByColumn.get(column.id) ?? []
+          return (
+            <Card
+              key={column.id}
+              className={cn(
+                "transition-colors",
+                dragOverColumn === column.id && "border-primary/50 bg-primary/5"
+              )}
+              onDragOver={(e) => handleColumnDragOver(e, column.id, columnItems.length)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, column.id, columnItems.length)}
+            >
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium flex items-center justify-between">
+                  <span>{column.label}</span>
+                  <span className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5">
+                    {columnItems.length}
+                  </span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-0 min-h-[100px]">
+                <DropIndicator
+                  visible={dropTarget?.columnId === column.id && dropTarget.index === 0}
+                />
+                {columnItems.map((item, idx) => (
+                  <div
+                    key={item.id}
+                    onDragOver={(e) => handleCardDragOver(e, column.id, idx)}
+                    className="py-1"
+                  >
+                    <KanbanCard
+                      item={item}
+                      users={users}
+                      isDragged={draggedItemId === item.id}
+                      onDragStart={handleDragStart}
+                      onDragEnd={handleDragEnd}
+                      onClick={onItemClick}
+                    />
+                    <DropIndicator
+                      visible={
+                        dropTarget?.columnId === column.id && dropTarget.index === idx + 1
+                      }
+                    />
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
+
+      {/* Floating Drop Bar — visible during drag for quick column changes.
+          NOTE: HTML Drag & Drop API does not work on mobile touch devices.
+          For Capacitor/mobile, @dnd-kit or manual touch handling will be needed. */}
+      {draggedItemId !== null && (
+        <div className="fixed bottom-20 left-4 right-4 z-40 md:bottom-4 animate-in slide-in-from-bottom-4 fade-in">
+          <div className="flex flex-wrap gap-2 p-2 rounded-xl border bg-background/95 backdrop-blur shadow-lg">
+            {columns.filter((col) => col.id !== draggedItemColumnId).map((column) => (
+              <div
+                key={column.id}
+                onDragOver={(e) => {
+                  e.preventDefault()
+                  e.dataTransfer.dropEffect = "move"
+                }}
+                onDragEnter={() => setFloatingHoverColumn(column.id)}
+                onDragLeave={() => setFloatingHoverColumn((prev) => prev === column.id ? null : prev)}
+                onDrop={(e) => handleFloatingDrop(e, column.id)}
+                className={cn(
+                  "flex-1 min-w-[80px] rounded-lg border-2 border-dashed px-3 py-2 text-center text-sm font-medium transition-colors",
+                  floatingHoverColumn === column.id
+                    ? "border-solid border-primary bg-primary/15 text-primary scale-105"
+                    : "border-primary/30 text-foreground"
+                )}
+              >
+                {column.label}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </>
   )
 }
