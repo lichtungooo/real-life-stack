@@ -30,6 +30,8 @@ import {
   StatCard,
   ActionCard,
   KanbanBoard,
+  KanbanToolbar,
+  applyKanbanFilter,
   CalendarView,
   Card,
   CardContent,
@@ -47,6 +49,7 @@ import {
   type UserData,
   type Module,
   type Post,
+  type KanbanFilter,
 } from "@real-life-stack/toolkit"
 import type { Item, User, DataInterface } from "@real-life-stack/data-interface"
 import { demoItems, demoGroups, demoUsers, demoGroupMembers } from "@real-life-stack/data-interface/demo-data"
@@ -269,7 +272,20 @@ function CalendarViewWrapper() {
 function KanbanView() {
   const { data: tasks } = useItems({ type: "task" })
   const { data: members } = useMembers("group-1")
+  const { data: currentUser } = useCurrentUser()
   const { mutate: updateItem } = useUpdateItem()
+  const { mutate: createItem } = useCreateItem()
+  const [filter, setFilter] = useState<KanbanFilter>({
+    searchText: "",
+    assignedTo: null,
+    myTasksOnly: false,
+    tags: [],
+  })
+
+  const filteredTasks = useMemo(
+    () => applyKanbanFilter(tasks, filter, currentUser?.id),
+    [tasks, filter, currentUser?.id]
+  )
 
   const handleMoveItem = (itemId: string, newStatus: string, position: number) => {
     const item = tasks.find((t) => t.id === itemId)
@@ -291,10 +307,26 @@ function KanbanView() {
     }
   }
 
+  const handleCreateItem = () => {
+    createItem({
+      type: "task",
+      createdBy: currentUser?.id ?? "user-1",
+      data: { title: "Neuer Task", status: "todo", position: tasks.length, tags: [] },
+    })
+  }
+
   return (
     <div className="space-y-4">
-      <KanbanBoard
+      <KanbanToolbar
         items={tasks}
+        users={members}
+        currentUserId={currentUser?.id}
+        onFilterChange={setFilter}
+        onCreateItem={handleCreateItem}
+        onEditColumns={() => console.log("Edit columns")}
+      />
+      <KanbanBoard
+        items={filteredTasks}
         users={members}
         onMoveItem={handleMoveItem}
         onItemClick={(item) => console.log("Clicked:", item.id)}
