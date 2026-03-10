@@ -896,36 +896,68 @@ Welche dieser Einstellungen ein Connector unterstützt, wird über das Feature-I
 }
 ```
 
-### Gruppen-Wechsel
+### Gruppen als Scopes
 
-Ein Nutzer kann Mitglied mehrerer Gruppen sein und zwischen ihnen wechseln:
+Gruppen sind **Scopes** — sie bestimmen, welche Items `getItems()` liefert. Der Connector entscheidet intern, wie die Zuordnung funktioniert. Die UI weiß nur: "aktuelle Gruppe" → "diese Items".
+
+**Warum kein `groupId` auf Items?** Verschiedene Backends organisieren die Zuordnung fundamental verschieden:
+
+| Backend | Wie Items zur Gruppe gehören |
+|---------|-------------------------------|
+| WoT/Automerge | Items leben *in* einem verschlüsselten CRDT-Space. Es gibt keine ID — das Dokument *ist* die Gruppe |
+| GraphQL/REST | Server filtert serverseitig nach Gruppen-Zugehörigkeit |
+| Mock/Local | Client-seitiges Mapping (`groupItems: Record<groupId, itemId[]>`) |
+
+Ein `groupId`-Feld auf Item-Ebene würde ein flaches Datenmodell erzwingen, das zu verschlüsselten Spaces nicht passt.
+
+#### Scopes: Alles + Gruppen
+
+Der WorkspaceSwitcher zeigt nur zwei Arten von Einträgen:
 
 ```typescript
-function GroupSwitcher() {
-  const { data: groups, isLoading } = useQuery(['groups'], () => connector.getGroups())
+getGroups() → [
+  { id: "all",       name: "Alles",       data: { scope: "aggregate", modules: ["feed", "kanban", "calendar", "map"] } },
+  { id: "utopia",    name: "Utopia",      data: { scope: "group", modules: ["feed", "kanban", "calendar", "map"] } },
+  { id: "it4change", name: "IT4Change",   data: { scope: "group", modules: ["feed", "kanban"] } },
+]
+```
 
-  if (isLoading) return <Spinner />
+| Scope | Bedeutung |
+|-------|-----------|
+| `aggregate` | Alle Items aus allen Quellen aggregiert (persönliche, von Freunden, aus Gruppen) |
+| `group` | Echte Gruppe (Group Space mit Mitgliedern) |
 
-  return (
-    <select onChange={(e) => connector.setCurrentGroup(e.target.value)}>
-      {groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
-    </select>
-  )
-}
+Persönliche Items und von Freunden geteilte Items erscheinen im "Alles"-Scope — sie brauchen keine eigenen Einträge im Switcher. Der Connector kann intern unterscheiden, woher Items kommen, aber die UI muss das nicht wissen.
 
-// Items reagieren automatisch auf Gruppenwechsel
-function ItemList() {
-  const { data: items, isLoading, hasMore, loadMore } = useItemsQuery()
+**Vorteil:** Einfache UX — Nutzer sehen nur "Alles" und ihre Gruppen. Kein Erklärungsbedarf für abstrakte Konzepte wie "Persönlich" oder "Freunde".
 
-  if (isLoading) return <Spinner />
+#### Gruppen-Wechsel
 
-  return (
-    <>
-      {items.map(item => <ItemCard key={item.id} item={item} />)}
-      {hasMore && <button onClick={loadMore}>Weitere laden</button>}
-    </>
-  )
-}
+```typescript
+// UI wechselt den Scope
+connector.setCurrentGroup("utopia")
+// getItems() liefert jetzt nur Items aus dem Utopia-Space
+
+connector.setCurrentGroup("all")
+// getItems() aggregiert über alle Scopes (persönlich + Freunde + alle Gruppen)
+```
+
+#### Mapping zu WoT-Sharing-Patterns
+
+Die Scopes mappen direkt auf die drei Sharing-Patterns aus dem Web of Trust:
+
+- **`personal`** → Persönlicher Automerge-Space (eigenes CRDT)
+- **`friends`** → Selective Sharing (Item-Keys, 1:1 Delivery)
+- **`group`** → Group Spaces (verschlüsselte CRDTs mit Mitgliederverwaltung)
+- **`aggregate`** → SourceAggregator über alle obigen
+
+#### Module pro Gruppe
+
+Jede Gruppe definiert über `data.modules`, welche UI-Module verfügbar sind. Der WorkspaceSwitcher passt die ModuleTabs beim Gruppenwechsel dynamisch an.
+
+```json
+{ "id": "utopia", "name": "Utopia", "data": { "scope": "group", "modules": ["feed", "kanban", "calendar", "map"] } }
+{ "id": "it4change", "name": "IT4Change", "data": { "scope": "group", "modules": ["feed", "kanban"] } }
 ```
 
 ### Simple Apps
@@ -1118,6 +1150,7 @@ Diese Aspekte werden in der Implementierung geklärt:
 - **Hooks + ConnectorProvider im Toolkit** → Hooks (`useItems`, `useItem`, `useGroups`, `useCurrentUser`, `useCreateItem`, `useUpdateItem`) und der `ConnectorProvider` (React Context) leben im Toolkit-Package — nicht in der App. Jede App übergibt ihren Connector via `<ConnectorProvider connector={...}>`. *(Entschieden: 7. März 2026, mit Sebastian)*
 - **Kanban-Spalten konfigurierbar** → Kanban-Spalten sind nicht hardcoded (Todo/Doing/Done), sondern konfigurierbar. Das Feature-Item meldet `kanban.customColumns: true`. *(Entschieden: 7. März 2026, mit Sebastian)*
 - **BaseConnector** → Abstrakte Klasse mit sinnvollen Default-Implementierungen für alle optionalen Methoden (Groups, Auth, Sources). Ein einfacher Connector erbt von `BaseConnector` und implementiert nur die CRUD-Methoden für Items. Das DataInterface bleibt unverändert — die BaseConnector-Klasse ist eine Convenience, kein Zwang. *(Entschieden: 7. März 2026, mit Sebastian und Ulf)*
+- **Gruppen als Scopes / Item-Zuordnung** → Items haben kein `groupId`-Feld. `setCurrentGroup()` setzt den Scope, `getItems()` liefert nur Items dieses Scopes. Der Connector entscheidet intern über die Zuordnung. "Persönlich", "Freunde" und "Alles" werden als spezielle Gruppen modelliert (`data.scope: "personal" | "friends" | "aggregate"`). Das Interface ändert sich nicht. **Begründung:** Bei WoT leben Items *in* verschlüsselten CRDT-Spaces — sie haben kein `groupId`, weil sie außerhalb des Space nicht existieren. Ein flaches Datenmodell mit `groupId` auf Item-Ebene würde zu diesem Backend nicht passen. *(Entschieden: 10. März 2026)*
 
 ---
 

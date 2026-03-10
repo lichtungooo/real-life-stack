@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useCallback, useEffect } from "react"
 import { Routes, Route } from "react-router-dom"
 import {
   Newspaper,
@@ -25,6 +25,7 @@ import {
   UserMenu,
   ModuleTabs,
   BottomNav,
+  ConnectorSwitcher,
   SimplePostWidget,
   PostCard,
   StatCard,
@@ -45,22 +46,37 @@ import {
   useGroups,
   useCurrentUser,
   useCreateItem,
+  useConnector,
   type Workspace,
   type UserData,
   type Module,
   type Post,
   type KanbanFilter,
+  type ConnectorOption,
 } from "@real-life-stack/toolkit"
-import type { Item, User, DataInterface } from "@real-life-stack/data-interface"
-import { demoItems, demoGroups, demoUsers, demoGroupMembers } from "@real-life-stack/data-interface/demo-data"
+import type { Item, User, DataInterface, GroupManager } from "@real-life-stack/data-interface"
+import { hasGroups } from "@real-life-stack/data-interface"
+import { demoItems, demoGroups, demoUsers, demoGroupMembers, demoGroupItems } from "@real-life-stack/data-interface/demo-data"
 import { MockConnector } from "@real-life-stack/mock-connector"
 import { LocalConnector } from "@real-life-stack/local-connector"
 
-const modules: Module[] = [
-  { id: "feed", label: "Feed", icon: Newspaper },
-  { id: "map", label: "Karte", icon: Map },
-  { id: "calendar", label: "Kalender", icon: Calendar },
-  { id: "kanban", label: "Kanban", icon: Columns3 },
+const MODULE_ICONS: Record<string, typeof Newspaper> = {
+  feed: Newspaper,
+  map: Map,
+  calendar: Calendar,
+  kanban: Columns3,
+}
+
+const MODULE_LABELS: Record<string, string> = {
+  feed: "Feed",
+  map: "Karte",
+  calendar: "Kalender",
+  kanban: "Kanban",
+}
+
+const CONNECTOR_OPTIONS: ConnectorOption[] = [
+  { id: "mock", name: "Mock", description: "In-Memory, kein Speichern" },
+  { id: "local", name: "Local", description: "IndexedDB, persistent" },
 ]
 
 // Helper: resolve user info from members list
@@ -335,7 +351,8 @@ function KanbanView() {
   )
 }
 
-function Home() {
+function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: string; onConnectorChange: (id: string) => void }) {
+  const connector = useConnector()
   const { data: groups } = useGroups()
   const { data: currentUser } = useCurrentUser()
 
@@ -363,10 +380,38 @@ function Home() {
   const [activeModule, setActiveModule] = useState("feed")
   const [isDark, setIsDark] = useState(false)
 
-  // Set first workspace as active once loaded
-  if (!activeWorkspace && workspaces.length > 0) {
-    setActiveWorkspace(workspaces[0])
-  }
+  // Set first workspace as active once loaded and sync with connector
+  useEffect(() => {
+    if (!activeWorkspace && workspaces.length > 0) {
+      setActiveWorkspace(workspaces[0])
+      if (hasGroups(connector)) {
+        (connector as DataInterface & GroupManager).setCurrentGroup(workspaces[0].id)
+      }
+    }
+  }, [activeWorkspace, workspaces, connector])
+
+  // Derive available modules from active group's data.modules
+  const activeGroup = groups.find((g) => g.id === activeWorkspace?.id)
+  const groupModuleIds = (activeGroup?.data?.modules as string[] | undefined) ?? ["feed", "kanban", "calendar", "map"]
+  const modules: Module[] = useMemo(
+    () => groupModuleIds
+      .filter((id) => MODULE_ICONS[id])
+      .map((id) => ({ id, label: MODULE_LABELS[id] ?? id, icon: MODULE_ICONS[id] })),
+    [groupModuleIds.join(",")]
+  )
+
+  // When switching workspace, update connector scope and reset module if needed
+  const handleWorkspaceChange = useCallback((workspace: Workspace) => {
+    setActiveWorkspace(workspace)
+    if (hasGroups(connector)) {
+      (connector as DataInterface & GroupManager).setCurrentGroup(workspace.id)
+    }
+    const group = groups.find((g) => g.id === workspace.id)
+    const mods = (group?.data?.modules as string[] | undefined) ?? ["feed", "kanban", "calendar", "map"]
+    if (!mods.includes(activeModule)) {
+      setActiveModule(mods[0] ?? "feed")
+    }
+  }, [connector, groups, activeModule])
 
   const handleModuleChange = (moduleId: string) => {
     setActiveModule(moduleId)
@@ -385,7 +430,7 @@ function Home() {
             <WorkspaceSwitcher
               workspaces={workspaces}
               activeWorkspace={activeWorkspace}
-              onWorkspaceChange={setActiveWorkspace}
+              onWorkspaceChange={handleWorkspaceChange}
               onCreateWorkspace={() => console.log("Create workspace")}
             />
           )}
@@ -398,6 +443,11 @@ function Home() {
           />
         </NavbarCenter>
         <NavbarEnd>
+          <ConnectorSwitcher
+            connectors={CONNECTOR_OPTIONS}
+            activeConnector={activeConnectorId}
+            onConnectorChange={onConnectorChange}
+          />
           <Button
             variant="ghost"
             size="icon"
@@ -419,11 +469,13 @@ function Home() {
         </NavbarEnd>
       </Navbar>
 
-      <AppShellMain withBottomNav className={`container mx-auto px-4 pt-6 ${activeModule === "kanban" ? "max-w-5xl" : "max-w-2xl"}`}>
-        {activeModule === "feed" && <FeedView />}
-        {activeModule === "kanban" && <KanbanView />}
-        {activeModule === "map" && <MapView />}
-        {activeModule === "calendar" && <CalendarViewWrapper />}
+      <AppShellMain withBottomNav>
+        <div className={`container mx-auto px-4 pt-6 ${activeModule === "kanban" ? "max-w-5xl" : "max-w-2xl"}`}>
+          {activeModule === "feed" && <FeedView />}
+          {activeModule === "kanban" && <KanbanView />}
+          {activeModule === "map" && <MapView />}
+          {activeModule === "calendar" && <CalendarViewWrapper />}
+        </div>
       </AppShellMain>
 
       <BottomNav
@@ -435,34 +487,34 @@ function Home() {
   )
 }
 
-// Connector selection via URL parameter: ?connector=local or ?connector=mock (default)
-function createConnector(): DataInterface {
-  const params = new URLSearchParams(window.location.search)
-  const type = params.get("connector")
+const demoData = {
+  items: demoItems,
+  groups: demoGroups,
+  users: demoUsers,
+  groupMembers: demoGroupMembers,
+  groupItems: demoGroupItems,
+}
 
+function createConnector(type: string): DataInterface {
   if (type === "local") {
-    return new LocalConnector({
-      items: demoItems,
-      groups: demoGroups,
-      users: demoUsers,
-      groupMembers: demoGroupMembers,
-    })
+    return new LocalConnector(demoData)
   }
-
   return new MockConnector()
 }
 
-// Preserve connector across HMR — avoid losing in-memory state
-const connector: DataInterface = import.meta.hot?.data?.connector ?? createConnector()
-if (import.meta.hot) {
-  import.meta.hot.data.connector = connector
+function getInitialConnectorId(): string {
+  const params = new URLSearchParams(window.location.search)
+  return params.get("connector") ?? "mock"
 }
 
 export default function App() {
+  const [connectorId, setConnectorId] = useState(getInitialConnectorId)
+  const connector = useMemo(() => createConnector(connectorId), [connectorId])
+
   return (
-    <ConnectorProvider connector={connector}>
+    <ConnectorProvider connector={connector} key={connectorId}>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Home activeConnectorId={connectorId} onConnectorChange={setConnectorId} />} />
       </Routes>
     </ConnectorProvider>
   )

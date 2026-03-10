@@ -20,6 +20,7 @@ interface StoredState {
   groups: Group[]
   users: User[]
   groupMembers: Record<string, string[]>
+  groupItems: Record<string, string[]>
   currentUserId: string | null
   currentGroupId: string | null
   nextItemId: number
@@ -51,6 +52,7 @@ export class LocalConnector implements FullConnector {
   private groups: Group[] = []
   private users: User[] = []
   private groupMembers: Record<string, string[]> = {}
+  private groupItems: Record<string, string[]> = {}
   private currentGroup: Group | null = null
   private currentUser: User | null = null
   private nextItemId = 100
@@ -69,6 +71,7 @@ export class LocalConnector implements FullConnector {
     groups: Group[]
     users: User[]
     groupMembers: Record<string, string[]>
+    groupItems?: Record<string, string[]>
   }) {
     this.seedData = seed
       ? {
@@ -76,6 +79,7 @@ export class LocalConnector implements FullConnector {
           groups: seed.groups,
           users: seed.users,
           groupMembers: seed.groupMembers,
+          groupItems: seed.groupItems ?? {},
           currentUserId: seed.users[0]?.id ?? null,
           currentGroupId: seed.groups[0]?.id ?? null,
           nextItemId: 100,
@@ -92,6 +96,7 @@ export class LocalConnector implements FullConnector {
       this.groups = stored.groups
       this.users = stored.users
       this.groupMembers = stored.groupMembers
+      this.groupItems = stored.groupItems ?? {}
       this.nextItemId = stored.nextItemId
       this.currentUser = stored.currentUserId
         ? this.users.find((u) => u.id === stored.currentUserId) ?? null
@@ -104,6 +109,7 @@ export class LocalConnector implements FullConnector {
       this.groups = [...this.seedData.groups]
       this.users = [...this.seedData.users]
       this.groupMembers = { ...this.seedData.groupMembers }
+      this.groupItems = { ...this.seedData.groupItems }
       this.nextItemId = this.seedData.nextItemId
       this.currentUser = this.seedData.currentUserId
         ? this.users.find((u) => u.id === this.seedData!.currentUserId) ?? null
@@ -147,7 +153,10 @@ export class LocalConnector implements FullConnector {
 
   setCurrentGroup(id: string): void {
     const group = this.groups.find((g) => g.id === id)
-    if (group) this.currentGroup = group
+    if (group) {
+      this.currentGroup = group
+      this.notifyObservers()
+    }
   }
 
   async createGroup(name: string, data?: Record<string, unknown>): Promise<Group> {
@@ -200,9 +209,23 @@ export class LocalConnector implements FullConnector {
 
   // --- Items ---
 
+  private getScopedItems(): Item[] {
+    const groupId = this.currentGroup?.id
+    const scope = (this.currentGroup?.data?.scope as string) ?? "group"
+
+    if (!groupId || scope === "aggregate") {
+      return this.items
+    }
+
+    const itemIds = this.groupItems[groupId]
+    if (!itemIds) return this.items.filter((i) => i.type === "feature")
+    return this.items.filter((i) => itemIds.includes(i.id) || i.type === "feature")
+  }
+
   async getItems(filter?: ItemFilter): Promise<Item[]> {
-    if (!filter) return this.items
-    return this.items.filter((item) => matchesFilter(item, filter))
+    const scoped = this.getScopedItems()
+    if (!filter) return scoped
+    return scoped.filter((item) => matchesFilter(item, filter))
   }
 
   async getItem(id: string): Promise<Item | null> {
@@ -212,7 +235,8 @@ export class LocalConnector implements FullConnector {
   observe(filter: ItemFilter): Observable<Item[]> {
     const key = JSON.stringify(filter)
     if (!this.itemObservables.has(key)) {
-      const filtered = this.items.filter((item) => matchesFilter(item, filter))
+      const scoped = this.getScopedItems()
+      const filtered = scoped.filter((item) => matchesFilter(item, filter))
       this.itemObservables.set(key, createObservable(filtered))
     }
     return this.itemObservables.get(key)!
@@ -233,6 +257,11 @@ export class LocalConnector implements FullConnector {
       createdAt: new Date(),
     }
     this.items.push(newItem)
+    const groupId = this.currentGroup?.id
+    if (groupId) {
+      if (!this.groupItems[groupId]) this.groupItems[groupId] = []
+      this.groupItems[groupId].push(newItem.id)
+    }
     this.notifyObservers()
     await this.persist()
     this.broadcast({ type: "items-changed" })
@@ -333,6 +362,7 @@ export class LocalConnector implements FullConnector {
     this.groups = []
     this.users = []
     this.groupMembers = {}
+    this.groupItems = {}
     this.currentUser = null
     this.currentGroup = null
     this.nextItemId = 100
@@ -348,6 +378,7 @@ export class LocalConnector implements FullConnector {
       groups: this.groups,
       users: this.users,
       groupMembers: this.groupMembers,
+      groupItems: this.groupItems,
       currentUserId: this.currentUser?.id ?? null,
       currentGroupId: this.currentGroup?.id ?? null,
       nextItemId: this.nextItemId,
@@ -382,9 +413,10 @@ export class LocalConnector implements FullConnector {
   // --- Internal: Observable Notification ---
 
   private notifyObservers(): void {
+    const scoped = this.getScopedItems()
     for (const [key, observable] of this.itemObservables) {
       const filter: ItemFilter = JSON.parse(key)
-      const filtered = this.items.filter((item) => matchesFilter(item, filter))
+      const filtered = scoped.filter((item) => matchesFilter(item, filter))
       observable.set(filtered)
     }
     for (const [id, observable] of this.singleItemObservables) {

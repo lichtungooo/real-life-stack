@@ -12,7 +12,7 @@ export function Navbar({ children, className }: NavbarProps) {
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 w-full",
+        "shrink-0 z-40 w-full",
         "glass-navbar",
         "shadow-navbar",
         className

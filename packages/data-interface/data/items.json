@@ -3,29 +3,29 @@
     "id": "task-1",
     "type": "task",
     "createdAt": "2026-03-01T00:00:00.000Z",
-    "createdBy": "user-1",
+    "createdBy": "user-3",
     "data": {
-      "title": "Beete vorbereiten",
-      "description": "Erde umgraben und Kompost einarbeiten",
-      "status": "todo",
+      "title": "KanbanBoard Drag & Drop",
+      "description": "Touch-Events und Pointer-Events für mobiles Drag & Drop implementieren",
+      "status": "doing",
       "position": 0,
-      "tags": ["garten"]
+      "tags": ["toolkit", "ui"]
     },
-    "relations": [{ "predicate": "assignedTo", "target": "global:user-2" }]
+    "relations": [{ "predicate": "assignedTo", "target": "global:user-3" }]
   },
   {
     "id": "task-2",
     "type": "task",
     "createdAt": "2026-03-02T00:00:00.000Z",
-    "createdBy": "user-2",
+    "createdBy": "user-1",
     "data": {
-      "title": "Samen bestellen",
-      "description": "Tomaten, Zucchini, Kräuter",
-      "status": "doing",
+      "title": "Gruppen als Scopes implementieren",
+      "description": "setCurrentGroup() filtert getItems() nach aktuellem Scope",
+      "status": "done",
       "position": 0,
-      "tags": ["garten", "einkauf"]
+      "tags": ["data-interface", "architektur"]
     },
-    "relations": [{ "predicate": "assignedTo", "target": "global:user-2" }]
+    "relations": [{ "predicate": "assignedTo", "target": "global:user-1" }]
   },
   {
     "id": "task-3",
@@ -33,11 +33,11 @@
     "createdAt": "2026-03-03T00:00:00.000Z",
     "createdBy": "user-1",
     "data": {
-      "title": "Wasserschlauch reparieren",
-      "description": "Leck am Verbindungsstück abdichten",
-      "status": "done",
-      "position": 0,
-      "tags": ["infrastruktur"]
+      "title": "CalendarView in Toolkit verschieben",
+      "description": "Kalender-Komponente aus der Reference App ins Toolkit Package extrahieren",
+      "status": "todo",
+      "position": 1,
+      "tags": ["toolkit", "refactoring"]
     },
     "relations": [{ "predicate": "assignedTo", "target": "global:user-3" }]
   },
@@ -45,28 +45,127 @@
     "id": "task-4",
     "type": "task",
     "createdAt": "2026-03-04T00:00:00.000Z",
-    "createdBy": "user-3",
+    "createdBy": "user-4",
     "data": {
-      "title": "Gartenplan zeichnen",
-      "description": "Welches Beet bekommt welche Pflanzen?",
+      "title": "GraphQL Subscriptions testen",
+      "description": "WebSocket-Verbindung mit Mercurius und graphql-ws verifizieren",
       "status": "todo",
-      "position": 1,
-      "tags": ["planung"]
-    }
+      "position": 2,
+      "tags": ["graphql", "backend"]
+    },
+    "relations": [{ "predicate": "assignedTo", "target": "global:user-4" }]
   },
   {
     "id": "task-5",
     "type": "task",
     "createdAt": "2026-03-05T00:00:00.000Z",
+    "createdBy": "user-2",
+    "data": {
+      "title": "Schein-Design finalisieren",
+      "description": "Vorder- und Rückseite der Zeitgutscheine mit Silberdruck-Vorlage fertigstellen",
+      "status": "doing",
+      "position": 0,
+      "tags": ["design", "druck"]
+    },
+    "relations": [{ "predicate": "assignedTo", "target": "global:user-2" }]
+  },
+  {
+    "id": "task-6",
+    "type": "task",
+    "createdAt": "2026-03-05T00:00:00.000Z",
     "createdBy": "user-1",
     "data": {
-      "title": "Kompost umsetzen",
-      "description": "Der Kompost muss umgesetzt und belüftet werden",
-      "status": "doing",
+      "title": "Online-Shop Bestellflow",
+      "description": "Personalisierte Gutscheine bestellen mit Logo-Upload und Textanpassung",
+      "status": "todo",
       "position": 1,
-      "tags": ["garten"]
+      "tags": ["shop", "feature"]
     },
     "relations": [{ "predicate": "assignedTo", "target": "global:user-1" }]
+  },
+  {
+    "id": "task-7",
+    "type": "task",
+    "createdAt": "2026-03-03T00:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Multiplikatoren-Pakete versenden",
+      "description": "50 Scheine pro Multiplikator vorbereiten und verschicken — erste 20 Pakete",
+      "status": "doing",
+      "position": 2,
+      "tags": ["launch", "logistik"]
+    },
+    "relations": [{ "predicate": "assignedTo", "target": "global:user-5" }]
+  },
+  {
+    "id": "task-8",
+    "type": "task",
+    "createdAt": "2026-03-01T00:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "MessagingAdapter End-to-End Test",
+      "description": "WebSocket Relay mit Heartbeat, ACK und Outbox-Pattern testen",
+      "status": "done",
+      "position": 0,
+      "tags": ["messaging", "test"]
+    },
+    "relations": [{ "predicate": "assignedTo", "target": "global:user-1" }]
+  },
+  {
+    "id": "task-9",
+    "type": "task",
+    "createdAt": "2026-03-06T00:00:00.000Z",
+    "createdBy": "user-2",
+    "data": {
+      "title": "Migration auf automerge-repo",
+      "description": "Automerge-repo für automatische Persistenz und Sync statt manuellem save/load",
+      "status": "todo",
+      "position": 1,
+      "tags": ["crdt", "architektur"]
+    },
+    "relations": [{ "predicate": "assignedTo", "target": "global:user-1" }]
+  },
+  {
+    "id": "task-10",
+    "type": "task",
+    "createdAt": "2026-03-04T00:00:00.000Z",
+    "createdBy": "user-5",
+    "data": {
+      "title": "Beete vorbereiten",
+      "description": "Erde umgraben und Kompost einarbeiten für die Frühjahrspflanzung",
+      "status": "todo",
+      "position": 0,
+      "tags": ["garten", "frühling"]
+    },
+    "relations": [{ "predicate": "assignedTo", "target": "global:user-5" }]
+  },
+  {
+    "id": "task-11",
+    "type": "task",
+    "createdAt": "2026-03-05T00:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Samen bestellen",
+      "description": "Tomaten, Zucchini, Kräuter — samenfeste Sorten von Dreschflegel",
+      "status": "doing",
+      "position": 1,
+      "tags": ["garten", "einkauf"]
+    },
+    "relations": [{ "predicate": "assignedTo", "target": "global:user-1" }]
+  },
+  {
+    "id": "task-12",
+    "type": "task",
+    "createdAt": "2026-03-06T00:00:00.000Z",
+    "createdBy": "user-3",
+    "data": {
+      "title": "Wasserschlauch reparieren",
+      "description": "Leck am Verbindungsstück abdichten",
+      "status": "done",
+      "position": 2,
+      "tags": ["infrastruktur"]
+    },
+    "relations": [{ "predicate": "assignedTo", "target": "global:user-3" }]
   },
   {
     "id": "event-1",
@@ -74,61 +173,127 @@
     "createdAt": "2026-03-01T00:00:00.000Z",
     "createdBy": "user-1",
     "data": {
-      "title": "Pflanzaktion",
-      "description": "Gemeinsam Frühjahrspflanzen setzen",
-      "start": "2026-03-15T10:00",
-      "end": "2026-03-15T14:00",
-      "location": { "lat": 50.11, "lng": 8.68 },
-      "address": "Gemeinschaftsgarten, Musterstr. 5",
+      "title": "RLS Weekly",
+      "description": "Wöchentliches Standup — Stand der Module, offene Fragen, nächste Schritte",
+      "start": "2026-03-10T10:00",
+      "end": "2026-03-10T11:00",
       "status": "confirmed",
-      "tags": ["garten", "gemeinschaft"]
+      "tags": ["meeting", "weekly"]
     }
   },
   {
     "id": "event-2",
     "type": "event",
     "createdAt": "2026-03-02T00:00:00.000Z",
+    "createdBy": "user-3",
+    "data": {
+      "title": "Storybook Review",
+      "description": "Gemeinsam die neuen Toolkit-Komponenten in Storybook durchgehen",
+      "start": "2026-03-14T14:00",
+      "end": "2026-03-14T15:30",
+      "status": "confirmed",
+      "tags": ["review", "ui"]
+    }
+  },
+  {
+    "id": "event-3",
+    "type": "event",
+    "createdAt": "2026-03-03T00:00:00.000Z",
     "createdBy": "user-2",
     "data": {
-      "title": "Gartenplanung",
-      "description": "Bepflanzungsplan für die Saison besprechen",
-      "start": "2026-03-20T18:00",
-      "end": "2026-03-20T20:00",
+      "title": "Money Printer Launch",
+      "description": "Offizielle Vorstellung der Zeitgutscheine — erste Scheine an Multiplikatoren",
+      "start": "2026-03-29T18:00",
+      "end": "2026-03-29T21:00",
+      "location": { "lat": 50.56, "lng": 9.68 },
+      "address": "Bad Salzschlirf",
       "status": "confirmed",
-      "tags": ["planung"]
+      "tags": ["launch", "event"]
+    }
+  },
+  {
+    "id": "event-4",
+    "type": "event",
+    "createdAt": "2026-03-04T00:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Pflanzaktion",
+      "description": "Gemeinsam Frühjahrspflanzen setzen — bitte Handschuhe mitbringen",
+      "start": "2026-03-22T10:00",
+      "end": "2026-03-22T14:00",
+      "location": { "lat": 50.11, "lng": 8.68 },
+      "address": "Gemeinschaftsgarten Sonnenhügel, Am Sonnenhügel 5",
+      "status": "confirmed",
+      "tags": ["garten", "gemeinschaft"]
+    }
+  },
+  {
+    "id": "event-5",
+    "type": "event",
+    "createdAt": "2026-03-05T00:00:00.000Z",
+    "createdBy": "user-4",
+    "data": {
+      "title": "WoT Demo Session",
+      "description": "Live-Demo: Identität erstellen, Attestierung austauschen, Relay-Verbindung",
+      "start": "2026-03-18T16:00",
+      "end": "2026-03-18T17:30",
+      "status": "confirmed",
+      "tags": ["demo", "wot"]
     }
   },
   {
     "id": "post-1",
     "type": "post",
-    "createdAt": "2026-03-06T10:00:00.000Z",
-    "createdBy": "user-2",
+    "createdAt": "2026-03-08T10:00:00.000Z",
+    "createdBy": "user-3",
     "data": {
-      "title": "Spaziergang im Park",
-      "content": "Wer hat Lust auf einen gemeinsamen Spaziergang im Park am Samstag? Treffpunkt wäre 14 Uhr am Eingang.",
-      "tags": ["freizeit"]
+      "title": "Feature-Komponenten umstrukturiert",
+      "content": "Habe die UI-Komponenten von ui/ nach primitives/ verschoben und das KanbanBoard komplett überarbeitet. Drag & Drop funktioniert jetzt auch auf Touch-Geräten. Bitte mal testen!",
+      "tags": ["update", "toolkit"]
     }
   },
   {
     "id": "post-2",
     "type": "post",
-    "createdAt": "2026-03-05T14:00:00.000Z",
-    "createdBy": "user-3",
+    "createdAt": "2026-03-07T14:00:00.000Z",
+    "createdBy": "user-1",
     "data": {
-      "title": "Hilfe beim Umzug",
-      "content": "Suche jemanden der mir beim Umzug nächste Woche helfen kann. Biete Pizza und Getränke als Dankeschön!",
-      "tags": ["hilfe"]
+      "title": "Connector-Architektur bewährt sich",
+      "content": "Wir haben jetzt Mock, Local und GraphQL Connector — alle gegen dasselbe Interface. Der Wechsel zur Laufzeit funktioniert. Das validiert unsere Architektur-Entscheidung von Anfang an.",
+      "tags": ["architektur", "milestone"]
     }
   },
   {
     "id": "post-3",
     "type": "post",
-    "createdAt": "2026-03-04T09:00:00.000Z",
-    "createdBy": "user-4",
+    "createdAt": "2026-03-06T09:00:00.000Z",
+    "createdBy": "user-2",
     "data": {
-      "title": "Urban Gardening Tipps",
-      "content": "Hat jemand Erfahrung mit Urban Gardening? Ich möchte meinen Balkon begrünen und suche Tipps für Anfänger.",
-      "tags": ["garten", "frage"]
+      "title": "Erste Scheine gedruckt!",
+      "content": "Die ersten Zeitgutscheine sind aus der Druckerei. Silberdruck sieht fantastisch aus. Jetzt geht es an die Multiplikatoren-Pakete — 100 Leute bekommen je 50 Scheine zum Verschenken.",
+      "tags": ["launch", "money-printer"]
+    }
+  },
+  {
+    "id": "post-4",
+    "type": "post",
+    "createdAt": "2026-03-09T11:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "E2E-Verschlüsselung steht",
+      "content": "Der AutomergeReplicationAdapter funktioniert: Automerge CRDT + AES-256-GCM Verschlüsselung + GroupKeyService. Spaces werden verschlüsselt über den Relay gesynct. 31 Tests passen.",
+      "tags": ["wot", "crypto", "milestone"]
+    }
+  },
+  {
+    "id": "post-5",
+    "type": "post",
+    "createdAt": "2026-03-05T08:00:00.000Z",
+    "createdBy": "user-5",
+    "data": {
+      "title": "Gartenplan für die Saison",
+      "content": "Habe einen Bepflanzungsplan gemacht: Beet 1 Tomaten & Basilikum, Beet 2 Zucchini & Kürbis, Beet 3 Kräuterspirale. Wer hat noch Ideen?",
+      "tags": ["garten", "planung"]
     }
   },
   {
@@ -137,10 +302,10 @@
     "createdAt": "2026-02-01T00:00:00.000Z",
     "createdBy": "user-1",
     "data": {
-      "title": "Gemeinschaftsgarten",
-      "description": "Unser Garten in der Musterstraße",
+      "title": "Gemeinschaftsgarten Sonnenhügel",
+      "description": "Unser Garten — 12 Beete, Kräuterspirale, Kompost und Sitzecke",
       "location": { "lat": 50.11, "lng": 8.68 },
-      "address": "Musterstr. 5, 60000 Frankfurt",
+      "address": "Am Sonnenhügel 5, 60000 Frankfurt",
       "tags": ["garten"]
     }
   },
@@ -148,13 +313,13 @@
     "id": "place-2",
     "type": "place",
     "createdAt": "2026-02-01T00:00:00.000Z",
-    "createdBy": "user-2",
+    "createdBy": "user-5",
     "data": {
-      "title": "Café Nachbar",
-      "description": "Gemütliches Café mit Gemeinschaftsraum",
+      "title": "Saatgut-Bibliothek",
+      "description": "Samenfeste Sorten tauschen und ausleihen",
       "location": { "lat": 50.112, "lng": 8.685 },
       "address": "Nachbarweg 12, 60000 Frankfurt",
-      "tags": ["treffpunkt"]
+      "tags": ["garten", "sharing"]
     }
   },
   {

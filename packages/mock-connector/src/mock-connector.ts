@@ -11,13 +11,14 @@ import type {
   Source,
 } from "@real-life-stack/data-interface"
 import { createObservable, matchesFilter } from "@real-life-stack/data-interface"
-import { demoItems, demoGroups, demoUsers, demoGroupMembers } from "@real-life-stack/data-interface/demo-data"
+import { demoItems, demoGroups, demoUsers, demoGroupMembers, demoGroupItems } from "@real-life-stack/data-interface/demo-data"
 
 export class MockConnector implements FullConnector {
   private items: Item[]
   private groups: Group[]
   private users: User[]
   private groupMembers: Record<string, string[]>
+  private groupItems: Record<string, string[]>
   private currentGroup: Group | null
   private currentUser: User | null
   private authState: ReturnType<typeof createObservable<AuthState>>
@@ -30,6 +31,7 @@ export class MockConnector implements FullConnector {
     this.groups = [...demoGroups]
     this.users = [...demoUsers]
     this.groupMembers = { ...demoGroupMembers }
+    this.groupItems = { ...demoGroupItems }
     this.currentGroup = this.groups[0] ?? null
     this.currentUser = this.users[0] ?? null
     this.authState = createObservable<AuthState>(
@@ -60,7 +62,10 @@ export class MockConnector implements FullConnector {
 
   setCurrentGroup(id: string): void {
     const group = this.groups.find((g) => g.id === id)
-    if (group) this.currentGroup = group
+    if (group) {
+      this.currentGroup = group
+      this.notifyObservers()
+    }
   }
 
   async createGroup(name: string, data?: Record<string, unknown>): Promise<Group> {
@@ -105,9 +110,25 @@ export class MockConnector implements FullConnector {
 
   // --- Items ---
 
+  private getScopedItems(): Item[] {
+    const groupId = this.currentGroup?.id
+    const scope = (this.currentGroup?.data?.scope as string) ?? "group"
+
+    if (!groupId || scope === "aggregate") {
+      // "Alles" scope: return all items (except feature items which are always global)
+      return this.items
+    }
+
+    // For specific scopes (personal, friends, group-*): filter by groupItems mapping
+    const itemIds = this.groupItems[groupId]
+    if (!itemIds) return this.items.filter((i) => i.type === "feature")
+    return this.items.filter((i) => itemIds.includes(i.id) || i.type === "feature")
+  }
+
   async getItems(filter?: ItemFilter): Promise<Item[]> {
-    if (!filter) return this.items
-    return this.items.filter((item) => matchesFilter(item, filter))
+    const scoped = this.getScopedItems()
+    if (!filter) return scoped
+    return scoped.filter((item) => matchesFilter(item, filter))
   }
 
   async getItem(id: string): Promise<Item | null> {
@@ -117,7 +138,8 @@ export class MockConnector implements FullConnector {
   observe(filter: ItemFilter): Observable<Item[]> {
     const key = JSON.stringify(filter)
     if (!this.itemObservables.has(key)) {
-      const filtered = this.items.filter((item) => matchesFilter(item, filter))
+      const scoped = this.getScopedItems()
+      const filtered = scoped.filter((item) => matchesFilter(item, filter))
       this.itemObservables.set(key, createObservable(filtered))
     }
     return this.itemObservables.get(key)!
@@ -138,6 +160,14 @@ export class MockConnector implements FullConnector {
       createdAt: new Date(),
     }
     this.items.push(newItem)
+
+    // Register item in current group's scope
+    const groupId = this.currentGroup?.id
+    if (groupId && groupId !== "all") {
+      if (!this.groupItems[groupId]) this.groupItems[groupId] = []
+      this.groupItems[groupId].push(newItem.id)
+    }
+
     this.notifyObservers()
     return newItem
   }
@@ -225,9 +255,10 @@ export class MockConnector implements FullConnector {
   // --- Internal ---
 
   private notifyObservers(): void {
+    const scoped = this.getScopedItems()
     for (const [key, observable] of this.itemObservables) {
       const filter: ItemFilter = JSON.parse(key)
-      const filtered = this.items.filter((item) => matchesFilter(item, filter))
+      const filtered = scoped.filter((item) => matchesFilter(item, filter))
       observable.set(filtered)
     }
     for (const [id, observable] of this.singleItemObservables) {

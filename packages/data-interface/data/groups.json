@@ -1,49 +1,62 @@
 [
   {
-    "id": "group-1",
-    "name": "Utopia",
+    "id": "all",
+    "name": "Alles",
     "data": {
-      "description": "Plattform für eine nachhaltige Gesellschaft",
-      "avatar": "utopia-logo.svg",
+      "scope": "aggregate",
+      "description": "Alle Items aus allen Bereichen",
+      "modules": ["feed", "kanban", "calendar", "map"]
+    }
+  },
+  {
+    "id": "group-1",
+    "name": "Real Life Stack",
+    "data": {
+      "scope": "group",
+      "description": "Modulare Community-App mit austauschbarem Backend",
+      "avatar": "rls-logo.svg",
       "access": "invite-member",
-      "modules": ["kanban", "calendar", "map", "feed"],
+      "modules": ["kanban", "feed", "calendar"],
       "roles": ["admin", "member"],
-      "memberCount": 12
+      "memberCount": 5
     }
   },
   {
     "id": "group-2",
-    "name": "IT4Change",
+    "name": "Money Printer",
     "data": {
-      "description": "Technologie für sozialen Wandel",
-      "access": "open",
-      "modules": ["feed", "kanban"],
+      "scope": "group",
+      "description": "Persönliche Zeitgutscheine als alternative Währung",
+      "avatar": "money-printer-logo.svg",
+      "access": "invite-member",
+      "modules": ["kanban", "feed", "calendar"],
       "roles": ["admin", "member"],
-      "memberCount": 24
+      "memberCount": 4
     }
   },
   {
     "id": "group-3",
-    "name": "Maluhia",
+    "name": "Web of Trust",
     "data": {
-      "avatar": "maluhia-logo.png",
-      "description": "Community-Projekt auf Hawaii",
-      "access": "invite-admin",
-      "modules": ["kanban", "calendar", "feed"],
-      "roles": ["admin", "member", "viewer"],
-      "memberCount": 8
+      "scope": "group",
+      "description": "Dezentrales Identitäts- und Vertrauensnetzwerk",
+      "avatar": "wot-logo.svg",
+      "access": "invite-member",
+      "modules": ["kanban", "feed", "calendar"],
+      "roles": ["admin", "member"],
+      "memberCount": 4
     }
   },
   {
     "id": "group-4",
-    "name": "DANK",
+    "name": "Gemeinschaftsgarten Sonnenhügel",
     "data": {
-      "avatar": "dank-logo.svg",
-      "description": "Deutsches Allmende Netzwerk für Kooperation",
-      "access": "invite-member",
-      "modules": ["feed", "map", "calendar"],
+      "scope": "group",
+      "description": "Unser Garten in der Nachbarschaft",
+      "access": "open",
+      "modules": ["kanban", "feed", "calendar", "map"],
       "roles": ["admin", "member"],
-      "memberCount": 15
+      "memberCount": 8
     }
   }
 ]
