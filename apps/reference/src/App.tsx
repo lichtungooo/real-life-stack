@@ -33,6 +33,8 @@ import {
   KanbanBoard,
   KanbanToolbar,
   applyKanbanFilter,
+  KanbanCardDetail,
+  AdaptivePanel,
   CalendarView,
   Card,
   CardContent,
@@ -297,6 +299,7 @@ function KanbanView() {
     myTasksOnly: false,
     tags: [],
   })
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null)
 
   const filteredTasks = useMemo(
     () => applyKanbanFilter(tasks, filter, currentUser?.id),
@@ -331,6 +334,14 @@ function KanbanView() {
     })
   }
 
+  const handleItemClick = useCallback((item: Item) => {
+    setSelectedItem(item)
+  }, [])
+
+  const handleCloseDetail = useCallback(() => {
+    setSelectedItem(null)
+  }, [])
+
   return (
     <div className="space-y-4">
       <KanbanToolbar
@@ -345,8 +356,19 @@ function KanbanView() {
         items={filteredTasks}
         users={members}
         onMoveItem={handleMoveItem}
-        onItemClick={(item) => console.log("Clicked:", item.id)}
+        onItemClick={handleItemClick}
       />
+      <AdaptivePanel
+        open={selectedItem !== null}
+        onClose={handleCloseDetail}
+        allowedModes={["modal", "sidebar", "drawer"]}
+        sidebarWidth="420px"
+        sidebarMinWidth="300px"
+      >
+        {selectedItem && (
+          <KanbanCardDetail item={selectedItem} users={members} />
+        )}
+      </AdaptivePanel>
     </div>
   )
 }

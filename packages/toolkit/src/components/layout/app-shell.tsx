@@ -32,9 +32,14 @@ export function AppShellMain({
     <main
       className={cn(
         "flex-1 overflow-y-auto",
+        "transition-[padding] duration-300 ease-out [.adaptive-panel-resizing_&]:transition-none",
         withBottomNav && "pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0",
         className
       )}
+      style={{
+        paddingRight: "var(--adaptive-panel-margin-right, 0px)",
+        paddingLeft: "var(--adaptive-panel-margin-left, 0px)",
+      }}
     >
       {children}
     </main>
