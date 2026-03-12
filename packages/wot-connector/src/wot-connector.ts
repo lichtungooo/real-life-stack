@@ -38,6 +38,7 @@ import {
   onPersonalDocChange,
   getDefaultDisplayName,
   changePersonalDoc,
+  encodeBase64Url,
 } from "@real-life/wot-core"
 import type {
   SpaceInfo,
@@ -45,6 +46,7 @@ import type {
   Subscribable,
   MessagingAdapter,
   PersonalDoc,
+  PublicProfile,
   VerificationDoc,
   AttestationDoc,
   AttestationMetadataDoc,
@@ -270,6 +272,8 @@ export class WotConnector extends BaseConnector {
       if (updates.avatar !== undefined) doc.profile.avatar = updates.avatar || null
       doc.profile.updatedAt = now
     })
+    // Re-publish to discovery server
+    this.publishProfile().catch(() => {})
     return (await this.getCurrentUser())!
   }
 
@@ -643,6 +647,23 @@ export class WotConnector extends BaseConnector {
     if (user) {
       this.authStateObs.set({ status: "authenticated", user })
     }
+    // Publish profile to discovery server (non-blocking)
+    this.publishProfile().catch(() => {})
+  }
+
+  private async publishProfile(): Promise<void> {
+    const did = this.identity.getDid()
+    const doc = getPersonalDoc()
+    const encPubKeyBytes = await this.identity.getEncryptionPublicKeyBytes()
+    const profile: PublicProfile = {
+      did,
+      name: doc.profile?.name ?? getDefaultDisplayName(did),
+      ...(doc.profile?.bio ? { bio: doc.profile.bio } : {}),
+      ...(doc.profile?.avatar ? { avatar: doc.profile.avatar } : {}),
+      encryptionPublicKey: encodeBase64Url(encPubKeyBytes),
+      updatedAt: new Date().toISOString(),
+    }
+    await this.discovery.publishProfile(profile, this.identity)
   }
 
   // ==================== Internal: Space/Group mapping ====================

@@ -146,7 +146,7 @@ function itemToPost(item: Item, members: User[], currentUser?: User | null): Pos
   }
 }
 
-function FeedView() {
+function FeedView({ onInvite }: { onInvite?: () => void }) {
   const { data: posts } = useItems({ type: "post" })
   const { data: events } = useItems({ type: "event" })
   const { data: members } = useMembers("group-1")
@@ -192,7 +192,7 @@ function FeedView() {
           label="Einladen"
           description="Mitglieder hinzufügen"
           variant="secondary"
-          onClick={() => console.log("Invite")}
+          onClick={onInvite}
         />
       </div>
 
@@ -989,7 +989,7 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
 
       <AppShellMain withBottomNav>
         <div className={`container mx-auto px-4 pt-6 ${activeModule === "kanban" ? "max-w-5xl" : "max-w-2xl"}`}>
-          {activeModule === "feed" && <FeedView />}
+          {activeModule === "feed" && <FeedView onInvite={() => activeWorkspace && openEditDialog(activeWorkspace)} />}
           {activeModule === "kanban" && <KanbanView activeWorkspaceId={activeWorkspace?.id ?? null} groups={groups} />}
           {activeModule === "map" && <MapView />}
           {activeModule === "calendar" && <CalendarViewWrapper />}
