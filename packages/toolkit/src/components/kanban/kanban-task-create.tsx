@@ -7,7 +7,7 @@ import { Textarea } from "../primitives/textarea"
 import { Button } from "../primitives/button"
 import { Avatar, AvatarFallback, AvatarImage } from "../primitives/avatar"
 import { cn } from "../../lib/utils"
-import { AlignLeft, Tag, Columns3, X, UserIcon, FolderOpen, ChevronRight } from "lucide-react"
+import { AlignLeft, Tag, Columns3, X, UserIcon, FolderOpen, ChevronRight, Trash2 } from "lucide-react"
 
 function getInitials(name: string): string {
   return name
@@ -61,6 +61,7 @@ export interface KanbanTaskFormData {
 export interface KanbanTaskFormProps {
   onSubmit: (data: KanbanTaskFormData) => void
   onCancel: () => void
+  onDelete?: () => void
   initialData?: KanbanTaskFormData
   columns?: KanbanColumn[]
   users?: User[]
@@ -73,6 +74,7 @@ export interface KanbanTaskFormProps {
 export function KanbanTaskForm({
   onSubmit,
   onCancel,
+  onDelete,
   initialData,
   columns = defaultColumns,
   users = [],
@@ -351,6 +353,11 @@ export function KanbanTaskForm({
 
       {/* Buttons */}
       <div className="flex gap-2 pt-2">
+        {isEdit && onDelete && (
+          <Button variant="outline" onClick={onDelete} className="text-destructive hover:bg-destructive/10 hover:text-destructive">
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        )}
         <Button variant="outline" onClick={handleCancel} className="flex-1">
           Abbrechen
         </Button>

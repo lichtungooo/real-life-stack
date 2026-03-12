@@ -48,6 +48,7 @@ import {
   useGroups,
   useCurrentUser,
   useCreateItem,
+  useDeleteItem,
   useConnector,
   type Workspace,
   type UserData,
@@ -299,6 +300,7 @@ function KanbanView({ activeWorkspaceId, groups }: { activeWorkspaceId: string |
   const { data: currentUser } = useCurrentUser()
   const { mutate: updateItem } = useUpdateItem()
   const { mutate: createItem } = useCreateItem()
+  const { mutate: deleteItem } = useDeleteItem()
   const [filter, setFilter] = useState<KanbanFilter>({
     searchText: "",
     assignedTo: null,
@@ -408,6 +410,12 @@ function KanbanView({ activeWorkspaceId, groups }: { activeWorkspaceId: string |
     if (!panelPinned) setPanelState({ mode: "closed" })
   }, [panelState, updateItem, connector, panelPinned])
 
+  const handleTaskDelete = useCallback(() => {
+    if (panelState.mode !== "edit") return
+    deleteItem(panelState.item.id)
+    setPanelState({ mode: "closed" })
+  }, [panelState, deleteItem])
+
   return (
     <div className="space-y-4">
       <KanbanToolbar
@@ -438,6 +446,7 @@ function KanbanView({ activeWorkspaceId, groups }: { activeWorkspaceId: string |
             key={panelState.item.id}
             onSubmit={handleTaskEdit}
             onCancel={handleClosePanel}
+            onDelete={handleTaskDelete}
             initialData={{
               title: String(panelState.item.data.title ?? ""),
               description: String(panelState.item.data.description ?? ""),
