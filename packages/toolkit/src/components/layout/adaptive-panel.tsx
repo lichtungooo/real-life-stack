@@ -274,32 +274,15 @@ export function AdaptivePanel({
   }, [open, mode])
 
   // --- Drawer snap logic ---
-  // Determines what happens on pointer up based on current position and velocity
   const resolveDrawerRelease = useCallback(
     (currentY: number, velocity: number): "close" | "snap-lower" | "maximize" | "stay" => {
-      const visibleFraction = (100 - currentY) / 100
+      const vf = (100 - currentY) / 100
 
-      // Fast swipe overrides position — works from anywhere
-      if (velocity > VELOCITY_THRESHOLD) {
-        return "close"
-      }
-      if (velocity < -VELOCITY_THRESHOLD) {
-        return "maximize"
-      }
-
-      // Position-based: below lower snap zone → close
-      if (visibleFraction < snapLower - snapZone) {
-        return "close"
-      }
-      // Inside lower snap zone → snap to lower
-      if (visibleFraction < snapLower + snapZone) {
-        return "snap-lower"
-      }
-      // Above upper snap threshold → maximize to 100%
-      if (visibleFraction > snapUpper) {
-        return "maximize"
-      }
-      // Between snap zones → stay where it is
+      if (velocity > VELOCITY_THRESHOLD) return "close"
+      if (velocity < -VELOCITY_THRESHOLD) return "maximize"
+      if (vf < snapLower - snapZone) return "close"
+      if (vf < snapLower + snapZone) return "snap-lower"
+      if (vf > snapUpper) return "maximize"
       return "stay"
     },
     [snapLower, snapUpper, snapZone]
@@ -332,7 +315,6 @@ export function AdaptivePanel({
         const sample = (e.clientY - dragRef.current.lastY) / dt
         const samples = dragRef.current.velocitySamples
         samples.push(sample)
-        // Keep last 5 samples for a stable average
         if (samples.length > 5) samples.shift()
       }
       dragRef.current.lastY = e.clientY
@@ -343,11 +325,7 @@ export function AdaptivePanel({
       const deltaPercent = (deltaPixels / viewportH) * 100
       let newY = dragRef.current.startDrawerY + deltaPercent
 
-      // Upper bound: rubber-band past full screen (0%)
-      if (newY < 0) {
-        newY = newY * 0.3
-      }
-      // Lower bound: rubber-band past hidden
+      if (newY < 0) newY = newY * 0.3
       if (newY > 100) {
         const overflow = newY - 100
         newY = 100 + overflow * 0.3
@@ -371,7 +349,6 @@ export function AdaptivePanel({
       const velocity = samples.length > 0
         ? samples.reduce((a, b) => a + b, 0) / samples.length
         : 0
-      // Use ref for current position — state may be stale in this closure
       const currentY = drawerYRef.current
       const action = resolveDrawerRelease(currentY, velocity)
       dragRef.current = null
@@ -402,7 +379,6 @@ export function AdaptivePanel({
   )
 
   // --- Sidebar Resize Pointer Events ---
-  // Disable content padding transition during resize
   useEffect(() => {
     if (isResizing) {
       document.documentElement.classList.add("adaptive-panel-resizing")
@@ -494,124 +470,15 @@ export function AdaptivePanel({
   if (!visible && !open) return null
 
   const isOpen = open && !animatingOut
+  const isLeft = side === "left"
 
-  // --- Header Buttons (shared across modes) ---
-  const headerButtons = (
-    <div className="absolute top-3 right-3 z-10 flex items-center gap-0.5">
-      <ModeSwitchButton
-        currentMode={mode}
-        allowedModes={allowedModes}
-        isCompact={isCompact}
-        onSwitch={handleModeSwitch}
-      />
-      <button
-        type="button"
-        onClick={onClose}
-        className="p-1.5 rounded-sm opacity-60 hover:opacity-100 transition-opacity"
-      >
-        <X className="h-4 w-4" />
-        <span className="sr-only">Schliessen</span>
-      </button>
-    </div>
-  )
-
-  // --- MODAL ---
-  if (mode === "modal") {
-    return (
-      <div className="fixed inset-0 z-[60]">
-        {/* Backdrop */}
-        <div
-          className={cn(
-            "absolute inset-0 bg-black/50 transition-opacity duration-200",
-            isOpen ? "opacity-100" : "opacity-0"
-          )}
-          onClick={onClose}
-        />
-        {/* Content */}
-        <div className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
-          <div
-            ref={panelRef}
-            className={cn(
-              "relative bg-background rounded-lg border shadow-lg pointer-events-auto",
-              "w-full max-w-lg max-h-[90vh] overflow-hidden",
-              "transition-all duration-200",
-              isOpen ? "opacity-100 scale-100" : "opacity-0 scale-95",
-              modalClassName,
-              className
-            )}
-          >
-            {headerButtons}
-            <div className="overflow-y-auto max-h-[inherit]">{children}</div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // --- SIDEBAR ---
-  if (mode === "sidebar") {
-    const isLeft = side === "left"
-
-    return (
-      <div
-        ref={panelRef}
-        className={cn(
-          "fixed top-14 bottom-0 bg-background shadow-xl flex overflow-hidden",
-          "z-40",
-          isLeft ? "left-0" : "right-0",
-          className
-        )}
-        style={{
-          width: isOpen ? `${currentSidebarWidth}px` : "0px",
-          transition: isResizing ? "none" : "width 300ms ease-out",
-        } as CSSProperties}
-      >
-        {/* Resize handle */}
-        <div
-          onPointerDown={handleResizePointerDown}
-          onPointerMove={handleResizePointerMove}
-          onPointerUp={handleResizePointerUp}
-          onDoubleClick={handleResizeDoubleClick}
-          className={cn(
-            "absolute top-0 bottom-0 w-3 cursor-col-resize z-10 group flex items-center justify-center",
-            isLeft ? "right-0 translate-x-1/2" : "left-0 -translate-x-1/2"
-          )}
-          style={{ touchAction: "none" }}
-        >
-          <div
-            className={cn(
-              "w-[2px] h-8 rounded-full transition-all duration-150",
-              isResizing
-                ? "bg-primary w-1 h-12"
-                : "bg-border group-hover:bg-primary/50 group-hover:w-1 group-hover:h-12"
-            )}
-          />
-        </div>
-        {/* Panel content — fixed width to prevent text reflow during width animation */}
-        <div
-          className={cn(
-            "flex-1 flex flex-col overflow-hidden",
-            isLeft ? "border-r" : "border-l"
-          )}
-          style={{ minWidth: `${currentSidebarWidth}px` }}
-        >
-          <div className="relative flex-1 overflow-y-auto">
-            {headerButtons}
-            {children}
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // --- DRAWER ---
+  // Drawer-specific computed values
   const drawerTransition = isDragging
     ? "none"
     : isClosingVelocity
       ? "transform 200ms ease-in, opacity 200ms ease-in"
       : "transform 300ms cubic-bezier(0.32, 0.72, 0, 1), opacity 300ms cubic-bezier(0.32, 0.72, 0, 1)"
 
-  // Fade out when dragged below the lower snap zone
   const visibleFraction = (100 - drawerY) / 100
   const fadeStart = snapLower - snapZone
   const drawerOpacity = isClosingVelocity
@@ -620,62 +487,165 @@ export function AdaptivePanel({
       ? Math.max(0, visibleFraction / fadeStart)
       : 1
 
+  // --- Outer container style per mode ---
+  const outerStyle: CSSProperties =
+    mode === "sidebar"
+      ? {
+          width: isOpen ? `${currentSidebarWidth}px` : "0px",
+          transition: isResizing ? "none" : "width 300ms ease-out",
+        }
+      : mode === "drawer"
+        ? {
+            height: "100vh",
+            transform: `translateY(${drawerY}%)`,
+            opacity: drawerOpacity,
+            transition: drawerTransition,
+          }
+        : {}
+
   return (
-    <div className="fixed inset-0 z-[60] pointer-events-none">
-      {/* Backdrop */}
+    <>
+      {/* Backdrop — modal and drawer */}
+      {(mode === "modal" || mode === "drawer") && (
+        <div
+          className={cn(
+            "fixed inset-0 z-[60] bg-black/50 transition-opacity duration-200",
+            mode === "modal"
+              ? (isOpen ? "opacity-100" : "opacity-0")
+              : (isOpen && drawerY < 90 ? "opacity-100" : "opacity-0 pointer-events-none")
+          )}
+          onClick={onClose}
+        />
+      )}
+
+      {/* Outer positioning wrapper */}
       <div
         className={cn(
-          "absolute inset-0 bg-black/50 transition-opacity duration-200 pointer-events-auto",
-          isOpen && drawerY < 90 ? "opacity-100" : "opacity-0 pointer-events-none"
+          mode === "modal" && "fixed inset-0 z-[60] flex items-center justify-center p-4 pointer-events-none",
+          mode === "sidebar" && cn(
+            "fixed top-14 bottom-0 bg-background shadow-xl flex overflow-hidden z-40",
+            isLeft ? "left-0" : "right-0",
+          ),
+          mode === "drawer" && "fixed inset-x-0 bottom-0 z-[60] pointer-events-auto",
         )}
-        onClick={onClose}
-      />
-      {/* Drawer panel */}
-      <div
-        ref={panelRef}
-        className={cn(
-          "absolute inset-x-0 bottom-0 bg-background rounded-t-xl shadow-xl pointer-events-auto",
-          "flex flex-col",
-          className
-        )}
-        style={{
-          height: "100vh",
-          transform: `translateY(${drawerY}%)`,
-          opacity: drawerOpacity,
-          transition: drawerTransition,
-        } as CSSProperties}
+        style={mode === "sidebar" ? outerStyle : undefined}
       >
-        {/* Drag handle + mode switch */}
-        <div className="flex-shrink-0 relative">
-          <div
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            className="flex justify-center items-center py-3 cursor-grab active:cursor-grabbing select-none"
-            style={{ touchAction: "none" }}
-          >
+        {/* Inner panel — single stable container for all modes */}
+        <div
+          ref={panelRef}
+          className={cn(
+            // Modal styling
+            mode === "modal" && cn(
+              "relative bg-background rounded-lg border shadow-lg pointer-events-auto",
+              "w-full max-w-lg max-h-[90vh] overflow-hidden",
+              "transition-all duration-200 flex flex-col",
+              isOpen ? "opacity-100 scale-100" : "opacity-0 scale-95",
+              modalClassName,
+            ),
+            // Sidebar styling
+            mode === "sidebar" && cn(
+              "flex-1 flex flex-col overflow-hidden",
+              isLeft ? "border-r" : "border-l",
+            ),
+            // Drawer styling
+            mode === "drawer" && "bg-background rounded-t-xl shadow-xl flex flex-col",
+            className,
+          )}
+          style={
+            mode === "sidebar"
+              ? { minWidth: `${currentSidebarWidth}px` }
+              : mode === "drawer"
+                ? outerStyle
+                : undefined
+          }
+        >
+          {/* Drawer drag handle */}
+          {mode === "drawer" && (
+            <div className="flex-shrink-0 relative">
+              <div
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                className="flex justify-center items-center py-3 cursor-grab active:cursor-grabbing select-none"
+                style={{ touchAction: "none" }}
+              >
+                <div
+                  className={cn(
+                    "w-10 h-1 rounded-full transition-all duration-150",
+                    isDragging
+                      ? "bg-primary w-14 h-1.5"
+                      : "bg-muted-foreground/30"
+                  )}
+                />
+              </div>
+              {/* Drawer mode switch */}
+              <div className="absolute top-2 right-3 flex items-center gap-0.5">
+                <ModeSwitchButton
+                  currentMode={mode}
+                  allowedModes={allowedModes}
+                  isCompact={isCompact}
+                  onSwitch={handleModeSwitch}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Sidebar resize handle */}
+          {mode === "sidebar" && (
             <div
+              onPointerDown={handleResizePointerDown}
+              onPointerMove={handleResizePointerMove}
+              onPointerUp={handleResizePointerUp}
+              onDoubleClick={handleResizeDoubleClick}
               className={cn(
-                "w-10 h-1 rounded-full transition-all duration-150",
-                isDragging
-                  ? "bg-primary w-14 h-1.5"
-                  : "bg-muted-foreground/30"
+                "absolute top-0 bottom-0 w-3 cursor-col-resize z-10 group flex items-center justify-center",
+                isLeft ? "right-0 translate-x-1/2" : "left-0 -translate-x-1/2"
               )}
-            />
-          </div>
-          {/* Mode switch button in top-right of drawer */}
-          <div className="absolute top-2 right-3 flex items-center gap-0.5">
-            <ModeSwitchButton
-              currentMode={mode}
-              allowedModes={allowedModes}
-              isCompact={isCompact}
-              onSwitch={handleModeSwitch}
-            />
+              style={{ touchAction: "none" }}
+            >
+              <div
+                className={cn(
+                  "w-[2px] h-8 rounded-full transition-all duration-150",
+                  isResizing
+                    ? "bg-primary w-1 h-12"
+                    : "bg-border group-hover:bg-primary/50 group-hover:w-1 group-hover:h-12"
+                )}
+              />
+            </div>
+          )}
+
+          {/* Close + mode switch buttons (modal and sidebar) */}
+          {mode !== "drawer" && (
+            <div className="absolute top-3 right-3 z-10 flex items-center gap-0.5">
+              <ModeSwitchButton
+                currentMode={mode}
+                allowedModes={allowedModes}
+                isCompact={isCompact}
+                onSwitch={handleModeSwitch}
+              />
+              <button
+                type="button"
+                onClick={onClose}
+                className="p-1.5 rounded-sm opacity-60 hover:opacity-100 transition-opacity"
+              >
+                <X className="h-4 w-4" />
+                <span className="sr-only">Schliessen</span>
+              </button>
+            </div>
+          )}
+
+          {/* Content — always the same React node, never unmounted on mode switch */}
+          <div
+            className={cn(
+              "flex-1 overflow-y-auto",
+              mode === "drawer" && "px-4 pb-[calc(1rem+env(safe-area-inset-bottom))]",
+            )}
+            style={mode === "modal" ? { maxHeight: "inherit" } : undefined}
+          >
+            {children}
           </div>
         </div>
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto px-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">{children}</div>
       </div>
-    </div>
+    </>
   )
 }
