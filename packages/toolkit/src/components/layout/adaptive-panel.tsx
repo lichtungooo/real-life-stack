@@ -182,8 +182,30 @@ export function AdaptivePanel({
   useEffect(() => {
     const newMode = resolveMode(allowedModes, isCompact)
     if (newMode !== mode) {
+      // Save current size before switching away
+      if (mode === "drawer") {
+        lastDrawerYRef.current = drawerYRef.current
+      } else if (mode === "sidebar") {
+        lastSidebarWidthRef.current = currentSidebarWidth
+      }
+
       setMode(newMode)
       onModeChange?.(newMode)
+
+      // When switching to drawer while already open, animate to visible position
+      if (newMode === "drawer" && open) {
+        const restoreY = lastDrawerYRef.current < 100
+          ? lastDrawerYRef.current
+          : 100 - drawerInitialHeight * 100
+        updateDrawerY(100)
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            updateDrawerY(restoreY)
+          })
+        })
+      } else if (newMode === "sidebar") {
+        setCurrentSidebarWidth(lastSidebarWidthRef.current)
+      }
     }
   }, [isCompact, allowedModes])
 
