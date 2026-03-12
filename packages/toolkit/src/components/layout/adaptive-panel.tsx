@@ -300,8 +300,11 @@ export function AdaptivePanel({
     (currentY: number, velocity: number): "close" | "snap-lower" | "maximize" | "stay" => {
       const vf = (100 - currentY) / 100
 
-      if (velocity > VELOCITY_THRESHOLD) return "close"
-      if (velocity < -VELOCITY_THRESHOLD) return "maximize"
+      // Velocity fling — only trigger close/maximize when position supports it
+      // A fling down should close only from the lower half; a fling up should maximize only from upper half
+      if (velocity > VELOCITY_THRESHOLD && vf < 0.5) return "close"
+      if (velocity < -VELOCITY_THRESHOLD && vf > 0.5) return "maximize"
+      // Position-based snap zones
       if (vf < snapLower - snapZone) return "close"
       if (vf < snapLower + snapZone) return "snap-lower"
       if (vf > snapUpper) return "maximize"
