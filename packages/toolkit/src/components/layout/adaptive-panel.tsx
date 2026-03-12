@@ -42,7 +42,7 @@ export interface AdaptivePanelProps {
   className?: string
 }
 
-const VELOCITY_THRESHOLD = 0.5
+const VELOCITY_THRESHOLD = 0.15
 const DRAWER_BREAKPOINT = 1024
 
 function parsePx(value: string): number {
@@ -154,15 +154,16 @@ export function AdaptivePanel({
   const resizeDragRef = useRef<{ startX: number; startWidth: number } | null>(null)
 
   // Drawer state — drawerY is percent from top (100 = hidden, 0 = full screen)
-  const [drawerY, setDrawerY] = useState(100)
-  const drawerYRef = useRef(100) // always-current mirror of drawerY for callbacks
+  const [drawerY, setDrawerYState] = useState(100)
+  const drawerYRef = useRef(100)
   const [isDragging, setIsDragging] = useState(false)
+  const [isClosingVelocity, setIsClosingVelocity] = useState(false)
   const dragRef = useRef<{
     startY: number
     startDrawerY: number
     lastY: number
     lastTime: number
-    velocity: number
+    velocitySamples: number[]
   } | null>(null)
   const panelRef = useRef<HTMLDivElement>(null)
   const rafRef = useRef<number | null>(null)
@@ -171,10 +172,11 @@ export function AdaptivePanel({
   const lastDrawerYRef = useRef(100 - drawerInitialHeight * 100)
   const lastSidebarWidthRef = useRef(parsePx(sidebarWidthProp))
 
-  // Keep drawerYRef in sync
-  useEffect(() => {
-    drawerYRef.current = drawerY
-  }, [drawerY])
+  // Helper to update drawerY state + ref synchronously
+  const updateDrawerY = useCallback((y: number) => {
+    drawerYRef.current = y
+    setDrawerYState(y)
+  }, [])
 
   // Resolve mode on viewport change
   useEffect(() => {
@@ -225,10 +227,10 @@ export function AdaptivePanel({
       // Restore sizes when switching back
       if (targetMode === "drawer") {
         const restoreY = lastDrawerYRef.current
-        setDrawerY(100)
+        updateDrawerY(100)
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-            setDrawerY(restoreY)
+            updateDrawerY(restoreY)
           })
         })
       } else if (targetMode === "sidebar") {
@@ -251,17 +253,17 @@ export function AdaptivePanel({
       setAnimatingOut(false)
       // Only animate drawer to initial height on fresh open (not on mode switch)
       if (mode === "drawer" && !wasOpen) {
-        setDrawerY(100)
+        updateDrawerY(100)
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-            setDrawerY(100 - drawerInitialHeight * 100)
+            updateDrawerY(100 - drawerInitialHeight * 100)
           })
         })
       }
     } else if (visible) {
       setAnimatingOut(true)
-      if (mode === "drawer") {
-        setDrawerY(100)
+      if (mode === "drawer" && drawerYRef.current < 100) {
+        updateDrawerY(100)
       }
       const timer = setTimeout(() => {
         setVisible(false)
@@ -277,16 +279,15 @@ export function AdaptivePanel({
     (currentY: number, velocity: number): "close" | "snap-lower" | "maximize" | "stay" => {
       const visibleFraction = (100 - currentY) / 100
 
-      // Fast downward swipe near bottom → close
-      if (velocity > VELOCITY_THRESHOLD && visibleFraction < snapLower + snapZone * 2) {
+      // Fast swipe overrides position — works from anywhere
+      if (velocity > VELOCITY_THRESHOLD) {
         return "close"
       }
-      // Fast upward swipe near top → maximize
-      if (velocity < -VELOCITY_THRESHOLD && visibleFraction > snapUpper - snapZone * 2) {
+      if (velocity < -VELOCITY_THRESHOLD) {
         return "maximize"
       }
 
-      // Below lower snap zone → close
+      // Position-based: below lower snap zone → close
       if (visibleFraction < snapLower - snapZone) {
         return "close"
       }
@@ -312,13 +313,13 @@ export function AdaptivePanel({
       setIsDragging(true)
       dragRef.current = {
         startY: e.clientY,
-        startDrawerY: drawerY,
+        startDrawerY: drawerYRef.current,
         lastY: e.clientY,
         lastTime: Date.now(),
-        velocity: 0,
+        velocitySamples: [],
       }
     },
-    [mode, drawerY]
+    [mode]
   )
 
   const handlePointerMove = useCallback(
@@ -328,7 +329,11 @@ export function AdaptivePanel({
       const now = Date.now()
       const dt = now - dragRef.current.lastTime
       if (dt > 0) {
-        dragRef.current.velocity = (e.clientY - dragRef.current.lastY) / dt
+        const sample = (e.clientY - dragRef.current.lastY) / dt
+        const samples = dragRef.current.velocitySamples
+        samples.push(sample)
+        // Keep last 5 samples for a stable average
+        if (samples.length > 5) samples.shift()
       }
       dragRef.current.lastY = e.clientY
       dragRef.current.lastTime = now
@@ -350,7 +355,7 @@ export function AdaptivePanel({
 
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
       rafRef.current = requestAnimationFrame(() => {
-        setDrawerY(newY)
+        updateDrawerY(newY)
       })
     },
     [mode]
@@ -362,29 +367,38 @@ export function AdaptivePanel({
       ;(e.target as HTMLElement).releasePointerCapture(e.pointerId)
       setIsDragging(false)
 
-      const velocity = dragRef.current.velocity
-      const action = resolveDrawerRelease(drawerY, velocity)
+      const samples = dragRef.current.velocitySamples
+      const velocity = samples.length > 0
+        ? samples.reduce((a, b) => a + b, 0) / samples.length
+        : 0
+      // Use ref for current position — state may be stale in this closure
+      const currentY = drawerYRef.current
+      const action = resolveDrawerRelease(currentY, velocity)
       dragRef.current = null
 
       switch (action) {
         case "close":
-          onClose()
+          setIsClosingVelocity(true)
+          updateDrawerY(100)
+          setTimeout(() => {
+            onClose()
+            setIsClosingVelocity(false)
+          }, 200)
           break
         case "snap-lower":
-          setDrawerY(100 - snapLower * 100)
+          updateDrawerY(100 - snapLower * 100)
           lastDrawerYRef.current = 100 - snapLower * 100
           break
         case "maximize":
-          setDrawerY(0)
+          updateDrawerY(0)
           lastDrawerYRef.current = 0
           break
         case "stay":
-          // Keep current position, remember it
-          lastDrawerYRef.current = drawerY
+          lastDrawerYRef.current = currentY
           break
       }
     },
-    [mode, drawerY, resolveDrawerRelease, onClose, snapLower]
+    [mode, resolveDrawerRelease, onClose, snapLower]
   )
 
   // --- Sidebar Resize Pointer Events ---
@@ -593,14 +607,18 @@ export function AdaptivePanel({
   // --- DRAWER ---
   const drawerTransition = isDragging
     ? "none"
-    : "transform 300ms cubic-bezier(0.32, 0.72, 0, 1), opacity 300ms cubic-bezier(0.32, 0.72, 0, 1)"
+    : isClosingVelocity
+      ? "transform 200ms ease-in, opacity 200ms ease-in"
+      : "transform 300ms cubic-bezier(0.32, 0.72, 0, 1), opacity 300ms cubic-bezier(0.32, 0.72, 0, 1)"
 
   // Fade out when dragged below the lower snap zone
   const visibleFraction = (100 - drawerY) / 100
   const fadeStart = snapLower - snapZone
-  const drawerOpacity = visibleFraction < fadeStart
-    ? Math.max(0, visibleFraction / fadeStart)
-    : 1
+  const drawerOpacity = isClosingVelocity
+    ? 0
+    : visibleFraction < fadeStart
+      ? Math.max(0, visibleFraction / fadeStart)
+      : 1
 
   return (
     <div className="fixed inset-0 z-[60] pointer-events-none">
