@@ -1,8 +1,8 @@
-import { useState, useMemo, useCallback, useEffect } from "react"
+import { useState, useMemo, useCallback, useEffect, type DragEvent } from "react"
 import { Routes, Route } from "react-router-dom"
 import {
   Newspaper,
-  Map,
+  Map as MapIcon,
   Calendar,
   Users,
   MessageCircle,
@@ -12,6 +12,10 @@ import {
   Sun,
   Moon,
   Columns3,
+  Layers,
+  LayoutList,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react"
 
 import {
@@ -41,6 +45,10 @@ import {
   CardHeader,
   CardTitle,
   Button,
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
   ConnectorProvider,
   useItems,
   useUpdateItem,
@@ -65,7 +73,7 @@ import { LocalConnector } from "@real-life-stack/local-connector"
 
 const MODULE_ICONS: Record<string, typeof Newspaper> = {
   feed: Newspaper,
-  map: Map,
+  map: MapIcon,
   calendar: Calendar,
   kanban: Columns3,
 }
@@ -309,6 +317,9 @@ function KanbanView({ activeWorkspaceId, groups }: { activeWorkspaceId: string |
   })
   const [panelState, setPanelState] = useState<KanbanPanelState>({ mode: "closed" })
   const [panelPinned, setPanelPinned] = useState(false)
+  const [groupedView, setGroupedView] = useState(false)
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
+  const [dragOverGroupId, setDragOverGroupId] = useState<string | null>(null)
 
   const filteredTasks = useMemo(
     () => applyKanbanFilter(tasks, filter, currentUser?.id),
@@ -367,6 +378,42 @@ function KanbanView({ activeWorkspaceId, groups }: { activeWorkspaceId: string |
   const activeGroup = groups.find((g) => g.id === activeWorkspaceId)
   const isAggregate = (activeGroup?.data?.scope as string) === "aggregate"
 
+  // Non-aggregate groups for grouped view
+  const concreteGroups = useMemo(
+    () => groups.filter((g) => (g.data?.scope as string) !== "aggregate"),
+    [groups]
+  )
+
+  // Group tasks by their group for the grouped view
+  const tasksByGroup = useMemo(() => {
+    if (!isAggregate || !groupedView || !("getItemGroupId" in connector)) return null
+    const c = connector as DataInterface & { getItemGroupId(id: string): string | null }
+    const map = new Map<string, Item[]>()
+    for (const g of concreteGroups) {
+      map.set(g.id, [])
+    }
+    // Collect items without a group under a special key
+    map.set("__ungrouped__", [])
+    for (const task of filteredTasks) {
+      const gid = c.getItemGroupId(task.id)
+      if (gid && map.has(gid)) {
+        map.get(gid)!.push(task)
+      } else {
+        map.get("__ungrouped__")!.push(task)
+      }
+    }
+    return map
+  }, [isAggregate, groupedView, connector, concreteGroups, filteredTasks])
+
+  const toggleGroupCollapse = useCallback((groupId: string) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev)
+      if (next.has(groupId)) next.delete(groupId)
+      else next.add(groupId)
+      return next
+    })
+  }, [])
+
   const handleTaskCreate = useCallback((data: { title: string; description: string; status: string; tags: string[]; assigneeId: string | null; groupId: string | null }) => {
     const relations: Relation[] = data.assigneeId
       ? [{ predicate: "assignedTo", target: `global:${data.assigneeId}` }]
@@ -416,6 +463,77 @@ function KanbanView({ activeWorkspaceId, groups }: { activeWorkspaceId: string |
     setPanelState({ mode: "closed" })
   }, [panelState, deleteItem])
 
+  const viewModeToggle = isAggregate ? (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" className="shrink-0">
+          {groupedView ? <LayoutList className="h-4 w-4" /> : <Layers className="h-4 w-4" />}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuCheckboxItem
+          checked={!groupedView}
+          onCheckedChange={() => setGroupedView(false)}
+        >
+          Zusammengeführt
+        </DropdownMenuCheckboxItem>
+        <DropdownMenuCheckboxItem
+          checked={groupedView}
+          onCheckedChange={() => setGroupedView(true)}
+        >
+          Nach Gruppe
+        </DropdownMenuCheckboxItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  ) : undefined
+
+  const moveToGroup = useCallback((itemId: string, targetGroupId: string) => {
+    if (!("moveItemToGroup" in connector)) return
+    const c = connector as DataInterface & { getItemGroupId(id: string): string | null; moveItemToGroup(id: string, gid: string): void }
+    const currentGroupId = c.getItemGroupId(itemId)
+    if (currentGroupId !== targetGroupId) {
+      c.moveItemToGroup(itemId, targetGroupId)
+    }
+  }, [connector])
+
+  const handleGroupDrop = useCallback((e: DragEvent<HTMLDivElement>, targetGroupId: string) => {
+    e.preventDefault()
+    const itemId = e.dataTransfer.getData("text/plain")
+    if (!itemId) return
+    moveToGroup(itemId, targetGroupId)
+  }, [moveToGroup])
+
+  // Stable map of group-specific external drop handlers (avoids new closures per render)
+  const externalDropHandlers = useMemo(() => {
+    if (!tasksByGroup) return new Map<string, (itemId: string, newStatus: string, position: number) => void>()
+    const map = new Map<string, (itemId: string, newStatus: string, position: number) => void>()
+    for (const g of concreteGroups) {
+      map.set(g.id, (itemId: string, newStatus: string, position: number) => {
+        const item = tasks.find((t) => t.id === itemId)
+        if (!item) return
+
+        // Move to target group first
+        moveToGroup(itemId, g.id)
+
+        // Recalculate positions scoped to the TARGET GROUP's items in the target column
+        const groupItems = tasksByGroup.get(g.id) ?? []
+        const columnItems = groupItems
+          .filter((t) => {
+            const s = (t.data.status as string) ?? "todo"
+            return s === newStatus && t.id !== itemId
+          })
+          .sort((a, b) => ((a.data.position as number) ?? 0) - ((b.data.position as number) ?? 0))
+
+        columnItems.splice(position, 0, item)
+        for (let i = 0; i < columnItems.length; i++) {
+          const t = columnItems[i]
+          updateItem(t.id, { data: { ...t.data, status: newStatus, position: i } })
+        }
+      })
+    }
+    return map
+  }, [concreteGroups, moveToGroup, tasks, tasksByGroup, updateItem])
+
   return (
     <div className="space-y-4">
       <KanbanToolbar
@@ -425,13 +543,93 @@ function KanbanView({ activeWorkspaceId, groups }: { activeWorkspaceId: string |
         onFilterChange={setFilter}
         onCreateItem={handleCreateItem}
         onEditColumns={() => console.log("Edit columns")}
+        extraActions={viewModeToggle}
       />
-      <KanbanBoard
-        items={filteredTasks}
-        users={members}
-        onMoveItem={handleMoveItem}
-        onItemClick={handleItemClick}
-      />
+
+      {isAggregate && groupedView && tasksByGroup ? (
+        <div className="space-y-6">
+          {concreteGroups.map((group) => {
+            const groupTasks = tasksByGroup.get(group.id) ?? []
+            if (groupTasks.length === 0 && dragOverGroupId !== group.id) return null
+            const isCollapsed = collapsedGroups.has(group.id)
+            const isDragOver = dragOverGroupId === group.id
+            return (
+              <div key={group.id}>
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault()
+                    e.dataTransfer.dropEffect = "move"
+                    setDragOverGroupId(group.id)
+                  }}
+                  onDragLeave={(e) => {
+                    const related = e.relatedTarget as Node | null
+                    if (related && e.currentTarget.contains(related)) return
+                    setDragOverGroupId((prev) => prev === group.id ? null : prev)
+                  }}
+                  onDrop={(e) => {
+                    setDragOverGroupId(null)
+                    handleGroupDrop(e, group.id)
+                  }}
+                  className={`flex items-center gap-2 mb-3 px-2 py-1 -mx-2 rounded-lg transition-colors${isDragOver ? " bg-primary/10 ring-2 ring-primary/30" : ""}`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => toggleGroupCollapse(group.id)}
+                    className="flex items-center gap-2 text-sm font-semibold text-foreground hover:text-primary transition-colors"
+                  >
+                    {isCollapsed
+                      ? <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      : <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    }
+                    {group.name}
+                    <span className="text-xs font-normal text-muted-foreground">({groupTasks.length})</span>
+                  </button>
+                </div>
+                {!isCollapsed && (
+                  <KanbanBoard
+                    items={groupTasks}
+                    users={members}
+                    onMoveItem={handleMoveItem}
+                    onItemClick={handleItemClick}
+                    onExternalDrop={externalDropHandlers.get(group.id)}
+                  />
+                )}
+              </div>
+            )
+          })}
+          {(tasksByGroup.get("__ungrouped__") ?? []).length > 0 && (
+            <div>
+              <button
+                type="button"
+                onClick={() => toggleGroupCollapse("__ungrouped__")}
+                className="flex items-center gap-2 mb-3 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {collapsedGroups.has("__ungrouped__")
+                  ? <ChevronRight className="h-4 w-4" />
+                  : <ChevronDown className="h-4 w-4" />
+                }
+                Ohne Gruppe
+                <span className="text-xs font-normal">({tasksByGroup.get("__ungrouped__")!.length})</span>
+              </button>
+              {!collapsedGroups.has("__ungrouped__") && (
+                <KanbanBoard
+                  items={tasksByGroup.get("__ungrouped__")!}
+                  users={members}
+                  onMoveItem={handleMoveItem}
+                  onItemClick={handleItemClick}
+                />
+              )}
+            </div>
+          )}
+        </div>
+      ) : (
+        <KanbanBoard
+          items={filteredTasks}
+          users={members}
+          onMoveItem={handleMoveItem}
+          onItemClick={handleItemClick}
+        />
+      )}
       <AdaptivePanel
         open={panelState.mode !== "closed"}
         onClose={handleForceClosePanel}

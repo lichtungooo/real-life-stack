@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, type ReactNode } from "react"
 import type { Item, User, Relation } from "@real-life-stack/data-interface"
 import { Button } from "../primitives/button"
 import { Input } from "../primitives/input"
@@ -30,6 +30,7 @@ export interface KanbanToolbarProps {
   onCreateItem?: () => void
   onMultiSelectChange?: (enabled: boolean) => void
   onEditColumns?: () => void
+  extraActions?: ReactNode
   className?: string
 }
 
@@ -84,6 +85,7 @@ export function KanbanToolbar({
   onCreateItem,
   onMultiSelectChange,
   onEditColumns,
+  extraActions,
   className,
 }: KanbanToolbarProps) {
   const [searchText, setSearchText] = useState("")
@@ -319,6 +321,8 @@ export function KanbanToolbar({
             </span>
           )}
         </Button>
+
+        {extraActions}
 
         {settingsButton}
       </div>

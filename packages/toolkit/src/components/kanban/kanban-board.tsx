@@ -22,6 +22,8 @@ export interface KanbanBoardProps {
   users?: User[]
   onMoveItem?: (itemId: string, newStatus: string, position: number) => void
   onItemClick?: (item: Item) => void
+  /** Called when an item not belonging to this board is dropped onto it */
+  onExternalDrop?: (itemId: string, newStatus: string, position: number) => void
 }
 
 interface DropTarget {
@@ -147,6 +149,7 @@ export function KanbanBoard({
   users,
   onMoveItem,
   onItemClick,
+  onExternalDrop,
 }: KanbanBoardProps) {
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null)
   const [dropTarget, setDropTarget] = useState<DropTarget | null>(null)
@@ -243,11 +246,16 @@ export function KanbanBoard({
       setDropTarget(null)
       setDraggedItemId(null)
       const itemId = e.dataTransfer.getData("text/plain")
-      if (itemId && onMoveItem) {
-        onMoveItem(itemId, columnId, position)
+      if (!itemId) return
+      // Check if item belongs to this board
+      const isOwnItem = items.some((item) => item.id === itemId)
+      if (isOwnItem) {
+        onMoveItem?.(itemId, columnId, position)
+      } else {
+        onExternalDrop?.(itemId, columnId, position)
       }
     },
-    [onMoveItem, dropTarget]
+    [onMoveItem, onExternalDrop, dropTarget, items]
   )
 
   const handleDragEnd = useCallback(() => {
@@ -283,11 +291,15 @@ export function KanbanBoard({
       setDragOverColumn(null)
       setDropTarget(null)
       setFloatingHoverColumn(null)
-      if (itemId && onMoveItem) {
-        onMoveItem(itemId, columnId, columnItems.length)
+      if (!itemId) return
+      const isOwnItem = items.some((item) => item.id === itemId)
+      if (isOwnItem) {
+        onMoveItem?.(itemId, columnId, columnItems.length)
+      } else {
+        onExternalDrop?.(itemId, columnId, columnItems.length)
       }
     },
-    [onMoveItem, itemsByColumn]
+    [onMoveItem, onExternalDrop, itemsByColumn, items]
   )
 
   // Derive the source column of the dragged item (no extra state needed)
@@ -308,11 +320,15 @@ export function KanbanBoard({
       setDragOverColumn(null)
       setDropTarget(null)
       setHiddenChipHoverColumn(null)
-      if (itemId && onMoveItem) {
-        onMoveItem(itemId, columnId, columnItems.length)
+      if (!itemId) return
+      const isOwnItem = items.some((item) => item.id === itemId)
+      if (isOwnItem) {
+        onMoveItem?.(itemId, columnId, columnItems.length)
+      } else {
+        onExternalDrop?.(itemId, columnId, columnItems.length)
       }
     },
-    [onMoveItem, itemsByColumn]
+    [onMoveItem, onExternalDrop, itemsByColumn, items]
   )
 
   return (
