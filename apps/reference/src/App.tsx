@@ -56,7 +56,7 @@ import {
   type KanbanFilter,
   type ConnectorOption,
 } from "@real-life-stack/toolkit"
-import type { Item, User, Relation, DataInterface, GroupManager } from "@real-life-stack/data-interface"
+import type { Item, User, Relation, Group, DataInterface, GroupManager } from "@real-life-stack/data-interface"
 import { hasGroups } from "@real-life-stack/data-interface"
 import { demoItems, demoGroups, demoUsers, demoGroupMembers, demoGroupItems } from "@real-life-stack/data-interface/demo-data"
 import { MockConnector } from "@real-life-stack/mock-connector"
@@ -292,7 +292,8 @@ type KanbanPanelState =
   | { mode: "edit"; item: Item }
   | { mode: "create" }
 
-function KanbanView() {
+function KanbanView({ activeWorkspaceId, groups }: { activeWorkspaceId: string | null; groups: Group[] }) {
+  const connector = useConnector()
   const { data: tasks } = useItems({ type: "task" })
   const { data: members } = useMembers("group-1")
   const { data: currentUser } = useCurrentUser()
@@ -354,20 +355,33 @@ function KanbanView() {
     setPanelState({ mode: "closed" })
   }, [])
 
-  const handleTaskCreate = useCallback((data: { title: string; description: string; status: string; tags: string[]; assigneeId: string | null }) => {
+  // Determine if the active workspace is the aggregate ("Alles") view
+  const activeGroup = groups.find((g) => g.id === activeWorkspaceId)
+  const isAggregate = (activeGroup?.data?.scope as string) === "aggregate"
+
+  const handleTaskCreate = useCallback((data: { title: string; description: string; status: string; tags: string[]; assigneeId: string | null; groupId: string | null }) => {
     const relations: Relation[] = data.assigneeId
       ? [{ predicate: "assignedTo", target: `global:${data.assigneeId}` }]
       : []
+    // Temporarily switch to the target group so the connector scopes the item correctly
+    const previousGroupId = activeWorkspaceId
+    if (data.groupId && hasGroups(connector)) {
+      (connector as DataInterface & GroupManager).setCurrentGroup(data.groupId)
+    }
     createItem({
       type: "task",
       createdBy: currentUser?.id ?? "user-1",
       data: { title: data.title, description: data.description, status: data.status, position: tasks.length, tags: data.tags },
       relations,
     })
+    // Restore previous group
+    if (data.groupId && previousGroupId && data.groupId !== previousGroupId && hasGroups(connector)) {
+      (connector as DataInterface & GroupManager).setCurrentGroup(previousGroupId)
+    }
     setPanelState({ mode: "closed" })
-  }, [createItem, currentUser?.id, tasks.length])
+  }, [createItem, currentUser?.id, tasks.length, activeWorkspaceId, connector])
 
-  const handleTaskEdit = useCallback((data: { title: string; description: string; status: string; tags: string[]; assigneeId: string | null }) => {
+  const handleTaskEdit = useCallback((data: { title: string; description: string; status: string; tags: string[]; assigneeId: string | null; groupId: string | null }) => {
     if (panelState.mode !== "edit") return
     const item = panelState.item
     const relations: Relation[] = data.assigneeId
@@ -377,8 +391,16 @@ function KanbanView() {
       data: { ...item.data, title: data.title, description: data.description, status: data.status, tags: data.tags },
       relations,
     })
+    // Move item to different group if changed
+    if (data.groupId && "moveItemToGroup" in connector) {
+      const c = connector as DataInterface & { getItemGroupId(id: string): string | null; moveItemToGroup(id: string, gid: string): void }
+      const currentGroupId = c.getItemGroupId(item.id)
+      if (currentGroupId !== data.groupId) {
+        c.moveItemToGroup(item.id, data.groupId)
+      }
+    }
     setPanelState({ mode: "closed" })
-  }, [panelState, updateItem])
+  }, [panelState, updateItem, connector])
 
   return (
     <div className="space-y-4">
@@ -416,8 +438,12 @@ function KanbanView() {
               assigneeId: (panelState.item.relations ?? [])
                 .find((r) => r.predicate === "assignedTo")
                 ?.target.replace(/^global:/, "") ?? null,
+              groupId: "getItemGroupId" in connector
+                ? (connector as DataInterface & { getItemGroupId(id: string): string | null }).getItemGroupId(panelState.item.id)
+                : activeWorkspaceId,
             }}
             users={members}
+            groups={groups}
             availableTags={availableTags}
           />
         )}
@@ -426,6 +452,8 @@ function KanbanView() {
             onSubmit={handleTaskCreate}
             onCancel={handleClosePanel}
             users={members}
+            groups={groups}
+            defaultGroupId={isAggregate ? null : activeWorkspaceId}
             availableTags={availableTags}
           />
         )}
@@ -555,7 +583,7 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
       <AppShellMain withBottomNav>
         <div className={`container mx-auto px-4 pt-6 ${activeModule === "kanban" ? "max-w-5xl" : "max-w-2xl"}`}>
           {activeModule === "feed" && <FeedView />}
-          {activeModule === "kanban" && <KanbanView />}
+          {activeModule === "kanban" && <KanbanView activeWorkspaceId={activeWorkspace?.id ?? null} groups={groups} />}
           {activeModule === "map" && <MapView />}
           {activeModule === "calendar" && <CalendarViewWrapper />}
         </div>

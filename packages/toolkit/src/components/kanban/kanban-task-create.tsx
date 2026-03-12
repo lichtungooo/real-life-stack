@@ -1,13 +1,13 @@
 import { useState, type KeyboardEvent } from "react"
 import type { KanbanColumn } from "./kanban-board"
-import type { User } from "@real-life-stack/data-interface"
+import type { User, Group } from "@real-life-stack/data-interface"
 import { defaultColumns } from "./kanban-board"
 import { Input } from "../primitives/input"
 import { Textarea } from "../primitives/textarea"
 import { Button } from "../primitives/button"
 import { Avatar, AvatarFallback, AvatarImage } from "../primitives/avatar"
 import { cn } from "../../lib/utils"
-import { AlignLeft, Tag, Columns3, X, UserIcon } from "lucide-react"
+import { AlignLeft, Tag, Columns3, X, UserIcon, FolderOpen, ChevronRight } from "lucide-react"
 
 function getInitials(name: string): string {
   return name
@@ -55,6 +55,7 @@ export interface KanbanTaskFormData {
   status: string
   tags: string[]
   assigneeId: string | null
+  groupId: string | null
 }
 
 export interface KanbanTaskFormProps {
@@ -63,6 +64,8 @@ export interface KanbanTaskFormProps {
   initialData?: KanbanTaskFormData
   columns?: KanbanColumn[]
   users?: User[]
+  groups?: Group[]
+  defaultGroupId?: string | null
   availableTags?: string[]
   className?: string
 }
@@ -73,6 +76,8 @@ export function KanbanTaskForm({
   initialData,
   columns = defaultColumns,
   users = [],
+  groups = [],
+  defaultGroupId,
   availableTags = [],
   className,
 }: KanbanTaskFormProps) {
@@ -83,10 +88,16 @@ export function KanbanTaskForm({
   const [tags, setTags] = useState<string[]>(initialData?.tags ?? [])
   const [tagInput, setTagInput] = useState("")
   const [assigneeId, setAssigneeId] = useState<string | null>(initialData?.assigneeId ?? null)
+  const [groupId, setGroupId] = useState<string | null>(initialData?.groupId ?? defaultGroupId ?? null)
+  const [groupOpen, setGroupOpen] = useState(!isEdit)
+
+  // Filter out aggregate groups — items must belong to a concrete group
+  const selectableGroups = groups.filter((g) => (g.data?.scope as string) !== "aggregate")
 
   const handleSubmit = () => {
     if (!title.trim()) return
-    onSubmit({ title: title.trim(), description: description.trim(), status, tags, assigneeId })
+    if (selectableGroups.length > 0 && !groupId) return
+    onSubmit({ title: title.trim(), description: description.trim(), status, tags, assigneeId, groupId })
   }
 
   const addTag = (tag: string) => {
@@ -117,6 +128,46 @@ export function KanbanTaskForm({
       <h2 className="text-lg font-semibold text-foreground leading-tight">
         {isEdit ? "Task bearbeiten" : "Neuen Task erstellen"}
       </h2>
+
+      {/* Group */}
+      {selectableGroups.length > 0 && (
+        <div className="space-y-1.5">
+          <button
+            type="button"
+            onClick={() => setGroupOpen(!groupOpen)}
+            className="flex items-center gap-2 text-xs text-muted-foreground font-medium uppercase tracking-wide hover:text-foreground transition-colors"
+          >
+            <FolderOpen className="h-3.5 w-3.5" />
+            Gruppe
+            {!groupOpen && groupId && (
+              <span className="normal-case tracking-normal text-foreground font-medium">
+                — {selectableGroups.find((g) => g.id === groupId)?.name}
+              </span>
+            )}
+            <ChevronRight className={cn("h-3 w-3 transition-transform", groupOpen && "rotate-90")} />
+          </button>
+          {groupOpen && (
+            <div className="flex flex-wrap gap-1.5">
+              {selectableGroups.map((group) => (
+                <button
+                  key={group.id}
+                  type="button"
+                  onClick={() => setGroupId(group.id)}
+                  className={cn(
+                    "text-xs px-2.5 py-1 rounded-full font-medium transition-all",
+                    "bg-muted text-muted-foreground",
+                    groupId === group.id
+                      ? "ring-2 ring-primary ring-offset-1 ring-offset-background"
+                      : "opacity-50 hover:opacity-75"
+                  )}
+                >
+                  {group.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Title */}
       <div className="space-y-1.5">
@@ -276,7 +327,7 @@ export function KanbanTaskForm({
         </Button>
         <Button
           onClick={handleSubmit}
-          disabled={!title.trim()}
+          disabled={!title.trim() || (selectableGroups.length > 0 && !groupId)}
           className="flex-1"
         >
           {isEdit ? "Speichern" : "Task erstellen"}

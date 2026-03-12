@@ -285,6 +285,26 @@ export class LocalConnector implements FullConnector {
     this.broadcast({ type: "items-changed" })
   }
 
+  getItemGroupId(itemId: string): string | null {
+    for (const [gid, itemIds] of Object.entries(this.groupItems)) {
+      if (itemIds.includes(itemId)) return gid
+    }
+    return null
+  }
+
+  async moveItemToGroup(itemId: string, targetGroupId: string): Promise<void> {
+    // Remove from all groups
+    for (const gid of Object.keys(this.groupItems)) {
+      this.groupItems[gid] = this.groupItems[gid].filter((id) => id !== itemId)
+    }
+    // Add to target group
+    if (!this.groupItems[targetGroupId]) this.groupItems[targetGroupId] = []
+    this.groupItems[targetGroupId].push(itemId)
+    this.notifyObservers()
+    await this.persist()
+    this.broadcast({ type: "items-changed" })
+  }
+
   // --- Relations ---
 
   async getRelatedItems(
