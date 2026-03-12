@@ -34,6 +34,7 @@ import {
   KanbanToolbar,
   applyKanbanFilter,
   KanbanCardDetail,
+  KanbanTaskCreate,
   AdaptivePanel,
   CalendarView,
   Card,
@@ -287,6 +288,11 @@ function CalendarViewWrapper() {
   )
 }
 
+type KanbanPanelState =
+  | { mode: "closed" }
+  | { mode: "detail"; item: Item }
+  | { mode: "create" }
+
 function KanbanView() {
   const { data: tasks } = useItems({ type: "task" })
   const { data: members } = useMembers("group-1")
@@ -299,12 +305,23 @@ function KanbanView() {
     myTasksOnly: false,
     tags: [],
   })
-  const [selectedItem, setSelectedItem] = useState<Item | null>(null)
+  const [panelState, setPanelState] = useState<KanbanPanelState>({ mode: "closed" })
 
   const filteredTasks = useMemo(
     () => applyKanbanFilter(tasks, filter, currentUser?.id),
     [tasks, filter, currentUser?.id]
   )
+
+  const availableTags = useMemo(() => {
+    const tagSet = new Set<string>()
+    for (const task of tasks) {
+      const taskTags = task.data.tags as string[] | undefined
+      if (taskTags) {
+        for (const tag of taskTags) tagSet.add(tag)
+      }
+    }
+    return Array.from(tagSet)
+  }, [tasks])
 
   const handleMoveItem = (itemId: string, newStatus: string, position: number) => {
     const item = tasks.find((t) => t.id === itemId)
@@ -326,21 +343,26 @@ function KanbanView() {
     }
   }
 
-  const handleCreateItem = () => {
+  const handleCreateItem = useCallback(() => {
+    setPanelState({ mode: "create" })
+  }, [])
+
+  const handleItemClick = useCallback((item: Item) => {
+    setPanelState({ mode: "detail", item })
+  }, [])
+
+  const handleClosePanel = useCallback(() => {
+    setPanelState({ mode: "closed" })
+  }, [])
+
+  const handleTaskCreate = useCallback((data: { title: string; description: string; status: string; tags: string[] }) => {
     createItem({
       type: "task",
       createdBy: currentUser?.id ?? "user-1",
-      data: { title: "Neuer Task", status: "todo", position: tasks.length, tags: [] },
+      data: { title: data.title, description: data.description, status: data.status, position: tasks.length, tags: data.tags },
     })
-  }
-
-  const handleItemClick = useCallback((item: Item) => {
-    setSelectedItem(item)
-  }, [])
-
-  const handleCloseDetail = useCallback(() => {
-    setSelectedItem(null)
-  }, [])
+    setPanelState({ mode: "closed" })
+  }, [createItem, currentUser?.id, tasks.length])
 
   return (
     <div className="space-y-4">
@@ -359,14 +381,21 @@ function KanbanView() {
         onItemClick={handleItemClick}
       />
       <AdaptivePanel
-        open={selectedItem !== null}
-        onClose={handleCloseDetail}
+        open={panelState.mode !== "closed"}
+        onClose={handleClosePanel}
         allowedModes={["modal", "sidebar", "drawer"]}
         sidebarWidth="420px"
         sidebarMinWidth="300px"
       >
-        {selectedItem && (
-          <KanbanCardDetail item={selectedItem} users={members} />
+        {panelState.mode === "detail" && (
+          <KanbanCardDetail item={panelState.item} users={members} />
+        )}
+        {panelState.mode === "create" && (
+          <KanbanTaskCreate
+            onSubmit={handleTaskCreate}
+            onCancel={handleClosePanel}
+            availableTags={availableTags}
+          />
         )}
       </AdaptivePanel>
     </div>
