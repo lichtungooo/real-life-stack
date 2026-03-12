@@ -1,11 +1,22 @@
 import { useState, type KeyboardEvent } from "react"
 import type { KanbanColumn } from "./kanban-board"
+import type { User } from "@real-life-stack/data-interface"
 import { defaultColumns } from "./kanban-board"
 import { Input } from "../primitives/input"
 import { Textarea } from "../primitives/textarea"
 import { Button } from "../primitives/button"
+import { Avatar, AvatarFallback, AvatarImage } from "../primitives/avatar"
 import { cn } from "../../lib/utils"
-import { AlignLeft, Tag, Columns3, X } from "lucide-react"
+import { AlignLeft, Tag, Columns3, X, UserIcon } from "lucide-react"
+
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2)
+}
 
 function getStatusLabel(status: string): string {
   const labels: Record<string, string> = {
@@ -38,37 +49,44 @@ function getTagColor(tag: string): string {
   return colors[Math.abs(hash) % colors.length]
 }
 
-export interface KanbanTaskCreateData {
+export interface KanbanTaskFormData {
   title: string
   description: string
   status: string
   tags: string[]
+  assigneeId: string | null
 }
 
-export interface KanbanTaskCreateProps {
-  onSubmit: (data: KanbanTaskCreateData) => void
+export interface KanbanTaskFormProps {
+  onSubmit: (data: KanbanTaskFormData) => void
   onCancel: () => void
+  initialData?: KanbanTaskFormData
   columns?: KanbanColumn[]
+  users?: User[]
   availableTags?: string[]
   className?: string
 }
 
-export function KanbanTaskCreate({
+export function KanbanTaskForm({
   onSubmit,
   onCancel,
+  initialData,
   columns = defaultColumns,
+  users = [],
   availableTags = [],
   className,
-}: KanbanTaskCreateProps) {
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
-  const [status, setStatus] = useState("todo")
-  const [tags, setTags] = useState<string[]>([])
+}: KanbanTaskFormProps) {
+  const isEdit = !!initialData
+  const [title, setTitle] = useState(initialData?.title ?? "")
+  const [description, setDescription] = useState(initialData?.description ?? "")
+  const [status, setStatus] = useState(initialData?.status ?? "todo")
+  const [tags, setTags] = useState<string[]>(initialData?.tags ?? [])
   const [tagInput, setTagInput] = useState("")
+  const [assigneeId, setAssigneeId] = useState<string | null>(initialData?.assigneeId ?? null)
 
   const handleSubmit = () => {
     if (!title.trim()) return
-    onSubmit({ title: title.trim(), description: description.trim(), status, tags })
+    onSubmit({ title: title.trim(), description: description.trim(), status, tags, assigneeId })
   }
 
   const addTag = (tag: string) => {
@@ -97,7 +115,7 @@ export function KanbanTaskCreate({
     <div className={cn("space-y-5 p-4", className)}>
       {/* Heading */}
       <h2 className="text-lg font-semibold text-foreground leading-tight">
-        Neuen Task erstellen
+        {isEdit ? "Task bearbeiten" : "Neuen Task erstellen"}
       </h2>
 
       {/* Title */}
@@ -135,6 +153,54 @@ export function KanbanTaskCreate({
           ))}
         </div>
       </div>
+
+      {/* Assignee */}
+      {users.length > 0 && (
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium uppercase tracking-wide">
+            <UserIcon className="h-3.5 w-3.5" />
+            Zugewiesen
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {/* Unassigned option */}
+            <button
+              type="button"
+              onClick={() => setAssigneeId(null)}
+              className={cn(
+                "flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium transition-all",
+                "bg-muted text-muted-foreground",
+                assigneeId === null
+                  ? "ring-2 ring-primary ring-offset-1 ring-offset-background"
+                  : "opacity-50 hover:opacity-75"
+              )}
+            >
+              Niemand
+            </button>
+            {users.map((user) => (
+              <button
+                key={user.id}
+                type="button"
+                onClick={() => setAssigneeId(user.id)}
+                className={cn(
+                  "flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium transition-all",
+                  "bg-muted text-muted-foreground",
+                  assigneeId === user.id
+                    ? "ring-2 ring-primary ring-offset-1 ring-offset-background"
+                    : "opacity-50 hover:opacity-75"
+                )}
+              >
+                <Avatar className="h-4 w-4">
+                  <AvatarImage src={user.avatarUrl} alt={user.displayName} />
+                  <AvatarFallback className="text-[7px] bg-background">
+                    {getInitials(user.displayName ?? user.id)}
+                  </AvatarFallback>
+                </Avatar>
+                {user.displayName ?? user.id}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Description */}
       <div className="space-y-1.5">
@@ -213,9 +279,13 @@ export function KanbanTaskCreate({
           disabled={!title.trim()}
           className="flex-1"
         >
-          Task erstellen
+          {isEdit ? "Speichern" : "Task erstellen"}
         </Button>
       </div>
     </div>
   )
 }
+
+// Backwards-compatible aliases
+export { KanbanTaskForm as KanbanTaskCreate }
+export type { KanbanTaskFormData as KanbanTaskCreateData, KanbanTaskFormProps as KanbanTaskCreateProps }

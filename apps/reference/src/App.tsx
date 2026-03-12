@@ -33,8 +33,7 @@ import {
   KanbanBoard,
   KanbanToolbar,
   applyKanbanFilter,
-  KanbanCardDetail,
-  KanbanTaskCreate,
+  KanbanTaskForm,
   AdaptivePanel,
   CalendarView,
   Card,
@@ -57,7 +56,7 @@ import {
   type KanbanFilter,
   type ConnectorOption,
 } from "@real-life-stack/toolkit"
-import type { Item, User, DataInterface, GroupManager } from "@real-life-stack/data-interface"
+import type { Item, User, Relation, DataInterface, GroupManager } from "@real-life-stack/data-interface"
 import { hasGroups } from "@real-life-stack/data-interface"
 import { demoItems, demoGroups, demoUsers, demoGroupMembers, demoGroupItems } from "@real-life-stack/data-interface/demo-data"
 import { MockConnector } from "@real-life-stack/mock-connector"
@@ -290,7 +289,7 @@ function CalendarViewWrapper() {
 
 type KanbanPanelState =
   | { mode: "closed" }
-  | { mode: "detail"; item: Item }
+  | { mode: "edit"; item: Item }
   | { mode: "create" }
 
 function KanbanView() {
@@ -348,21 +347,38 @@ function KanbanView() {
   }, [])
 
   const handleItemClick = useCallback((item: Item) => {
-    setPanelState({ mode: "detail", item })
+    setPanelState({ mode: "edit", item })
   }, [])
 
   const handleClosePanel = useCallback(() => {
     setPanelState({ mode: "closed" })
   }, [])
 
-  const handleTaskCreate = useCallback((data: { title: string; description: string; status: string; tags: string[] }) => {
+  const handleTaskCreate = useCallback((data: { title: string; description: string; status: string; tags: string[]; assigneeId: string | null }) => {
+    const relations: Relation[] = data.assigneeId
+      ? [{ predicate: "assignedTo", target: `global:${data.assigneeId}` }]
+      : []
     createItem({
       type: "task",
       createdBy: currentUser?.id ?? "user-1",
       data: { title: data.title, description: data.description, status: data.status, position: tasks.length, tags: data.tags },
+      relations,
     })
     setPanelState({ mode: "closed" })
   }, [createItem, currentUser?.id, tasks.length])
+
+  const handleTaskEdit = useCallback((data: { title: string; description: string; status: string; tags: string[]; assigneeId: string | null }) => {
+    if (panelState.mode !== "edit") return
+    const item = panelState.item
+    const relations: Relation[] = data.assigneeId
+      ? [{ predicate: "assignedTo", target: `global:${data.assigneeId}` }]
+      : []
+    updateItem(item.id, {
+      data: { ...item.data, title: data.title, description: data.description, status: data.status, tags: data.tags },
+      relations,
+    })
+    setPanelState({ mode: "closed" })
+  }, [panelState, updateItem])
 
   return (
     <div className="space-y-4">
@@ -387,13 +403,29 @@ function KanbanView() {
         sidebarWidth="420px"
         sidebarMinWidth="300px"
       >
-        {panelState.mode === "detail" && (
-          <KanbanCardDetail item={panelState.item} users={members} />
+        {panelState.mode === "edit" && (
+          <KanbanTaskForm
+            key={panelState.item.id}
+            onSubmit={handleTaskEdit}
+            onCancel={handleClosePanel}
+            initialData={{
+              title: String(panelState.item.data.title ?? ""),
+              description: String(panelState.item.data.description ?? ""),
+              status: String(panelState.item.data.status ?? "todo"),
+              tags: (panelState.item.data.tags as string[]) ?? [],
+              assigneeId: (panelState.item.relations ?? [])
+                .find((r) => r.predicate === "assignedTo")
+                ?.target.replace(/^global:/, "") ?? null,
+            }}
+            users={members}
+            availableTags={availableTags}
+          />
         )}
         {panelState.mode === "create" && (
-          <KanbanTaskCreate
+          <KanbanTaskForm
             onSubmit={handleTaskCreate}
             onCancel={handleClosePanel}
+            users={members}
             availableTags={availableTags}
           />
         )}
