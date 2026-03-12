@@ -166,6 +166,7 @@ export function AdaptivePanel({
     velocitySamples: number[]
   } | null>(null)
   const panelRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
   const rafRef = useRef<number | null>(null)
 
   // Remember last drawer/sidebar sizes for restore after modal round-trip
@@ -273,6 +274,10 @@ export function AdaptivePanel({
     if (open) {
       setVisible(true)
       setAnimatingOut(false)
+      // Reset scroll position on fresh open
+      if (!wasOpen && contentRef.current) {
+        contentRef.current.scrollTop = 0
+      }
       // Only animate drawer to initial height on fresh open (not on mode switch)
       if (mode === "drawer" && !wasOpen) {
         updateDrawerY(100)
@@ -501,8 +506,8 @@ export function AdaptivePanel({
   const drawerTransition = isDragging
     ? "none"
     : isClosingVelocity
-      ? "transform 200ms ease-in, opacity 200ms ease-in"
-      : "transform 300ms cubic-bezier(0.32, 0.72, 0, 1), opacity 300ms cubic-bezier(0.32, 0.72, 0, 1)"
+      ? "height 200ms ease-in, opacity 200ms ease-in"
+      : "height 300ms cubic-bezier(0.32, 0.72, 0, 1), opacity 300ms cubic-bezier(0.32, 0.72, 0, 1)"
 
   const visibleFraction = (100 - drawerY) / 100
   const fadeStart = snapLower - snapZone
@@ -521,8 +526,7 @@ export function AdaptivePanel({
         }
       : mode === "drawer"
         ? {
-            height: "100vh",
-            transform: `translateY(${drawerY}%)`,
+            height: `${100 - Math.max(0, drawerY)}vh`,
             opacity: drawerOpacity,
             transition: drawerTransition,
           }
@@ -661,6 +665,7 @@ export function AdaptivePanel({
 
           {/* Content — always the same React node, never unmounted on mode switch */}
           <div
+            ref={contentRef}
             className={cn(
               "flex-1 overflow-y-auto",
               mode === "drawer" && "px-4 pb-[calc(1rem+env(safe-area-inset-bottom))]",
