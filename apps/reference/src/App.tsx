@@ -52,9 +52,13 @@ import {
   GroupDialog,
   ProfileDialog,
   ContactsDialog,
-  AddContactDialog,
   VerificationDialog,
+  IncomingVerificationDialog,
+  IncomingSpaceInviteDialog,
+  MutualVerificationDialog,
   RelayStatusBadge,
+  IncomingEventsProvider,
+  useIncomingEvents,
   ConnectorProvider,
   useItems,
   useUpdateItem,
@@ -81,7 +85,7 @@ import {
   type GroupDialogMode,
 } from "@real-life-stack/toolkit"
 import type { Item, User, Relation, Group, DataInterface, GroupManager } from "@real-life-stack/data-interface"
-import { hasGroups, isAuthenticatable, hasMessaging } from "@real-life-stack/data-interface"
+import { hasGroups, isAuthenticatable, hasMessaging, hasSignedClaims } from "@real-life-stack/data-interface"
 import { demoItems, demoGroups, demoUsers, demoGroupMembers, demoGroupItems } from "@real-life-stack/data-interface/demo-data"
 import { MockConnector } from "@real-life-stack/mock-connector"
 import { LocalConnector } from "@real-life-stack/local-connector"
@@ -705,6 +709,50 @@ function RelayStatusBadgeWrapper() {
   return <RelayStatusBadge state={state} pendingCount={pendingCount} />
 }
 
+/**
+ * Global incoming event dialogs — counter-verify, space invite, mutual verification.
+ * Must be rendered inside IncomingEventsProvider.
+ */
+function IncomingEventDialogs() {
+  const connector = useConnector()
+  const { incomingVerification, spaceInvite, mutualVerification, dismiss } = useIncomingEvents()
+
+  const handleCounterVerify = async () => {
+    if (!incomingVerification || !hasSignedClaims(connector)) return
+    await connector.counterVerify(incomingVerification.fromId)
+    dismiss()
+  }
+
+  const handleOpenSpace = () => {
+    // TODO: navigate to the invited space
+    dismiss()
+  }
+
+  return (
+    <>
+      <IncomingVerificationDialog
+        open={!!incomingVerification}
+        fromId={incomingVerification?.fromId ?? ""}
+        fromName={incomingVerification?.fromName}
+        onConfirm={handleCounterVerify}
+        onReject={dismiss}
+      />
+      <IncomingSpaceInviteDialog
+        open={!!spaceInvite}
+        spaceName={spaceInvite?.spaceName ?? ""}
+        inviterName={spaceInvite?.fromName}
+        onOpen={handleOpenSpace}
+        onDismiss={dismiss}
+      />
+      <MutualVerificationDialog
+        open={!!mutualVerification}
+        peerName={mutualVerification?.fromName}
+        onDismiss={dismiss}
+      />
+    </>
+  )
+}
+
 function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: string; onConnectorChange: (id: string) => void }) {
   const connector = useConnector()
   const { data: groups } = useGroups()
@@ -714,13 +762,12 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
   const inviteMember = useInviteMember()
   const removeMember = useRemoveMember()
   const { data: currentUser } = useCurrentUser()
-  const { activeContacts, pendingContacts, contacts: allContacts, addContact, removeContact, updateContactName, supportsContacts } = useContacts()
+  const { activeContacts, pendingContacts, contacts: allContacts, removeContact, updateContactName, supportsContacts } = useContacts()
   const verification = useVerification()
 
   // Dialog state
   const [contactsDialogOpen, setContactsDialogOpen] = useState(false)
   const [verifyDialogOpen, setVerifyDialogOpen] = useState(false)
-  const [addContactDialogOpen, setAddContactDialogOpen] = useState(false)
   const [profileDialogOpen, setProfileDialogOpen] = useState(false)
   const profileData = useMemo(() => {
     const did = (connector as any).getDid?.() ?? currentUser?.id ?? ""
@@ -974,7 +1021,7 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
         onRemove={removeContact}
         onEditName={updateContactName}
         onVerify={() => { setContactsDialogOpen(false); setVerifyDialogOpen(true) }}
-        onAdd={() => { setContactsDialogOpen(false); setAddContactDialogOpen(true) }}
+        onAdd={() => { setContactsDialogOpen(false); setVerifyDialogOpen(true) }}
       />
 
       <VerificationDialog
@@ -990,11 +1037,8 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
         onReset={verification.reset}
       />
 
-      <AddContactDialog
-        open={addContactDialogOpen}
-        onOpenChange={setAddContactDialogOpen}
-        onAdd={addContact}
-      />
+      {/* Incoming event dialogs */}
+      <IncomingEventDialogs />
 
       {/* Connector FAB — bottom-left, above BottomNav */}
       <div className="fixed bottom-20 left-4 z-50">
@@ -1124,11 +1168,13 @@ export default function App() {
 
   return (
     <ConnectorProvider connector={connector} key={connectorId}>
-      <AuthGate connector={connector}>
-        <Routes>
-          <Route path="/" element={<Home activeConnectorId={connectorId} onConnectorChange={setConnectorId} />} />
-        </Routes>
-      </AuthGate>
+      <IncomingEventsProvider>
+        <AuthGate connector={connector}>
+          <Routes>
+            <Route path="/" element={<Home activeConnectorId={connectorId} onConnectorChange={setConnectorId} />} />
+          </Routes>
+        </AuthGate>
+      </IncomingEventsProvider>
     </ConnectorProvider>
   )
 }

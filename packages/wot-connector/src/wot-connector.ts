@@ -13,6 +13,7 @@ import type {
   SignedClaim,
   ClaimDeliveryStatus,
   VerificationDirection,
+  IncomingEvent,
 } from "@real-life-stack/data-interface"
 import {
   BaseConnector,
@@ -45,6 +46,7 @@ import type {
   SpaceHandle,
   Subscribable,
   MessagingAdapter,
+  MessageEnvelope,
   PersonalDoc,
   PublicProfile,
   VerificationDoc,
@@ -92,6 +94,9 @@ export class WotConnector extends BaseConnector {
 
   // Verification challenge state (in-progress challenges)
   private pendingChallenge: { code: string; nonce: string } | null = null
+
+  // Incoming event listeners
+  private eventCallbacks = new Set<(event: IncomingEvent) => void>()
 
   // Item observables keyed by JSON.stringify(filter)
   private itemObservables = new Map<string, ReactiveObservable<Item[]>>()
@@ -626,7 +631,12 @@ export class WotConnector extends BaseConnector {
       })
     }
 
-    // 7. PersonalDoc changes -> restore spaces + update contacts + claims
+    // 7. Incoming message handler (verification, space-invite)
+    this.wsAdapter.onMessage(async (envelope) => {
+      await this.handleIncomingMessage(envelope)
+    })
+
+    // 8. PersonalDoc changes -> restore spaces + update contacts + claims
     this.personalDocUnsub = onPersonalDocChange(() => {
       this.replication?.requestSync?.("__all__").catch(() => {})
       this.syncContactsFromPersonalDoc()
@@ -917,20 +927,34 @@ export class WotConnector extends BaseConnector {
 
   override async confirmAndRespond(challengeCode: string): Promise<void> {
     const did = this.identity.getDid()
-    const displayName = getPersonalDoc()?.profile?.name ?? getDefaultDisplayName(did)
-
-    // Create response (contains both parties' info)
-    const responseCode = await VerificationHelper.respondToChallenge(challengeCode, this.identity, displayName)
 
     // Parse to get the peer's info
     const parsed = JSON.parse(atob(challengeCode))
     const peerDid = parsed.fromDid
+    const peerName = parsed.fromName as string | undefined
+    const peerPublicKey = parsed.fromPublicKey as string | undefined
     const nonce = parsed.nonce
 
     // Create our verification of the peer (from=us, to=peer)
     const verification = await VerificationHelper.createVerificationFor(this.identity, peerDid, nonce)
 
-    // Store in PersonalDoc
+    // Add contact if not exists, activate if pending
+    const now = new Date().toISOString()
+    let resolvedName = peerName
+    let avatar: string | undefined
+    let bio: string | undefined
+    let publicKey = peerPublicKey
+    try {
+      const result = await this.discovery.resolveProfile(peerDid)
+      if (result.profile) {
+        resolvedName = resolvedName ?? result.profile.name ?? undefined
+        avatar = result.profile.avatar ?? undefined
+        bio = result.profile.bio ?? undefined
+        publicKey = publicKey ?? result.profile.encryptionPublicKey ?? undefined
+      }
+    } catch { /* Discovery unavailable */ }
+
+    // Store verification + add/activate contact in PersonalDoc
     changePersonalDoc((doc) => {
       if (!doc.verifications) doc.verifications = {} as any
       doc.verifications[verification.id] = {
@@ -942,17 +966,63 @@ export class WotConnector extends BaseConnector {
         locationJson: null,
       } as any
 
-      // Activate the contact
-      if (doc.contacts?.[peerDid]) {
+      // Add or activate the contact
+      if (!doc.contacts) doc.contacts = {} as any
+      if (!doc.contacts[peerDid]) {
+        doc.contacts[peerDid] = {
+          did: peerDid,
+          publicKey: publicKey ?? "",
+          name: resolvedName ?? null,
+          avatar: avatar ?? null,
+          bio: bio ?? null,
+          status: "active",
+          createdAt: now,
+          updatedAt: now,
+        } as any
+      } else {
         doc.contacts[peerDid].status = "active"
-        doc.contacts[peerDid].updatedAt = new Date().toISOString()
+        doc.contacts[peerDid].updatedAt = now
+        if (resolvedName && !doc.contacts[peerDid].name) doc.contacts[peerDid].name = resolvedName as any
       }
     })
+
+    // Send verification to peer via relay
+    if (this.outboxAdapter) {
+      const envelope: MessageEnvelope = {
+        v: 1,
+        id: verification.id,
+        type: "verification",
+        fromDid: did,
+        toDid: peerDid,
+        createdAt: now,
+        encoding: "json",
+        payload: JSON.stringify(verification),
+        signature: verification.proof.proofValue,
+      }
+      this.outboxAdapter.send(envelope).catch(() => {}) // Non-blocking — outbox handles retry
+    }
   }
 
   override async counterVerify(targetId: string): Promise<void> {
+    const did = this.identity.getDid()
     const nonce = crypto.randomUUID()
     const verification = await VerificationHelper.createVerificationFor(this.identity, targetId, nonce)
+    const now = new Date().toISOString()
+
+    // Resolve peer profile + add/activate contact
+    let resolvedName: string | undefined
+    let avatar: string | undefined
+    let bio: string | undefined
+    let publicKey: string | undefined
+    try {
+      const result = await this.discovery.resolveProfile(targetId)
+      if (result.profile) {
+        resolvedName = result.profile.name ?? undefined
+        avatar = result.profile.avatar ?? undefined
+        bio = result.profile.bio ?? undefined
+        publicKey = result.profile.encryptionPublicKey ?? undefined
+      }
+    } catch { /* Discovery unavailable */ }
 
     changePersonalDoc((doc) => {
       if (!doc.verifications) doc.verifications = {} as any
@@ -964,7 +1034,41 @@ export class WotConnector extends BaseConnector {
         proofJson: JSON.stringify(verification.proof),
         locationJson: null,
       } as any
+
+      // Add or activate contact
+      if (!doc.contacts) doc.contacts = {} as any
+      if (!doc.contacts[targetId]) {
+        doc.contacts[targetId] = {
+          did: targetId,
+          publicKey: publicKey ?? "",
+          name: resolvedName ?? null,
+          avatar: avatar ?? null,
+          bio: bio ?? null,
+          status: "active",
+          createdAt: now,
+          updatedAt: now,
+        } as any
+      } else {
+        doc.contacts[targetId].status = "active"
+        doc.contacts[targetId].updatedAt = now
+      }
     })
+
+    // Send via relay
+    if (this.outboxAdapter) {
+      const envelope: MessageEnvelope = {
+        v: 1,
+        id: verification.id,
+        type: "verification",
+        fromDid: did,
+        toDid: targetId,
+        createdAt: now,
+        encoding: "json",
+        payload: JSON.stringify(verification),
+        signature: verification.proof.proofValue,
+      }
+      this.outboxAdapter.send(envelope).catch(() => {})
+    }
   }
 
   override async getClaimsByMe(): Promise<SignedClaim[]> {
@@ -1007,6 +1111,109 @@ export class WotConnector extends BaseConnector {
 
   override async retryClaim(_id: string): Promise<void> {
     // TODO: Re-queue in outbox for delivery
+  }
+
+  // ==================== Incoming Events ====================
+
+  onIncomingEvent(callback: (event: IncomingEvent) => void): () => void {
+    this.eventCallbacks.add(callback)
+    return () => { this.eventCallbacks.delete(callback) }
+  }
+
+  private emitEvent(event: IncomingEvent): void {
+    for (const cb of this.eventCallbacks) {
+      try { cb(event) } catch { /* ignore callback errors */ }
+    }
+  }
+
+  private async handleIncomingMessage(envelope: MessageEnvelope): Promise<void> {
+    const did = this.identity.getDid()
+
+    if (envelope.type === "verification" && envelope.toDid === did) {
+      // Incoming verification — verify signature, save, emit event
+      try {
+        const verification = JSON.parse(envelope.payload)
+        if (!verification.id || !verification.from || !verification.to || !verification.proof) return
+
+        const isValid = await VerificationHelper.verifySignature(verification)
+        if (!isValid) return
+
+        // Save to PersonalDoc
+        changePersonalDoc((doc) => {
+          if (!doc.verifications) doc.verifications = {} as any
+          doc.verifications[verification.id] = {
+            id: verification.id,
+            fromDid: verification.from,
+            toDid: verification.to,
+            timestamp: verification.timestamp,
+            proofJson: JSON.stringify(verification.proof),
+            locationJson: null,
+          } as any
+        })
+
+        // Check if this matches our pending challenge nonce (= they scanned our QR)
+        const nonce = this.pendingChallenge?.nonce
+        if (nonce && verification.id.includes(nonce)) {
+          this.pendingChallenge = null // Nonce consumed
+
+          // Resolve peer name
+          let peerName: string | undefined
+          try {
+            const result = await this.discovery.resolveProfile(verification.from)
+            peerName = result.profile?.name ?? undefined
+          } catch { /* ignore */ }
+
+          this.emitEvent({
+            type: "incoming-verification",
+            fromId: verification.from,
+            fromName: peerName,
+            challengeCode: envelope.payload, // Pass for counter-verify
+          })
+        }
+
+        // Check for mutual verification
+        this.checkMutualVerification(verification.from)
+      } catch { /* ignore malformed */ }
+    }
+
+    if (envelope.type === "space-invite" && envelope.toDid === did) {
+      try {
+        const payload = JSON.parse(envelope.payload)
+        let inviterName: string | undefined
+        const contact = this.contactsObs.current.find((c) => c.id === envelope.fromDid)
+        inviterName = contact?.name ?? undefined
+        if (!inviterName) {
+          try {
+            const result = await this.discovery.resolveProfile(envelope.fromDid)
+            inviterName = result.profile?.name ?? undefined
+          } catch { /* ignore */ }
+        }
+
+        this.emitEvent({
+          type: "space-invite",
+          fromId: envelope.fromDid,
+          fromName: inviterName,
+          spaceId: payload.spaceId,
+          spaceName: payload.spaceName ?? "Unnamed Space",
+        })
+      } catch { /* ignore malformed */ }
+    }
+  }
+
+  private checkMutualVerification(peerId: string): void {
+    const did = this.identity.getDid()
+    const claims = this.claimsObs.current.filter((c) => c.tags?.includes("verification"))
+    const outgoing = claims.some((c) => c.from === did && c.to === peerId)
+    const incoming = claims.some((c) => c.from === peerId && c.to === did)
+
+    if (outgoing && incoming) {
+      const contact = this.contactsObs.current.find((c) => c.id === peerId)
+      this.emitEvent({
+        type: "mutual-verification",
+        fromId: peerId,
+        fromName: contact?.name,
+      })
+    }
   }
 
   // ==================== Internal: Claims sync ====================

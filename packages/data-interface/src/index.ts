@@ -243,12 +243,29 @@ export interface ProfileCapable {
 
 // --- Incoming Events ---
 
-export interface IncomingEvent {
-  type: "signed-claim" | "space-invite" | "mutual-verification"
+export interface IncomingVerificationEvent {
+  type: "incoming-verification"
   fromId: string
   fromName?: string
-  data: Record<string, unknown>
+  /** The challenge code needed for counter-verification */
+  challengeCode: string
 }
+
+export interface IncomingSpaceInviteEvent {
+  type: "space-invite"
+  fromId: string
+  fromName?: string
+  spaceId: string
+  spaceName: string
+}
+
+export interface MutualVerificationEvent {
+  type: "mutual-verification"
+  fromId: string
+  fromName?: string
+}
+
+export type IncomingEvent = IncomingVerificationEvent | IncomingSpaceInviteEvent | MutualVerificationEvent
 
 export interface EventListenerCapable {
   onIncomingEvent(callback: (event: IncomingEvent) => void): () => void
