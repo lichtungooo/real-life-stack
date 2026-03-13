@@ -250,9 +250,18 @@ export function ContentComposer({
   const defaultWidgets = new Set(currentConfig.defaultWidgets)
   const activeWidgets = new Set([...defaultWidgets, ...manualWidgets])
 
-  // Widgets available to toggle on (not active, not title/text which are always toggleable differently)
+  // Widgets that require config and should be hidden when config is missing
+  const hasStatusOptions = currentConfig.statusOptions && currentConfig.statusOptions.length > 0
+  const hasGroupOptions = currentConfig.groupOptions && currentConfig.groupOptions.length > 0
+
+  // Widgets available to toggle on (not active, not title/text, not status/group without config)
   const toggleableWidgets = WIDGET_ORDER.filter(
-    (w) => !activeWidgets.has(w) && w !== "title" && w !== "text",
+    (w) =>
+      !activeWidgets.has(w) &&
+      w !== "title" &&
+      w !== "text" &&
+      !(w === "status" && !hasStatusOptions) &&
+      !(w === "group" && !hasGroupOptions),
   ) as WidgetType[]
 
   // Get widget label
