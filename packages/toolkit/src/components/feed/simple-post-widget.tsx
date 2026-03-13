@@ -11,6 +11,8 @@ import { cn } from "@/lib/utils"
 interface SimplePostWidgetProps {
   placeholder?: string
   onSubmit?: (content: string, attachments?: File[]) => void
+  /** Click handler — when set, the widget acts as a trigger (e.g. to open ContentComposer) */
+  onClick?: () => void
   className?: string
   disabled?: boolean
 }
@@ -18,6 +20,7 @@ interface SimplePostWidgetProps {
 export function SimplePostWidget({
   placeholder = "Was gibt's Neues?",
   onSubmit,
+  onClick,
   className,
   disabled = false,
 }: SimplePostWidgetProps) {
@@ -46,6 +49,20 @@ export function SimplePostWidget({
   }
 
   const canSubmit = content.trim().length > 0 || attachments.length > 0
+
+  // Trigger mode: clicking anywhere opens the composer
+  if (onClick) {
+    return (
+      <Card
+        className={cn("w-full cursor-pointer", className)}
+        onClick={onClick}
+      >
+        <CardContent className="pt-4">
+          <div className="min-h-[40px] text-muted-foreground">{placeholder}</div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <Card className={cn("w-full", className)}>
