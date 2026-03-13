@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { X } from "lucide-react"
-import { Input } from "@/components/primitives/input"
 import { cn } from "@/lib/utils"
 
 interface TagsWidgetProps {
@@ -91,31 +90,25 @@ export function TagsWidget({
   }
 
   return (
-    <div className="space-y-1" ref={wrapperRef}>
-      <label className="text-sm font-medium text-muted-foreground">
-        {label}
-      </label>
-      {value.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {value.map((tag) => (
-            <span
-              key={tag}
-              className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-sm"
+    <div className="relative" ref={wrapperRef}>
+      <span className="mb-1 block text-xs font-medium text-muted-foreground">{label}</span>
+      <div className="flex flex-wrap items-center gap-1.5 rounded-md border px-2 py-1.5">
+        {value.map((tag) => (
+          <span
+            key={tag}
+            className="inline-flex items-center gap-0.5 rounded-full bg-secondary px-2 py-0.5 text-xs"
+          >
+            {tag}
+            <button
+              type="button"
+              onClick={() => removeTag(tag)}
+              className="text-muted-foreground hover:text-foreground"
             >
-              {tag}
-              <button
-                type="button"
-                onClick={() => removeTag(tag)}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
-      <div className="relative">
-        <Input
+              <X className="h-2.5 w-2.5" />
+            </button>
+          </span>
+        ))}
+        <input
           value={query}
           onChange={(e) => {
             setQuery(e.target.value)
@@ -123,27 +116,27 @@ export function TagsWidget({
           }}
           onFocus={() => setShowSuggestions(true)}
           onKeyDown={handleKeyDown}
-          placeholder="Tag hinzufuegen..."
-          className="text-sm"
+          placeholder={value.length === 0 ? "Hinzufuegen..." : ""}
+          className="min-w-[60px] flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-muted-foreground/50"
         />
-        {showSuggestions && filtered.length > 0 && (
-          <div className="absolute top-full z-10 mt-1 w-full rounded-md border bg-popover p-1 shadow-md">
-            {filtered.slice(0, 8).map((suggestion) => (
-              <button
-                key={suggestion}
-                type="button"
-                onClick={() => addTag(suggestion)}
-                className={cn(
-                  "w-full rounded-sm px-2 py-1.5 text-left text-sm",
-                  "hover:bg-accent hover:text-accent-foreground",
-                )}
-              >
-                {suggestion}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
+      {showSuggestions && filtered.length > 0 && (
+        <div className="absolute top-full z-10 mt-1 w-full rounded-md border bg-popover p-1 shadow-md">
+          {filtered.slice(0, 8).map((suggestion) => (
+            <button
+              key={suggestion}
+              type="button"
+              onClick={() => addTag(suggestion)}
+              className={cn(
+                "w-full rounded-sm px-2 py-1.5 text-left text-sm",
+                "hover:bg-accent hover:text-accent-foreground",
+              )}
+            >
+              {suggestion}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

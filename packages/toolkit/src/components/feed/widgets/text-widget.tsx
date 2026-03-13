@@ -192,11 +192,8 @@ export function TextWidget({
   ]
 
   return (
-    <div className="space-y-1">
-      <label className="text-sm font-medium text-muted-foreground">
-        {label}
-      </label>
-      {/* Formatting toolbar */}
+    <div>
+      {/* Formatting toolbar (top) */}
       <div className="flex flex-wrap items-center gap-0.5 rounded-t-md border border-b-0 bg-muted/30 px-1 py-0.5">
         {formatButtons.map(({ format, icon: Icon, title }) => (
           <Button
@@ -212,35 +209,34 @@ export function TextWidget({
           </Button>
         ))}
       </div>
-      {/* Textarea */}
+      {/* Textarea (middle) */}
       <Textarea
         ref={textareaRef}
         value={value}
         onChange={(e) => handleTextChange(e.target.value)}
         placeholder={label}
-        className="min-h-[120px] resize-y rounded-t-none border-t-0"
+        className={cn(
+          "min-h-[120px] resize-y rounded-t-none border-t-0",
+          availableWidgets.length > 0 && onToggleWidget && "rounded-b-none border-b-0",
+        )}
       />
-      {/* Widget toggle toolbar */}
+      {/* Widget toggle icons (bottom bar) */}
       {availableWidgets.length > 0 && onToggleWidget && (
-        <div className="flex flex-wrap items-center gap-1 pt-1">
-          <span className="text-xs text-muted-foreground mr-1">
-            Hinzufuegen:
-          </span>
+        <div className="flex flex-wrap items-center gap-0.5 rounded-b-md border border-t-0 bg-muted/30 px-1 py-0.5">
           {availableWidgets.map((widgetId) => {
             const Icon = WIDGET_ICONS[widgetId]
-            const widgetLabel = WIDGET_LABELS[widgetId]
             if (!Icon) return null
             return (
               <Button
                 key={widgetId}
                 type="button"
                 variant="ghost"
-                size="sm"
+                size="icon-sm"
+                title={WIDGET_LABELS[widgetId]}
                 onClick={() => onToggleWidget(widgetId)}
-                className={cn("h-7 gap-1 px-2 text-xs")}
+                className="h-7 w-7 text-muted-foreground"
               >
                 <Icon className="h-3.5 w-3.5" />
-                {widgetLabel}
               </Button>
             )
           })}

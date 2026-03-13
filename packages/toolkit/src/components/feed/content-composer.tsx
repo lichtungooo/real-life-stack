@@ -39,6 +39,8 @@ export interface DateRange {
   start: string
   end?: string
   showEnd?: boolean
+  showTime?: boolean
+  showRecurrence?: boolean
   rrule?: string
 }
 
@@ -136,12 +138,12 @@ export interface ContentComposerProps {
 /** Fixed rendering order for widgets */
 const WIDGET_ORDER: WidgetType[] = [
   "group",
+  "status",
   "title",
   "text",
   "media",
   "date",
   "location",
-  "status",
   "people",
   "tags",
 ]
@@ -356,7 +358,7 @@ export function ContentComposer({
           )}
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-5">
           {/* Render widgets in fixed order */}
           {WIDGET_ORDER.map((widgetId) => {
             const isActive = activeWidgets.has(widgetId)

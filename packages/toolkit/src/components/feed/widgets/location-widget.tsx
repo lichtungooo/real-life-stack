@@ -33,29 +33,27 @@ export function LocationWidget({
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-muted-foreground">
-        {label}
-      </label>
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
       {/* Online/Offline Toggle */}
-      <div className="flex gap-1.5">
+      <div className="flex items-center gap-2">
         <Button
           type="button"
-          variant={!isOnline ? "default" : "outline"}
+          variant={!isOnline ? "default" : "ghost"}
           size="sm"
           onClick={() => onChange({ ...value, isOnline: false })}
-          className="gap-1.5"
+          className="h-7 gap-1 px-2 text-xs"
         >
-          <MapPin className="h-3.5 w-3.5" />
+          <MapPin className="h-3 w-3" />
           Vor Ort
         </Button>
         <Button
           type="button"
-          variant={isOnline ? "default" : "outline"}
+          variant={isOnline ? "default" : "ghost"}
           size="sm"
           onClick={() => onChange({ ...value, isOnline: true })}
-          className="gap-1.5"
+          className="h-7 gap-1 px-2 text-xs"
         >
-          <Globe className="h-3.5 w-3.5" />
+          <Globe className="h-3 w-3" />
           Online
         </Button>
       </div>

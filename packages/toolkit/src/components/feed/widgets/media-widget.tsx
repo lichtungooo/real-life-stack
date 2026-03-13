@@ -86,9 +86,6 @@ export function MediaWidget({ value, onChange, label }: MediaWidgetProps) {
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-muted-foreground">
-        {label}
-      </label>
       {/* Media grid */}
       {value.length > 0 && (
         <div
