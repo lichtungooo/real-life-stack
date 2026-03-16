@@ -441,13 +441,16 @@ export class WotConnector extends BaseConnector {
   override async deleteGroup(id: string): Promise<void> {
     if (!this.replication) throw new Error("Not authenticated")
 
-    // "Delete" = leave the space: remove metadata from PersonalDoc + removeMember(self)
+    // "Delete" = leave the space: remove self from members, clean up local data
     const did = this.identity.getDid()
     try {
       await this.replication.removeMember(id, did)
     } catch {
-      // May fail if already removed
+      // May fail if already removed or single member
     }
+
+    // Remove space from replication adapter (stops sync, removes from spaces map)
+    await this.replication.leaveSpace(id)
 
     // If this was the current group, switch away
     if (this.currentGroupId === id) {
