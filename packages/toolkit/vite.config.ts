@@ -24,6 +24,12 @@ export default defineConfig({
     },
     rollupOptions: {
       external: ['react', 'react-dom', 'react/jsx-runtime'],
+      onwarn(warning, warn) {
+        // Suppress "use client" directive warnings from shadcn/ui + Radix UI
+        if (warning.code === 'MODULE_LEVEL_DIRECTIVE') return
+        if (warning.message?.includes('sourcemap')) return
+        warn(warning)
+      },
     },
   },
 })
