@@ -9,23 +9,25 @@
 
 ## Missing (must fix)
 
-| # | Feature | Demo App | Connector | Priority |
-|---|---------|----------|-----------|----------|
-| 1 | **Profile update notification** | Sends `profile-update` message to all contacts on name/avatar change | Not implemented | HIGH |
-| 2 | **Profile update handler** | Listens for `profile-update`, fetches new profile from discovery, updates local contact | Not implemented | HIGH |
-| 3 | **Contact profile sync on init** | On mount, fetches all contact profiles from discovery, updates names/avatars | Not implemented | HIGH |
-| 4 | **Attestation ACK handler** | `attestation-ack` message listener confirms delivery | Not implemented | MEDIUM |
-| 5 | **Attestation retry** | `retryAttestation(id)` reconstructs + resends | Stub only (TODO) | MEDIUM |
-| 6 | **Attestation signature verification** | Verifies incoming attestation signatures | Assumes trust | MEDIUM |
-| 7 | **OfflineFirstDiscoveryAdapter** | Wraps HttpDiscoveryAdapter with local cache + dirty flags | Direct HTTP only | LOW |
-| 8 | **Dirty flag sync** | Tracks failed profile publishes, retries on reconnect | Not implemented | LOW |
+| # | Feature | Demo App | Connector | Priority | Status |
+|---|---------|----------|-----------|----------|--------|
+| 1 | **Profile update notification** | Sends `profile-update` message to all contacts on name/avatar change | `broadcastProfileUpdate()` | HIGH | ✅ DONE |
+| 2 | **Profile update handler** | Listens for `profile-update`, fetches new profile from discovery, updates local contact | Handler in `handleIncomingMessage()` | HIGH | ✅ DONE |
+| 3 | **Contact profile sync on init** | On mount, fetches all contact profiles from discovery, updates names/avatars | `syncContactProfiles()` on init | HIGH | ✅ DONE |
+| 4 | **Attestation ACK handler** | `attestation-ack` message listener confirms delivery | Handler in `handleIncomingMessage()` | MEDIUM | ✅ DONE |
+| 5 | **Attestation retry** | `retryAttestation(id)` reconstructs + resends | `retryClaim()` implemented | MEDIUM | ✅ DONE |
+| 6 | **Attestation signature verification** | Verifies incoming attestation signatures | Ed25519 verify in `handleIncomingMessage()` | MEDIUM | ✅ DONE |
+| 7 | **Attestation send via relay** | `createAttestation()` sends via messaging | `createClaim()` sends via outboxAdapter | MEDIUM | ✅ DONE |
+| 8 | **Incoming attestation + auto-ACK** | Receive, store, send ACK automatically | Full handler + ACK in `handleIncomingMessage()` | MEDIUM | ✅ DONE |
+| 9 | **OfflineFirstDiscoveryAdapter** | Wraps HttpDiscoveryAdapter with local cache + dirty flags | Direct HTTP only | LOW | open |
+| 10 | **Dirty flag sync** | Tracks failed profile publishes, retries on reconnect | Not implemented | LOW | open |
 
 ## Partial (works but different)
 
 | # | Feature | Demo App | Connector | Notes |
 |---|---------|----------|-----------|-------|
 | 1 | Attestation model | Full `Attestation` with metadata, export/import | `SignedClaim` (simplified) | Different abstraction, same crypto |
-| 2 | Attestation delivery tracking | Full ACK-based receipt tracking | `deliveryStatusObs` maps ID → status | Connector tracks but doesn't confirm via ACK |
+| 2 | Attestation delivery tracking | Full ACK-based receipt tracking | `deliveryStatusObs` maps ID → status | ✅ Now confirms via ACK |
 | 3 | Member update handling | Explicit `member-update` message handler | Automatic via `watchSpaces()` | Both work, different approach |
 | 4 | Personal sync | Cross-device `personal-sync` message handler | Handled by `YjsPersonalDocManager` internally | Both work |
 | 5 | Profile caching | `graphCacheStore` + `LocalCacheStore` for offline | Relies on PersonalDoc contacts | Connector has contacts cached in Yjs, no separate graph cache |
