@@ -10,6 +10,7 @@
     "dev:app": "pnpm --filter @real-life-stack/app dev",
     "build:toolkit": "pnpm --filter @real-life-stack/toolkit build",
     "storybook": "pnpm --filter @real-life-stack/toolkit storybook",
+    "test": "turbo test",
     "build:storybook": "pnpm --filter @real-life-stack/toolkit build-storybook"
   },
   "devDependencies": {

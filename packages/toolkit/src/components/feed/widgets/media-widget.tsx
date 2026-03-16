@@ -18,7 +18,7 @@ interface MediaWidgetProps {
   label: string
 }
 
-export function MediaWidget({ value, onChange, label }: MediaWidgetProps) {
+export function MediaWidget({ value, onChange, label: _label }: MediaWidgetProps) {
   const fileInputRef = React.useRef<HTMLInputElement>(null)
   const [dragIndex, setDragIndex] = React.useState<number | null>(null)
   const [overIndex, setOverIndex] = React.useState<number | null>(null)

@@ -271,6 +271,13 @@ export interface EventListenerCapable {
   onIncomingEvent(callback: (event: IncomingEvent) => void): () => void
 }
 
+// --- Item-Group Assignment ---
+
+export interface ItemGroupCapable {
+  getItemGroupId(itemId: string): string | null
+  moveItemToGroup(itemId: string, targetGroupId: string): void | Promise<void>
+}
+
 // --- Convenience: Full-Featured Connector ---
 
 export type FullConnector = DataInterface & ItemWriter & RelationCapable & GroupManager & Authenticatable & MultiSource
@@ -315,4 +322,8 @@ export function hasProfile(c: DataInterface): c is DataInterface & ProfileCapabl
 
 export function hasEventListener(c: DataInterface): c is DataInterface & EventListenerCapable {
   return "onIncomingEvent" in c
+}
+
+export function hasItemGroups(c: DataInterface): c is DataInterface & ItemGroupCapable {
+  return "getItemGroupId" in c && "moveItemToGroup" in c
 }

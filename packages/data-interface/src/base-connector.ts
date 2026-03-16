@@ -316,4 +316,14 @@ export abstract class BaseConnector implements FullConnector {
   onIncomingEvent(_callback: (event: IncomingEvent) => void): () => void {
     return () => {}
   }
+
+  // --- Item-Group Assignment (Default: not supported) ---
+
+  getItemGroupId(_itemId: string): string | null {
+    return null
+  }
+
+  moveItemToGroup(_itemId: string, _targetGroupId: string): void {
+    throw new Error("moveItemToGroup not supported")
+  }
 }

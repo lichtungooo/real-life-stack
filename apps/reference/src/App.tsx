@@ -85,7 +85,7 @@ import {
   type GroupDialogMode,
 } from "@real-life-stack/toolkit"
 import type { Item, User, Relation, Group, DataInterface, GroupManager } from "@real-life-stack/data-interface"
-import { hasGroups, isAuthenticatable, hasMessaging, hasSignedClaims } from "@real-life-stack/data-interface"
+import { hasGroups, isAuthenticatable, hasMessaging, hasSignedClaims, hasProfile, hasItemGroups } from "@real-life-stack/data-interface"
 import { demoItems, demoGroups, demoUsers, demoGroupMembers, demoGroupItems } from "@real-life-stack/data-interface/demo-data"
 import { MockConnector } from "@real-life-stack/mock-connector"
 import { LocalConnector } from "@real-life-stack/local-connector"
@@ -413,8 +413,7 @@ function KanbanView({ activeWorkspaceId, groups }: { activeWorkspaceId: string |
 
   // Group tasks by their group for the grouped view
   const tasksByGroup = useMemo(() => {
-    if (!isAggregate || !groupedView || !("getItemGroupId" in connector)) return null
-    const c = connector as DataInterface & { getItemGroupId(id: string): string | null }
+    if (!isAggregate || !groupedView || !hasItemGroups(connector)) return null
     const map = new Map<string, Item[]>()
     for (const g of concreteGroups) {
       map.set(g.id, [])
@@ -422,7 +421,7 @@ function KanbanView({ activeWorkspaceId, groups }: { activeWorkspaceId: string |
     // Collect items without a group under a special key
     map.set("__ungrouped__", [])
     for (const task of filteredTasks) {
-      const gid = c.getItemGroupId(task.id)
+      const gid = connector.getItemGroupId(task.id)
       if (gid && map.has(gid)) {
         map.get(gid)!.push(task)
       } else {
@@ -474,11 +473,10 @@ function KanbanView({ activeWorkspaceId, groups }: { activeWorkspaceId: string |
       relations,
     })
     // Move item to different group if changed
-    if (data.groupId && "moveItemToGroup" in connector) {
-      const c = connector as DataInterface & { getItemGroupId(id: string): string | null; moveItemToGroup(id: string, gid: string): void }
-      const currentGroupId = c.getItemGroupId(item.id)
+    if (data.groupId && hasItemGroups(connector)) {
+      const currentGroupId = connector.getItemGroupId(item.id)
       if (currentGroupId !== data.groupId) {
-        c.moveItemToGroup(item.id, data.groupId)
+        connector.moveItemToGroup(item.id, data.groupId)
       }
     }
     if (!panelPinned) setPanelState({ mode: "closed" })
@@ -515,11 +513,10 @@ function KanbanView({ activeWorkspaceId, groups }: { activeWorkspaceId: string |
   ) : undefined
 
   const moveToGroup = useCallback((itemId: string, targetGroupId: string) => {
-    if (!("moveItemToGroup" in connector)) return
-    const c = connector as DataInterface & { getItemGroupId(id: string): string | null; moveItemToGroup(id: string, gid: string): void }
-    const currentGroupId = c.getItemGroupId(itemId)
+    if (!hasItemGroups(connector)) return
+    const currentGroupId = connector.getItemGroupId(itemId)
     if (currentGroupId !== targetGroupId) {
-      c.moveItemToGroup(itemId, targetGroupId)
+      connector.moveItemToGroup(itemId, targetGroupId)
     }
   }, [connector])
 
@@ -680,8 +677,8 @@ function KanbanView({ activeWorkspaceId, groups }: { activeWorkspaceId: string |
               assigneeId: (panelState.item.relations ?? [])
                 .find((r) => r.predicate === "assignedTo")
                 ?.target.replace(/^global:/, "") ?? null,
-              groupId: "getItemGroupId" in connector
-                ? (connector as DataInterface & { getItemGroupId(id: string): string | null }).getItemGroupId(panelState.item.id)
+              groupId: hasItemGroups(connector)
+                ? connector.getItemGroupId(panelState.item.id)
                 : activeWorkspaceId,
             }}
             users={members}
@@ -769,19 +766,16 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
   const [contactsDialogOpen, setContactsDialogOpen] = useState(false)
   const [verifyDialogOpen, setVerifyDialogOpen] = useState(false)
   const [profileDialogOpen, setProfileDialogOpen] = useState(false)
-  const profileData = useMemo(() => {
-    const did = (connector as any).getDid?.() ?? currentUser?.id ?? ""
-    return {
-      did,
-      name: currentUser?.displayName ?? "",
-      bio: "",
-      avatar: currentUser?.avatarUrl,
-    }
-  }, [connector, currentUser])
+  const profileData = useMemo(() => ({
+    did: currentUser?.id ?? "",
+    name: currentUser?.displayName ?? "",
+    bio: "",
+    avatar: currentUser?.avatarUrl,
+  }), [currentUser])
 
   const handleSaveProfile = useCallback(async (updates: { name: string; bio: string }) => {
-    if (typeof (connector as any).updateProfile === "function") {
-      await (connector as any).updateProfile(updates)
+    if (hasProfile(connector)) {
+      await connector.updateMyProfile(updates)
     }
   }, [connector])
 
