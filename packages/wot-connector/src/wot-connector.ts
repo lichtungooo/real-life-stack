@@ -26,8 +26,8 @@ import {
   WotIdentity,
   WebSocketMessagingAdapter,
   OutboxMessagingAdapter,
-  AutomergeOutboxStore,
-  AutomergeSpaceMetadataStorage,
+  PersonalDocOutboxStore,
+  PersonalDocSpaceMetadataStorage,
   GroupKeyService,
   HttpDiscoveryAdapter,
   OfflineFirstDiscoveryAdapter,
@@ -627,7 +627,7 @@ export class WotConnector extends BaseConnector {
       onPersonalDocChange: onYjsPersonalDocChange,
     }
 
-    const outboxStore = new AutomergeOutboxStore(personalDocFns)
+    const outboxStore = new PersonalDocOutboxStore(personalDocFns)
     this.outboxAdapter = new OutboxMessagingAdapter(this.wsAdapter, outboxStore, {
       skipTypes: ["profile-update", "attestation-ack", "personal-sync"] as MessageType[],
     })
@@ -644,7 +644,7 @@ export class WotConnector extends BaseConnector {
     //    flush + auto-reconnect. wsAdapter.connect() is idempotent, so this
     //    just triggers flushOutbox() + _startAutoReconnect() without reconnecting.
     await this.outboxAdapter.connect(did)
-    const spaceMetadataStorage = new AutomergeSpaceMetadataStorage(personalDocFns)
+    const spaceMetadataStorage = new PersonalDocSpaceMetadataStorage(personalDocFns)
 
     // 4. Group Keys
     this.groupKeyService = new GroupKeyService()
