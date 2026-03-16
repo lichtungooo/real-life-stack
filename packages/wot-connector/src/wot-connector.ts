@@ -47,6 +47,7 @@ import type {
 } from "@real-life/wot-core"
 import {
   YjsReplicationAdapter,
+  YjsStorageAdapter,
   initYjsPersonalDoc,
   getYjsPersonalDoc,
   resetYjsPersonalDoc,
@@ -81,6 +82,7 @@ export class WotConnector extends BaseConnector {
   private outboxAdapter: OutboxMessagingAdapter | null = null
   private replication: YjsReplicationAdapter | null = null
   private groupKeyService: GroupKeyService | null = null
+  private storage: YjsStorageAdapter | null = null
 
   // State
   private currentGroupId: string | null = null
@@ -284,8 +286,9 @@ export class WotConnector extends BaseConnector {
       if (updates.avatar !== undefined) doc.profile.avatar = updates.avatar || null
       doc.profile.updatedAt = now
     })
-    // Re-publish to discovery server
+    // Re-publish to discovery server + notify all contacts
     this.publishProfile().catch(() => {})
+    this.broadcastProfileUpdate().catch(() => {})
     return (await this.getCurrentUser())!
   }
 
@@ -658,15 +661,47 @@ export class WotConnector extends BaseConnector {
       await this.handleIncomingMessage(envelope)
     })
 
-    // 9. PersonalDoc changes -> restore spaces + update contacts + claims
+    // 9. Storage adapter for reactive contacts/claims
+    this.storage = new YjsStorageAdapter(did)
+
+    // PersonalDoc changes -> restore spaces
     this.personalDocUnsub = onYjsPersonalDocChange(() => {
       this.replication?.requestSync?.("__all__").catch(() => {})
-      this.syncContactsFromPersonalDoc()
-      this.syncClaimsFromPersonalDoc()
     })
 
-    // 8. Load initial contacts + claims from PersonalDoc
-    this.syncContactsFromPersonalDoc()
+    // Reactive contacts via StorageAdapter
+    this.storage.watchContacts().subscribe((contacts) => {
+      const mapped: ContactInfo[] = contacts.map((c) => ({
+        id: c.did,
+        publicKey: c.publicKey || undefined,
+        name: c.name || undefined,
+        avatar: c.avatar || undefined,
+        bio: c.bio || undefined,
+        status: c.status ?? "pending",
+        verifiedAt: c.verifiedAt || undefined,
+        createdAt: c.createdAt ?? new Date().toISOString(),
+        updatedAt: c.updatedAt ?? new Date().toISOString(),
+      }))
+      this.contactsObs.set(mapped)
+    })
+    // Load initial contacts
+    this.contactsObs.set(
+      this.storage.watchContacts().getValue().map((c) => ({
+        id: c.did,
+        publicKey: c.publicKey || undefined,
+        name: c.name || undefined,
+        avatar: c.avatar || undefined,
+        bio: c.bio || undefined,
+        status: c.status ?? "pending",
+        verifiedAt: c.verifiedAt || undefined,
+        createdAt: c.createdAt ?? new Date().toISOString(),
+        updatedAt: c.updatedAt ?? new Date().toISOString(),
+      }))
+    )
+
+    // Reactive claims via StorageAdapter (verifications + attestations → SignedClaim)
+    this.storage.watchAllVerifications().subscribe(() => this.syncClaimsFromPersonalDoc())
+    this.storage.watchAllAttestations().subscribe(() => this.syncClaimsFromPersonalDoc())
     this.syncClaimsFromPersonalDoc()
 
     // 9. Watch spaces for reactive group list
@@ -681,6 +716,9 @@ export class WotConnector extends BaseConnector {
     if (this.groupsCache.length === 0) {
       await this.createGroup("Mein Bereich")
     }
+
+    // 11. Sync contact profiles from discovery server (non-blocking)
+    this.syncContactProfiles().catch(() => {})
   }
 
   private async setAuthAuthenticated(): Promise<void> {
@@ -705,6 +743,57 @@ export class WotConnector extends BaseConnector {
       updatedAt: new Date().toISOString(),
     }
     await this.discovery.publishProfile(profile, this.identity)
+  }
+
+  /** Notify all contacts about a profile change (fire-and-forget via relay) */
+  private async broadcastProfileUpdate(): Promise<void> {
+    if (!this.storage || !this.outboxAdapter) return
+    const did = this.identity.getDid()
+    const doc = getYjsPersonalDoc()
+    const name = doc.profile?.name ?? getDefaultDisplayName(did)
+
+    const contacts = await this.storage.getContacts()
+    for (const contact of contacts) {
+      const envelope: MessageEnvelope = {
+        v: 1,
+        id: crypto.randomUUID(),
+        type: "profile-update" as MessageType,
+        fromDid: did,
+        toDid: contact.did,
+        createdAt: new Date().toISOString(),
+        encoding: "json",
+        payload: JSON.stringify({ did, name }),
+        signature: "",
+      }
+      this.outboxAdapter.send(envelope).catch(() => {})
+    }
+  }
+
+  /** Sync all contact profiles from discovery server (called on init) */
+  private async syncContactProfiles(): Promise<void> {
+    if (!this.storage) return
+    const contacts = await this.storage.getContacts()
+    for (const contact of contacts) {
+      try {
+        const result = await this.discovery.resolveProfile(contact.did)
+        const profile = result.profile
+        if (!profile?.name) continue
+
+        const needsUpdate =
+          (contact.name || null) !== (profile.name || null) ||
+          (contact.avatar || null) !== (profile.avatar || null) ||
+          (contact.bio || null) !== (profile.bio || null)
+
+        if (needsUpdate) {
+          await this.storage.updateContact({
+            ...contact,
+            name: profile.name,
+            ...(profile.avatar ? { avatar: profile.avatar } : {}),
+            ...(profile.bio ? { bio: profile.bio } : {}),
+          })
+        }
+      } catch { /* ignore individual fetch failures */ }
+    }
   }
 
   // ==================== Internal: Space/Group mapping ====================
@@ -842,47 +931,48 @@ export class WotConnector extends BaseConnector {
       updatedAt: now,
     }
 
-    changeYjsPersonalDoc((doc) => {
-      if (!doc.contacts) doc.contacts = {}
-      doc.contacts[id] = {
+    if (this.storage) {
+      await this.storage.addContact({
         did: id,
         publicKey: publicKey ?? "",
-        name: resolvedName ?? null,
-        avatar: avatar ?? null,
-        bio: bio ?? null,
+        name: resolvedName,
         status: "pending",
+        avatar,
+        bio,
         createdAt: now,
         updatedAt: now,
-      } as any
-    })
+      })
+    }
 
     return contact
   }
 
   override async activateContact(id: string): Promise<void> {
-    changeYjsPersonalDoc((doc) => {
-      if (doc.contacts?.[id]) {
-        doc.contacts[id].status = "active"
-        doc.contacts[id].updatedAt = new Date().toISOString()
+    if (this.storage) {
+      const existing = await this.storage.getContact(id)
+      if (existing) {
+        existing.status = "active"
+        existing.updatedAt = new Date().toISOString()
+        await this.storage.updateContact(existing)
       }
-    })
+    }
   }
 
   override async updateContactName(id: string, name: string): Promise<void> {
-    changeYjsPersonalDoc((doc) => {
-      if (doc.contacts?.[id]) {
-        doc.contacts[id].name = name as any
-        doc.contacts[id].updatedAt = new Date().toISOString()
+    if (this.storage) {
+      const existing = await this.storage.getContact(id)
+      if (existing) {
+        existing.name = name
+        existing.updatedAt = new Date().toISOString()
+        await this.storage.updateContact(existing)
       }
-    })
+    }
   }
 
   override async removeContact(id: string): Promise<void> {
-    changeYjsPersonalDoc((doc) => {
-      if (doc.contacts) {
-        delete doc.contacts[id]
-      }
-    })
+    if (this.storage) {
+      await this.storage.removeContact(id)
+    }
   }
 
   // ==================== Messaging ====================
@@ -1220,6 +1310,31 @@ export class WotConnector extends BaseConnector {
         })
       } catch { /* ignore malformed */ }
     }
+
+    if (envelope.type === "profile-update") {
+      try {
+        const result = await this.discovery.resolveProfile(envelope.fromDid)
+        const profile = result.profile
+        if (profile?.name && this.storage) {
+          const contacts = await this.storage.getContacts()
+          const contact = contacts.find((c) => c.did === envelope.fromDid)
+          if (contact) {
+            const needsUpdate =
+              (contact.name || null) !== (profile.name || null) ||
+              (contact.avatar || null) !== (profile.avatar || null) ||
+              (contact.bio || null) !== (profile.bio || null)
+            if (needsUpdate) {
+              await this.storage.updateContact({
+                ...contact,
+                name: profile.name,
+                ...(profile.avatar ? { avatar: profile.avatar } : {}),
+                ...(profile.bio ? { bio: profile.bio } : {}),
+              })
+            }
+          }
+        }
+      } catch { /* ignore */ }
+    }
   }
 
   private checkMutualVerification(peerId: string): void {
@@ -1296,59 +1411,7 @@ export class WotConnector extends BaseConnector {
     }
   }
 
-  // ==================== Internal: Contacts sync ====================
-
-  private syncContactsFromPersonalDoc(): void {
-    try {
-      const doc = getYjsPersonalDoc()
-      const contacts = doc.contacts ?? {}
-      const unresolvedDids: string[] = []
-      const mapped: ContactInfo[] = Object.entries(contacts).map(([did, c]: [string, any]) => {
-        if (!c.name) unresolvedDids.push(did)
-        return {
-          id: did,
-          publicKey: c.publicKey || undefined,
-          name: c.name || undefined,
-          avatar: c.avatar || undefined,
-          bio: c.bio || undefined,
-          status: c.status ?? "pending",
-          verifiedAt: c.verifiedAt || undefined,
-          createdAt: c.createdAt ?? new Date().toISOString(),
-          updatedAt: c.updatedAt ?? new Date().toISOString(),
-        }
-      })
-      this.contactsObs.set(mapped)
-
-      // Background: resolve/refresh names for all contacts from Discovery
-      const allDids = Object.keys(contacts)
-      if (allDids.length > 0) {
-        this.resolveContactNames(allDids)
-      }
-    } catch {
-      // PersonalDoc not ready yet
-    }
-  }
-
-  /** Resolve display names for contacts via Discovery and persist in PersonalDoc */
-  private async resolveContactNames(dids: string[]): Promise<void> {
-    for (const did of dids) {
-      try {
-        const result = await this.discovery.resolveProfile(did)
-        if (result.profile?.name) {
-          changeYjsPersonalDoc((doc) => {
-            if (doc.contacts?.[did]) {
-              doc.contacts[did].name = result.profile!.name
-              if (result.profile!.avatar) doc.contacts[did].avatar = result.profile!.avatar
-              if (result.profile!.bio) doc.contacts[did].bio = result.profile!.bio
-              doc.contacts[did].updatedAt = new Date().toISOString()
-            }
-          })
-        }
-      } catch {
-        // Discovery unavailable — will retry on next sync
-      }
-    }
-  }
+  // (syncContactsFromPersonalDoc removed — contacts are now reactive via YjsStorageAdapter.watchContacts())
 
   // ==================== Internal: Cleanup ====================
 
