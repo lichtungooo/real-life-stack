@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import type { AuthState, User } from "@real-life-stack/data-interface"
-import { isAuthenticatable } from "@real-life-stack/data-interface"
+import { isAuthenticatable, hasProfile } from "@real-life-stack/data-interface"
 import { useConnector } from "./connector-context"
 
 function useAuthConnector() {
@@ -26,12 +26,32 @@ export function useCurrentUser() {
   const [data, setData] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  // Initial load
   useEffect(() => {
     connector.getCurrentUser().then((user) => {
       setData(user)
       setIsLoading(false)
     })
   }, [connector])
+
+  // Reactive: subscribe to profile changes if supported
+  const profileObservable = useMemo(
+    () => hasProfile(connector) ? connector.observeMyProfile() : null,
+    [connector]
+  )
+
+  useEffect(() => {
+    if (!profileObservable) return
+    return profileObservable.subscribe((profile) => {
+      if (profile) {
+        setData((prev) => prev ? {
+          ...prev,
+          displayName: (profile.data.name as string) ?? prev.displayName,
+          avatarUrl: (profile.data.avatar as string) ?? prev.avatarUrl,
+        } : prev)
+      }
+    })
+  }, [profileObservable])
 
   return { data, isLoading }
 }
