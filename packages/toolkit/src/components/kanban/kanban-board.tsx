@@ -80,12 +80,6 @@ function KanbanCard({ item, users, isDragged, onDragStart, onDragEnd, onClick }:
         {String(item.data.title ?? "")}
       </p>
 
-      {item.data.description != null && (
-        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-          {String(item.data.description)}
-        </p>
-      )}
-
       {tags.length > 0 && (
         <div className="flex flex-wrap gap-1 mt-2">
           {tags.map((tag) => (
