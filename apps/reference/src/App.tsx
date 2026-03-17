@@ -812,7 +812,7 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
     avatar: currentUser?.avatarUrl,
   }), [currentUser])
 
-  const handleSaveProfile = useCallback(async (updates: { name: string; bio: string }) => {
+  const handleSaveProfile = useCallback(async (updates: { name: string; bio: string; avatar?: string }) => {
     if (hasProfile(connector)) {
       await connector.updateMyProfile(updates)
     }

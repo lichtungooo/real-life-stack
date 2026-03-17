@@ -463,9 +463,12 @@ export class WotConnector extends BaseConnector {
   override async updateGroup(id: string, updates: Partial<Group>): Promise<Group> {
     if (!this.replication) throw new Error("Not authenticated")
 
-    // Name/description via updateSpace (framework level — syncs via _meta)
-    if (updates.name) {
-      await this.replication.updateSpace(id, { name: updates.name })
+    // Name/description/image via updateSpace (framework level — syncs via _meta)
+    const metaUpdate: Record<string, string> = {}
+    if (updates.name) metaUpdate.name = updates.name
+    if (updates.data?.image !== undefined) metaUpdate.image = updates.data.image as string
+    if (Object.keys(metaUpdate).length > 0) {
+      await this.replication.updateSpace(id, metaUpdate)
     }
 
     // Modules via transact (app-specific data in the doc)

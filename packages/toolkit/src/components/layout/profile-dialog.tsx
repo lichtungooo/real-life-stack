@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Copy, Check } from "lucide-react"
+import { Copy, Check, ImagePlus, X } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -24,7 +24,7 @@ export interface ProfileDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   profile: ProfileData
-  onSave: (updates: { name: string; bio: string }) => Promise<void>
+  onSave: (updates: { name: string; bio: string; avatar?: string }) => Promise<void>
 }
 
 export function ProfileDialog({
@@ -35,6 +35,7 @@ export function ProfileDialog({
 }: ProfileDialogProps) {
   const [name, setName] = useState(profile.name)
   const [bio, setBio] = useState(profile.bio ?? "")
+  const [avatar, setAvatar] = useState(profile.avatar ?? "")
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
@@ -43,13 +44,27 @@ export function ProfileDialog({
   useEffect(() => {
     setName(profile.name)
     setBio(profile.bio ?? "")
-  }, [profile.name, profile.bio])
+    setAvatar(profile.avatar ?? "")
+  }, [profile.name, profile.bio, profile.avatar])
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 150_000) {
+      setError("Bild zu gross (max. 150 KB)")
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = () => setAvatar(reader.result as string)
+    reader.readAsDataURL(file)
+    e.target.value = ""
+  }
 
   const handleSave = async () => {
     setSaving(true)
     setError(null)
     try {
-      await onSave({ name: name.trim(), bio: bio.trim() })
+      await onSave({ name: name.trim(), bio: bio.trim(), avatar })
       onOpenChange(false)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Fehler beim Speichern")
@@ -93,6 +108,26 @@ export function ProfileDialog({
         </div>
 
         <Separator />
+
+        {/* Avatar */}
+        <div className="space-y-2">
+          <Label>Profilbild</Label>
+          <div className="flex items-center gap-3">
+            {avatar ? (
+              <div className="relative group">
+                <img src={avatar} alt="Avatar" className="w-16 h-16 rounded-full object-cover border" />
+                <button onClick={() => setAvatar("")} className="absolute -top-1.5 -right-1.5 p-0.5 bg-destructive text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ) : (
+              <label className="w-16 h-16 rounded-full border-2 border-dashed border-border hover:border-primary flex items-center justify-center cursor-pointer transition-colors">
+                <ImagePlus className="h-5 w-5 text-muted-foreground/50" />
+                <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+              </label>
+            )}
+          </div>
+        </div>
 
         {/* Name */}
         <div className="space-y-2">

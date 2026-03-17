@@ -45,7 +45,7 @@ Referenz: `docs/spec/architektur2.md`, Abschnitt "Relations" (Zeile 437ff)
 
 ### Anton
 - [x] Reaktivität von Items, Gruppen und Relations — klare Schnittstellendefinition + AI-Instruktionen (kein Bypass durch Schichten)
-- [x] Gruppenlogik im RLS stabilisieren
+- [x] Gruppenlogik im RLS stabilisieren (observeMembers, observeCurrentGroup, GroupDialog reaktiv, Sync-Fixes)
 - [ ] Übergreifende Metagruppe definieren (beinhaltet alle anderen Gruppen)
 
 ### Sebastian

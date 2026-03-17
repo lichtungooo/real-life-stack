@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react"
-import { LogOut, UserMinus, UserPlus, Check, Loader2, ChevronDown, ChevronUp } from "lucide-react"
+import { LogOut, UserMinus, UserPlus, Check, Loader2, ChevronDown, ChevronUp, ImagePlus, X } from "lucide-react"
 import type { Group, ContactInfo } from "@real-life-stack/data-interface"
 import { useMembers } from "../../hooks/use-groups"
 import {
@@ -76,6 +76,9 @@ export function GroupDialog({
   const [saving, setSaving] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [groupImage, setGroupImage] = useState(() =>
+    isEdit ? (mode.group.data?.image as string | undefined) ?? "" : ""
+  )
 
   // Invite state
   const [invitingId, setInvitingId] = useState<string | null>(null)
@@ -125,6 +128,29 @@ export function GroupDialog({
     } catch (err) {
       setError(err instanceof Error ? err.message : "Fehler beim Umbenennen")
     }
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !isEdit) return
+    if (file.size > 150_000) {
+      setError("Bild zu gross (max. 150 KB)")
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = async () => {
+      const dataUrl = reader.result as string
+      setGroupImage(dataUrl)
+      await onUpdateGroup(mode.group.id, { data: { ...mode.group.data, image: dataUrl } })
+    }
+    reader.readAsDataURL(file)
+    e.target.value = ""
+  }
+
+  const handleImageRemove = async () => {
+    if (!isEdit) return
+    setGroupImage("")
+    await onUpdateGroup(mode.group.id, { data: { ...mode.group.data, image: "" } })
   }
 
   const handleLeave = async () => {
@@ -230,6 +256,28 @@ export function GroupDialog({
             }}
           />
         </div>
+
+        {/* Group Image (edit only) */}
+        {isEdit && (
+          <div className="space-y-2">
+            <Label>Gruppenbild</Label>
+            <div className="flex items-center gap-3">
+              {groupImage ? (
+                <div className="relative group">
+                  <img src={groupImage} alt="Gruppenbild" className="w-16 h-16 rounded-lg object-cover border" />
+                  <button onClick={handleImageRemove} className="absolute -top-1.5 -right-1.5 p-0.5 bg-destructive text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ) : (
+                <label className="w-16 h-16 rounded-lg border-2 border-dashed border-border hover:border-primary flex items-center justify-center cursor-pointer transition-colors">
+                  <ImagePlus className="h-5 w-5 text-muted-foreground/50" />
+                  <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                </label>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Members Section (edit only) */}
         {isEdit && (
