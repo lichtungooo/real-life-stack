@@ -15,11 +15,11 @@
 ├─────────────────────────────────────────────────────────┤
 │  Connector          Observable<T>                        │
 │  (WotConnector, LocalConnector)                          │
-│  → observe(), observeItem(), observeGroups()             │
+│  → observe(), observeItem(), observeRelatedItems()       │
 │  → notifyAllObservers() bei jeder Mutation               │
 ├─────────────────────────────────────────────────────────┤
 │  Hooks              React State                          │
-│  (useItems, useItem, useGroups, useContacts)             │
+│  (useItems, useItem, useRelatedItems, useGroups)         │
 │  → useState + useEffect + subscribe                      │
 ├─────────────────────────────────────────────────────────┤
 │  UI-Module          Reine Darstellung                    │
@@ -33,18 +33,37 @@
 | Schicht | Verantwortung | Darf NICHT |
 |---------|--------------|-----------|
 | **wot-core** | CRDT-Events, Subscribable bereitstellen | UI kennen, React importieren |
-| **Connector** | Subscribable → Observable übersetzen, Filter anwenden, Includes auflösen | Direkt React State setzen |
+| **Connector** | Subscribable → Observable übersetzen, Filter anwenden | Direkt React State setzen |
 | **Hooks** | Observable → React State, Capability-Checks | Eigene Datenhaltung, Business-Logik |
 | **UI-Module** | Rendern, User-Interaktion | Connector direkt ansprechen, Daten fetchen |
 
 ---
 
-## 2. Observable-Vertrag
+## 2. Item-Typ — createdAt ist ein ISO-String
+
+```typescript
+interface Item {
+  id: string
+  type: string
+  createdAt: string    // ISO-8601 (z.B. "2026-03-17T14:30:00.000Z")
+  createdBy: string
+  data: Record<string, unknown>
+  relations?: Relation[]
+  _source?: string
+}
+```
+
+**`createdAt` ist ein String, KEIN Date-Objekt.** Das vermeidet Serialisierungs-Overhead (kein `new Date()` bei jedem Lesen). Wenn die UI ein Date braucht: `new Date(item.createdAt)`.
+
+ISO-8601 Strings sortieren lexikographisch korrekt: `"2026-01-01" < "2026-01-02"`.
+
+---
+
+## 3. Observable-Vertrag
 
 ### Erstellen und Nutzen
 
 ```typescript
-// Im Connector: Observable erstellen
 import { createObservable } from "@real-life-stack/data-interface"
 
 const obs = createObservable<Item[]>([])  // Startwert
@@ -56,15 +75,14 @@ obs.destroy()                              // Alle Subscriber entfernen (in disp
 ### Im Hook: Subscribe
 
 ```typescript
-// RICHTIG — so sehen alle Hooks aus
 function useItems(filter?: ItemFilter) {
   const connector = useConnector()
   const observable = useMemo(() => connector.observe(filter ?? {}), [connector, filterKey])
   const [data, setData] = useState<Item[]>(observable.current)
 
   useEffect(() => {
-    setData(observable.current)        // Sync bei Observable-Wechsel
-    return observable.subscribe(setData) // Live-Updates
+    setData(observable.current)
+    return observable.subscribe(setData)
   }, [observable])
 
   return { data }
@@ -80,7 +98,7 @@ function useItems(filter?: ItemFilter) {
 
 ---
 
-## 3. Relations & Kommentare
+## 4. Relations & Kommentare
 
 ### Grundprinzip
 
@@ -101,67 +119,34 @@ await connector.createItem({
   data: { content: "Mein Kommentar" },
   relations: [{ predicate: "commentOn", target: "item:post-abc" }]
 })
-// → notifyAllObservers() feuert → alle Observers updaten automatisch
 ```
 
-### Kommentare laden — Inline via Include
+### Kommentare reaktiv laden — useRelatedItems (PRIMÄRER WEG)
+
+Jede Komponente die Related Items anzeigt, nutzt `useRelatedItems` **in der Kind-Komponente**:
 
 ```typescript
-const posts = connector.observe({
-  type: "post",
-  include: [
-    { predicate: "commentOn", as: "comments", limit: 3 }
-  ]
-})
-// → posts[0]._included?.comments = [neuester, ..., ältester]
+// Feed.tsx — lädt nur Posts
+function Feed() {
+  const { data: posts } = useItems({ type: "post" })
+  return posts.map(post => <PostCard key={post.id} post={post} />)
+}
+
+// PostCard.tsx — lädt eigene Kommentare
+function PostCard({ post }: { post: Item }) {
+  const { data: comments } = useRelatedItems(post.id, "commentOn", { direction: "to" })
+  return (
+    <div>
+      <h2>{post.data.title}</h2>
+      {comments.map(c => <Comment key={c.id} comment={c} />)}
+    </div>
+  )
+}
 ```
 
-Die `include`-Direktive nutzt intern **Reverse-Lookup** (`direction: "to"`) — sie findet alle Items, deren Relation auf den Post zeigt.
+**Warum in der Kind-Komponente?** Wenn ein Kommentar zu Post 5 kommt, re-rendert nur PostCard 5 — nicht der ganze Feed. Das ist erheblich performanter als alle Kommentare aller Posts bei jeder Änderung neu zu berechnen.
 
-### Sortierung
-
-Includes liefern Ergebnisse **newest-first** (`createdAt` absteigend). Das ist absichtlich so:
-- `limit: 3` ergibt "die 3 neuesten Kommentare" — der häufigste Use Case
-- Die UI kann nach Bedarf umsortieren (z.B. chronologisch für Chat-artige Kommentare)
-
-```typescript
-// Connector liefert: [neuester, ..., ältester]
-const comments = post._included?.comments
-
-// UI sortiert chronologisch wenn nötig:
-const chronological = [...comments].reverse()
-```
-
-### Paging — "Mehr laden" via offset
-
-```typescript
-// Erste 3 Kommentare
-connector.observe({
-  type: "post",
-  include: [{ predicate: "commentOn", as: "comments", limit: 3 }]
-})
-
-// Nächste 3 (offset = 3, also überspringe die ersten 3)
-connector.observe({
-  type: "post",
-  include: [{ predicate: "commentOn", as: "comments", limit: 3, offset: 3 }]
-})
-```
-
-`offset` wird **nach** der Sortierung angewendet: erst newest-first sortieren, dann `offset` überspringen, dann `limit` anwenden.
-
-### Einzelnes Item mit Kommentaren — observeItem
-
-```typescript
-// Post-Detailseite: Post mit den 10 neuesten Kommentaren beobachten
-const post$ = connector.observeItem("post-abc", {
-  include: [{ predicate: "commentOn", as: "comments", limit: 10 }]
-})
-// → post$.current._included?.comments = [neuester, ..., ältester]
-// → Feuert automatisch wenn ein neuer Kommentar erstellt wird
-```
-
-### Kommentare laden — Explizit
+### Kommentare laden — Explizit (für einmalige Abfragen)
 
 ```typescript
 // Alle Kommentare zu einem Post (Reverse-Lookup)
@@ -194,71 +179,62 @@ const targets = await connector.getRelatedItems("task-1", "assignedTo")
 
 ### Shared Helper (data-interface)
 
-Beide Connectors nutzen dieselben Helper — **keine eigene Implementierung in Connectors!**
+Alle Connectors nutzen denselben Helper — **keine eigene Implementierung in Connectors!**
 
 ```typescript
-import { findRelatedItems, resolveIncludes } from "@real-life-stack/data-interface"
+import { findRelatedItems } from "@real-life-stack/data-interface"
 
-// Connector-intern:
+// Connector-intern (in getRelatedItems + notifyObservers):
 findRelatedItems(itemId, allItems, predicate?, options?)
-resolveIncludes(items, allItems, includeDirectives)
 ```
 
 ---
 
-## 4. Gruppen-Kontext
+## 5. Gruppen-Kontext
 
 - Items leben in der **aktuellen Gruppe/Space**
 - `setCurrentGroup(id)` wechselt den Kontext → `notifyAllObservers()` mit neuem Doc
-- Observers bekommen automatisch die Items der neuen Gruppe
+- `observeCurrentGroup()` ist reaktiv — feuert bei Gruppenwechsel und Metadaten-Änderungen
 - Feature-Items (`type: "feature"`) sind gruppenübergreifend sichtbar
-
-### Metagruppe (geplant)
-
-Eine übergreifende Gruppe, die alle anderen Gruppen aggregiert. Scope: `"aggregate"` im LocalConnector. Details werden noch definiert.
 
 ---
 
-## 5. Capability-Checks
+## 6. Capability-Checks
 
 Hooks und UI **müssen** Capabilities prüfen, bevor sie Features nutzen:
 
 ```typescript
 import { isWritable, hasRelations, hasGroups, hasContacts } from "@real-life-stack/data-interface"
 
-// Im Hook oder UI:
 if (isWritable(connector)) {
   await connector.createItem(...)
 }
 
 if (hasRelations(connector)) {
-  const comments = await connector.getRelatedItems(...)
+  const obs = connector.observeRelatedItems(itemId, "commentOn", { direction: "to" })
 }
 ```
 
-**Nie annehmen, dass ein Connector alles kann.** Ein CalDAV-Import-Connector hat kein `createItem`. Ein Read-Only-Feed hat keine Relations.
+**Nie annehmen, dass ein Connector alles kann.**
 
 ---
 
-## 6. Anti-Patterns — Was AI NICHT tun darf
+## 7. Anti-Patterns — Was AI NICHT tun darf
 
 ### ❌ Direkte wot-core Imports in UI
 
 ```typescript
-// FALSCH — überspringt den Connector
+// FALSCH
 import { getYjsPersonalDoc } from "@real-life/wot-core"
-const doc = getYjsPersonalDoc()
-```
 
-```typescript
-// RICHTIG — über Connector + Hooks
+// RICHTIG
 const { data } = useItems({ type: "contact" })
 ```
 
 ### ❌ Polling / setTimeout als Reaktivitäts-Ersatz
 
 ```typescript
-// FALSCH — Polling statt Observable
+// FALSCH
 useEffect(() => {
   const interval = setInterval(async () => {
     const items = await connector.getItems(filter)
@@ -266,48 +242,22 @@ useEffect(() => {
   }, 1000)
   return () => clearInterval(interval)
 }, [])
-```
 
-```typescript
-// RICHTIG — Observable subscribe
+// RICHTIG
 useEffect(() => {
   return observable.subscribe(setData)
 }, [observable])
 ```
 
-### ❌ Eigene Datenhaltung in Hooks
+### ❌ Relations in data einbetten
 
 ```typescript
-// FALSCH — eigener Cache neben dem Connector
-const [cache, setCache] = useState<Map<string, Item>>(new Map())
-// ...manuelle Cache-Verwaltung...
-```
-
-```typescript
-// RICHTIG — Connector ist Single Source of Truth
-const { data } = useItems(filter)  // Connector cached intern
-```
-
-### ❌ forceUpdate / Key-Reset statt Subscription
-
-```typescript
-// FALSCH — UI neu mounten statt Observable nutzen
-const [key, setKey] = useState(0)
-const refresh = () => setKey(k => k + 1)
-return <Feed key={key} />
-```
-
-### ❌ Relations in data einbetten statt als eigene Items
-
-```typescript
-// FALSCH — Kommentare eingebettet
+// FALSCH
 await connector.updateItem("post-1", {
   data: { ...post.data, comments: [...post.data.comments, newComment] }
 })
-```
 
-```typescript
-// RICHTIG — Kommentar als eigenes Item mit Relation
+// RICHTIG
 await connector.createItem({
   type: "comment",
   createdBy: user.id,
@@ -316,63 +266,68 @@ await connector.createItem({
 })
 ```
 
-### ❌ Include-Logik im Hook oder UI auflösen
+### ❌ Manueller Reverse-Lookup in der UI
 
 ```typescript
-// FALSCH — manueller Reverse-Lookup in der UI
-const { data: posts } = useItems({ type: "post" })
+// FALSCH — alle Kommentare laden und manuell filtern
 const { data: allComments } = useItems({ type: "comment" })
 const commentsForPost = allComments.filter(c =>
   c.relations?.some(r => r.target === `item:${post.id}`)
 )
+
+// RICHTIG — useRelatedItems in der Kind-Komponente
+function PostCard({ post }) {
+  const { data: comments } = useRelatedItems(post.id, "commentOn", { direction: "to" })
+}
 ```
 
+### ❌ createdAt als Date behandeln
+
 ```typescript
-// RICHTIG — Connector löst Includes auf
-const { data: posts } = useItems({
-  type: "post",
-  include: [{ predicate: "commentOn", as: "comments", limit: 3 }]
-})
-// posts[0]._included?.comments ist automatisch befüllt
+// FALSCH
+item.createdAt.toLocaleDateString("de-DE")
+
+// RICHTIG
+new Date(item.createdAt).toLocaleDateString("de-DE")
 ```
 
 ---
 
-## 7. Subscription-Cleanup
+## 8. Subscription-Cleanup
 
 Jeder Connector **muss** in `dispose()` alle Subscriptions aufräumen:
 
 ```typescript
 async dispose(): Promise<void> {
-  // 1. Alle externen Subscriptions unsubsciben
   this.spacesSubscriptionUnsub?.()
   this.personalDocUnsub?.()
   this.contactsUnsub?.()
   this.verificationsUnsub?.()
   this.attestationsUnsub?.()
+  this.profileUnsub?.()
 
-  // 2. Netzwerk-Adapter stoppen
   await this.replication?.stop()
   await this.wsAdapter?.disconnect()
 
-  // 3. Alle Observables destroyen
   for (const obs of this.itemObservables.values()) obs.destroy()
+  for (const obs of this.relatedObservables.values()) obs.destroy()
+  for (const obs of this.memberObservables.values()) obs.destroy()
   this.itemObservables.clear()
-  // ...
+  this.relatedObservables.clear()
+  this.memberObservables.clear()
 }
 ```
 
-**Regel:** Jede `subscribe()`-Rückgabe wird in einer Member-Variable gespeichert und in `dispose()` aufgerufen.
-
 ---
 
-## 8. Checkliste für neue Features
+## 9. Checkliste für neue Features
 
 Wenn du ein neues reaktives Feature baust (z.B. Kommentare, Reaktionen, Benachrichtigungen):
 
 - [ ] Daten als **eigene Items** mit Relations modelliert (nicht eingebettet)?
+- [ ] `useRelatedItems()` in der Kind-Komponente statt manuellem Lookup?
 - [ ] `getRelatedItems()` mit korrekter `direction` genutzt?
-- [ ] `include`-Direktive in `getItems()`/`observe()` statt manueller Filterung?
+- [ ] `createdAt` als ISO-String behandelt (kein `new Date()` beim Erstellen)?
 - [ ] Nur über Connector + Hooks auf Daten zugegriffen (kein wot-core Bypass)?
 - [ ] Capability-Check (`isWritable`, `hasRelations`, etc.) vor Nutzung?
 - [ ] Subscription-Cleanup in `dispose()`?

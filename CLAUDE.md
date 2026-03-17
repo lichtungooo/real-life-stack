@@ -213,10 +213,11 @@ Die vollstaendige Architektur ist dokumentiert in `docs/spec/architektur2.md`. D
 Ausfuehrliche Spezifikation in `docs/spec/reaktivitaet.md`. Die wichtigsten Regeln:
 
 - **Datenfluss:** wot-core (Subscribable) → Connector (Observable) → Hooks (React State) → UI. Keine Schicht ueberspringen.
+- **createdAt ist ein ISO-String** (`"2026-03-17T14:30:00.000Z"`), KEIN Date-Objekt. Bei Bedarf: `new Date(item.createdAt)`.
 - **Kommentare/Reaktionen** sind eigene Items mit `commentOn`-Relation, NICHT eingebettet in `data`.
-- **Include-Direktiven** (`observe({ include: [...] })`) loesen Relations im Connector auf — NICHT manuell in Hooks oder UI filtern.
-- **Reverse-Lookup:** `getRelatedItems(id, predicate, { direction: "to" })` findet Items die auf mich zeigen.
-- **Shared Helper:** `findRelatedItems()` und `resolveIncludes()` aus data-interface nutzen, NICHT eigene Implementierung in Connectors.
+- **Related Items:** `useRelatedItems(postId, "commentOn", { direction: "to" })` in der Kind-Komponente. KEIN manueller Reverse-Lookup, KEIN `_included`.
+- **`_included` existiert NICHT MEHR.** Nutze `useRelatedItems` / `observeRelatedItems` stattdessen.
+- **Shared Helper:** `findRelatedItems()` aus data-interface nutzen, NICHT eigene Implementierung in Connectors.
 - **Anti-Patterns:** Kein Polling, kein direkter wot-core Import in UI, kein forceUpdate, keine eigene Datenhaltung in Hooks.
 
 ## Wichtige Dateien
@@ -224,7 +225,7 @@ Ausfuehrliche Spezifikation in `docs/spec/reaktivitaet.md`. Die wichtigsten Rege
 - `docs/spec/architektur2.md` — Architektur-Spezifikation (kanonisch)
 - `docs/spec/reaktivitaet.md` — Reaktivitaet, Relations, Anti-Patterns (PFLICHTLEKTUERE vor reaktiven Features)
 - `packages/data-interface/src/index.ts` — Alle Typdefinitionen + Capability-Interfaces
-- `packages/data-interface/src/base-connector.ts` — BaseConnector + createObservable + matchesFilter + findRelatedItems + resolveIncludes
+- `packages/data-interface/src/base-connector.ts` — BaseConnector + createObservable + matchesFilter + findRelatedItems
 - `packages/data-interface/src/demo-data.ts` — Demo-Daten Wrapper
 - `packages/toolkit/src/hooks/connector-context.tsx` — ConnectorProvider + useConnector
 - `packages/toolkit/docs/UI-REQUIREMENTS.md` — UI/UX Anforderungen
