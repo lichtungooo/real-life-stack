@@ -87,7 +87,7 @@ import {
   type ConnectorOption,
   type GroupDialogMode,
 } from "@real-life-stack/toolkit"
-import type { Item, User, Relation, Group, DataInterface, GroupManager } from "@real-life-stack/data-interface"
+import type { Item, User, Relation, Group, DataInterface } from "@real-life-stack/data-interface"
 import { hasGroups, isAuthenticatable, hasMessaging, hasSignedClaims, hasProfile, hasItemGroups } from "@real-life-stack/data-interface"
 import { demoItems, demoGroups, demoUsers, demoGroupMembers, demoGroupItems } from "@real-life-stack/data-interface/demo-data"
 import { MockConnector } from "@real-life-stack/mock-connector"
@@ -468,7 +468,7 @@ function KanbanView({ activeWorkspaceId, groups, selectedItemId, onItemSelect, o
     // Temporarily switch to the target group so the connector scopes the item correctly
     const previousGroupId = activeWorkspaceId
     if (targetGroupId && hasGroups(connector)) {
-      (connector as DataInterface & GroupManager).setCurrentGroup(targetGroupId)
+      connector.setCurrentGroup(targetGroupId)
     }
     const newItem = await createItem({
       type: "task",
@@ -477,7 +477,7 @@ function KanbanView({ activeWorkspaceId, groups, selectedItemId, onItemSelect, o
     })
     // Restore previous group
     if (targetGroupId && previousGroupId && targetGroupId !== previousGroupId && hasGroups(connector)) {
-      (connector as DataInterface & GroupManager).setCurrentGroup(previousGroupId)
+      connector.setCurrentGroup(previousGroupId)
     }
     if (newItem) {
       setPanelState({ mode: "edit", item: newItem })
@@ -497,9 +497,9 @@ function KanbanView({ activeWorkspaceId, groups, selectedItemId, onItemSelect, o
     // Ensure the item's group is active before updating (WoT-Connector needs an open handle)
     const itemGroupId = data.group || activeWorkspaceId
     if (itemGroupId && hasGroups(connector)) {
-      const current = (connector as DataInterface & GroupManager).getCurrentGroup()
+      const current = connector.getCurrentGroup()
       if (current?.id !== itemGroupId) {
-        (connector as DataInterface & GroupManager).setCurrentGroup(itemGroupId)
+        connector.setCurrentGroup(itemGroupId)
       }
     }
     try {
@@ -888,7 +888,7 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
   // Sync connector current group when workspace changes
   useEffect(() => {
     if (activeWorkspace && hasGroups(connector)) {
-      (connector as DataInterface & GroupManager).setCurrentGroup(activeWorkspace.id)
+      connector.setCurrentGroup(activeWorkspace.id)
     }
   }, [activeWorkspace?.id, connector])
 
@@ -1012,6 +1012,7 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
         open={groupDialogOpen}
         onOpenChange={setGroupDialogOpen}
         mode={groupDialogMode}
+        currentUserId={currentUser?.id}
         contacts={allContacts}
         onCreateGroup={async (name) => {
           const group = await createGroup(name)
@@ -1154,7 +1155,7 @@ function AuthGate({ connector, children }: { connector: DataInterface; children:
       }
     >
       <LazyDIDAuthScreen
-        connector={connector as any}
+        connector={connector as unknown as import("@real-life-stack/wot-connector").WotConnector}
         onAuthenticated={() => setAuthenticated(true)}
       />
     </Suspense>
@@ -1185,8 +1186,8 @@ export default function App() {
       cancelled = true
       // Only dispose on real unmount (connector switch), not Strict Mode re-mount.
       // We detect this by checking if the connector was actually set.
-      if (instance && typeof (instance as any).dispose === "function") {
-        (instance as any).dispose()
+      if (instance) {
+        instance.dispose()
       }
     }
   }, [connectorId])
