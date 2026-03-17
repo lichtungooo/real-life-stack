@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react"
-import { Trash2, UserMinus, UserPlus, Check, Loader2, ChevronDown, ChevronUp } from "lucide-react"
+import { LogOut, UserMinus, UserPlus, Check, Loader2, ChevronDown, ChevronUp } from "lucide-react"
 import type { Group, User, ContactInfo } from "@real-life-stack/data-interface"
 import {
   Dialog,
@@ -94,25 +94,33 @@ export function GroupDialog({
     [onOpenChange],
   )
 
-  const handleSave = async () => {
+  // Create mode: save name and close
+  const handleCreate = async () => {
     if (!name.trim()) return
     setSaving(true)
     setError(null)
     try {
-      if (isEdit) {
-        await onUpdateGroup(mode.group.id, { name: name.trim() })
-      } else {
-        await onCreateGroup(name.trim())
-      }
+      await onCreateGroup(name.trim())
       handleOpenChange(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Fehler beim Speichern")
+      setError(err instanceof Error ? err.message : "Fehler beim Erstellen")
     } finally {
       setSaving(false)
     }
   }
 
-  const handleDelete = async () => {
+  // Edit mode: save name inline on blur/enter
+  const handleNameBlur = async () => {
+    if (!isEdit || !name.trim() || name.trim() === mode.group.name) return
+    setError(null)
+    try {
+      await onUpdateGroup(mode.group.id, { name: name.trim() })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Fehler beim Umbenennen")
+    }
+  }
+
+  const handleLeave = async () => {
     if (!isEdit) return
     if (!confirmDelete) {
       setConfirmDelete(true)
@@ -124,7 +132,7 @@ export function GroupDialog({
       await onDeleteGroup(mode.group.id)
       handleOpenChange(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Fehler beim Loeschen")
+      setError(err instanceof Error ? err.message : "Fehler beim Verlassen")
     } finally {
       setSaving(false)
       setConfirmDelete(false)
@@ -201,10 +209,16 @@ export function GroupDialog({
             onChange={(e) => setName(e.target.value)}
             placeholder="z.B. Nachbarschaft, Projekt-Team..."
             autoFocus
+            onBlur={isEdit ? handleNameBlur : undefined}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault()
-                handleSave()
+                if (isEdit) {
+                  handleNameBlur()
+                  ;(e.target as HTMLInputElement).blur()
+                } else {
+                  handleCreate()
+                }
               }
             }}
           />
@@ -371,24 +385,32 @@ export function GroupDialog({
 
         {/* Footer */}
         <DialogFooter className="gap-2 sm:gap-0">
-          {isEdit && (
-            <Button
-              variant={confirmDelete ? "destructive" : "ghost"}
-              size="sm"
-              onClick={handleDelete}
-              disabled={saving}
-              className="mr-auto"
-            >
-              <Trash2 className="h-4 w-4 mr-1" />
-              {confirmDelete ? "Wirklich loeschen?" : "Loeschen"}
-            </Button>
+          {isEdit ? (
+            <>
+              <Button
+                variant={confirmDelete ? "destructive" : "ghost"}
+                size="sm"
+                onClick={handleLeave}
+                disabled={saving}
+                className="mr-auto"
+              >
+                <LogOut className="h-4 w-4 mr-1" />
+                {confirmDelete ? "Wirklich verlassen?" : "Verlassen"}
+              </Button>
+              <Button variant="outline" onClick={() => handleOpenChange(false)}>
+                Schliessen
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={saving}>
+                Abbrechen
+              </Button>
+              <Button onClick={handleCreate} disabled={saving || !name.trim()}>
+                {saving ? "Erstellen..." : "Erstellen"}
+              </Button>
+            </>
           )}
-          <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={saving}>
-            Abbrechen
-          </Button>
-          <Button onClick={handleSave} disabled={saving || !name.trim()}>
-            {saving ? "Speichern..." : isEdit ? "Speichern" : "Erstellen"}
-          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

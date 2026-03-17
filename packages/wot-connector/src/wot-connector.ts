@@ -400,7 +400,7 @@ export class WotConnector extends BaseConnector {
     const initialDoc: RlsSpaceDoc = {
       _type: RLS_SPACE_TYPE,
       items: {},
-      metadata: { name, modules },
+      metadata: { modules },
     }
 
     const space = await this.replication.createSpace("shared", initialDoc, { name, appTag: RLS_SPACE_TYPE })
@@ -415,20 +415,27 @@ export class WotConnector extends BaseConnector {
   }
 
   override async updateGroup(id: string, updates: Partial<Group>): Promise<Group> {
-    // If we have a handle for this group, update metadata via transact
-    const handle = id === this.currentGroupId
-      ? this.currentHandle
-      : await this.replication?.openSpace<RlsSpaceDoc>(id)
+    if (!this.replication) throw new Error("Not authenticated")
 
-    if (!handle) throw new Error("Group not found")
+    // Name/description via updateSpace (framework level — syncs via _meta)
+    if (updates.name) {
+      await this.replication.updateSpace(id, { name: updates.name })
+    }
 
-    handle.transact((doc: any) => {
-      if (!doc.metadata) doc.metadata = { name: "", modules: ["feed", "kanban", "calendar", "map"] }
-      if (updates.name) doc.metadata.name = updates.name
-      if (updates.data?.modules) doc.metadata.modules = updates.data.modules as string[]
-    })
+    // Modules via transact (app-specific data in the doc)
+    if (updates.data?.modules) {
+      const handle = id === this.currentGroupId
+        ? this.currentHandle
+        : await this.replication.openSpace<RlsSpaceDoc>(id)
 
-    if (id !== this.currentGroupId) handle.close()
+      if (handle) {
+        handle.transact((doc: any) => {
+          if (!doc.metadata) doc.metadata = {}
+          doc.metadata.modules = updates.data!.modules as string[]
+        })
+        if (id !== this.currentGroupId) handle.close()
+      }
+    }
 
     const group = this.groupsCache.find((g) => g.id === id)
     if (group) {
@@ -661,7 +668,7 @@ export class WotConnector extends BaseConnector {
       groupKeyService: this.groupKeyService,
       metadataStorage: spaceMetadataStorage,
       vaultUrl: this.config.vaultUrl,
-      spaceFilter: (info: SpaceInfo) => info.appTag === RLS_SPACE_TYPE,
+      // No spaceFilter — all spaces are visible (WoT + RLS fully compatible)
       compactStore: spaceCompactStore,
     })
     await this.replication.start()
@@ -834,9 +841,9 @@ export class WotConnector extends BaseConnector {
   // ==================== Internal: Space/Group mapping ====================
 
   private updateGroupsFromSpaces(spaces: SpaceInfo[]): void {
-    // Filter to RLS spaces only — spaces without appTag are from other apps (e.g. WoT Demo)
+    // All shared spaces are groups — WoT and RLS spaces are fully compatible
     this.groupsCache = spaces
-      .filter((s) => s.type === "shared" && s.appTag === RLS_SPACE_TYPE)
+      .filter((s) => s.type === "shared")
       .map((s) => ({
         id: s.id,
         name: s.name ?? "Unnamed Space",
@@ -1409,7 +1416,7 @@ export class WotConnector extends BaseConnector {
           fromId: envelope.fromDid,
           fromName: inviterName,
           spaceId: payload.spaceId,
-          spaceName: payload.spaceName ?? "Unnamed Space",
+          spaceName: payload.spaceInfo?.name ?? payload.spaceName ?? "Unnamed Space",
         })
       } catch { /* ignore malformed */ }
     }

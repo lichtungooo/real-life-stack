@@ -15,9 +15,10 @@ export interface RlsSpaceDoc {
   _type: "rls"
   /** RLS Items keyed by ID */
   items: Record<string, SerializedItem>
-  /** Space metadata */
-  metadata: {
-    name: string
+  /** Space metadata (app-specific, name/description now in _meta) */
+  metadata?: {
+    /** @deprecated Use _meta.name (set via updateSpace) */
+    name?: string
     description?: string
     modules?: string[]
   }
