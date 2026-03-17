@@ -2,6 +2,7 @@ import type {
   FullConnector,
   Item,
   ItemFilter,
+  ItemObserveOptions,
   Group,
   User,
   Observable,
@@ -10,7 +11,7 @@ import type {
   RelatedItemsOptions,
   Source,
 } from "@real-life-stack/data-interface"
-import { createObservable, matchesFilter } from "@real-life-stack/data-interface"
+import { createObservable, matchesFilter, findRelatedItems, resolveIncludes } from "@real-life-stack/data-interface"
 import { get, set, del, createStore } from "idb-keyval"
 
 // --- Types ---
@@ -61,6 +62,7 @@ export class LocalConnector implements FullConnector {
   private groupsObs = createObservable<Group[]>([])
   private itemObservables = new Map<string, ReturnType<typeof createObservable<Item[]>>>()
   private singleItemObservables = new Map<string, ReturnType<typeof createObservable<Item | null>>>()
+  private singleItemOptions = new Map<string, ItemObserveOptions>()
 
   private channel: BroadcastChannel | null = null
   private readonly instanceId = crypto.randomUUID()
@@ -234,7 +236,11 @@ export class LocalConnector implements FullConnector {
   async getItems(filter?: ItemFilter): Promise<Item[]> {
     const scoped = this.getScopedItems()
     if (!filter) return scoped
-    return scoped.filter((item) => matchesFilter(item, filter))
+    let filtered = scoped.filter((item) => matchesFilter(item, filter))
+    if (filter.include?.length) {
+      filtered = resolveIncludes(filtered, scoped, filter.include)
+    }
+    return filtered
   }
 
   async getItem(id: string): Promise<Item | null> {
@@ -245,18 +251,26 @@ export class LocalConnector implements FullConnector {
     const key = JSON.stringify(filter)
     if (!this.itemObservables.has(key)) {
       const scoped = this.getScopedItems()
-      const filtered = scoped.filter((item) => matchesFilter(item, filter))
+      let filtered = scoped.filter((item) => matchesFilter(item, filter))
+      if (filter.include?.length) {
+        filtered = resolveIncludes(filtered, scoped, filter.include)
+      }
       this.itemObservables.set(key, createObservable(filtered))
     }
     return this.itemObservables.get(key)!
   }
 
-  observeItem(id: string): Observable<Item | null> {
-    if (!this.singleItemObservables.has(id)) {
-      const item = this.items.find((i) => i.id === id) ?? null
-      this.singleItemObservables.set(id, createObservable(item))
+  observeItem(id: string, options?: ItemObserveOptions): Observable<Item | null> {
+    const key = options?.include ? id + JSON.stringify(options) : id
+    if (!this.singleItemObservables.has(key)) {
+      let item = this.items.find((i) => i.id === id) ?? null
+      if (item && options?.include?.length) {
+        [item] = resolveIncludes([item], this.items, options.include)
+      }
+      this.singleItemObservables.set(key, createObservable(item))
+      if (options) this.singleItemOptions.set(key, options)
     }
-    return this.singleItemObservables.get(id)!
+    return this.singleItemObservables.get(key)!
   }
 
   async createItem(item: Omit<Item, "id" | "createdAt">): Promise<Item> {
@@ -319,20 +333,9 @@ export class LocalConnector implements FullConnector {
   async getRelatedItems(
     itemId: string,
     predicate?: string,
-    _options?: RelatedItemsOptions
+    options?: RelatedItemsOptions
   ): Promise<Item[]> {
-    const item = this.items.find((i) => i.id === itemId)
-    if (!item?.relations) return []
-
-    const matchingRelations = predicate
-      ? item.relations.filter((r) => r.predicate === predicate)
-      : item.relations
-
-    const targetIds = matchingRelations
-      .map((r) => r.target.replace(/^(item:|global:)/, ""))
-      .filter((t) => !t.startsWith("space:"))
-
-    return this.items.filter((i) => targetIds.includes(i.id))
+    return findRelatedItems(itemId, this.items, predicate, options)
   }
 
   // --- Users ---
@@ -451,11 +454,20 @@ export class LocalConnector implements FullConnector {
     const scoped = this.getScopedItems()
     for (const [key, observable] of this.itemObservables) {
       const filter: ItemFilter = JSON.parse(key)
-      const filtered = scoped.filter((item) => matchesFilter(item, filter))
+      let filtered = scoped.filter((item) => matchesFilter(item, filter))
+      if (filter.include?.length) {
+        filtered = resolveIncludes(filtered, scoped, filter.include)
+      }
       observable.set(filtered)
     }
-    for (const [id, observable] of this.singleItemObservables) {
-      const item = this.items.find((i) => i.id === id) ?? null
+    for (const [key, observable] of this.singleItemObservables) {
+      const opts = this.singleItemOptions.get(key)
+      // Extract the item ID (key may contain appended JSON options)
+      const id = opts ? key.slice(0, key.indexOf("{")) : key
+      let item = this.items.find((i) => i.id === id) ?? null
+      if (item && opts?.include?.length) {
+        [item] = resolveIncludes([item], scoped, opts.include)
+      }
       observable.set(item)
     }
   }

@@ -1,6 +1,7 @@
 import type {
   Item,
   ItemFilter,
+  ItemObserveOptions,
   Group,
   User,
   Observable,
@@ -19,6 +20,8 @@ import {
   BaseConnector,
   createObservable,
   matchesFilter,
+  findRelatedItems,
+  resolveIncludes,
   type ReactiveObservable,
 } from "@real-life-stack/data-interface"
 
@@ -97,6 +100,9 @@ export class WotConnector extends BaseConnector {
   private handleRemoteUnsub: (() => void) | null = null
   private spacesSubscriptionUnsub: (() => void) | null = null
   private personalDocUnsub: (() => void) | null = null
+  private contactsUnsub: (() => void) | null = null
+  private verificationsUnsub: (() => void) | null = null
+  private attestationsUnsub: (() => void) | null = null
 
   // Observables (stable references — backing changes on group switch)
   private authStateObs: ReactiveObservable<AuthState>
@@ -116,6 +122,7 @@ export class WotConnector extends BaseConnector {
   // Item observables keyed by JSON.stringify(filter)
   private itemObservables = new Map<string, ReactiveObservable<Item[]>>()
   private itemByIdObservables = new Map<string, ReactiveObservable<Item | null>>()
+  private itemByIdOptions = new Map<string, ItemObserveOptions>()
 
   constructor(config: WotConnectorConfig) {
     super()
@@ -159,6 +166,9 @@ export class WotConnector extends BaseConnector {
     this.closeCurrentHandle()
     this.spacesSubscriptionUnsub?.()
     this.personalDocUnsub?.()
+    this.contactsUnsub?.()
+    this.verificationsUnsub?.()
+    this.attestationsUnsub?.()
     await this.replication?.stop()
     await this.outboxAdapter?.disconnect()
     await this.wsAdapter?.disconnect()
@@ -168,6 +178,7 @@ export class WotConnector extends BaseConnector {
     for (const obs of this.itemByIdObservables.values()) obs.destroy()
     this.itemObservables.clear()
     this.itemByIdObservables.clear()
+    this.itemByIdOptions.clear()
     this.authStateObs.destroy()
     this.contactsObs.destroy()
     this.relayStateObs.destroy()
@@ -505,9 +516,13 @@ export class WotConnector extends BaseConnector {
     const doc = this.getCurrentDoc()
     if (!doc) return []
 
-    const items = Object.values(doc.items ?? {}).map(deserializeItem)
-    if (!filter) return items
-    return items.filter((item) => matchesFilter(item, filter))
+    const allItems = Object.values(doc.items ?? {}).map(deserializeItem)
+    if (!filter) return allItems
+    let filtered = allItems.filter((item) => matchesFilter(item, filter))
+    if (filter.include?.length) {
+      filtered = resolveIncludes(filtered, allItems, filter.include)
+    }
+    return filtered
   }
 
   override async getItem(id: string): Promise<Item | null> {
@@ -595,13 +610,22 @@ export class WotConnector extends BaseConnector {
     return obs
   }
 
-  override observeItem(id: string): Observable<Item | null> {
-    let obs = this.itemByIdObservables.get(id)
+  override observeItem(id: string, options?: ItemObserveOptions): Observable<Item | null> {
+    const key = options?.include ? id + JSON.stringify(options) : id
+    let obs = this.itemByIdObservables.get(key)
     if (!obs) {
       obs = createObservable<Item | null>(null)
-      this.itemByIdObservables.set(id, obs)
+      this.itemByIdObservables.set(key, obs)
+      if (options) this.itemByIdOptions.set(key, options)
       // Load initial data (awaits handleReady internally)
-      void this.getItem(id).then((item) => obs!.set(item))
+      void this.getItem(id).then((item) => {
+        if (item && options?.include?.length) {
+          const doc = this.getCurrentDoc()
+          const allItems = doc ? Object.values(doc.items ?? {}).map(deserializeItem) : []
+          ;[item] = resolveIncludes([item], allItems, options.include)
+        }
+        obs!.set(item)
+      })
     }
     return obs
   }
@@ -695,7 +719,7 @@ export class WotConnector extends BaseConnector {
     })
 
     // Reactive contacts via StorageAdapter
-    this.storage.watchContacts().subscribe((contacts: any[]) => {
+    this.contactsUnsub = this.storage.watchContacts().subscribe((contacts: any[]) => {
       const mapped: ContactInfo[] = contacts.map((c: any) => ({
         id: c.did,
         publicKey: c.publicKey || undefined,
@@ -725,8 +749,8 @@ export class WotConnector extends BaseConnector {
     )
 
     // Reactive claims via StorageAdapter (verifications + attestations → SignedClaim)
-    this.storage.watchAllVerifications().subscribe(() => this.syncClaimsFromPersonalDoc())
-    this.storage.watchAllAttestations().subscribe(() => this.syncClaimsFromPersonalDoc())
+    this.verificationsUnsub = this.storage.watchAllVerifications().subscribe(() => this.syncClaimsFromPersonalDoc())
+    this.attestationsUnsub = this.storage.watchAllAttestations().subscribe(() => this.syncClaimsFromPersonalDoc())
     this.syncClaimsFromPersonalDoc()
 
     // 9. Watch spaces for reactive group list
@@ -848,6 +872,7 @@ export class WotConnector extends BaseConnector {
       .map((s) => ({
         id: s.id,
         name: s.name ?? "Unnamed Space",
+        members: s.members,
         data: { scope: "group", modules: DEFAULT_MODULES },
       }))
 
@@ -864,6 +889,7 @@ export class WotConnector extends BaseConnector {
     return {
       id: space.id,
       name: space.name ?? doc?.metadata?.name ?? "Unnamed Space",
+      members: space.members,
       data: {
         scope: "group",
         modules: doc?.metadata?.modules ?? DEFAULT_MODULES,
@@ -909,6 +935,7 @@ export class WotConnector extends BaseConnector {
 
   private notifyAllObservers(): void {
     const doc = this.getCurrentDoc()
+    const allItems = doc ? Object.values(doc.items ?? {}).map(deserializeItem) : []
 
     // Update item list observables
     for (const [key, obs] of this.itemObservables) {
@@ -916,19 +943,27 @@ export class WotConnector extends BaseConnector {
       if (!doc) {
         obs.set([])
       } else {
-        const items = Object.values(doc.items ?? {}).map(deserializeItem)
-        const filtered = items.filter((item) => matchesFilter(item, filter))
+        let filtered = allItems.filter((item) => matchesFilter(item, filter))
+        if (filter.include?.length) {
+          filtered = resolveIncludes(filtered, allItems, filter.include)
+        }
         obs.set(filtered)
       }
     }
 
     // Update single-item observables
-    for (const [id, obs] of this.itemByIdObservables) {
+    for (const [key, obs] of this.itemByIdObservables) {
       if (!doc) {
         obs.set(null)
       } else {
+        const opts = this.itemByIdOptions.get(key)
+        const id = opts ? key.slice(0, key.indexOf("{")) : key
         const serialized = doc.items?.[id]
-        obs.set(serialized ? deserializeItem(serialized) : null)
+        let item = serialized ? deserializeItem(serialized) : null
+        if (item && opts?.include?.length) {
+          [item] = resolveIncludes([item], allItems, opts.include)
+        }
+        obs.set(item)
       }
     }
   }

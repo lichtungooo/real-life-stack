@@ -2,6 +2,8 @@ import type {
   FullConnector,
   Item,
   ItemFilter,
+  IncludeDirective,
+  ItemObserveOptions,
   Group,
   User,
   Observable,
@@ -56,6 +58,89 @@ export function matchesFilter(item: Item, filter: ItemFilter): boolean {
   return true
 }
 
+/**
+ * Find related items with support for forward, reverse, and bidirectional lookups.
+ *
+ * - "from" (default): item has relation → find targets
+ * - "to": find items whose relations point TO this item (reverse/incoming)
+ * - "both": union of "from" and "to"
+ */
+export function findRelatedItems(
+  itemId: string,
+  allItems: Item[],
+  predicate?: string,
+  options?: RelatedItemsOptions
+): Item[] {
+  const direction = options?.direction ?? "from"
+  const results: Item[] = []
+  const seen = new Set<string>()
+
+  // Forward: item's own relations → find targets
+  if (direction === "from" || direction === "both") {
+    const item = allItems.find((i) => i.id === itemId)
+    if (item?.relations) {
+      const matching = predicate
+        ? item.relations.filter((r) => r.predicate === predicate)
+        : item.relations
+      const targetIds = matching
+        .map((r) => r.target.replace(/^(item:|global:)/, ""))
+        .filter((t) => !t.startsWith("space:"))
+      for (const target of allItems) {
+        if (targetIds.includes(target.id) && !seen.has(target.id)) {
+          results.push(target)
+          seen.add(target.id)
+        }
+      }
+    }
+  }
+
+  // Reverse: find items whose relations point to itemId
+  if (direction === "to" || direction === "both") {
+    for (const candidate of allItems) {
+      if (seen.has(candidate.id)) continue
+      if (!candidate.relations) continue
+      const matching = predicate
+        ? candidate.relations.filter((r) => r.predicate === predicate)
+        : candidate.relations
+      const pointsToMe = matching.some((r) => {
+        const targetId = r.target.replace(/^(item:|global:)/, "")
+        return targetId === itemId
+      })
+      if (pointsToMe) {
+        results.push(candidate)
+        seen.add(candidate.id)
+      }
+    }
+  }
+
+  return results
+}
+
+/**
+ * Resolve include directives on a list of items.
+ * For each item, finds related items (reverse lookup via "to" direction)
+ * and attaches them as _included.
+ */
+export function resolveIncludes(items: Item[], allItems: Item[], includes: IncludeDirective[]): Item[] {
+  if (!includes.length) return items
+  return items.map((item) => {
+    const included: Record<string, Item[]> = {}
+    for (const inc of includes) {
+      let related = findRelatedItems(item.id, allItems, inc.predicate, { direction: "to" })
+      // Sort by createdAt descending (newest first)
+      related.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      if (inc.offset) {
+        related = related.slice(inc.offset)
+      }
+      if (inc.limit) {
+        related = related.slice(0, inc.limit)
+      }
+      included[inc.as] = related
+    }
+    return { ...item, _included: { ...item._included, ...included } }
+  })
+}
+
 const DEFAULT_GROUP: Group = { id: "default", name: "Default" }
 
 /**
@@ -89,32 +174,21 @@ export abstract class BaseConnector implements FullConnector {
     return observable
   }
 
-  observeItem(id: string): Observable<Item | null> {
+  observeItem(id: string, _options?: ItemObserveOptions): Observable<Item | null> {
     const observable = createObservable<Item | null>(null)
     this.getItem(id).then((item) => observable.set(item))
     return observable
   }
 
-  // --- Relations (Default: Relations aus Item auflösen) ---
+  // --- Relations (Default: forward + reverse lookup via shared helper) ---
 
   async getRelatedItems(
     itemId: string,
     predicate?: string,
-    _options?: RelatedItemsOptions
+    options?: RelatedItemsOptions
   ): Promise<Item[]> {
-    const item = await this.getItem(itemId)
-    if (!item?.relations) return []
-
-    const matching = predicate
-      ? item.relations.filter((r) => r.predicate === predicate)
-      : item.relations
-
-    const targetIds = matching
-      .map((r) => r.target.replace(/^(item:|global:)/, ""))
-      .filter((t) => !t.startsWith("space:"))
-
-    const items = await this.getItems()
-    return items.filter((i) => targetIds.includes(i.id))
+    const allItems = await this.getItems()
+    return findRelatedItems(itemId, allItems, predicate, options)
   }
 
   // --- Groups (Default: eine Default-Gruppe) ---

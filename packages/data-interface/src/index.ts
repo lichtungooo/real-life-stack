@@ -1,7 +1,7 @@
 // @real-life-stack/data-interface
 // Zentrale Typdefinitionen für das DataInterface (Connector-Schnittstelle)
 
-export { BaseConnector, createObservable, matchesFilter, type ReactiveObservable } from "./base-connector.js"
+export { BaseConnector, createObservable, matchesFilter, findRelatedItems, resolveIncludes, type ReactiveObservable } from "./base-connector.js"
 
 // --- Core Types ---
 
@@ -30,6 +30,7 @@ export interface Relation {
 export interface Group {
   id: string
   name: string
+  members?: string[]
   data?: Record<string, unknown>
 }
 
@@ -74,6 +75,11 @@ export interface IncludeDirective {
   predicate: string
   as: string
   limit?: number
+  offset?: number
+}
+
+export interface ItemObserveOptions {
+  include?: IncludeDirective[]
 }
 
 export interface RelatedItemsOptions {
@@ -102,7 +108,7 @@ export interface DataInterface {
 
   // Items — reaktiv beobachten
   observe(filter: ItemFilter): Observable<Item[]>
-  observeItem(id: string): Observable<Item | null>
+  observeItem(id: string, options?: ItemObserveOptions): Observable<Item | null>
 }
 
 // --- Capability Interfaces ---

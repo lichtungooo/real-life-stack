@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest"
-import { createObservable, matchesFilter } from "../src/base-connector.js"
+import { createObservable, matchesFilter, findRelatedItems, resolveIncludes } from "../src/base-connector.js"
 import type { Item, ItemFilter } from "../src/index.js"
 
 // Helper: create a minimal Item
@@ -121,5 +121,149 @@ describe("matchesFilter", () => {
     expect(matchesFilter(item, { type: "event", createdBy: "user-1", hasField: ["status"] })).toBe(false)
     expect(matchesFilter(item, { type: "task", createdBy: "user-2", hasField: ["status"] })).toBe(false)
     expect(matchesFilter(item, { type: "task", createdBy: "user-1", hasField: ["priority"] })).toBe(false)
+  })
+})
+
+describe("findRelatedItems", () => {
+  const post = createItem({ id: "post-1", type: "post" })
+  const comment1 = createItem({
+    id: "comment-1",
+    type: "comment",
+    createdAt: new Date("2026-01-01"),
+    relations: [{ predicate: "commentOn", target: "item:post-1" }],
+  })
+  const comment2 = createItem({
+    id: "comment-2",
+    type: "comment",
+    createdAt: new Date("2026-01-02"),
+    relations: [{ predicate: "commentOn", target: "item:post-1" }],
+  })
+  const task = createItem({
+    id: "task-1",
+    type: "task",
+    relations: [{ predicate: "assignedTo", target: "global:user-1" }],
+  })
+  const allItems = [post, comment1, comment2, task]
+
+  it("forward lookup (default) — finds targets of item's relations", () => {
+    const result = findRelatedItems("task-1", allItems, "assignedTo")
+    expect(result).toEqual([])  // user-1 is not an item
+  })
+
+  it("reverse lookup (to) — finds items pointing to me", () => {
+    const result = findRelatedItems("post-1", allItems, "commentOn", { direction: "to" })
+    expect(result).toHaveLength(2)
+    expect(result.map((i) => i.id)).toContain("comment-1")
+    expect(result.map((i) => i.id)).toContain("comment-2")
+  })
+
+  it("reverse lookup without predicate — finds all items pointing to me", () => {
+    const result = findRelatedItems("post-1", allItems, undefined, { direction: "to" })
+    expect(result).toHaveLength(2)
+  })
+
+  it("reverse lookup returns empty for unrelated item", () => {
+    const result = findRelatedItems("task-1", allItems, "commentOn", { direction: "to" })
+    expect(result).toEqual([])
+  })
+
+  it("both direction — forward + reverse", () => {
+    const itemWithRelation = createItem({
+      id: "post-2",
+      type: "post",
+      relations: [{ predicate: "relatedTo", target: "item:post-1" }],
+    })
+    const comment3 = createItem({
+      id: "comment-3",
+      type: "comment",
+      relations: [{ predicate: "commentOn", target: "item:post-2" }],
+    })
+    const items = [post, itemWithRelation, comment3]
+
+    const result = findRelatedItems("post-2", items, undefined, { direction: "both" })
+    // Forward: post-1 (via relatedTo), Reverse: comment-3 (via commentOn)
+    expect(result).toHaveLength(2)
+    expect(result.map((i) => i.id)).toContain("post-1")
+    expect(result.map((i) => i.id)).toContain("comment-3")
+  })
+})
+
+describe("resolveIncludes", () => {
+  const post = createItem({ id: "post-1", type: "post" })
+  const comment1 = createItem({
+    id: "comment-1",
+    type: "comment",
+    createdAt: new Date("2026-01-01"),
+    relations: [{ predicate: "commentOn", target: "item:post-1" }],
+  })
+  const comment2 = createItem({
+    id: "comment-2",
+    type: "comment",
+    createdAt: new Date("2026-01-02"),
+    relations: [{ predicate: "commentOn", target: "item:post-1" }],
+  })
+  const comment3 = createItem({
+    id: "comment-3",
+    type: "comment",
+    createdAt: new Date("2026-01-03"),
+    relations: [{ predicate: "commentOn", target: "item:post-1" }],
+  })
+  const allItems = [post, comment1, comment2, comment3]
+
+  it("resolves included items via reverse lookup", () => {
+    const result = resolveIncludes([post], allItems, [
+      { predicate: "commentOn", as: "comments" },
+    ])
+    expect(result).toHaveLength(1)
+    expect(result[0]._included?.comments).toHaveLength(3)
+  })
+
+  it("respects limit", () => {
+    const result = resolveIncludes([post], allItems, [
+      { predicate: "commentOn", as: "comments", limit: 2 },
+    ])
+    expect(result[0]._included?.comments).toHaveLength(2)
+  })
+
+  it("sorts newest first", () => {
+    const result = resolveIncludes([post], allItems, [
+      { predicate: "commentOn", as: "comments" },
+    ])
+    const ids = result[0]._included?.comments?.map((i) => i.id)
+    expect(ids).toEqual(["comment-3", "comment-2", "comment-1"])
+  })
+
+  it("returns empty array when no related items exist", () => {
+    const lonely = createItem({ id: "lonely", type: "post" })
+    const result = resolveIncludes([lonely], allItems, [
+      { predicate: "commentOn", as: "comments" },
+    ])
+    expect(result[0]._included?.comments).toEqual([])
+  })
+
+  it("respects offset (skip first N)", () => {
+    const result = resolveIncludes([post], allItems, [
+      { predicate: "commentOn", as: "comments", offset: 1 },
+    ])
+    // Sorted newest first: comment-3, comment-2, comment-1
+    // offset 1 → skip comment-3 → [comment-2, comment-1]
+    expect(result[0]._included?.comments).toHaveLength(2)
+    expect(result[0]._included?.comments?.map((i) => i.id)).toEqual(["comment-2", "comment-1"])
+  })
+
+  it("combines offset + limit for paging", () => {
+    const result = resolveIncludes([post], allItems, [
+      { predicate: "commentOn", as: "comments", offset: 1, limit: 1 },
+    ])
+    // offset 1 → skip comment-3, limit 1 → [comment-2]
+    expect(result[0]._included?.comments).toHaveLength(1)
+    expect(result[0]._included?.comments?.[0].id).toBe("comment-2")
+  })
+
+  it("offset beyond count returns empty", () => {
+    const result = resolveIncludes([post], allItems, [
+      { predicate: "commentOn", as: "comments", offset: 10 },
+    ])
+    expect(result[0]._included?.comments).toEqual([])
   })
 })
