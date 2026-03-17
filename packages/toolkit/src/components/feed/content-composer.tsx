@@ -261,12 +261,28 @@ export function ContentComposer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Live update: submit on every data change (skip until user actually edits)
+  // Live update: submit on data change, debounced for text fields only
   const prevDataRef = React.useRef(data)
   React.useEffect(() => {
     if (prevDataRef.current === data) return
+    const prev = prevDataRef.current
     prevDataRef.current = data
     if (liveUpdate) {
+      const isTextOnly = prev.title !== data.title || prev.text !== data.text
+      const hasNonTextChange =
+        prev.status !== data.status ||
+        prev.group !== data.group ||
+        prev.tags !== data.tags ||
+        prev.people !== data.people ||
+        prev.date !== data.date ||
+        prev.location !== data.location ||
+        prev.media !== data.media
+      if (isTextOnly && !hasNonTextChange) {
+        const timer = setTimeout(() => {
+          onSubmit({ contentType: selectedType, isPublic, data })
+        }, 300)
+        return () => clearTimeout(timer)
+      }
       onSubmit({ contentType: selectedType, isPublic, data })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
