@@ -45,9 +45,9 @@ Referenz: `docs/spec/architektur2.md`, Abschnitt "Relations" (Zeile 437ff)
 
 ### Anton
 - [x] Reaktivität von Items, Gruppen und Relations — klare Schnittstellendefinition + AI-Instruktionen (kein Bypass durch Schichten)
-- [ ] Gruppenlogik im RLS stabilisieren
+- [x] Gruppenlogik im RLS stabilisieren
 - [ ] Übergreifende Metagruppe definieren (beinhaltet alle anderen Gruppen)
 
 ### Sebastian
 - [ ] Kommentar-Schnittstelle implementieren (`commentOn`-Relation + `createItem`)
-- [ ] Content Composer auf GitHub pushen
+- [x] Content Composer auf GitHub pushen
