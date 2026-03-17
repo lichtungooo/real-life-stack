@@ -1,7 +1,6 @@
 import type {
   Item,
   ItemFilter,
-  ItemObserveOptions,
   Group,
   User,
   Observable,
@@ -21,7 +20,6 @@ import {
   createObservable,
   matchesFilter,
   findRelatedItems,
-  resolveIncludes,
   type ReactiveObservable,
 } from "@real-life-stack/data-interface"
 
@@ -125,7 +123,8 @@ export class WotConnector extends BaseConnector {
   // Item observables keyed by JSON.stringify(filter)
   private itemObservables = new Map<string, ReactiveObservable<Item[]>>()
   private itemByIdObservables = new Map<string, ReactiveObservable<Item | null>>()
-  private itemByIdOptions = new Map<string, ItemObserveOptions>()
+  private relatedObservables = new Map<string, ReactiveObservable<Item[]>>()
+  private relatedObservableParams = new Map<string, { itemId: string; predicate?: string; options?: RelatedItemsOptions }>()
 
   constructor(config: WotConnectorConfig) {
     super()
@@ -184,7 +183,8 @@ export class WotConnector extends BaseConnector {
     for (const obs of this.itemByIdObservables.values()) obs.destroy()
     this.itemObservables.clear()
     this.itemByIdObservables.clear()
-    this.itemByIdOptions.clear()
+    for (const obs of this.relatedObservables.values()) obs.destroy()
+    this.relatedObservables.clear()
     this.authStateObs.destroy()
     this.contactsObs.destroy()
     this.relayStateObs.destroy()
@@ -332,7 +332,7 @@ export class WotConnector extends BaseConnector {
     return (await this.getMyProfile()) ?? {
       id: user.id,
       type: "profile",
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
       createdBy: user.id,
       data: { name: user.displayName },
     }
@@ -574,11 +574,7 @@ export class WotConnector extends BaseConnector {
 
     const allItems = Object.values(doc.items ?? {}).map(deserializeItem)
     if (!filter) return allItems
-    let filtered = allItems.filter((item) => matchesFilter(item, filter))
-    if (filter.include?.length) {
-      filtered = resolveIncludes(filtered, allItems, filter.include)
-    }
-    return filtered
+    return allItems.filter((item) => matchesFilter(item, filter))
   }
 
   override async getItem(id: string): Promise<Item | null> {
@@ -600,7 +596,7 @@ export class WotConnector extends BaseConnector {
     const newItem: Item = {
       ...item,
       id,
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
     }
 
     const serialized = serializeItem(newItem)
@@ -666,24 +662,29 @@ export class WotConnector extends BaseConnector {
     return obs
   }
 
-  override observeItem(id: string, options?: ItemObserveOptions): Observable<Item | null> {
-    const key = options?.include ? id + JSON.stringify(options) : id
-    let obs = this.itemByIdObservables.get(key)
+  override observeItem(id: string): Observable<Item | null> {
+    let obs = this.itemByIdObservables.get(id)
     if (!obs) {
       obs = createObservable<Item | null>(null)
-      this.itemByIdObservables.set(key, obs)
-      if (options) this.itemByIdOptions.set(key, options)
-      // Load initial data (awaits handleReady internally)
-      void this.getItem(id).then((item) => {
-        if (item && options?.include?.length) {
-          const doc = this.getCurrentDoc()
-          const allItems = doc ? Object.values(doc.items ?? {}).map(deserializeItem) : []
-          ;[item] = resolveIncludes([item], allItems, options.include)
-        }
-        obs!.set(item)
-      })
+      this.itemByIdObservables.set(id, obs)
+      void this.getItem(id).then((item) => obs!.set(item))
     }
     return obs
+  }
+
+  observeRelatedItems(
+    itemId: string,
+    predicate?: string,
+    options?: RelatedItemsOptions
+  ): Observable<Item[]> {
+    const key = `${itemId}:${predicate ?? ""}:${JSON.stringify(options ?? {})}`
+    if (!this.relatedObservables.has(key)) {
+      const obs = createObservable<Item[]>([])
+      this.relatedObservables.set(key, obs)
+      this.relatedObservableParams.set(key, { itemId, predicate, options })
+      void this.getRelatedItems(itemId, predicate, options).then((items) => obs.set(items))
+    }
+    return this.relatedObservables.get(key)!
   }
 
   // ==================== Internal: Bootstrap ====================
@@ -1024,27 +1025,27 @@ export class WotConnector extends BaseConnector {
       if (!doc) {
         obs.set([])
       } else {
-        let filtered = allItems.filter((item) => matchesFilter(item, filter))
-        if (filter.include?.length) {
-          filtered = resolveIncludes(filtered, allItems, filter.include)
-        }
+        const filtered = allItems.filter((item) => matchesFilter(item, filter))
         obs.set(filtered)
       }
     }
 
     // Update single-item observables
-    for (const [key, obs] of this.itemByIdObservables) {
+    for (const [id, obs] of this.itemByIdObservables) {
       if (!doc) {
         obs.set(null)
       } else {
-        const opts = this.itemByIdOptions.get(key)
-        const id = opts ? key.slice(0, key.indexOf("{")) : key
         const serialized = doc.items?.[id]
-        let item = serialized ? deserializeItem(serialized) : null
-        if (item && opts?.include?.length) {
-          [item] = resolveIncludes([item], allItems, opts.include)
-        }
-        obs.set(item)
+        obs.set(serialized ? deserializeItem(serialized) : null)
+      }
+    }
+
+    // Update related-items observables
+    for (const [key, obs] of this.relatedObservables) {
+      const params = this.relatedObservableParams.get(key)
+      if (params) {
+        const related = findRelatedItems(params.itemId, allItems, params.predicate, params.options)
+        obs.set(related)
       }
     }
   }
@@ -1741,7 +1742,7 @@ export class WotConnector extends BaseConnector {
       this.profileObs.set({
         id: did,
         type: "profile",
-        createdAt: new Date(profile?.createdAt ?? Date.now()),
+        createdAt: profile?.createdAt ?? new Date().toISOString(),
         createdBy: did,
         data: {
           name: profile?.name ?? getDefaultDisplayName(did),

@@ -2,7 +2,6 @@ import type {
   FullConnector,
   Item,
   ItemFilter,
-  ItemObserveOptions,
   Group,
   User,
   Observable,
@@ -11,7 +10,7 @@ import type {
   RelatedItemsOptions,
   Source,
 } from "@real-life-stack/data-interface"
-import { createObservable, matchesFilter, findRelatedItems, resolveIncludes } from "@real-life-stack/data-interface"
+import { createObservable, matchesFilter, findRelatedItems } from "@real-life-stack/data-interface"
 import { demoItems, demoGroups, demoUsers, demoGroupMembers, demoGroupItems } from "@real-life-stack/data-interface/demo-data"
 
 export class MockConnector implements FullConnector {
@@ -25,9 +24,10 @@ export class MockConnector implements FullConnector {
   private authState: ReturnType<typeof createObservable<AuthState>>
   private groupsObs: ReturnType<typeof createObservable<Group[]>>
   private currentGroupObs: ReturnType<typeof createObservable<Group | null>>
-  private singleItemOptions = new Map<string, ItemObserveOptions>()
   private itemObservables = new Map<string, ReturnType<typeof createObservable<Item[]>>>()
   private singleItemObservables = new Map<string, ReturnType<typeof createObservable<Item | null>>>()
+  private relatedObservables = new Map<string, ReturnType<typeof createObservable<Item[]>>>()
+  private relatedObservableParams = new Map<string, { itemId: string; predicate?: string; options?: RelatedItemsOptions }>()
   private nextItemId = 100
 
   constructor() {
@@ -169,11 +169,7 @@ export class MockConnector implements FullConnector {
   async getItems(filter?: ItemFilter): Promise<Item[]> {
     const scoped = this.getScopedItems()
     if (!filter) return scoped
-    let filtered = scoped.filter((item) => matchesFilter(item, filter))
-    if (filter.include?.length) {
-      filtered = resolveIncludes(filtered, scoped, filter.include)
-    }
-    return filtered
+    return scoped.filter((item) => matchesFilter(item, filter))
   }
 
   async getItem(id: string): Promise<Item | null> {
@@ -184,33 +180,25 @@ export class MockConnector implements FullConnector {
     const key = JSON.stringify(filter)
     if (!this.itemObservables.has(key)) {
       const scoped = this.getScopedItems()
-      let filtered = scoped.filter((item) => matchesFilter(item, filter))
-      if (filter.include?.length) {
-        filtered = resolveIncludes(filtered, scoped, filter.include)
-      }
+      const filtered = scoped.filter((item) => matchesFilter(item, filter))
       this.itemObservables.set(key, createObservable(filtered))
     }
     return this.itemObservables.get(key)!
   }
 
-  observeItem(id: string, options?: ItemObserveOptions): Observable<Item | null> {
-    const key = options?.include ? id + JSON.stringify(options) : id
-    if (!this.singleItemObservables.has(key)) {
-      let item = this.items.find((i) => i.id === id) ?? null
-      if (item && options?.include?.length) {
-        [item] = resolveIncludes([item], this.items, options.include)
-      }
-      this.singleItemObservables.set(key, createObservable(item))
-      if (options) this.singleItemOptions.set(key, options)
+  observeItem(id: string): Observable<Item | null> {
+    if (!this.singleItemObservables.has(id)) {
+      const item = this.items.find((i) => i.id === id) ?? null
+      this.singleItemObservables.set(id, createObservable(item))
     }
-    return this.singleItemObservables.get(key)!
+    return this.singleItemObservables.get(id)!
   }
 
   async createItem(item: Omit<Item, "id" | "createdAt">): Promise<Item> {
     const newItem: Item = {
       ...item,
       id: `item-${this.nextItemId++}`,
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
     }
     this.items.push(newItem)
 
@@ -264,6 +252,20 @@ export class MockConnector implements FullConnector {
     options?: RelatedItemsOptions
   ): Promise<Item[]> {
     return findRelatedItems(itemId, this.items, predicate, options)
+  }
+
+  observeRelatedItems(
+    itemId: string,
+    predicate?: string,
+    options?: RelatedItemsOptions
+  ): Observable<Item[]> {
+    const key = `${itemId}:${predicate ?? ""}:${JSON.stringify(options ?? {})}`
+    if (!this.relatedObservables.has(key)) {
+      const related = findRelatedItems(itemId, this.items, predicate, options)
+      this.relatedObservables.set(key, createObservable(related))
+      this.relatedObservableParams.set(key, { itemId, predicate, options })
+    }
+    return this.relatedObservables.get(key)!
   }
 
   // --- Users ---
@@ -322,20 +324,19 @@ export class MockConnector implements FullConnector {
     const scoped = this.getScopedItems()
     for (const [key, observable] of this.itemObservables) {
       const filter: ItemFilter = JSON.parse(key)
-      let filtered = scoped.filter((item) => matchesFilter(item, filter))
-      if (filter.include?.length) {
-        filtered = resolveIncludes(filtered, scoped, filter.include)
-      }
+      const filtered = scoped.filter((item) => matchesFilter(item, filter))
       observable.set(filtered)
     }
-    for (const [key, observable] of this.singleItemObservables) {
-      const opts = this.singleItemOptions.get(key)
-      const id = opts ? key.slice(0, key.indexOf("{")) : key
-      let item = this.items.find((i) => i.id === id) ?? null
-      if (item && opts?.include?.length) {
-        [item] = resolveIncludes([item], scoped, opts.include)
-      }
+    for (const [id, observable] of this.singleItemObservables) {
+      const item = this.items.find((i) => i.id === id) ?? null
       observable.set(item)
+    }
+    for (const [key, observable] of this.relatedObservables) {
+      const params = this.relatedObservableParams.get(key)
+      if (params) {
+        const related = findRelatedItems(params.itemId, this.items, params.predicate, params.options)
+        observable.set(related)
+      }
     }
   }
 }

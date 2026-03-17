@@ -51,8 +51,11 @@ describe("Type Guards", () => {
       expect(hasRelations(createStub())).toBe(false)
     })
 
-    it("returns true when getRelatedItems is present", () => {
-      expect(hasRelations(createStub({ getRelatedItems: async () => [] }))).toBe(true)
+    it("returns true when getRelatedItems and observeRelatedItems are present", () => {
+      expect(hasRelations(createStub({
+        getRelatedItems: async () => [],
+        observeRelatedItems: () => ({ current: [], subscribe: () => () => {} }),
+      }))).toBe(true)
     })
   })
 

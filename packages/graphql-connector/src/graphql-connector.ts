@@ -43,10 +43,7 @@ import {
 } from "./queries.js"
 
 function parseItem(raw: Record<string, unknown>): Item {
-  return {
-    ...raw,
-    createdAt: new Date(raw.createdAt as string),
-  } as Item
+  return raw as unknown as Item
 }
 
 export class GraphQLConnector implements FullConnector {
@@ -254,6 +251,22 @@ export class GraphQLConnector implements FullConnector {
       { itemId, predicate },
     )
     return relatedItems.map(parseItem)
+  }
+
+  private relatedObservables = new Map<string, ReturnType<typeof createObservable<Item[]>>>()
+
+  observeRelatedItems(
+    itemId: string,
+    predicate?: string,
+    options?: RelatedItemsOptions
+  ): Observable<Item[]> {
+    const key = `${itemId}:${predicate ?? ""}:${JSON.stringify(options ?? {})}`
+    if (!this.relatedObservables.has(key)) {
+      const obs = createObservable<Item[]>([])
+      this.relatedObservables.set(key, obs)
+      void this.getRelatedItems(itemId, predicate, options).then((items) => obs.set(items))
+    }
+    return this.relatedObservables.get(key)!
   }
 
   // --- Users ---

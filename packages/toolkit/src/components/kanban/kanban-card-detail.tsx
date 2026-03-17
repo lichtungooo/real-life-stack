@@ -134,7 +134,7 @@ export function KanbanCardDetail({ item, users, className }: KanbanCardDetailPro
             Erstellt
           </div>
           <p className="text-sm text-foreground/80">
-            {createdAt.toLocaleDateString("de-DE", {
+            {new Date(createdAt).toLocaleDateString("de-DE", {
               day: "numeric",
               month: "long",
               year: "numeric",

@@ -34,11 +34,6 @@ export const ItemType = builder.objectRef<Item>("Item").implement({
       resolve: (item) => item.relations ?? null,
     }),
     _source: t.exposeString("_source", { nullable: true }),
-    _included: t.field({
-      type: "JSON",
-      nullable: true,
-      resolve: (item) => item._included ?? null,
-    }),
   }),
 })
 

@@ -12,10 +12,7 @@ function clone<T>(obj: T): T {
 
 // --- State ---
 
-let items: Item[] = clone(demoItems).map((item: Item) => ({
-  ...item,
-  createdAt: new Date(item.createdAt),
-}))
+let items: Item[] = clone(demoItems)
 let groups: Group[] = clone(demoGroups)
 const users: User[] = clone(demoUsers)
 let groupMembers: Record<string, string[]> = clone(demoGroupMembers)
@@ -48,7 +45,7 @@ export function createItem(input: { type: string; createdBy: string; data: Recor
   const item: Item = {
     id: `item-${nextItemId++}`,
     type: input.type,
-    createdAt: new Date(),
+    createdAt: new Date().toISOString(),
     createdBy: input.createdBy,
     data: input.data,
     relations: input.relations,

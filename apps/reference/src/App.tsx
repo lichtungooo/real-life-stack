@@ -129,9 +129,9 @@ function resolveAuthor(userId: string, members: User[], currentUser?: User | nul
 }
 
 // Helper: relative time string from Date
-function timeAgo(date: Date): string {
+function timeAgo(date: string): string {
   const now = Date.now()
-  const diff = now - date.getTime()
+  const diff = now - new Date(date).getTime()
   const minutes = Math.floor(diff / 60000)
   if (minutes < 60) return `vor ${minutes} Min.`
   const hours = Math.floor(minutes / 60)
@@ -164,7 +164,7 @@ function FeedView({ onInvite, groupId }: { onInvite?: () => void; groupId: strin
   const mappedPosts = useMemo(
     () =>
       [...posts]
-        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
         .map((item) => itemToPost(item, members, currentUser)),
     [posts, members, currentUser]
   )

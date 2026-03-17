@@ -1,14 +1,14 @@
 // @real-life-stack/data-interface
 // Zentrale Typdefinitionen für das DataInterface (Connector-Schnittstelle)
 
-export { BaseConnector, createObservable, matchesFilter, findRelatedItems, resolveIncludes, type ReactiveObservable } from "./base-connector.js"
+export { BaseConnector, createObservable, matchesFilter, findRelatedItems, type ReactiveObservable } from "./base-connector.js"
 
 // --- Core Types ---
 
 export interface Item {
   id: string
   type: string
-  createdAt: Date
+  createdAt: string
   createdBy: string
 
   schema?: string
@@ -18,7 +18,6 @@ export interface Item {
   relations?: Relation[]
 
   _source?: string
-  _included?: Record<string, Item[]>
 }
 
 export interface Relation {
@@ -68,18 +67,6 @@ export interface ItemFilter {
   hasField?: string[]
   createdBy?: string
   source?: string
-  include?: IncludeDirective[]
-}
-
-export interface IncludeDirective {
-  predicate: string
-  as: string
-  limit?: number
-  offset?: number
-}
-
-export interface ItemObserveOptions {
-  include?: IncludeDirective[]
 }
 
 export interface RelatedItemsOptions {
@@ -108,7 +95,7 @@ export interface DataInterface {
 
   // Items — reaktiv beobachten
   observe(filter: ItemFilter): Observable<Item[]>
-  observeItem(id: string, options?: ItemObserveOptions): Observable<Item | null>
+  observeItem(id: string): Observable<Item | null>
 }
 
 // --- Capability Interfaces ---
@@ -125,6 +112,11 @@ export interface RelationCapable {
     predicate?: string,
     options?: RelatedItemsOptions
   ): Promise<Item[]>
+  observeRelatedItems(
+    itemId: string,
+    predicate?: string,
+    options?: RelatedItemsOptions
+  ): Observable<Item[]>
 }
 
 export interface GroupManager {
@@ -304,7 +296,7 @@ export function isWritable(c: DataInterface): c is DataInterface & ItemWriter {
 }
 
 export function hasRelations(c: DataInterface): c is DataInterface & RelationCapable {
-  return "getRelatedItems" in c
+  return "getRelatedItems" in c && "observeRelatedItems" in c
 }
 
 export function hasGroups(c: DataInterface): c is DataInterface & GroupManager {

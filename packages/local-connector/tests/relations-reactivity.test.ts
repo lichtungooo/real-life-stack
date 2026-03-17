@@ -39,21 +39,11 @@ describe("LocalConnector — Relations Reactivity", () => {
     await connector.authenticate("local", {})
   })
 
-  it("observe with include resolves comments reactively", async () => {
-    // 1. Create a post
+  it("observeRelatedItems returns comments via reverse lookup", async () => {
     const post = await connector.createItem(
       makeItem({ type: "post", createdBy: "user-1", data: { title: "Hello" } })
     )
 
-    // 2. Subscribe to posts with comments included
-    const updates: Item[][] = []
-    const observable = connector.observe({
-      type: "post",
-      include: [{ predicate: "commentOn", as: "comments" }],
-    })
-    observable.subscribe((items) => updates.push(items))
-
-    // 3. Create a comment on the post
     await connector.createItem(
       makeItem({
         type: "comment",
@@ -63,87 +53,21 @@ describe("LocalConnector — Relations Reactivity", () => {
       })
     )
 
-    // 4. The observer should have fired with resolved _included.comments
-    const lastUpdate = updates[updates.length - 1]
-    const updatedPost = lastUpdate.find((i) => i.id === post.id)
-    expect(updatedPost).toBeDefined()
-    expect(updatedPost!._included?.comments).toHaveLength(1)
-    expect(updatedPost!._included?.comments?.[0].data.content).toBe("Nice post!")
+    const observable = connector.observeRelatedItems(post.id, "commentOn", { direction: "to" })
+    expect(observable.current).toHaveLength(1)
+    expect(observable.current[0].data.content).toBe("Nice post!")
   })
 
-  it("observe with include + limit only shows N newest comments", async () => {
+  it("observeRelatedItems fires when a new comment is added", async () => {
     const post = await connector.createItem(
       makeItem({ type: "post", createdBy: "user-1", data: { title: "Hello" } })
     )
 
-    // Create 3 comments with different timestamps
-    for (let i = 1; i <= 3; i++) {
-      await connector.createItem(
-        makeItem({
-          type: "comment",
-          createdBy: "user-1",
-          data: { content: `Comment ${i}` },
-          relations: [{ predicate: "commentOn", target: `item:${post.id}` }],
-        })
-      )
-    }
+    const observable = connector.observeRelatedItems(post.id, "commentOn", { direction: "to" })
+    expect(observable.current).toHaveLength(0)
 
-    // Observe with limit: 2
-    const observable = connector.observe({
-      type: "post",
-      include: [{ predicate: "commentOn", as: "comments", limit: 2 }],
-    })
-
-    const posts = observable.current
-    const observed = posts.find((i) => i.id === post.id)
-    expect(observed!._included?.comments).toHaveLength(2)
-  })
-
-  it("observe with include + offset + limit enables paging", async () => {
-    const post = await connector.createItem(
-      makeItem({ type: "post", createdBy: "user-1", data: { title: "Paging Test" } })
-    )
-
-    // Create 5 comments
-    const commentIds: string[] = []
-    for (let i = 1; i <= 5; i++) {
-      const comment = await connector.createItem(
-        makeItem({
-          type: "comment",
-          createdBy: "user-1",
-          data: { content: `Comment ${i}` },
-          relations: [{ predicate: "commentOn", target: `item:${post.id}` }],
-        })
-      )
-      commentIds.push(comment.id)
-    }
-
-    // Page 1: first 2 (newest)
-    const page1 = connector.observe({
-      type: "post",
-      include: [{ predicate: "commentOn", as: "comments", limit: 2 }],
-    })
-    const p1 = page1.current.find((i) => i.id === post.id)
-    expect(p1!._included?.comments).toHaveLength(2)
-
-    // Page 2: next 2
-    const page2 = connector.observe({
-      type: "post",
-      include: [{ predicate: "commentOn", as: "comments", limit: 2, offset: 2 }],
-    })
-    const p2 = page2.current.find((i) => i.id === post.id)
-    expect(p2!._included?.comments).toHaveLength(2)
-
-    // Pages should not overlap
-    const page1Ids = p1!._included!.comments.map((c) => c.id)
-    const page2Ids = p2!._included!.comments.map((c) => c.id)
-    expect(page1Ids.some((id) => page2Ids.includes(id))).toBe(false)
-  })
-
-  it("observeItem with include resolves comments", async () => {
-    const post = await connector.createItem(
-      makeItem({ type: "post", createdBy: "user-1", data: { title: "Detail" } })
-    )
+    const updates: Item[][] = []
+    observable.subscribe((items) => updates.push(items))
 
     await connector.createItem(
       makeItem({
@@ -154,47 +78,36 @@ describe("LocalConnector — Relations Reactivity", () => {
       })
     )
 
-    const observable = connector.observeItem(post.id, {
-      include: [{ predicate: "commentOn", as: "comments" }],
-    })
-
-    const observed = observable.current
-    expect(observed).not.toBeNull()
-    expect(observed!._included?.comments).toHaveLength(1)
-    expect(observed!._included?.comments?.[0].data.content).toBe("First!")
+    expect(updates.length).toBeGreaterThan(0)
+    const lastUpdate = updates[updates.length - 1]
+    expect(lastUpdate).toHaveLength(1)
+    expect(lastUpdate[0].data.content).toBe("First!")
   })
 
-  it("observeItem fires when a new comment is added", async () => {
+  it("observeRelatedItems fires when a comment is deleted", async () => {
     const post = await connector.createItem(
-      makeItem({ type: "post", createdBy: "user-1", data: { title: "Live" } })
+      makeItem({ type: "post", createdBy: "user-1", data: { title: "Hello" } })
     )
 
-    const observable = connector.observeItem(post.id, {
-      include: [{ predicate: "commentOn", as: "comments" }],
-    })
-
-    // Initially no comments
-    expect(observable.current!._included?.comments).toHaveLength(0)
-
-    // Track updates
-    const updates: (Item | null)[] = []
-    observable.subscribe((item) => updates.push(item))
-
-    // Add a comment
-    await connector.createItem(
+    const comment = await connector.createItem(
       makeItem({
         type: "comment",
         createdBy: "user-1",
-        data: { content: "New comment!" },
+        data: { content: "Will be deleted" },
         relations: [{ predicate: "commentOn", target: `item:${post.id}` }],
       })
     )
 
-    // Observer should have fired
+    const observable = connector.observeRelatedItems(post.id, "commentOn", { direction: "to" })
+    expect(observable.current).toHaveLength(1)
+
+    const updates: Item[][] = []
+    observable.subscribe((items) => updates.push(items))
+
+    await connector.deleteItem(comment.id)
+
     const lastUpdate = updates[updates.length - 1]
-    expect(lastUpdate).not.toBeNull()
-    expect(lastUpdate!._included?.comments).toHaveLength(1)
-    expect(lastUpdate!._included?.comments?.[0].data.content).toBe("New comment!")
+    expect(lastUpdate).toHaveLength(0)
   })
 
   it("getRelatedItems with direction 'to' finds incoming relations", async () => {
@@ -219,5 +132,29 @@ describe("LocalConnector — Relations Reactivity", () => {
     const reverse = await connector.getRelatedItems(post.id, "commentOn", { direction: "to" })
     expect(reverse).toHaveLength(1)
     expect(reverse[0].data.content).toBe("I point to the post")
+  })
+
+  it("multiple observeRelatedItems for different posts are independent", async () => {
+    const post1 = await connector.createItem(
+      makeItem({ type: "post", createdBy: "user-1", data: { title: "Post 1" } })
+    )
+    const post2 = await connector.createItem(
+      makeItem({ type: "post", createdBy: "user-1", data: { title: "Post 2" } })
+    )
+
+    const obs1 = connector.observeRelatedItems(post1.id, "commentOn", { direction: "to" })
+    const obs2 = connector.observeRelatedItems(post2.id, "commentOn", { direction: "to" })
+
+    await connector.createItem(
+      makeItem({
+        type: "comment",
+        createdBy: "user-1",
+        data: { content: "Only for post 1" },
+        relations: [{ predicate: "commentOn", target: `item:${post1.id}` }],
+      })
+    )
+
+    expect(obs1.current).toHaveLength(1)
+    expect(obs2.current).toHaveLength(0)
   })
 })

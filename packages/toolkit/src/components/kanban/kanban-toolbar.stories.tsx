@@ -14,7 +14,7 @@ const tasks: Item[] = [
   {
     id: "task-1",
     type: "task",
-    createdAt: new Date(),
+    createdAt: new Date().toISOString(),
     createdBy: "user-1",
     data: { title: "Beete vorbereiten", description: "Erde umgraben und Kompost einarbeiten", status: "todo", position: 0, tags: ["garten"] },
     relations: [{ predicate: "assignedTo", target: "global:user-2" }],
@@ -22,7 +22,7 @@ const tasks: Item[] = [
   {
     id: "task-2",
     type: "task",
-    createdAt: new Date(),
+    createdAt: new Date().toISOString(),
     createdBy: "user-2",
     data: { title: "Samen bestellen", description: "Tomaten, Zucchini, Kräuter", status: "doing", position: 0, tags: ["garten", "einkauf"] },
     relations: [{ predicate: "assignedTo", target: "global:user-2" }],
@@ -30,7 +30,7 @@ const tasks: Item[] = [
   {
     id: "task-3",
     type: "task",
-    createdAt: new Date(),
+    createdAt: new Date().toISOString(),
     createdBy: "user-1",
     data: { title: "Wasserschlauch reparieren", description: "Leck am Verbindungsstück abdichten", status: "done", position: 0, tags: ["infrastruktur"] },
     relations: [{ predicate: "assignedTo", target: "global:user-3" }],
@@ -38,14 +38,14 @@ const tasks: Item[] = [
   {
     id: "task-4",
     type: "task",
-    createdAt: new Date(),
+    createdAt: new Date().toISOString(),
     createdBy: "user-3",
     data: { title: "Gartenplan zeichnen", description: "Welches Beet bekommt welche Pflanzen?", status: "todo", position: 1, tags: ["planung"] },
   },
   {
     id: "task-5",
     type: "task",
-    createdAt: new Date(),
+    createdAt: new Date().toISOString(),
     createdBy: "user-1",
     data: { title: "Kompost umsetzen", description: "Der Kompost muss umgesetzt und belüftet werden", status: "doing", position: 1, tags: ["garten"] },
     relations: [{ predicate: "assignedTo", target: "global:user-1" }],
@@ -139,7 +139,7 @@ export const ToolbarWithBoard: Story = {
               {
                 id,
                 type: "task",
-                createdAt: new Date(),
+                createdAt: new Date().toISOString(),
                 createdBy: "user-1",
                 data: { title: "Neuer Task", status: "todo", position: prev.length, tags: [] },
               },

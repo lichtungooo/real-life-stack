@@ -2,8 +2,6 @@ import type {
   FullConnector,
   Item,
   ItemFilter,
-  IncludeDirective,
-  ItemObserveOptions,
   Group,
   User,
   Observable,
@@ -116,31 +114,6 @@ export function findRelatedItems(
   return results
 }
 
-/**
- * Resolve include directives on a list of items.
- * For each item, finds related items (reverse lookup via "to" direction)
- * and attaches them as _included.
- */
-export function resolveIncludes(items: Item[], allItems: Item[], includes: IncludeDirective[]): Item[] {
-  if (!includes.length) return items
-  return items.map((item) => {
-    const included: Record<string, Item[]> = {}
-    for (const inc of includes) {
-      let related = findRelatedItems(item.id, allItems, inc.predicate, { direction: "to" })
-      // Sort by createdAt descending (newest first)
-      related.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-      if (inc.offset) {
-        related = related.slice(inc.offset)
-      }
-      if (inc.limit) {
-        related = related.slice(0, inc.limit)
-      }
-      included[inc.as] = related
-    }
-    return { ...item, _included: { ...item._included, ...included } }
-  })
-}
-
 const DEFAULT_GROUP: Group = { id: "default", name: "Default" }
 
 /**
@@ -174,7 +147,7 @@ export abstract class BaseConnector implements FullConnector {
     return observable
   }
 
-  observeItem(id: string, _options?: ItemObserveOptions): Observable<Item | null> {
+  observeItem(id: string): Observable<Item | null> {
     const observable = createObservable<Item | null>(null)
     this.getItem(id).then((item) => observable.set(item))
     return observable
@@ -189,6 +162,16 @@ export abstract class BaseConnector implements FullConnector {
   ): Promise<Item[]> {
     const allItems = await this.getItems()
     return findRelatedItems(itemId, allItems, predicate, options)
+  }
+
+  observeRelatedItems(
+    itemId: string,
+    predicate?: string,
+    options?: RelatedItemsOptions
+  ): Observable<Item[]> {
+    const observable = createObservable<Item[]>([])
+    this.getRelatedItems(itemId, predicate, options).then((items) => observable.set(items))
+    return observable
   }
 
   // --- Groups (Default: eine Default-Gruppe) ---

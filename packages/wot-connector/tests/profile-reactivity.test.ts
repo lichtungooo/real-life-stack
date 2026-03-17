@@ -72,7 +72,7 @@ function createProfileReactivity(did: string) {
     profileObs.set({
       id: did,
       type: "profile",
-      createdAt: new Date(currentProfile.createdAt),
+      createdAt: currentProfile.createdAt,
       createdBy: did,
       data: {
         name: currentProfile.name ?? did.slice(0, 12),
@@ -181,7 +181,7 @@ describe("Profile Reactivity — observeMyProfile()", () => {
     expect(profile!.data.name).toBe("Anton")
     expect(profile!.data.bio).toBe("Dev")
     expect(profile!.data.avatar).toBe("pic.jpg")
-    expect(profile!.createdAt).toBeInstanceOf(Date)
+    expect(typeof profile!.createdAt).toBe("string")
   })
 })
 

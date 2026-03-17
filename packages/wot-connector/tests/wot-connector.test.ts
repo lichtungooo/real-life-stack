@@ -54,7 +54,7 @@ function createItemOnHandle(
   input: Omit<Item, "id" | "createdAt">,
 ): Item {
   const id = crypto.randomUUID()
-  const newItem: Item = { ...input, id, createdAt: new Date() }
+  const newItem: Item = { ...input, id, createdAt: new Date().toISOString() }
   const serialized = serializeItem(newItem)
   handle.transact((doc) => {
     doc.items[id] = serialized
@@ -125,7 +125,7 @@ describe("Item CRUD (CRDT-agnostic contract)", () => {
       })
 
       expect(item.id).toBeDefined()
-      expect(item.createdAt).toBeInstanceOf(Date)
+      expect(typeof item.createdAt).toBe("string")
       expect(item.type).toBe("task")
       expect(item.data.title).toBe("Test Task")
     })
@@ -151,7 +151,7 @@ describe("Item CRUD (CRDT-agnostic contract)", () => {
 
       const doc = handle.getDoc()
       expect(typeof doc.items[item.id].createdAt).toBe("string")
-      expect(doc.items[item.id].createdAt).toBe(item.createdAt.toISOString())
+      expect(doc.items[item.id].createdAt).toBe(item.createdAt)
     })
   })
 
@@ -197,11 +197,11 @@ describe("Item CRUD (CRDT-agnostic contract)", () => {
       expect(withStatus[0].data.status).toBe("todo")
     })
 
-    it("returns deserialized Date objects", () => {
+    it("returns createdAt as ISO string", () => {
       createItemOnHandle(handle, { type: "task", createdBy: "u1", data: {} })
 
       const items = getItemsFromHandle(handle)
-      expect(items[0].createdAt).toBeInstanceOf(Date)
+      expect(typeof items[0].createdAt).toBe("string")
     })
   })
 

@@ -13,7 +13,6 @@ export const demoGroupItems: Record<string, string[]> = rawGroupItems
 
 export const demoItems: Item[] = rawItems.map((item) => ({
   ...item,
-  createdAt: new Date(item.createdAt),
   data: item.data as Record<string, unknown>,
   relations: item.relations as Item["relations"],
 }))

@@ -13,7 +13,7 @@ const tasks: Item[] = [
   {
     id: "task-1",
     type: "task",
-    createdAt: new Date(),
+    createdAt: new Date().toISOString(),
     createdBy: "user-1",
     data: { title: "Beete vorbereiten", description: "Erde umgraben und Kompost einarbeiten", status: "todo", position: 0, tags: ["garten"] },
     relations: [{ predicate: "assignedTo", target: "global:user-2" }],
@@ -21,7 +21,7 @@ const tasks: Item[] = [
   {
     id: "task-2",
     type: "task",
-    createdAt: new Date(),
+    createdAt: new Date().toISOString(),
     createdBy: "user-2",
     data: { title: "Samen bestellen", description: "Tomaten, Zucchini, Kräuter", status: "doing", position: 0, tags: ["garten", "einkauf"] },
     relations: [{ predicate: "assignedTo", target: "global:user-2" }],
@@ -29,7 +29,7 @@ const tasks: Item[] = [
   {
     id: "task-3",
     type: "task",
-    createdAt: new Date(),
+    createdAt: new Date().toISOString(),
     createdBy: "user-1",
     data: { title: "Wasserschlauch reparieren", description: "Leck am Verbindungsstück abdichten", status: "done", position: 0, tags: ["infrastruktur"] },
     relations: [{ predicate: "assignedTo", target: "global:user-3" }],
@@ -37,14 +37,14 @@ const tasks: Item[] = [
   {
     id: "task-4",
     type: "task",
-    createdAt: new Date(),
+    createdAt: new Date().toISOString(),
     createdBy: "user-3",
     data: { title: "Gartenplan zeichnen", description: "Welches Beet bekommt welche Pflanzen?", status: "todo", position: 1, tags: ["planung"] },
   },
   {
     id: "task-5",
     type: "task",
-    createdAt: new Date(),
+    createdAt: new Date().toISOString(),
     createdBy: "user-1",
     data: { title: "Kompost umsetzen", description: "Der Kompost muss umgesetzt und belüftet werden", status: "doing", position: 1, tags: ["garten"] },
     relations: [{ predicate: "assignedTo", target: "global:user-1" }],
@@ -118,9 +118,9 @@ export const Interactive: Story = {
 export const CustomColumns: Story = {
   args: {
     items: [
-      { id: "1", type: "task", createdAt: new Date(), createdBy: "user-1", data: { title: "Idee: Regenwasser sammeln", status: "backlog", position: 0 } },
-      { id: "2", type: "task", createdAt: new Date(), createdBy: "user-1", data: { title: "Website aktualisieren", status: "review", position: 0, tags: ["web"] } },
-      { id: "3", type: "task", createdAt: new Date(), createdBy: "user-2", data: { title: "Newsletter versenden", status: "doing", position: 0 } },
+      { id: "1", type: "task", createdAt: new Date().toISOString(), createdBy: "user-1", data: { title: "Idee: Regenwasser sammeln", status: "backlog", position: 0 } },
+      { id: "2", type: "task", createdAt: new Date().toISOString(), createdBy: "user-1", data: { title: "Website aktualisieren", status: "review", position: 0, tags: ["web"] } },
+      { id: "3", type: "task", createdAt: new Date().toISOString(), createdBy: "user-2", data: { title: "Newsletter versenden", status: "doing", position: 0 } },
     ],
     columns: [
       { id: "backlog", label: "Backlog" },
@@ -195,7 +195,7 @@ export const MultipleAssignees: Story = {
       {
         id: "a-1",
         type: "task",
-        createdAt: new Date(),
+        createdAt: new Date().toISOString(),
         createdBy: "user-1",
         data: { title: "Einzelner Assignee", status: "todo", position: 0, tags: ["beispiel"] },
         relations: [{ predicate: "assignedTo", target: "global:user-1" }],
@@ -203,7 +203,7 @@ export const MultipleAssignees: Story = {
       {
         id: "a-2",
         type: "task",
-        createdAt: new Date(),
+        createdAt: new Date().toISOString(),
         createdBy: "user-1",
         data: { title: "Zwei Assignees (kommasepariert)", status: "todo", position: 1, tags: ["beispiel"] },
         relations: [
@@ -214,7 +214,7 @@ export const MultipleAssignees: Story = {
       {
         id: "a-3",
         type: "task",
-        createdAt: new Date(),
+        createdAt: new Date().toISOString(),
         createdBy: "user-1",
         data: { title: "Drei Assignees (+ N weitere)", status: "doing", position: 0, tags: ["beispiel"] },
         relations: [
@@ -226,7 +226,7 @@ export const MultipleAssignees: Story = {
       {
         id: "a-4",
         type: "task",
-        createdAt: new Date(),
+        createdAt: new Date().toISOString(),
         createdBy: "user-1",
         data: { title: "Ohne Assignee", status: "done", position: 0 },
       },
@@ -248,14 +248,14 @@ export const ManyColumns: Story = {
     ]
 
     const manyItems: Item[] = [
-      { id: "m-1", type: "task", createdAt: new Date(), createdBy: "user-1", data: { title: "Feature planen", status: "backlog", position: 0 } },
-      { id: "m-2", type: "task", createdAt: new Date(), createdBy: "user-1", data: { title: "API Design", status: "backlog", position: 1, tags: ["backend"] } },
-      { id: "m-3", type: "task", createdAt: new Date(), createdBy: "user-2", data: { title: "UI Mockups", status: "todo", position: 0, tags: ["design"] } },
-      { id: "m-4", type: "task", createdAt: new Date(), createdBy: "user-1", data: { title: "Datenbank Schema", status: "doing", position: 0, tags: ["backend"] } },
-      { id: "m-5", type: "task", createdAt: new Date(), createdBy: "user-3", data: { title: "Code Review Auth", status: "review", position: 0 } },
-      { id: "m-6", type: "task", createdAt: new Date(), createdBy: "user-2", data: { title: "E2E Tests", status: "testing", position: 0, tags: ["qa"] } },
-      { id: "m-7", type: "task", createdAt: new Date(), createdBy: "user-1", data: { title: "Deploy Pipeline", status: "done", position: 0, tags: ["infra"] } },
-      { id: "m-8", type: "task", createdAt: new Date(), createdBy: "user-2", data: { title: "Monitoring Setup", status: "done", position: 1, tags: ["infra"] } },
+      { id: "m-1", type: "task", createdAt: new Date().toISOString(), createdBy: "user-1", data: { title: "Feature planen", status: "backlog", position: 0 } },
+      { id: "m-2", type: "task", createdAt: new Date().toISOString(), createdBy: "user-1", data: { title: "API Design", status: "backlog", position: 1, tags: ["backend"] } },
+      { id: "m-3", type: "task", createdAt: new Date().toISOString(), createdBy: "user-2", data: { title: "UI Mockups", status: "todo", position: 0, tags: ["design"] } },
+      { id: "m-4", type: "task", createdAt: new Date().toISOString(), createdBy: "user-1", data: { title: "Datenbank Schema", status: "doing", position: 0, tags: ["backend"] } },
+      { id: "m-5", type: "task", createdAt: new Date().toISOString(), createdBy: "user-3", data: { title: "Code Review Auth", status: "review", position: 0 } },
+      { id: "m-6", type: "task", createdAt: new Date().toISOString(), createdBy: "user-2", data: { title: "E2E Tests", status: "testing", position: 0, tags: ["qa"] } },
+      { id: "m-7", type: "task", createdAt: new Date().toISOString(), createdBy: "user-1", data: { title: "Deploy Pipeline", status: "done", position: 0, tags: ["infra"] } },
+      { id: "m-8", type: "task", createdAt: new Date().toISOString(), createdBy: "user-2", data: { title: "Monitoring Setup", status: "done", position: 1, tags: ["infra"] } },
     ]
 
     const [items, setItems] = useState(manyItems)

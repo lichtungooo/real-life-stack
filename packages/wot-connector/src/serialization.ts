@@ -5,7 +5,7 @@ export function serializeItem(item: Item): SerializedItem {
   const serialized: SerializedItem = {
     id: item.id,
     type: item.type,
-    createdAt: item.createdAt.toISOString(),
+    createdAt: item.createdAt,
     createdBy: item.createdBy,
     data: { ...item.data },
   }
@@ -19,7 +19,7 @@ export function deserializeItem(serialized: SerializedItem): Item {
   const item: Item = {
     id: serialized.id,
     type: serialized.type,
-    createdAt: new Date(serialized.createdAt),
+    createdAt: serialized.createdAt,
     createdBy: serialized.createdBy,
     data: { ...serialized.data },
   }

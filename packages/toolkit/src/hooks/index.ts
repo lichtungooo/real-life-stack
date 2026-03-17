@@ -6,6 +6,7 @@ export type { ConnectorProviderProps } from "./connector-context"
 
 // Data Hooks
 export { useItems, useItem } from "./use-items"
+export { useRelatedItems } from "./use-related-items"
 export { useCreateItem, useUpdateItem, useDeleteItem } from "./use-mutations"
 export { useGroups, useCurrentGroup, useCreateGroup, useUpdateGroup, useDeleteGroup, useMembers, useInviteMember, useRemoveMember } from "./use-groups"
 export { useAuthState, useCurrentUser } from "./use-auth"

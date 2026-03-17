@@ -4,11 +4,11 @@ import type { Item } from "@real-life-stack/data-interface"
 import type { SerializedItem } from "../src/types.js"
 
 describe("serializeItem", () => {
-  it("converts Date to ISO string", () => {
+  it("preserves createdAt as ISO string", () => {
     const item: Item = {
       id: "item-1",
       type: "task",
-      createdAt: new Date("2026-03-16T10:00:00.000Z"),
+      createdAt: "2026-03-16T10:00:00.000Z",
       createdBy: "did:key:z6Mk...",
       data: { title: "Test" },
     }
@@ -23,7 +23,7 @@ describe("serializeItem", () => {
     const item: Item = {
       id: "item-1",
       type: "event",
-      createdAt: new Date("2026-01-01"),
+      createdAt: "2026-01-01T00:00:00.000Z",
       createdBy: "did:key:z6Mk...",
       data: { title: "Event", location: "Berlin" },
     }
@@ -40,7 +40,7 @@ describe("serializeItem", () => {
     const item: Item = {
       id: "item-1",
       type: "task",
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
       createdBy: "user-1",
       schema: "rls/task",
       schemaVersion: 2,
@@ -57,7 +57,7 @@ describe("serializeItem", () => {
     const item: Item = {
       id: "item-1",
       type: "task",
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
       createdBy: "user-1",
       data: {},
     }
@@ -73,7 +73,7 @@ describe("serializeItem", () => {
     const item: Item = {
       id: "item-1",
       type: "task",
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
       createdBy: "user-1",
       data: {},
       relations: [
@@ -92,7 +92,7 @@ describe("serializeItem", () => {
     const item: Item = {
       id: "item-1",
       type: "task",
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
       createdBy: "user-1",
       data: { title: "Original" },
     }
@@ -105,7 +105,7 @@ describe("serializeItem", () => {
 })
 
 describe("deserializeItem", () => {
-  it("converts ISO string to Date", () => {
+  it("preserves createdAt as ISO string", () => {
     const serialized: SerializedItem = {
       id: "item-1",
       type: "task",
@@ -116,8 +116,8 @@ describe("deserializeItem", () => {
 
     const item = deserializeItem(serialized)
 
-    expect(item.createdAt).toBeInstanceOf(Date)
-    expect(item.createdAt.toISOString()).toBe("2026-03-16T10:00:00.000Z")
+    expect(typeof item.createdAt).toBe("string")
+    expect(item.createdAt).toBe("2026-03-16T10:00:00.000Z")
   })
 
   it("preserves all core fields", () => {
@@ -177,7 +177,7 @@ describe("roundtrip", () => {
     const original: Item = {
       id: "roundtrip-1",
       type: "task",
-      createdAt: new Date("2026-06-15T14:30:00.000Z"),
+      createdAt: "2026-06-15T14:30:00.000Z",
       createdBy: "did:key:z6MkTest",
       schema: "rls/task",
       schemaVersion: 1,
@@ -202,7 +202,7 @@ describe("roundtrip", () => {
     const original: Item = {
       id: "minimal",
       type: "note",
-      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+      createdAt: "2026-01-01T00:00:00.000Z",
       createdBy: "user-1",
       data: {},
     }
