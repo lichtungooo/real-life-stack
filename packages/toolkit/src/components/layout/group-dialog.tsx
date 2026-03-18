@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react"
-import { LogOut, UserMinus, UserPlus, Check, Loader2, ChevronDown, ChevronUp, ImagePlus, X, Camera, Newspaper, Columns3, Calendar, MapIcon } from "lucide-react"
+import { LogOut, UserMinus, UserPlus, Check, Loader2, ImagePlus, X, Camera, Newspaper, Columns3, Calendar, MapIcon } from "lucide-react"
 import type { Group, ContactInfo } from "@real-life-stack/data-interface"
 import { useMembers } from "../../hooks/use-groups"
 import {
@@ -94,8 +94,6 @@ export function GroupDialog({
   const [invitingId, setInvitingId] = useState<string | null>(null)
   const [invitedIds, setInvitedIds] = useState<Set<string>>(new Set())
   const [inviteErrors, setInviteErrors] = useState<Map<string, string>>(new Map())
-  const [showManualDid, setShowManualDid] = useState(false)
-  const [manualDid, setManualDid] = useState("")
 
   const handleOpenChange = useCallback(
     (nextOpen: boolean) => {
@@ -187,21 +185,6 @@ export function GroupDialog({
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Einladung fehlgeschlagen"
       setInviteErrors((prev) => new Map([...prev, [contactId, msg]]))
-    } finally {
-      setInvitingId(null)
-    }
-  }
-
-  const handleManualInvite = async () => {
-    if (!isEdit || !onInviteMember || !manualDid.trim()) return
-    setInvitingId("manual")
-    setError(null)
-    try {
-      await onInviteMember(mode.group.id, manualDid.trim())
-      setInvitedIds((prev) => new Set([...prev, manualDid.trim()]))
-      setManualDid("")
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Einladung fehlgeschlagen")
     } finally {
       setInvitingId(null)
     }
@@ -376,6 +359,7 @@ export function GroupDialog({
                     <div key={contact.id}>
                       <div className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-muted/50">
                         <Avatar className="h-7 w-7">
+                          {contact.avatar && <AvatarImage src={contact.avatar} />}
                           <AvatarFallback className="text-[10px]">
                             {getInitials(contact.name ?? contact.id)}
                           </AvatarFallback>
@@ -415,48 +399,6 @@ export function GroupDialog({
             </p>
           )}
 
-          {/* Manual DID */}
-          {onInviteMember && (
-            <div className="mt-2">
-              <button
-                type="button"
-                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                onClick={() => setShowManualDid(!showManualDid)}
-              >
-                {showManualDid ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-                DID manuell eingeben
-              </button>
-              {showManualDid && (
-                <div className="flex gap-2 mt-2">
-                  <Input
-                    value={manualDid}
-                    onChange={(e) => setManualDid(e.target.value)}
-                    placeholder="did:key:z6Mk..."
-                    className="flex-1 font-mono text-xs h-8"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault()
-                        handleManualInvite()
-                      }
-                    }}
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8"
-                    onClick={handleManualInvite}
-                    disabled={!manualDid.trim() || invitingId !== null}
-                  >
-                    {invitingId === "manual" ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <UserPlus className="h-3.5 w-3.5" />
-                    )}
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
           {/* Module Toggles (admin only) */}
           {isCreator && (
             <div className="mt-3 pt-3 border-t border-border/50">
