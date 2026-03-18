@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, useCallback, startTransition } from "react"
 import type { Item, RelatedItemsOptions } from "@real-life-stack/data-interface"
 import { hasRelations } from "@real-life-stack/data-interface"
 import { useConnector } from "./connector-context"
@@ -18,12 +18,13 @@ export function useRelatedItems(
   }, [connector, supportsRelations, itemId, predicate, optionsKey])
 
   const [data, setData] = useState<Item[]>(observable?.current ?? [])
+  const update = useCallback((items: Item[]) => startTransition(() => setData(items)), [])
 
   useEffect(() => {
     if (!observable) return
     setData(observable.current)
-    return observable.subscribe(setData)
-  }, [observable])
+    return observable.subscribe(update)
+  }, [observable, update])
 
   return { data }
 }

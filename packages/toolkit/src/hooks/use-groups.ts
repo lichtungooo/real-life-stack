@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState, startTransition } from "react"
 import type { Group, User } from "@real-life-stack/data-interface"
 import { hasGroups } from "@real-life-stack/data-interface"
 import { useConnector } from "./connector-context"
@@ -15,11 +15,12 @@ export function useGroups() {
   const connector = useGroupConnector()
   const observable = useMemo(() => connector.observeGroups(), [connector])
   const [data, setData] = useState<Group[]>(observable.current)
+  const update = useCallback((groups: Group[]) => startTransition(() => setData(groups)), [])
 
   useEffect(() => {
     setData(observable.current)
-    return observable.subscribe(setData)
-  }, [observable])
+    return observable.subscribe(update)
+  }, [observable, update])
 
   return { data, isLoading: data.length === 0 && observable.current.length === 0 }
 }
@@ -28,11 +29,12 @@ export function useCurrentGroup() {
   const connector = useGroupConnector()
   const observable = useMemo(() => connector.observeCurrentGroup(), [connector])
   const [data, setData] = useState<Group | null>(observable.current)
+  const update = useCallback((group: Group | null) => startTransition(() => setData(group)), [])
 
   useEffect(() => {
     setData(observable.current)
-    return observable.subscribe(setData)
-  }, [observable])
+    return observable.subscribe(update)
+  }, [observable, update])
 
   return data
 }
@@ -71,11 +73,12 @@ export function useMembers(groupId: string) {
   const connector = useGroupConnector()
   const observable = useMemo(() => connector.observeMembers(groupId), [connector, groupId])
   const [data, setData] = useState<User[]>(observable.current)
+  const update = useCallback((members: User[]) => startTransition(() => setData(members)), [])
 
   useEffect(() => {
     setData(observable.current)
-    return observable.subscribe(setData)
-  }, [observable])
+    return observable.subscribe(update)
+  }, [observable, update])
 
   return { data, isLoading: data.length === 0 && observable.current.length === 0 }
 }
