@@ -1729,6 +1729,7 @@ export class WotConnector extends BaseConnector {
         type: "mutual-verification",
         fromId: peerId,
         fromName: contact?.name,
+        fromAvatar: contact?.avatar,
       })
     }
   }

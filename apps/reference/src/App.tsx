@@ -746,6 +746,7 @@ function RelayStatusBadgeWrapper() {
  */
 function IncomingEventDialogs({ onCloseVerifyDialog }: { onCloseVerifyDialog?: () => void }) {
   const connector = useConnector()
+  const { data: currentUser } = useCurrentUser()
   const { incomingVerification, spaceInvite, mutualVerification, dismiss } = useIncomingEvents()
 
   const handleCounterVerify = async () => {
@@ -787,6 +788,9 @@ function IncomingEventDialogs({ onCloseVerifyDialog }: { onCloseVerifyDialog?: (
       <MutualVerificationDialog
         open={!!mutualVerification}
         peerName={mutualVerification?.fromName}
+        peerAvatar={mutualVerification?.fromAvatar}
+        myName={currentUser?.displayName}
+        myAvatar={currentUser?.avatarUrl}
         onDismiss={dismiss}
       />
     </>

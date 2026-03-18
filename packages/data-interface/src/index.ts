@@ -265,6 +265,7 @@ export interface MutualVerificationEvent {
   type: "mutual-verification"
   fromId: string
   fromName?: string
+  fromAvatar?: string
 }
 
 export interface IncomingClaimEvent {
