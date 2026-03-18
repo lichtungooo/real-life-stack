@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react"
-import { LogOut, UserMinus, UserPlus, Check, Loader2, ChevronDown, ChevronUp, ImagePlus, X, Camera } from "lucide-react"
+import { LogOut, UserMinus, UserPlus, Check, Loader2, ChevronDown, ChevronUp, ImagePlus, X, Camera, Newspaper, Columns3, Calendar, MapIcon } from "lucide-react"
 import type { Group, ContactInfo } from "@real-life-stack/data-interface"
 import { useMembers } from "../../hooks/use-groups"
 import {
@@ -21,6 +21,15 @@ function getInitials(name: string): string {
     .join("")
     .toUpperCase()
 }
+
+const AVAILABLE_MODULES = [
+  { id: "feed", label: "Feed", icon: Newspaper },
+  { id: "kanban", label: "Kanban", icon: Columns3 },
+  { id: "calendar", label: "Kalender", icon: Calendar },
+  { id: "map", label: "Karte", icon: MapIcon },
+] as const
+
+const DEFAULT_MODULES = ["feed", "kanban", "calendar", "map"]
 
 /** Human-readable fallback for raw IDs (e.g. DIDs) */
 function shortName(id: string): string {
@@ -349,6 +358,42 @@ export function GroupDialog({
               </div>
             ))}
           </div>
+
+          {/* Module Toggles (admin only) */}
+          {isCreator && (
+            <div className="mt-3 pt-3 border-t border-border/50">
+              <Label className="text-xs text-muted-foreground">Module</Label>
+              <div className="mt-2 space-y-1">
+                {AVAILABLE_MODULES.map((mod) => {
+                  const activeModules = (mode.type === "edit" ? mode.group.data?.modules as string[] : null) ?? DEFAULT_MODULES
+                  const isActive = activeModules.includes(mod.id)
+                  const isLast = isActive && activeModules.length === 1
+                  const Icon = mod.icon
+                  return (
+                    <button
+                      key={mod.id}
+                      type="button"
+                      disabled={isLast}
+                      onClick={async () => {
+                        if (mode.type !== "edit") return
+                        const newModules = isActive
+                          ? activeModules.filter((m) => m !== mod.id)
+                          : [...activeModules, mod.id]
+                        await onUpdateGroup(mode.group.id, { data: { ...mode.group.data, modules: newModules } })
+                      }}
+                      className="flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-muted/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <Icon className="h-4 w-4 text-muted-foreground" />
+                      <span className="flex-1 text-left text-sm">{mod.label}</span>
+                      <div className={`h-4 w-8 rounded-full transition-colors ${isActive ? "bg-primary" : "bg-muted"} relative`}>
+                        <div className={`absolute top-0.5 h-3 w-3 rounded-full bg-white shadow-sm transition-transform ${isActive ? "translate-x-4" : "translate-x-0.5"}`} />
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Invite Section */}
           {onInviteMember && invitableContacts.length > 0 && (
