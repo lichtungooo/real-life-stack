@@ -169,7 +169,7 @@ export function ProfileDialog({
         </div>
 
         {/* Footer */}
-        <DialogFooter className="px-6 py-4 border-t bg-muted/20">
+        <DialogFooter className="px-6 py-4">
           <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)} disabled={saving}>
             Abbrechen
           </Button>
