@@ -85,6 +85,11 @@ export function GroupDialog({
     isEdit ? (mode.group.data?.image as string | undefined) ?? "" : ""
   )
 
+  // Module state
+  const [activeModules, setActiveModules] = useState<string[]>(() =>
+    isEdit ? (mode.group.data?.modules as string[] | undefined) ?? DEFAULT_MODULES : DEFAULT_MODULES
+  )
+
   // Invite state
   const [invitingId, setInvitingId] = useState<string | null>(null)
   const [invitedIds, setInvitedIds] = useState<Set<string>>(new Set())
@@ -365,7 +370,6 @@ export function GroupDialog({
               <Label className="text-xs text-muted-foreground">Module</Label>
               <div className="mt-2 space-y-1">
                 {AVAILABLE_MODULES.map((mod) => {
-                  const activeModules = (mode.type === "edit" ? mode.group.data?.modules as string[] : null) ?? DEFAULT_MODULES
                   const isActive = activeModules.includes(mod.id)
                   const isLast = isActive && activeModules.length === 1
                   const Icon = mod.icon
@@ -379,6 +383,7 @@ export function GroupDialog({
                         const newModules = isActive
                           ? activeModules.filter((m) => m !== mod.id)
                           : [...activeModules, mod.id]
+                        setActiveModules(newModules)
                         await onUpdateGroup(mode.group.id, { data: { ...mode.group.data, modules: newModules } })
                       }}
                       className="flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-muted/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
