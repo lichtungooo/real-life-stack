@@ -104,21 +104,23 @@ export function RecoveryFlow({ connector, onComplete, onBack }: RecoveryFlowProp
           Wähle ein Passwort, um deine wiederhergestellte Identity zu schützen.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <PassphraseConfirm
-          passphrase={passphrase}
-          confirm={confirm}
-          onPassphraseChange={setPassphrase}
-          onConfirmChange={setConfirm}
-        />
-        {error && <p className="text-sm text-destructive">{error}</p>}
-        <Button
-          className="w-full"
-          onClick={handleRecover}
-          disabled={loading || passphrase.length < 8 || passphrase !== confirm}
-        >
-          {loading ? "Stelle wieder her…" : "Identity wiederherstellen"}
-        </Button>
+      <CardContent>
+        <form onSubmit={(e) => { e.preventDefault(); handleRecover() }} className="space-y-4">
+          <PassphraseConfirm
+            passphrase={passphrase}
+            confirm={confirm}
+            onPassphraseChange={setPassphrase}
+            onConfirmChange={setConfirm}
+          />
+          {error && <p className="text-sm text-destructive">{error}</p>}
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={loading || passphrase.length < 8 || passphrase !== confirm}
+          >
+            {loading ? "Stelle wieder her…" : "Identity wiederherstellen"}
+          </Button>
+        </form>
         <div className="text-center">
           <button
             type="button"

@@ -343,26 +343,28 @@ export function OnboardingFlow({ connector, onComplete, onSwitchToRecovery }: On
               Wähle ein starkes Passwort, um deine Identity auf diesem Gerät zu schützen.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-lg border border-blue-500/30 bg-blue-500/5 p-3">
-              <p className="text-sm text-blue-800 dark:text-blue-300">
-                <strong>Tipp:</strong> Das Passwort ist nicht dein Seed. Es schützt deine Identity lokal auf diesem Gerät.
-              </p>
-            </div>
-            <PassphraseConfirm
-              passphrase={passphrase}
-              confirm={confirm}
-              onPassphraseChange={setPassphrase}
-              onConfirmChange={setConfirm}
-            />
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button
-              className="w-full"
-              onClick={handleFinalize}
-              disabled={loading || passphrase.length < 8 || passphrase !== confirm}
-            >
-              {loading ? "Wird gesichert…" : "Passwort setzen"}
-            </Button>
+          <CardContent>
+            <form onSubmit={(e) => { e.preventDefault(); handleFinalize() }} className="space-y-4">
+              <div className="rounded-lg border border-blue-500/30 bg-blue-500/5 p-3">
+                <p className="text-sm text-blue-800 dark:text-blue-300">
+                  <strong>Tipp:</strong> Das Passwort ist nicht dein Seed. Es schützt deine Identity lokal auf diesem Gerät.
+                </p>
+              </div>
+              <PassphraseConfirm
+                passphrase={passphrase}
+                confirm={confirm}
+                onPassphraseChange={setPassphrase}
+                onConfirmChange={setConfirm}
+              />
+              {error && <p className="text-sm text-destructive">{error}</p>}
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={loading || passphrase.length < 8 || passphrase !== confirm}
+              >
+                {loading ? "Wird gesichert…" : "Passwort setzen"}
+              </Button>
+            </form>
           </CardContent>
         </Card>
       </div>

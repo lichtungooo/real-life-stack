@@ -38,11 +38,6 @@ export function UnlockFlow({ connector, onComplete, onSwitchToRecovery }: Unlock
     }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && passphrase.length > 0 && !loading) {
-      handleUnlock()
-    }
-  }
 
   return (
     <Card>
@@ -56,7 +51,7 @@ export function UnlockFlow({ connector, onComplete, onSwitchToRecovery }: Unlock
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div onKeyDown={handleKeyDown}>
+        <form onSubmit={(e) => { e.preventDefault(); handleUnlock() }}>
           <PassphraseInput
             value={passphrase}
             onChange={setPassphrase}
@@ -65,14 +60,14 @@ export function UnlockFlow({ connector, onComplete, onSwitchToRecovery }: Unlock
             error={error}
             autoFocus
           />
-        </div>
-        <Button
-          className="w-full"
-          onClick={handleUnlock}
-          disabled={loading || passphrase.length < 1}
-        >
-          {loading ? "Entsperre…" : "Entsperren"}
-        </Button>
+          <Button
+            type="submit"
+            className="w-full mt-4"
+            disabled={loading || passphrase.length < 1}
+          >
+            {loading ? "Entsperre…" : "Entsperren"}
+          </Button>
+        </form>
         <div className="text-center">
           <button
             type="button"

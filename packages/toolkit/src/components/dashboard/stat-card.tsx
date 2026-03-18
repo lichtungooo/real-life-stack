@@ -49,19 +49,17 @@ export function StatCard({
 
   return (
     <Card className={cn("transition-all hover:shadow-md", className)}>
-      <CardContent className="flex items-center gap-4 p-4">
+      <CardContent className="px-3 py-3 text-center">
         <div
           className={cn(
-            "flex h-12 w-12 items-center justify-center rounded-xl",
+            "flex h-10 w-10 items-center justify-center rounded-lg mx-auto mb-2",
             colors.bg
           )}
         >
-          <Icon className={cn("h-6 w-6", colors.text)} />
+          <Icon className={cn("h-5 w-5", colors.text)} />
         </div>
-        <div>
-          <p className="text-2xl font-bold text-foreground">{value}</p>
-          <p className="text-sm text-muted-foreground">{label}</p>
-        </div>
+        <p className="text-2xl font-bold text-foreground">{value}</p>
+        <p className="text-xs text-muted-foreground">{label}</p>
       </CardContent>
     </Card>
   )
