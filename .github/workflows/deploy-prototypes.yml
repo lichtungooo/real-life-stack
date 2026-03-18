@@ -89,6 +89,8 @@ jobs:
           cp -R apps/landing/dist/. gh-pages/
           # Reference app at /app/
           cp -R apps/reference/dist/. gh-pages/app/
+          # SPA 404 handler must be at site root for GitHub Pages
+          cp apps/reference/public/404.html gh-pages/404.html
           # Prototype at /edge/
           cp -R apps/prototype/dist/. gh-pages/edge/
           # Storybook at /storybook/
