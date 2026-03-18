@@ -98,19 +98,74 @@ function useItems(filter?: ItemFilter) {
 
 ---
 
-## 4. Relations & Kommentare
+## 4. Relations
 
-### Grundprinzip
+### Grundprinzip: Forward vs. Reverse
 
-Kommentare, Reaktionen und andere unbegrenzt wachsende Daten sind **eigene Items** mit einer Relation zum Eltern-Item. Sie werden NICHT in `data` eingebettet.
+Alle Relations leben in `item.relations[]` — niemals in `data`. Es gibt zwei Perspektiven:
 
-| Einbetten (in `data`) | Eigenes Item (mit Relation) |
-|---|---|
-| Gehört fest zum Item | Ist eigenständig |
-| Wenige, begrenzte Einträge | Kann unbegrenzt wachsen |
-| Kein eigener Lifecycle | Editierbar, löschbar, eigener Autor |
+**Forward-Relations** — das Item **hat** die Relation. Kommt beim Laden des Items automatisch mit. Kein extra Laden nötig.
 
-### Kommentar erstellen
+```typescript
+// Task hat 2 Assignees → Forward-Relations im Task selbst
+{
+  id: "task-1",
+  type: "task",
+  data: { title: "Feature bauen", status: "doing" },
+  relations: [
+    { predicate: "assignedTo", target: "global:did:key:z6Mk..." },
+    { predicate: "assignedTo", target: "global:did:key:z6Mn..." }
+  ]
+}
+```
+
+**Reverse-Relations** — ein **anderes Item** zeigt auf dieses Item. Muss aktiv gesucht werden per `useRelatedItems`. Das Item selbst weiß nichts davon.
+
+```typescript
+// Kommentar zeigt auf den Task → Reverse-Relation
+{
+  id: "comment-1",
+  type: "comment",
+  data: { content: "Sieht gut aus!" },
+  relations: [{ predicate: "commentOn", target: "item:task-1" }]
+}
+// task-1 hat KEINE Referenz auf comment-1 — man muss aktiv fragen:
+// "Welche Items zeigen mit commentOn auf task-1?"
+```
+
+### Wann Forward, wann Reverse?
+
+| | Forward (im Item) | Reverse (eigenes Item) |
+|---|---|---|
+| **Wann** | Gehört fest zum Item, wenige Einträge | Eigenständig, kann unbegrenzt wachsen |
+| **Beispiele** | Assignees, Tags, Verortung | Kommentare, Reaktionen, Sub-Tasks |
+| **Lifecycle** | Stirbt mit dem Item | Eigener Autor, editierbar, löschbar |
+| **Laden** | Gratis — kommt mit dem Item | Muss per `useRelatedItems` geladen werden |
+
+### Direction-Semantik
+
+```
+Forward:  Task ──assignedTo──► User     direction: "from" (Default)
+Reverse:  Task ◄──commentOn── Comment   direction: "to"
+```
+
+| Direction | Frage | Beispiel |
+|-----------|-------|---------|
+| `"from"` (Default) | "Worauf zeigt dieses Item?" | Task → assignedTo → User |
+| `"to"` | "Welche Items zeigen auf mich?" | Task ← commentOn ← Comments |
+| `"both"` | "Alle Verbindungen" | Beides zusammen |
+
+### Scope-Prefixe für Targets
+
+| Prefix | Bedeutung | Beispiel |
+|--------|-----------|---------|
+| `item:` | Item im selben Space | `item:task-1` |
+| `global:` | User-ID (DID), kein Item | `global:did:key:z6Mk...` |
+| `space:{id}/item:` | Item in anderem Space | Cross-Space-Referenz |
+
+**Wichtig:** `global:` Targets sind User-IDs, keine Items. Sie werden über die Members-Liste (`useMembers`) aufgelöst, nicht per Item-Lookup. Das `global:` Prefix wird in der UI entfernt: `target.replace(/^global:/, "")`.
+
+### Kommentar erstellen (Reverse-Relation)
 
 ```typescript
 await connector.createItem({
@@ -121,9 +176,9 @@ await connector.createItem({
 })
 ```
 
-### Kommentare reaktiv laden — useRelatedItems (PRIMÄRER WEG)
+### Reverse-Relations reaktiv laden — useRelatedItems
 
-Jede Komponente die Related Items anzeigt, nutzt `useRelatedItems` **in der Kind-Komponente**:
+Jede Komponente die Reverse-Relations anzeigt, nutzt `useRelatedItems` **in der Kind-Komponente**:
 
 ```typescript
 // Feed.tsx — lädt nur Posts
@@ -132,7 +187,7 @@ function Feed() {
   return posts.map(post => <PostCard key={post.id} post={post} />)
 }
 
-// PostCard.tsx — lädt eigene Kommentare
+// PostCard.tsx — lädt eigene Kommentare (Reverse-Lookup)
 function PostCard({ post }: { post: Item }) {
   const { data: comments } = useRelatedItems(post.id, "commentOn", { direction: "to" })
   return (
@@ -144,38 +199,37 @@ function PostCard({ post }: { post: Item }) {
 }
 ```
 
-**Warum in der Kind-Komponente?** Wenn ein Kommentar zu Post 5 kommt, re-rendert nur PostCard 5 — nicht der ganze Feed. Das ist erheblich performanter als alle Kommentare aller Posts bei jeder Änderung neu zu berechnen.
+**Warum in der Kind-Komponente?** Wenn ein Kommentar zu Post 5 kommt, re-rendert nur PostCard 5 — nicht der ganze Feed.
 
-### Kommentare laden — Explizit (für einmalige Abfragen)
+### Forward-Relations auflösen (Assignees)
+
+Forward-Relations kommen mit dem Item. In der UI werden sie gegen bekannte Daten aufgelöst:
 
 ```typescript
-// Alle Kommentare zu einem Post (Reverse-Lookup)
-const comments = await connector.getRelatedItems("post-abc", "commentOn", { direction: "to" })
+// KanbanCard — Assignees aus item.relations lesen
+function KanbanCard({ item, users }) {
+  const assigneeIds = (item.relations ?? [])
+    .filter(r => r.predicate === "assignedTo")
+    .map(r => r.target.replace(/^global:/, ""))
 
-// Forward-Lookup (Item's eigene Relations auflösen)
-const targets = await connector.getRelatedItems("task-1", "assignedTo")
-// → direction: "from" ist der Default
+  // Gegen Members-Liste matchen (kein useRelatedItems nötig)
+  const assignees = assigneeIds.map(id => users.find(u => u.id === id)).filter(Boolean)
+
+  return <div>{assignees.map(u => <Avatar key={u.id} user={u} />)}</div>
+}
 ```
-
-### Direction-Semantik
-
-| Direction | Bedeutung | Beispiel |
-|-----------|-----------|---------|
-| `"from"` (Default) | Item hat Relation → finde Targets | Task → assignedTo → User |
-| `"to"` | Finde Items die auf mich zeigen | Post ← commentOn ← Comments |
-| `"both"` | Beides | Alle Verbindungen eines Items |
 
 ### Prädikat-Katalog
 
-| Prädikat | Bedeutung | Richtung |
-|----------|-----------|----------|
-| `commentOn` | Kommentar zu Item | Comment → Post |
-| `childOf` | Sub-Item | Sub-Task → Task |
-| `assignedTo` | Zugewiesen an Person | Task → User |
-| `likedBy` | Gefällt einer Person | Post → User |
-| `blocks` | Blockiert anderes Item | Task → Task |
-| `relatedTo` | Allgemeine Verknüpfung | Item → Item |
-| `locatedAt` | Verortung | Event → Place |
+| Prädikat | Bedeutung | Typische Richtung | Typ |
+|----------|-----------|-------------------|-----|
+| `assignedTo` | Zugewiesen an Person | Forward (Task → User) | `global:` |
+| `commentOn` | Kommentar zu Item | Reverse (Comment → Post) | `item:` |
+| `childOf` | Sub-Item / Sub-Task | Reverse (SubTask → Task) | `item:` |
+| `likedBy` | Gefällt einer Person | Forward (Post → User) | `global:` |
+| `blocks` | Blockiert anderes Item | Forward (Task → Task) | `item:` |
+| `relatedTo` | Allgemeine Verknüpfung | Forward | `item:` |
+| `locatedAt` | Verortung | Forward (Event → Place) | `item:` |
 
 ### Shared Helper (data-interface)
 
@@ -293,7 +347,73 @@ new Date(item.createdAt).toLocaleDateString("de-DE")
 
 ---
 
-## 8. Subscription-Cleanup
+## 8. Pagination (limit)
+
+### Warum Limit statt Cursor?
+
+Im CRDT-Fall (Yjs) liegen **alle Items lokal im Speicher**. Es gibt keinen Server-Roundtrip zwischen Seiten. Paging ist eine **UI-Optimierung** (weniger rendern), keine Netzwerk-Optimierung.
+
+Cursor-basiertes Paging löst Probleme von serverseitigen Datenbanken (verschobene Offsets bei gleichzeitigen Schreibern). Im CRDT-Fall gibt es dieses Problem nicht — bei jeder Änderung feuert `notifyAllObservers()` und die UI bekommt den kompletten aktuellen State neu.
+
+### Interface-Erweiterungen
+
+```typescript
+interface ItemFilter {
+  type?: string
+  hasField?: string[]
+  createdBy?: string
+  source?: string
+  limit?: number    // Max. Anzahl Items
+  offset?: number   // Überspringe die ersten N
+}
+
+interface RelatedItemsOptions {
+  direction?: "from" | "to" | "both"
+  limit?: number
+  offset?: number
+}
+```
+
+### Pattern: Infinite Scroll mit wachsendem Limit
+
+Kein klassischer Paginator mit Seiten. Stattdessen wächst das `limit`:
+
+```typescript
+function Feed() {
+  const [visibleCount, setVisibleCount] = useState(20)
+  const { data: posts } = useItems({ type: "post", limit: visibleCount })
+
+  return (
+    <div>
+      {posts.map(post => <PostCard key={post.id} post={post} />)}
+      <button onClick={() => setVisibleCount(v => v + 20)}>Mehr laden</button>
+    </div>
+  )
+}
+```
+
+Bei CRDT-Sync kommt ein neuer Post rein → `notifyAllObservers()` feuert → die UI bekommt die neuesten `visibleCount` Items. Kein Item wird übersprungen, keins doppelt.
+
+### Connector-intern: Filter → Sort → Slice
+
+```typescript
+// So implementiert jeder Connector limit/offset:
+const filtered = allItems.filter(item => matchesFilter(item, filter))
+const sorted = filtered.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+return sorted.slice(filter.offset ?? 0, (filter.offset ?? 0) + (filter.limit ?? Infinity))
+```
+
+### Skalierungsgrenzen im CRDT-Fall
+
+`limit` reduziert **Render-Last**, nicht Speicher oder Netzwerk. Das Y.Doc enthält immer alle Items. Für echte Skalierung (100k+ Items pro Space) gibt es langfristig:
+- **Space-Splitting** — alte Items in Archiv-Space verschieben
+- **Lazy Spaces** — Space erst öffnen wenn der User reinnavigiert (ist heute schon so)
+
+Für den POC mit hunderten Items pro Space ist `limit` ausreichend.
+
+---
+
+## 9. Subscription-Cleanup
 
 Jeder Connector **muss** in `dispose()` alle Subscriptions aufräumen:
 
@@ -332,3 +452,4 @@ Wenn du ein neues reaktives Feature baust (z.B. Kommentare, Reaktionen, Benachri
 - [ ] Capability-Check (`isWritable`, `hasRelations`, etc.) vor Nutzung?
 - [ ] Subscription-Cleanup in `dispose()`?
 - [ ] Kein Polling, kein setTimeout, kein forceUpdate?
+- [ ] Bei potenziell vielen Items: `limit` in `useItems()` oder `useRelatedItems()` gesetzt?
