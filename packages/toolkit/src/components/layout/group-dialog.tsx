@@ -124,14 +124,12 @@ export function GroupDialog({
     }
   }
 
-  const handleNameBlur = async () => {
+  const handleNameBlur = () => {
     if (!isEdit || !name.trim() || name.trim() === mode.group.name) return
     setError(null)
-    try {
-      await onUpdateGroup(mode.group.id, { name: name.trim() })
-    } catch (err) {
+    onUpdateGroup(mode.group.id, { name: name.trim() }).catch((err) => {
       setError(err instanceof Error ? err.message : "Fehler beim Umbenennen")
-    }
+    })
   }
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -142,17 +140,17 @@ export function GroupDialog({
       const { resizeImage } = await import("../../lib/image-utils")
       const dataUrl = await resizeImage(file, 200, 0.8)
       setGroupImage(dataUrl)
-      await onUpdateGroup(mode.group.id, { data: { ...mode.group.data, image: dataUrl } })
+      void onUpdateGroup(mode.group.id, { data: { ...mode.group.data, image: dataUrl } })
     } catch {
       setError("Bild konnte nicht verarbeitet werden")
     }
     e.target.value = ""
   }
 
-  const handleImageRemove = async () => {
+  const handleImageRemove = () => {
     if (!isEdit) return
     setGroupImage("")
-    await onUpdateGroup(mode.group.id, { data: { ...mode.group.data, image: "" } })
+    void onUpdateGroup(mode.group.id, { data: { ...mode.group.data, image: "" } })
   }
 
   const handleLeave = async () => {
@@ -413,13 +411,13 @@ export function GroupDialog({
                       key={mod.id}
                       type="button"
                       disabled={isLast}
-                      onClick={async () => {
+                      onClick={() => {
                         if (mode.type !== "edit") return
                         const newModules = isActive
                           ? activeModules.filter((m) => m !== mod.id)
                           : [...activeModules, mod.id]
                         setActiveModules(newModules)
-                        await onUpdateGroup(mode.group.id, { data: { ...mode.group.data, modules: newModules } })
+                        void onUpdateGroup(mode.group.id, { data: { ...mode.group.data, modules: newModules } })
                       }}
                       className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     >
