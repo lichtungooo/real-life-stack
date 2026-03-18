@@ -1057,6 +1057,7 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
         open={profileDialogOpen}
         onOpenChange={setProfileDialogOpen}
         profile={profileData}
+        contactCount={activeContacts.length}
         onSave={handleSaveProfile}
       />
 

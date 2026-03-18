@@ -21,6 +21,7 @@ export interface ProfileDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   profile: ProfileData
+  contactCount?: number
   onSave: (updates: { name: string; bio: string; avatar?: string }) => Promise<void>
 }
 
@@ -28,6 +29,7 @@ export function ProfileDialog({
   open,
   onOpenChange,
   profile,
+  contactCount,
   onSave,
 }: ProfileDialogProps) {
   const [name, setName] = useState(profile.name)
@@ -84,75 +86,72 @@ export function ProfileDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-sm gap-0 p-0 overflow-hidden" aria-describedby={undefined}>
         <DialogTitle className="sr-only">Profil bearbeiten</DialogTitle>
-        {/* Profile Card Header */}
-        <div className="relative px-6 pt-7 pb-5">
-          {/* Avatar */}
-          <div className="flex flex-col items-center gap-3">
-            <div className="relative group">
+        {/* Profile Identity Header */}
+        <div className="relative px-6 pt-6 pb-5">
+          <div className="flex items-start gap-4">
+            {/* Avatar */}
+            <div className="relative group shrink-0">
               {avatar ? (
                 <>
-                  <img
-                    src={avatar}
-                    alt={name}
-                    className="w-20 h-20 rounded-full object-cover ring-3 ring-background shadow-md"
-                  />
+                  <img src={avatar} alt={name} className="w-14 h-14 rounded-full object-cover ring-2 ring-background shadow-sm" />
                   <button
                     onClick={() => setAvatar("")}
-                    className="absolute -top-1 -right-1 p-1 bg-destructive text-white rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                    title="Bild entfernen"
+                    className="absolute -top-1 -right-1 p-0.5 bg-destructive text-white rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <X className="h-3 w-3" />
                   </button>
-                  <label className="absolute bottom-0 right-0 p-1.5 bg-card border border-border rounded-full shadow-sm cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity hover:bg-accent">
-                    <Camera className="h-3 w-3 text-muted-foreground" />
+                  <label className="absolute -bottom-0.5 -right-0.5 p-1 bg-card border border-border rounded-full shadow-sm cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity hover:bg-accent">
+                    <Camera className="h-2.5 w-2.5 text-muted-foreground" />
                     <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
                   </label>
                 </>
               ) : (
-                <label className="w-20 h-20 rounded-full border-2 border-dashed border-border hover:border-primary/50 bg-muted/30 flex items-center justify-center cursor-pointer transition-all hover:bg-muted/50">
+                <label className="w-14 h-14 rounded-full border-2 border-dashed border-border hover:border-primary/50 bg-muted/30 flex items-center justify-center cursor-pointer transition-all hover:bg-muted/50">
                   <ImagePlus className="h-5 w-5 text-muted-foreground/40" />
                   <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
                 </label>
               )}
             </div>
 
-            {/* DID badge */}
-            <button
-              onClick={handleCopyDid}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/60 hover:bg-muted transition-colors cursor-pointer group/did"
-              title="DID kopieren"
-            >
-              <code className="text-[10px] font-mono text-muted-foreground tracking-tight">
-                {shortDid}
-              </code>
-              {copied ? (
-                <Check className="h-3 w-3 text-green-600 shrink-0" />
-              ) : (
-                <Copy className="h-3 w-3 text-muted-foreground/50 group-hover/did:text-muted-foreground shrink-0 transition-colors" />
-              )}
-            </button>
+            {/* Name + Meta */}
+            <div className="flex-1 min-w-0 pt-1">
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Dein Name"
+                autoFocus
+                className="h-8 text-base font-semibold border-transparent bg-transparent px-0 hover:bg-muted/50 focus:bg-card focus:border-input transition-colors"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault()
+                    handleSave()
+                  }
+                }}
+              />
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {contactCount != null ? `${contactCount} Kontakte` : ""}
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Form Fields */}
+        {/* Details */}
         <div className="px-6 pb-2 space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="profile-name" className="text-xs text-muted-foreground">Name</Label>
-            <Input
-              id="profile-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Dein Name"
-              autoFocus
-              className="h-9"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault()
-                  handleSave()
-                }
-              }}
-            />
-          </div>
+          {/* DID badge */}
+          <button
+            onClick={handleCopyDid}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/60 hover:bg-muted transition-colors cursor-pointer group/did"
+            title="DID kopieren"
+          >
+            <code className="text-[10px] font-mono text-muted-foreground tracking-tight">
+              {shortDid}
+            </code>
+            {copied ? (
+              <Check className="h-3 w-3 text-green-600 shrink-0" />
+            ) : (
+              <Copy className="h-3 w-3 text-muted-foreground/50 group-hover/did:text-muted-foreground shrink-0 transition-colors" />
+            )}
+          </button>
 
           <div className="space-y-1.5">
             <Label htmlFor="profile-bio" className="text-xs text-muted-foreground">Ueber mich</Label>
