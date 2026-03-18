@@ -227,10 +227,22 @@ export function VerificationDialog({
                 </Button>
               </div>
             ) : qrDataUrl ? (
-              <div className="flex justify-center">
+              <div className="flex flex-col items-center gap-1.5">
                 <div className="rounded-xl border bg-white p-3 shadow-sm">
                   <img src={qrDataUrl} alt="QR Code" className="w-[220px] h-[220px]" />
                 </div>
+                <button
+                  type="button"
+                  onClick={handleCopy}
+                  disabled={!challenge?.code}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+                >
+                  {copied ? (
+                    <><Check className="h-3 w-3 text-green-500" /> Kopiert</>
+                  ) : (
+                    <><Copy className="h-3 w-3" /> Code kopieren</>
+                  )}
+                </button>
               </div>
             ) : (
               <div className="flex justify-center">
@@ -240,31 +252,15 @@ export function VerificationDialog({
               </div>
             )}
 
-            {/* Action row: Copy + Scan */}
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1"
-                onClick={handleCopy}
-                disabled={!challenge?.code}
-              >
-                {copied ? (
-                  <><Check className="h-3.5 w-3.5 mr-1.5 text-green-500" /> Kopiert</>
-                ) : (
-                  <><Copy className="h-3.5 w-3.5 mr-1.5" /> Code kopieren</>
-                )}
-              </Button>
-              <Button
-                size="sm"
-                className="flex-1"
-                onClick={startScanner}
-                disabled={isScanning}
-              >
-                <Camera className="h-3.5 w-3.5 mr-1.5" />
-                Scannen
-              </Button>
-            </div>
+            <Button
+              size="sm"
+              className="w-full"
+              onClick={startScanner}
+              disabled={isScanning}
+            >
+              <Camera className="h-3.5 w-3.5 mr-1.5" />
+              Scannen
+            </Button>
 
             {/* Manual entry toggle */}
             <div>
