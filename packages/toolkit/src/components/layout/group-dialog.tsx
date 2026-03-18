@@ -126,17 +126,15 @@ export function GroupDialog({
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !isEdit) return
-    if (file.size > 150_000) {
-      setError("Bild zu gross (max. 150 KB)")
-      return
-    }
-    const reader = new FileReader()
-    reader.onload = async () => {
-      const dataUrl = reader.result as string
+    if (!file.type.startsWith("image/")) return
+    try {
+      const { resizeImage } = await import("../../lib/image-utils")
+      const dataUrl = await resizeImage(file, 200, 0.8)
       setGroupImage(dataUrl)
       await onUpdateGroup(mode.group.id, { data: { ...mode.group.data, image: dataUrl } })
+    } catch {
+      setError("Bild konnte nicht verarbeitet werden")
     }
-    reader.readAsDataURL(file)
     e.target.value = ""
   }
 

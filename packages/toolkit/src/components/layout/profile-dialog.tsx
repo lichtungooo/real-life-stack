@@ -42,16 +42,17 @@ export function ProfileDialog({
     setAvatar(profile.avatar ?? "")
   }, [profile.name, profile.bio, profile.avatar])
 
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    if (file.size > 150_000) {
-      setError("Bild zu gross (max. 150 KB)")
-      return
+    if (!file.type.startsWith("image/")) return
+    try {
+      const { resizeImage } = await import("../../lib/image-utils")
+      const base64 = await resizeImage(file, 200, 0.8)
+      setAvatar(base64)
+    } catch {
+      setError("Bild konnte nicht verarbeitet werden")
     }
-    const reader = new FileReader()
-    reader.onload = () => setAvatar(reader.result as string)
-    reader.readAsDataURL(file)
     e.target.value = ""
   }
 
