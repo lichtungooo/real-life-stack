@@ -6,6 +6,7 @@ import {
   Dialog,
   DialogContent,
   DialogFooter,
+  DialogTitle,
 } from "../primitives/dialog"
 import { Button } from "../primitives/button"
 import { Input } from "../primitives/input"
@@ -210,9 +211,9 @@ export function GroupDialog({
   if (!isEdit) {
     return (
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-sm gap-0 p-0 overflow-hidden">
+        <DialogContent className="sm:max-w-sm gap-0 p-0 overflow-hidden" aria-describedby={undefined}>
           <div className="px-6 pt-7 pb-5">
-            <h2 className="text-lg font-semibold">Neue Gruppe</h2>
+            <DialogTitle className="text-lg font-semibold">Neue Gruppe</DialogTitle>
             <p className="text-sm text-muted-foreground mt-1">Erstelle eine neue Gruppe fuer dein Team.</p>
             <div className="mt-4 space-y-1.5">
               <Label htmlFor="group-name" className="text-xs text-muted-foreground">Name</Label>
@@ -249,7 +250,8 @@ export function GroupDialog({
   // --- Edit Mode ---
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-sm gap-0 p-0 overflow-hidden">
+      <DialogContent className="sm:max-w-sm gap-0 p-0 overflow-hidden" aria-describedby={undefined}>
+        <DialogTitle className="sr-only">{isEdit ? mode.group.name : "Neue Gruppe"}</DialogTitle>
         {/* Group Identity Header */}
         <div className="relative bg-gradient-to-b from-primary/8 to-transparent px-6 pt-6 pb-5">
           <div className="flex items-start gap-4">
