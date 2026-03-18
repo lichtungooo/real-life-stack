@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
-import { Shield, Copy, Check, Loader2, Camera, ChevronDown, ChevronUp, X } from "lucide-react"
+import { QrCode, Copy, Check, Loader2, Camera, ChevronDown, ChevronUp, X } from "lucide-react"
 
 import { Button } from "@/components/primitives/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/primitives/avatar"
@@ -191,7 +191,7 @@ export function VerificationDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-primary" />
+            <QrCode className="h-5 w-5 text-primary" />
             {step === "done" ? "Verifizierung erfolgreich!" : "Verifizieren"}
           </DialogTitle>
           {step === "ready" && (

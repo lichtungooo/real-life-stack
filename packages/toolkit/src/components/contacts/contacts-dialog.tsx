@@ -1,6 +1,6 @@
 "use client"
 
-import { Shield, Users } from "lucide-react"
+import { QrCode, Users } from "lucide-react"
 import type { ContactInfo } from "@real-life-stack/data-interface"
 
 import { Button } from "@/components/primitives/button"
@@ -46,7 +46,7 @@ export function ContactsDialog({
         </DialogHeader>
         <div className="flex-1 overflow-y-auto space-y-4 -mx-6 px-6">
           <Button size="sm" className="w-full" onClick={onVerify}>
-            <Shield className="h-3.5 w-3.5 mr-1.5" />
+            <QrCode className="h-3.5 w-3.5 mr-1.5" />
             Verifizieren
           </Button>
           {pendingContacts.length > 0 && (
