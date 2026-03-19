@@ -2,6 +2,7 @@
 // Zentrale Typdefinitionen für das DataInterface (Connector-Schnittstelle)
 
 export { BaseConnector, createObservable, shallowEqual, matchesFilter, findRelatedItems, applyPagination, type ReactiveObservable } from "./base-connector.js"
+export * from "./item-types.js"
 
 // --- Core Types ---
 

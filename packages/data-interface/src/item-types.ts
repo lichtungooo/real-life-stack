@@ -1,0 +1,292 @@
+// Item data type specification
+// Companion types for type-safe narrowing of Item.data
+//
+// Relation conventions:
+//   Forward  = this item carries the relation in item.relations[]
+//   Reverse  = another item points to this item with the given predicate
+//              (queryable via getRelatedItems(id, predicate, { direction: "to" }))
+//
+// Cardinality:
+//   0..1  = optional, at most one relation of this type
+//   1     = exactly one (required)
+//   0..n  = any number
+//
+// Scope convention for relation.target:
+//   "item:xxx"            = item in the same group/space
+//   "space:{id}/item:xxx" = cross-space reference
+//   "global:xxx"          = user ID (DID)
+//
+// Item.relations remains Relation[] — these interfaces are pure
+// documentation and a foundation for future typing.
+
+import type { Item } from "./index.js"
+
+// --- Shared Types ---
+
+/** Geographic coordinates (events, places). */
+export interface GeoLocation {
+  lat: number
+  lng: number
+}
+
+// ============================================================
+// Task
+// ============================================================
+
+export interface TaskData {
+  /** Display name of the task. */
+  title: string
+  /** Description, markdown. */
+  description?: string
+  /** Kanban column key (e.g. "todo", "doing", "done"). Columns are configurable via the feature item, not hardcoded. */
+  status: string
+  /** Sort order within a kanban column. Lower values appear higher. */
+  position?: number
+  /** Free-text tags for filtering and categorization. */
+  tags?: string[]
+}
+
+export type TaskItem = Item & { type: "task"; data: TaskData }
+
+/** Forward and reverse relations for a task. */
+export interface TaskRelations {
+  forward: {
+    /** Task is assigned to a person → ProfileItem (scope: global:, 0..n) */
+    assignedTo: ProfileItem
+    /** Subtask belongs to a parent task → TaskItem (scope: item:, 0..1) */
+    childOf: TaskItem
+    /** Task blocks other tasks → TaskItem (scope: item:, 0..n) */
+    blocks: TaskItem
+    /** General link → any item (scope: item:, 0..n) */
+    relatedTo: Item
+  }
+  reverse: {
+    /** Subtasks that have this task as parent (childOf → this task, 0..n) */
+    childOf: TaskItem
+    /** Tasks blocked by this task (blocks → this task, 0..n) */
+    blocks: TaskItem
+    /** Comments on this task (commentOn → this task, 0..n) */
+    commentOn: Item
+  }
+}
+
+export function isTask(item: Item): item is TaskItem {
+  return item.type === "task"
+}
+
+// ============================================================
+// Event
+// ============================================================
+
+export interface EventData {
+  /** Display name of the event. */
+  title: string
+  /** Description, markdown. */
+  description?: string
+  /** Start time, ISO-8601 string (e.g. "2026-03-10T10:00"). Determines calendar display. */
+  start: string
+  /** End time, ISO-8601 string. If absent, the event is treated as a point in time. */
+  end?: string
+  /** Venue coordinates. Determines map display. */
+  location?: GeoLocation
+  /** Human-readable address (e.g. "Am Sonnenhuegel 5, 60000 Frankfurt"). */
+  address?: string
+  /** Event status (e.g. "confirmed", "tentative", "cancelled"). Different value space than Task.status. */
+  status?: string
+  /** Free-text tags for filtering and categorization. */
+  tags?: string[]
+}
+
+export type EventItem = Item & { type: "event"; data: EventData }
+
+/** Forward and reverse relations for an event. */
+export interface EventRelations {
+  forward: {
+    /** Event takes place at a location → PlaceItem (scope: item:, 0..1) */
+    locatedAt: PlaceItem
+    /** General link → any item (scope: item:, 0..n) */
+    relatedTo: Item
+  }
+  reverse: {
+    /** Comments on this event (commentOn → this event, 0..n) */
+    commentOn: Item
+  }
+}
+
+export function isEvent(item: Item): item is EventItem {
+  return item.type === "event"
+}
+
+// ============================================================
+// Post
+// ============================================================
+
+export interface PostData {
+  /** Optional headline. */
+  title?: string
+  /** Body content, markdown. Determines feed display. */
+  content: string
+  /** Free-text tags for filtering and categorization. */
+  tags?: string[]
+}
+
+export type PostItem = Item & { type: "post"; data: PostData }
+
+/** Forward and reverse relations for a post. */
+export interface PostRelations {
+  forward: {
+    /** General link → any item (scope: item:, 0..n) */
+    relatedTo: Item
+  }
+  reverse: {
+    /** Liked by a profile (likedBy → this post, 0..n) */
+    likedBy: ProfileItem
+    /** Comments on this post (commentOn → this post, 0..n) */
+    commentOn: Item
+  }
+}
+
+export function isPost(item: Item): item is PostItem {
+  return item.type === "post"
+}
+
+// ============================================================
+// Place
+// ============================================================
+
+export interface PlaceData {
+  /** Display name of the place. */
+  title: string
+  /** Description, markdown. */
+  description?: string
+  /** Coordinates (required). Determines map display. */
+  location: GeoLocation
+  /** Human-readable address. */
+  address?: string
+  /** Free-text tags for filtering and categorization. */
+  tags?: string[]
+}
+
+export type PlaceItem = Item & { type: "place"; data: PlaceData }
+
+/** Forward and reverse relations for a place. */
+export interface PlaceRelations {
+  forward: {
+    /** General link → any item (scope: item:, 0..n) */
+    relatedTo: Item
+  }
+  reverse: {
+    /** Events that take place here (locatedAt → this place, 0..n) */
+    locatedAt: EventItem
+  }
+}
+
+export function isPlace(item: Item): item is PlaceItem {
+  return item.type === "place"
+}
+
+// ============================================================
+// Feature
+// ============================================================
+
+export interface FeatureData {
+  /** Kanban module enabled. Can be an options object (e.g. { customColumns: true }). */
+  kanban?: unknown
+  /** Feed module enabled. true or options object. */
+  feed?: unknown
+  /** Calendar module enabled. true or options object. */
+  calendar?: unknown
+  /** Map module enabled. true or options object. */
+  map?: unknown
+  /** Additional modules/features. Truthy = supported, falsy = not supported. */
+  [key: string]: unknown
+}
+
+export type FeatureItem = Item & { type: "feature"; data: FeatureData }
+
+export function isFeatureItem(item: Item): item is FeatureItem {
+  return item.type === "feature"
+}
+
+// ============================================================
+// Profile
+// ============================================================
+
+export interface ProfileItemData {
+  /** Display name. */
+  name?: string
+  /** Short bio, free text. */
+  bio?: string
+  /** Profile picture URL. */
+  avatar?: string
+  /** Phone number (contacts-only visibility). */
+  phone?: string
+  /** Address (contacts-only visibility). */
+  address?: string
+  /** Skills / competencies. */
+  skills?: string[]
+  /** What the person can offer. */
+  offers?: string[]
+  /** What the person is looking for. */
+  needs?: string[]
+}
+
+export type ProfileItem = Item & { type: "profile"; data: ProfileItemData }
+
+/** Forward and reverse relations for a profile. */
+export interface ProfileRelations {
+  forward: {
+    /** Profile likes a post → PostItem (scope: item:, 0..n) */
+    likedBy: PostItem
+  }
+  reverse: {
+    /** Tasks assigned to this profile (assignedTo → this profile, 0..n) */
+    assignedTo: TaskItem
+  }
+}
+
+export function isProfileItem(item: Item): item is ProfileItem {
+  return item.type === "profile"
+}
+
+// ============================================================
+// Comment (not a distinct item type — any item can be a comment)
+// ============================================================
+
+/** Any item can point to another item as a comment. */
+export interface CommentRelations {
+  forward: {
+    /** Comment refers to → any item (scope: item:, 1) */
+    commentOn: Item
+  }
+}
+
+// ============================================================
+// Group (not an item — types Group.data which is Record<string, unknown>)
+// ============================================================
+
+/** Data fields for Group.data. Group is not an Item but has an untyped data bag. */
+export interface GroupData {
+  /** Group scope. "aggregate" = virtual group spanning all groups, "group" = regular group. */
+  scope?: string
+  /** Enabled UI modules for this group (e.g. ["feed", "kanban", "calendar", "map"]). */
+  modules?: string[]
+  /** Group image URL or filename. */
+  image?: string
+  /** Group avatar URL or filename (alternative to image). */
+  avatar?: string
+}
+
+// ============================================================
+// Predicate and type catalog
+// ============================================================
+
+/** Known relation predicates. Connectors may define additional ones. */
+export type KnownPredicate =
+  | keyof TaskRelations["forward"]
+  | keyof PostRelations["reverse"]
+  | keyof EventRelations["forward"]
+  | keyof CommentRelations["forward"]
+
+/** Known item types. Connectors may define additional ones. */
+export type KnownItemType = "task" | "event" | "post" | "place" | "feature" | "profile"
