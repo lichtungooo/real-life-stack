@@ -29,6 +29,9 @@ export interface GeoLocation {
   lng: number
 }
 
+/** Aggregated reaction counts, embedded in target item's data. Emoji → number of users. */
+export type ReactionSummary = Record<string, number>
+
 // ============================================================
 // Task
 // ============================================================
@@ -128,6 +131,8 @@ export interface PostData {
   content: string
   /** Free-text tags for filtering and categorization. */
   tags?: string[]
+  /** Aggregated reaction counts. Emoji → number of users. Maintained by connector. */
+  reactions?: ReactionSummary
 }
 
 export type PostItem = Item & { type: "post"; data: PostData }
@@ -139,8 +144,8 @@ export interface PostRelations {
     relatedTo: Item
   }
   reverse: {
-    /** Liked by a profile (likedBy → this post, 0..n) */
-    likedBy: ProfileItem
+    /** Reactions on this post (reactsTo → this post, 0..n) */
+    reactsTo: ReactionItem
     /** Comments on this post (commentOn → this post, 0..n) */
     commentOn: Item
   }
@@ -235,10 +240,7 @@ export type ProfileItem = Item & { type: "profile"; data: ProfileItemData }
 
 /** Forward and reverse relations for a profile. */
 export interface ProfileRelations {
-  forward: {
-    /** Profile likes a post → PostItem (scope: item:, 0..n) */
-    likedBy: PostItem
-  }
+  forward: {}
   reverse: {
     /** Tasks assigned to this profile (assignedTo → this profile, 0..n) */
     assignedTo: TaskItem
@@ -247,6 +249,29 @@ export interface ProfileRelations {
 
 export function isProfileItem(item: Item): item is ProfileItem {
   return item.type === "profile"
+}
+
+// ============================================================
+// Reaction
+// ============================================================
+
+export interface ReactionData {
+  /** The emoji character used for this reaction (e.g. "❤️", "👍"). */
+  emoji: string
+}
+
+export type ReactionItem = Item & { type: "reaction"; data: ReactionData }
+
+/** Forward relations for a reaction. */
+export interface ReactionRelations {
+  forward: {
+    /** Reaction targets an item → any Item (scope: item:, 1) */
+    reactsTo: Item
+  }
+}
+
+export function isReaction(item: Item): item is ReactionItem {
+  return item.type === "reaction"
 }
 
 // ============================================================
@@ -286,7 +311,8 @@ export type KnownPredicate =
   | keyof TaskRelations["forward"]
   | keyof PostRelations["reverse"]
   | keyof EventRelations["forward"]
+  | keyof ReactionRelations["forward"]
   | keyof CommentRelations["forward"]
 
 /** Known item types. Connectors may define additional ones. */
-export type KnownItemType = "task" | "event" | "post" | "place" | "feature" | "profile"
+export type KnownItemType = "task" | "event" | "post" | "place" | "feature" | "profile" | "reaction"
