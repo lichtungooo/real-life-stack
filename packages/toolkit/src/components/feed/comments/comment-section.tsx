@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { cn } from "@/lib/utils"
 import { useComments } from "@/hooks/use-comments"
 import type { CommentWithAuthor } from "@/hooks/use-comments"
@@ -14,18 +14,28 @@ export interface CommentSectionProps {
   placeholder?: string
   /** Slot builder for ReactionBar per comment. */
   renderReactions?: (itemId: string) => React.ReactNode
-  /** Additional CSS classes. */
+  /** Hide the built-in input. Use this when placing CommentInput separately. */
+  hideInput?: boolean
+  /** Callback exposing reply state, so the consumer can render a separate CommentInput. */
+  onReplyChange?: (replyTo: CommentQuote | null, submit: (text: string) => Promise<void>, cancel: () => void) => void
+  /** Additional CSS classes for the comment list. */
   className?: string
 }
 
 /**
- * Complete comment section: scrollable comment list + sticky input at the bottom.
- * Fills its container via flex layout. The consumer controls the container height.
+ * Complete comment section: comment list + input.
+ * The list and the input are rendered as siblings so the consumer can place
+ * them in separate layout zones (e.g. input outside a scroll container).
+ *
+ * The consumer controls layout. Use hideInput + onReplyChange to render
+ * the CommentInput separately (e.g. outside a scroll container).
  */
 export function CommentSection({
   itemId,
   placeholder,
   renderReactions,
+  hideInput = false,
+  onReplyChange,
   className,
 }: CommentSectionProps) {
   const { comments, allComments, canComment, createComment } = useComments(itemId)
@@ -38,7 +48,7 @@ export function CommentSection({
     for (const c of allComments) {
       if (c.type !== "comment") continue
       const replyToId = (c.data as { replyTo?: string }).replyTo
-      if (!replyToId) continue // first-level, skip
+      if (!replyToId) continue
 
       const list = map.get(replyToId) ?? []
       list.push({
@@ -49,7 +59,6 @@ export function CommentSection({
       })
       map.set(replyToId, list)
     }
-    // Sort each list chronologically
     for (const list of map.values()) {
       list.sort((a, b) => new Date(a.item.createdAt).getTime() - new Date(b.item.createdAt).getTime())
     }
@@ -85,37 +94,38 @@ export function CommentSection({
     setReplyToFirstLevel(null)
   }, [])
 
-  return (
-    <div className={cn("flex flex-col min-h-full", className)}>
-      {/* Comment list — grows to push input to the bottom */}
-      <div className="flex-1">
-        {comments.length > 0 && (
-          <div className="space-y-4 p-4">
-            {comments.map((comment) => (
-              <CommentThread
-                key={comment.item.id}
-                comment={comment}
-                replies={repliesByParent.get(comment.item.id) ?? []}
-                onReply={canComment ? handleReply : undefined}
-                canReply={canComment}
-                renderReactions={renderReactions}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+  // Notify consumer of reply state for external input rendering
+  useEffect(() => {
+    onReplyChange?.(replyTo, handleSubmit, handleCancelReply)
+  }, [replyTo, handleSubmit, handleCancelReply, onReplyChange])
 
-      {/* Input at the bottom — sticky when scrolling, pushed down by flex-1 when not */}
-      {canComment && (
-        <div className="sticky bottom-0 bg-background z-10">
-          <CommentInput
-            onSubmit={handleSubmit}
-            replyTo={replyTo}
-            onCancelReply={handleCancelReply}
-            placeholder={placeholder}
-          />
+  return (
+    <>
+      {/* Comment list */}
+      {comments.length > 0 && (
+        <div className={cn("space-y-4 p-4", className)}>
+          {comments.map((comment) => (
+            <CommentThread
+              key={comment.item.id}
+              comment={comment}
+              replies={repliesByParent.get(comment.item.id) ?? []}
+              onReply={canComment ? handleReply : undefined}
+              canReply={canComment}
+              renderReactions={renderReactions}
+            />
+          ))}
         </div>
       )}
-    </div>
+
+      {/* Built-in input (can be hidden when consumer renders it separately) */}
+      {canComment && !hideInput && (
+        <CommentInput
+          onSubmit={handleSubmit}
+          replyTo={replyTo}
+          onCancelReply={handleCancelReply}
+          placeholder={placeholder}
+        />
+      )}
+    </>
   )
 }

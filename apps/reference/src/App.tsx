@@ -80,8 +80,11 @@ import {
   useVerification,
   useRelayStatus,
   CommentSection,
+  CommentInput,
   ReactionBar,
+  useComments,
   type Workspace,
+  type CommentQuote,
   type UserData,
   type Module,
   type Post,
@@ -325,6 +328,81 @@ function CalendarViewWrapper() {
       events={events}
       onEventClick={(event) => console.log("Event clicked:", event.id)}
     />
+  )
+}
+
+function TaskEditPanel({ item, taskContentType, onSubmit, onDelete, connector, activeWorkspaceId, members, availableTags }: {
+  item: Item
+  taskContentType: ContentTypeConfig
+  onSubmit: (data: ContentComposerSubmitData) => void
+  onDelete: () => void
+  connector: DataInterface
+  activeWorkspaceId: string | null
+  members: User[]
+  availableTags: string[]
+}) {
+  const [commentReplyTo, setCommentReplyTo] = useState<CommentQuote | null>(null)
+  const [commentSubmit, setCommentSubmit] = useState<((text: string) => Promise<void>) | null>(null)
+  const [commentCancel, setCommentCancel] = useState<(() => void) | null>(null)
+
+  const handleReplyChange = useCallback((replyTo: CommentQuote | null, submit: (text: string) => Promise<void>, cancel: () => void) => {
+    setCommentReplyTo(replyTo)
+    setCommentSubmit(() => submit)
+    setCommentCancel(() => cancel)
+  }, [])
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Scrollable area: task settings + comment list */}
+      <div className="flex-1 overflow-y-auto min-h-0">
+        <ContentComposer
+          key={item.id}
+          className="p-4"
+          contentTypes={[taskContentType]}
+          mode="task"
+          liveUpdate
+          editMode
+          onSubmit={onSubmit}
+          onDelete={onDelete}
+          showVisibility={false}
+          showPreview={false}
+          initialData={{
+            title: String(item.data.title ?? ""),
+            text: String(item.data.description ?? ""),
+            status: String(item.data.status ?? "todo"),
+            tags: (item.data.tags as string[]) ?? [],
+            people: (item.relations ?? [])
+              .filter((r: Relation) => r.predicate === "assignedTo")
+              .map((r: Relation) => r.target.replace(/^global:/, "")),
+            group: (hasItemGroups(connector)
+              ? connector.getItemGroupId(item.id)
+              : null) ?? activeWorkspaceId ?? undefined,
+          }}
+          peopleOptions={members.map((m) => ({ id: m.id, name: m.displayName ?? m.id }))}
+          tagSuggestions={availableTags}
+          tagQuickSuggestions={availableTags.slice(0, 10)}
+          peopleQuickSuggestions={members.slice(0, 10).map((m) => ({ id: m.id, name: m.displayName ?? m.id }))}
+        />
+
+        {/* Comments list */}
+        <div className="border-t px-4 pt-3 pb-2">
+          <p className="text-xs font-medium text-muted-foreground mb-2">Kommentare</p>
+        </div>
+        <CommentSection
+          itemId={item.id}
+          renderReactions={(commentId) => <ReactionBar itemId={commentId} />}
+          hideInput
+          onReplyChange={handleReplyChange}
+        />
+      </div>
+
+      {/* Comment input — fixed at bottom, outside scroll container */}
+      <CommentInput
+        onSubmit={commentSubmit ?? (async () => {})}
+        replyTo={commentReplyTo}
+        onCancelReply={commentCancel ?? undefined}
+      />
+    </div>
   )
 }
 
@@ -704,48 +782,16 @@ function KanbanView({ activeWorkspaceId, groups, selectedItemId, onItemSelect, o
         onPinnedChange={setPanelPinned}
       >
         {panelState.mode === "edit" && (
-          <div className="flex flex-col h-full">
-            {/* Scrollable area: task settings + comment list */}
-            <div className="flex-1 overflow-y-auto min-h-0">
-              <ContentComposer
-                key={panelState.item.id}
-                className="p-4"
-                contentTypes={[taskContentType]}
-                mode="task"
-                liveUpdate
-                editMode
-                onSubmit={handleTaskEdit}
-                onDelete={handleTaskDelete}
-                showVisibility={false}
-                showPreview={false}
-                initialData={{
-                  title: String(panelState.item.data.title ?? ""),
-                  text: String(panelState.item.data.description ?? ""),
-                  status: String(panelState.item.data.status ?? "todo"),
-                  tags: (panelState.item.data.tags as string[]) ?? [],
-                  people: (panelState.item.relations ?? [])
-                    .filter((r) => r.predicate === "assignedTo")
-                    .map((r) => r.target.replace(/^global:/, "")),
-                  group: (hasItemGroups(connector)
-                    ? connector.getItemGroupId(panelState.item.id)
-                    : null) ?? activeWorkspaceId ?? undefined,
-                }}
-                peopleOptions={members.map((m) => ({ id: m.id, name: m.displayName ?? m.id }))}
-                tagSuggestions={availableTags}
-                tagQuickSuggestions={availableTags.slice(0, 10)}
-                peopleQuickSuggestions={members.slice(0, 10).map((m) => ({ id: m.id, name: m.displayName ?? m.id }))}
-              />
-
-              {/* Comments list below task settings */}
-              <div className="border-t px-4 pt-3 pb-2">
-                <p className="text-xs font-medium text-muted-foreground mb-2">Kommentare</p>
-              </div>
-              <CommentSection
-                itemId={panelState.item.id}
-                renderReactions={(commentId) => <ReactionBar itemId={commentId} />}
-              />
-            </div>
-          </div>
+          <TaskEditPanel
+            item={panelState.item}
+            taskContentType={taskContentType}
+            onSubmit={handleTaskEdit}
+            onDelete={handleTaskDelete}
+            connector={connector}
+            activeWorkspaceId={activeWorkspaceId}
+            members={members}
+            availableTags={availableTags}
+          />
         )}
       </AdaptivePanel>
     </div>
