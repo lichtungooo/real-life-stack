@@ -1112,9 +1112,9 @@ async function createConnector(type: string): Promise<DataInterface> {
   if (type === "wot") {
     const { WotConnector } = await import("@real-life-stack/wot-connector")
     const connector = new WotConnector({
-      relayUrl: "wss://relay.utopia-lab.org",
-      profilesUrl: "https://profiles.utopia-lab.org",
-      vaultUrl: "https://vault.utopia-lab.org",
+      relayUrl: import.meta.env.VITE_RELAY_URL ?? "wss://relay.utopia-lab.org",
+      profilesUrl: import.meta.env.VITE_PROFILE_SERVICE_URL ?? "https://profiles.utopia-lab.org",
+      vaultUrl: import.meta.env.VITE_VAULT_URL ?? "https://vault.utopia-lab.org",
     })
     await connector.init()
     return connector
