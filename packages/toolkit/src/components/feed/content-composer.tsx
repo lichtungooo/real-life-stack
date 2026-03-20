@@ -458,6 +458,7 @@ export function ContentComposer({
                       value={data.title || ""}
                       onChange={(v) => updateData("title", v)}
                       label={widgetLabel}
+                      autoFocus={!data.title}
                     />
                   )}
                   {widgetId === "text" && (

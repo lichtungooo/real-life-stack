@@ -705,7 +705,8 @@ function KanbanView({ activeWorkspaceId, groups, selectedItemId, onItemSelect, o
       >
         {panelState.mode === "edit" && (
           <div className="flex flex-col h-full">
-            <div className="flex-1 overflow-y-auto">
+            {/* Scrollable area: task settings + comment list */}
+            <div className="flex-1 overflow-y-auto min-h-0">
               <ContentComposer
                 key={panelState.item.id}
                 className="p-4"
@@ -735,14 +736,13 @@ function KanbanView({ activeWorkspaceId, groups, selectedItemId, onItemSelect, o
                 peopleQuickSuggestions={members.slice(0, 10).map((m) => ({ id: m.id, name: m.displayName ?? m.id }))}
               />
 
-              {/* Comments section below task settings */}
+              {/* Comments list below task settings */}
               <div className="border-t px-4 pt-3 pb-2">
                 <p className="text-xs font-medium text-muted-foreground mb-2">Kommentare</p>
               </div>
               <CommentSection
                 itemId={panelState.item.id}
                 renderReactions={(commentId) => <ReactionBar itemId={commentId} />}
-                className="min-h-[200px]"
               />
             </div>
           </div>

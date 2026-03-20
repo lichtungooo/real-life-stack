@@ -107,14 +107,16 @@ export function CommentSection({
         )}
       </div>
 
-      {/* Sticky input at the bottom */}
+      {/* Sticky input at the bottom of the nearest scroll container */}
       {canComment && (
-        <CommentInput
-          onSubmit={handleSubmit}
-          replyTo={replyTo}
-          onCancelReply={handleCancelReply}
-          placeholder={placeholder}
-        />
+        <div className="sticky bottom-0 bg-background z-10">
+          <CommentInput
+            onSubmit={handleSubmit}
+            replyTo={replyTo}
+            onCancelReply={handleCancelReply}
+            placeholder={placeholder}
+          />
+        </div>
       )}
     </div>
   )
