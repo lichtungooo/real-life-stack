@@ -23,7 +23,7 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
 
   use: {
-    baseURL: 'http://localhost:5174',
+    baseURL: 'http://localhost:5175',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     launchOptions: {
@@ -49,9 +49,9 @@ export default defineConfig({
       `VITE_RELAY_URL=ws://localhost:${RELAY_PORT}`,
       `VITE_PROFILE_SERVICE_URL=http://localhost:${PROFILES_PORT}`,
       `VITE_VAULT_URL=http://localhost:${VAULT_PORT}`,
-      `npx vite --port 5174`,
+      `npx vite --port 5175`,
     ].join(' '),
-    port: 5174,
+    port: 5175,
     reuseExistingServer: false,
     timeout: 30_000,
     cwd: path.resolve(__dirname),

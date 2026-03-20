@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createFreshContext, createIdentity, waitForRelayConnected } from './helpers/common'
 import { performMutualVerification } from './helpers/verification'
-import { createTask, navigateToKanban } from './helpers/kanban'
+import { createGroup, createTask, navigateToKanban } from './helpers/kanban'
 import { resetServerState } from './helpers/reset-servers'
 
 test.describe('Cross-User — Verification, Invite, Sync', () => {
@@ -21,7 +21,8 @@ test.describe('Cross-User — Verification, Invite, Sync', () => {
       // Step 1: Mutual verification
       await performMutualVerification(alicePage, bobPage)
 
-      // Step 2: Alice creates task in Kanban
+      // Step 2: Alice creates a group and task in Kanban
+      await createGroup(alicePage, 'Testgruppe')
       await navigateToKanban(alicePage)
       await createTask(alicePage, 'Einkaufen')
       await expect(alicePage.getByText('Einkaufen')).toBeVisible({ timeout: 10_000 })
@@ -36,7 +37,12 @@ test.describe('Cross-User — Verification, Invite, Sync', () => {
       await alicePage.getByRole('button', { name: /Schliessen|Schließen/ }).click()
       await alicePage.waitForTimeout(500)
 
-      // Alice back to Kanban
+      // Alice back to Testgruppe (invite dialog may have switched to Mein Netzwerk)
+      if (!await alicePage.getByRole('button', { name: 'Kanban' }).isVisible().catch(() => false)) {
+        await alicePage.getByText('Mein Netzwerk').first().click()
+        await alicePage.getByText('Testgruppe').click()
+        await alicePage.waitForTimeout(1000)
+      }
       await navigateToKanban(alicePage)
 
       // Step 4: Bob accepts invitation

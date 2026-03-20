@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createFreshContext, createIdentity, recoverIdentity, waitForRelayConnected } from './helpers/common'
 import { performMutualVerification } from './helpers/verification'
-import { createTask, navigateToKanban } from './helpers/kanban'
+import { createGroup, createTask, navigateToKanban } from './helpers/kanban'
 import { resetServerState } from './helpers/reset-servers'
 
 test.describe('Cross-User + Multi-Device', () => {
@@ -22,7 +22,8 @@ test.describe('Cross-User + Multi-Device', () => {
       // Alice + Bob: mutual verification
       await performMutualVerification(d1Page, bobPage)
 
-      // Alice D1: invite Bob
+      // Alice D1: create group + invite Bob
+      await createGroup(d1Page, 'Testgruppe')
       await d1Page.getByRole('button', { name: 'Feed' }).click()
       await d1Page.waitForTimeout(1000)
       await d1Page.getByText('Einladen').click()
@@ -34,8 +35,15 @@ test.describe('Cross-User + Multi-Device', () => {
       // Bob accepts invitation
       await bobPage.getByText('Neue Einladung').waitFor({ timeout: 30_000 })
       await bobPage.getByRole('button', { name: 'Öffnen' }).click()
-      await bobPage.waitForTimeout(2000)
+      await bobPage.getByRole('button', { name: 'Feed' }).waitFor({ timeout: 30_000 })
+      await bobPage.waitForTimeout(1000)
 
+      // Alice D1: back to Testgruppe (invite may have switched to Mein Netzwerk)
+      if (!await d1Page.getByRole('button', { name: 'Kanban' }).isVisible().catch(() => false)) {
+        await d1Page.getByText('Mein Netzwerk').first().click()
+        await d1Page.getByText('Testgruppe').click()
+        await d1Page.waitForTimeout(1000)
+      }
       // Alice D1: create task "Von D1"
       await navigateToKanban(d1Page)
       await createTask(d1Page, 'Von D1')
@@ -48,8 +56,12 @@ test.describe('Cross-User + Multi-Device', () => {
       await recoverIdentity(d2Page, { mnemonic: aliceMnemonic, passphrase: 'alice-d2-pw' })
       await waitForRelayConnected(d2Page)
 
-      // Alice D2: should see the group and task
-      await d2Page.getByRole('button', { name: 'Kanban' }).waitFor({ timeout: 30_000 })
+      // Alice D2: switch to Testgruppe via workspace switcher
+      await d2Page.getByText('Mein Netzwerk').first().waitFor({ timeout: 30_000 })
+      await d2Page.getByText('Mein Netzwerk').first().click()
+      await d2Page.getByText('Testgruppe').waitFor({ timeout: 30_000 })
+      await d2Page.getByText('Testgruppe').click()
+      await d2Page.waitForTimeout(1000)
       await navigateToKanban(d2Page)
       await expect(d2Page.getByText('Von D1')).toBeVisible({ timeout: 30_000 })
 
