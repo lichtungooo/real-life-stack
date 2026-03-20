@@ -59,6 +59,8 @@ import {
   deleteYjsPersonalDocDB,
   onYjsPersonalDocChange,
   changeYjsPersonalDoc,
+  flushYjsPersonalDoc,
+  refreshYjsPersonalDocFromVault,
 } from "@real-life/adapter-yjs"
 import type {
   PersonalDoc,
@@ -751,8 +753,9 @@ export class WotConnector extends BaseConnector {
       groupKeyService: this.groupKeyService,
       metadataStorage: spaceMetadataStorage,
       vaultUrl: this.config.vaultUrl,
-      // No spaceFilter — all spaces are visible (WoT + RLS fully compatible)
       compactStore: spaceCompactStore,
+      flushPersonalDoc: flushYjsPersonalDoc,
+      refreshPersonalDocFromVault: refreshYjsPersonalDocFromVault,
     })
     await this.replication.start()
 
@@ -1347,6 +1350,11 @@ export class WotConnector extends BaseConnector {
       }
       this.outboxAdapter.send(envelope).catch(() => {}) // Non-blocking — outbox handles retry
     }
+
+    // Sync claims so the verification we just wrote is in claimsObs
+    this.syncClaimsFromPersonalDoc()
+    // Check if mutual (we just sent ours, peer's may already exist)
+    this.checkMutualVerification(peerDid)
   }
 
   override async counterVerify(targetId: string): Promise<void> {
@@ -1415,6 +1423,11 @@ export class WotConnector extends BaseConnector {
       }
       this.outboxAdapter.send(envelope).catch(() => {})
     }
+
+    // Sync claims so the counter-verification we just wrote is in claimsObs
+    this.syncClaimsFromPersonalDoc()
+    // Check if mutual (we just counter-verified, so both sides exist now)
+    this.checkMutualVerification(targetId)
   }
 
   override async getClaimsByMe(): Promise<SignedClaim[]> {
@@ -1710,6 +1723,7 @@ export class WotConnector extends BaseConnector {
     const claims = this.claimsObs.current.filter((c) => c.tags?.includes("verification"))
     const outgoing = claims.some((c) => c.from === did && c.to === peerId)
     const incoming = claims.some((c) => c.from === peerId && c.to === did)
+    console.log("[WotConnector.checkMutual]", { peerId: peerId.slice(-8), outgoing, incoming, totalClaims: claims.length })
 
     if (outgoing && incoming) {
       const contact = this.contactsObs.current.find((c) => c.id === peerId)

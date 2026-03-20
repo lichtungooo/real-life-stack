@@ -193,7 +193,7 @@ export function VerificationDialog({
         <DialogHeader className="text-center">
           <DialogTitle className="flex items-center justify-center gap-2">
             <QrCode className="h-5 w-5 text-primary" />
-            {step === "done" ? "Verifizierung erfolgreich!" : "Verifizieren"}
+            {step === "done" ? "Verifizierung gesendet" : "Verifizieren"}
           </DialogTitle>
           {step === "ready" && (
             <DialogDescription className="text-center">
@@ -335,22 +335,17 @@ export function VerificationDialog({
 
         {step === "done" && (
           <div className="space-y-4 pt-2 text-center">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10">
-              <Check className="h-8 w-8 text-green-500" />
+            <div className="mx-auto flex h-10 w-10 items-center justify-center">
+              <Loader2 className="h-10 w-10 text-primary animate-spin" />
             </div>
             <p className="text-sm text-muted-foreground">
               {peerInfo?.peerName
-                ? `${peerInfo.peerName} wurde verifiziert.`
-                : "Der Kontakt wurde erfolgreich verifiziert."}
+                ? `Warte auf Verifizierung von ${peerInfo.peerName}...`
+                : "Warte auf Verifizierung der Gegenseite..."}
             </p>
-            <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => handleClose(false)}>
-                Fertig
-              </Button>
-              <Button className="flex-1" onClick={handleAnother}>
-                Weitere Verifizierung
-              </Button>
-            </div>
+            <Button variant="outline" className="w-full" onClick={() => handleClose(false)}>
+              Im Hintergrund warten
+            </Button>
           </div>
         )}
 
