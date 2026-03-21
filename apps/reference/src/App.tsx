@@ -82,7 +82,6 @@ import {
   CommentSection,
   CommentInput,
   ReactionBar,
-  useComments,
   type Workspace,
   type CommentQuote,
   type UserData,
