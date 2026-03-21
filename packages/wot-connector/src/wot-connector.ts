@@ -40,6 +40,8 @@ import {
   getDefaultDisplayName,
   encodeBase64Url,
   decodeBase64Url,
+  signEnvelope,
+  verifyEnvelope,
 } from "@real-life/wot-core"
 import type {
   SpaceInfo,
@@ -498,13 +500,18 @@ export class WotConnector extends BaseConnector {
       await this.replication.updateSpace(id, metaUpdate as any)
     }
 
-    const group = this.groupsCache.find((g) => g.id === id)
-    if (group) {
-      if (updates.name) group.name = updates.name
-      if (updates.data) group.data = { ...group.data, ...updates.data }
+    const idx = this.groupsCache.findIndex((g) => g.id === id)
+    if (idx !== -1) {
+      const group = this.groupsCache[idx]
+      this.groupsCache[idx] = {
+        ...group,
+        name: updates.name ?? group.name,
+        data: updates.data ? { ...group.data, ...updates.data } : group.data,
+      }
       this.groupsObservable.set([...this.groupsCache])
+      return this.groupsCache[idx]
     }
-    return group ?? { id, name: updates.name ?? "Unknown", ...updates }
+    return { id, name: updates.name ?? "Unknown", ...updates }
   }
 
   override async deleteGroup(id: string): Promise<void> {
@@ -903,7 +910,7 @@ export class WotConnector extends BaseConnector {
     })
     this.syncProfileObservable()
 
-    // 9. CrossSpaceIndex for personal view (aggregates items across all shared spaces)
+    // 10. CrossSpaceIndex for personal view (aggregates items across all shared spaces)
     this.crossSpaceIndex = new CrossSpaceIndex<RlsSpaceDoc, Item>(
       this.replication,
       (doc) => {
@@ -923,7 +930,7 @@ export class WotConnector extends BaseConnector {
       }
     })
 
-    // 10. Watch spaces for reactive group list
+    // 11. Watch spaces for reactive group list
     const spacesSubscribable = this.replication.watchSpaces()
     this.spacesSubscriptionUnsub = spacesSubscribable.subscribe((spaces: SpaceInfo[]) => {
       this.updateGroupsFromSpaces(spaces)
@@ -931,12 +938,13 @@ export class WotConnector extends BaseConnector {
     // Load initial spaces
     this.updateGroupsFromSpaces(spacesSubscribable.getValue())
 
-    // 10. Auto-create personal default group if no spaces exist
-    if (this.groupsCache.length === 0) {
+    // 12. Auto-create personal default group if no shared spaces exist
+    const hasSharedSpaces = this.groupsCache.some((g) => g.data?.scope === "group")
+    if (!hasSharedSpaces) {
       await this.createGroup("Mein Bereich")
     }
 
-    // 11. Sync contact profiles from discovery server (non-blocking)
+    // 13. Sync contact profiles from discovery server (non-blocking)
     this.syncContactProfiles().catch(() => {})
   }
 
@@ -972,6 +980,7 @@ export class WotConnector extends BaseConnector {
     const name = doc.profile?.name ?? getDefaultDisplayName(did)
 
     const avatar = doc.profile?.avatar ?? undefined
+    const sign = this.identity.sign.bind(this.identity)
     const contacts = await this.storage.getContacts()
     for (const contact of contacts) {
       const envelope: MessageEnvelope = {
@@ -985,6 +994,7 @@ export class WotConnector extends BaseConnector {
         payload: JSON.stringify({ did, name, ...(avatar ? { avatar } : {}) }),
         signature: "",
       }
+      await signEnvelope(envelope, sign)
       this.outboxAdapter.send(envelope).catch(() => {})
     }
   }
@@ -1778,7 +1788,7 @@ export class WotConnector extends BaseConnector {
 
         // Send ACK (fire-and-forget)
         if (this.outboxAdapter) {
-          this.outboxAdapter.send({
+          const ackEnvelope: MessageEnvelope = {
             v: 1,
             id: `ack-${attestation.id}`,
             type: "attestation-ack" as MessageType,
@@ -1788,7 +1798,10 @@ export class WotConnector extends BaseConnector {
             encoding: "json",
             payload: JSON.stringify({ attestationId: attestation.id }),
             signature: "",
-          }).catch(() => {})
+          }
+          signEnvelope(ackEnvelope, this.identity.sign.bind(this.identity))
+            .then((signed) => this.outboxAdapter!.send(signed))
+            .catch(() => {})
         }
 
         // Emit event for UI
@@ -1819,7 +1832,10 @@ export class WotConnector extends BaseConnector {
 
     if (envelope.type === "profile-update") {
       try {
-        // Use payload directly (authoritative — comes from the sender via relay)
+        // Verify signature — reject spoofed profile updates
+        const isValid = await verifyEnvelope(envelope)
+        if (!isValid) return
+
         const payload = JSON.parse(envelope.payload)
         if (payload.name && this.storage) {
           const contacts = await this.storage.getContacts()
