@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { CrossSpaceIndex } from "../src/CrossSpaceIndex.js"
-import type { CrossSpaceEntry } from "../src/CrossSpaceIndex.js"
+import { CrossGroupIndex } from "../src/CrossGroupIndex.js"
+import type { CrossGroupEntry } from "../src/CrossGroupIndex.js"
 
 // --- Mock types ---
 
@@ -16,13 +16,13 @@ interface TestItem {
 
 // --- Mock SpaceHandle ---
 
-function createMockHandle(spaceId: string, doc: TestDoc) {
+function createMockHandle(groupId: string, doc: TestDoc) {
   const remoteCallbacks = new Set<() => void>()
   return {
-    id: spaceId,
+    id: groupId,
     doc,
     info: () => ({
-      id: spaceId,
+      id: groupId,
       type: "shared" as const,
       members: [],
       createdAt: "2026-01-01T00:00:00.000Z",
@@ -56,8 +56,8 @@ function createMockReplication() {
       spaces = newSpaces
       spacesCallback?.(spaces)
     },
-    registerHandle(spaceId: string, handle: ReturnType<typeof createMockHandle>) {
-      handles.set(spaceId, handle)
+    registerHandle(groupId: string, handle: ReturnType<typeof createMockHandle>) {
+      handles.set(groupId, handle)
     },
     // ReplicationAdapter interface (partial)
     watchSpaces: () => ({
@@ -67,9 +67,9 @@ function createMockReplication() {
         return () => { spacesCallback = null }
       },
     }),
-    openSpace: vi.fn(async (spaceId: string) => {
-      const handle = handles.get(spaceId)
-      if (!handle) throw new Error(`No handle for ${spaceId}`)
+    openSpace: vi.fn(async (groupId: string) => {
+      const handle = handles.get(groupId)
+      if (!handle) throw new Error(`No handle for ${groupId}`)
       return handle
     }),
   }
@@ -91,15 +91,15 @@ function getItemType(item: TestItem): string {
 
 // --- Tests ---
 
-describe("CrossSpaceIndex", () => {
+describe("CrossGroupIndex", () => {
   let replication: ReturnType<typeof createMockReplication>
 
   beforeEach(() => {
     replication = createMockReplication()
   })
 
-  function createIndex(options?: { spaceFilter?: (info: { type: string }) => boolean }) {
-    return new CrossSpaceIndex<TestDoc, TestItem>(
+  function createIndex(options?: { groupFilter?: (info: { type: string }) => boolean }) {
+    return new CrossGroupIndex<TestDoc, TestItem>(
       replication as any,
       extractItems,
       getItemType,
@@ -109,32 +109,32 @@ describe("CrossSpaceIndex", () => {
 
   describe("start/stop", () => {
     it("subscribes to watchSpaces on start", () => {
-      const handle = createMockHandle("space-1", {
+      const handle = createMockHandle("group-1", {
         items: { "t1": { id: "t1", type: "task", title: "Task 1" } },
       })
-      replication.registerHandle("space-1", handle)
-      replication.setSpaces([{ id: "space-1", type: "shared" }])
+      replication.registerHandle("group-1", handle)
+      replication.setSpaces([{ id: "group-1", type: "shared" }])
 
       const index = createIndex()
       index.start()
 
       // Should have opened the space and indexed items
-      expect(replication.openSpace).toHaveBeenCalledWith("space-1")
+      expect(replication.openSpace).toHaveBeenCalledWith("group-1")
 
       index.stop()
     })
 
     it("cleans up on stop", async () => {
-      const handle = createMockHandle("space-1", {
+      const handle = createMockHandle("group-1", {
         items: { "t1": { id: "t1", type: "task", title: "Task 1" } },
       })
-      replication.registerHandle("space-1", handle)
-      replication.setSpaces([{ id: "space-1", type: "shared" }])
+      replication.registerHandle("group-1", handle)
+      replication.setSpaces([{ id: "group-1", type: "shared" }])
 
       const index = createIndex()
       index.start()
 
-      // Wait for async addSpace
+      // Wait for async addGroup
       await vi.waitFor(() => expect(index.getAll().size).toBe(1))
 
       index.stop()
@@ -153,15 +153,15 @@ describe("CrossSpaceIndex", () => {
   })
 
   describe("indexing", () => {
-    it("indexes items from a single space", async () => {
-      const handle = createMockHandle("space-1", {
+    it("indexes items from a single group", async () => {
+      const handle = createMockHandle("group-1", {
         items: {
           "t1": { id: "t1", type: "task", title: "Task 1" },
           "t2": { id: "t2", type: "event", title: "Event 1" },
         },
       })
-      replication.registerHandle("space-1", handle)
-      replication.setSpaces([{ id: "space-1", type: "shared" }])
+      replication.registerHandle("group-1", handle)
+      replication.setSpaces([{ id: "group-1", type: "shared" }])
 
       const index = createIndex()
       index.start()
@@ -170,24 +170,24 @@ describe("CrossSpaceIndex", () => {
 
       const all = index.getAll()
       expect(all.get("t1")?.item.title).toBe("Task 1")
-      expect(all.get("t1")?.spaceId).toBe("space-1")
+      expect(all.get("t1")?.groupId).toBe("group-1")
       expect(all.get("t2")?.item.type).toBe("event")
 
       index.stop()
     })
 
-    it("indexes items from multiple spaces", async () => {
-      const handle1 = createMockHandle("space-1", {
+    it("indexes items from multiple groups", async () => {
+      const handle1 = createMockHandle("group-1", {
         items: { "t1": { id: "t1", type: "task", title: "Task 1" } },
       })
-      const handle2 = createMockHandle("space-2", {
+      const handle2 = createMockHandle("group-2", {
         items: { "t2": { id: "t2", type: "task", title: "Task 2" } },
       })
-      replication.registerHandle("space-1", handle1)
-      replication.registerHandle("space-2", handle2)
+      replication.registerHandle("group-1", handle1)
+      replication.registerHandle("group-2", handle2)
       replication.setSpaces([
-        { id: "space-1", type: "shared" },
-        { id: "space-2", type: "shared" },
+        { id: "group-1", type: "shared" },
+        { id: "group-2", type: "shared" },
       ])
 
       const index = createIndex()
@@ -195,8 +195,8 @@ describe("CrossSpaceIndex", () => {
 
       await vi.waitFor(() => expect(index.getAll().size).toBe(2))
 
-      expect(index.getItemSpaceId("t1")).toBe("space-1")
-      expect(index.getItemSpaceId("t2")).toBe("space-2")
+      expect(index.getItemGroupId("t1")).toBe("group-1")
+      expect(index.getItemGroupId("t2")).toBe("group-2")
 
       index.stop()
     })
@@ -205,9 +205,9 @@ describe("CrossSpaceIndex", () => {
       const doc: TestDoc = {
         items: { "t1": { id: "t1", type: "task", title: "Original" } },
       }
-      const handle = createMockHandle("space-1", doc)
-      replication.registerHandle("space-1", handle)
-      replication.setSpaces([{ id: "space-1", type: "shared" }])
+      const handle = createMockHandle("group-1", doc)
+      replication.registerHandle("group-1", handle)
+      replication.setSpaces([{ id: "group-1", type: "shared" }])
 
       const index = createIndex()
       index.start()
@@ -233,9 +233,9 @@ describe("CrossSpaceIndex", () => {
           "t2": { id: "t2", type: "task", title: "Task 2" },
         },
       }
-      const handle = createMockHandle("space-1", doc)
-      replication.registerHandle("space-1", handle)
-      replication.setSpaces([{ id: "space-1", type: "shared" }])
+      const handle = createMockHandle("group-1", doc)
+      replication.registerHandle("group-1", handle)
+      replication.setSpaces([{ id: "group-1", type: "shared" }])
 
       const index = createIndex()
       index.start()
@@ -254,51 +254,51 @@ describe("CrossSpaceIndex", () => {
     })
   })
 
-  describe("space lifecycle", () => {
-    it("adds items when a new space appears", async () => {
-      const handle1 = createMockHandle("space-1", {
+  describe("group lifecycle", () => {
+    it("adds items when a new group appears", async () => {
+      const handle1 = createMockHandle("group-1", {
         items: { "t1": { id: "t1", type: "task", title: "Task 1" } },
       })
-      const handle2 = createMockHandle("space-2", {
+      const handle2 = createMockHandle("group-2", {
         items: { "t2": { id: "t2", type: "task", title: "Task 2" } },
       })
-      replication.registerHandle("space-1", handle1)
-      replication.registerHandle("space-2", handle2)
+      replication.registerHandle("group-1", handle1)
+      replication.registerHandle("group-2", handle2)
 
-      // Start with one space
-      replication.setSpaces([{ id: "space-1", type: "shared" }])
+      // Start with one group
+      replication.setSpaces([{ id: "group-1", type: "shared" }])
 
       const index = createIndex()
       index.start()
 
       await vi.waitFor(() => expect(index.getAll().size).toBe(1))
 
-      // Add second space
+      // Add second group
       replication.setSpaces([
-        { id: "space-1", type: "shared" },
-        { id: "space-2", type: "shared" },
+        { id: "group-1", type: "shared" },
+        { id: "group-2", type: "shared" },
       ])
 
       await vi.waitFor(() => expect(index.getAll().size).toBe(2))
 
-      expect(index.getItemSpaceId("t2")).toBe("space-2")
+      expect(index.getItemGroupId("t2")).toBe("group-2")
 
       index.stop()
     })
 
-    it("removes items when a space disappears", async () => {
-      const handle1 = createMockHandle("space-1", {
+    it("removes items when a group disappears", async () => {
+      const handle1 = createMockHandle("group-1", {
         items: { "t1": { id: "t1", type: "task", title: "Task 1" } },
       })
-      const handle2 = createMockHandle("space-2", {
+      const handle2 = createMockHandle("group-2", {
         items: { "t2": { id: "t2", type: "task", title: "Task 2" } },
       })
-      replication.registerHandle("space-1", handle1)
-      replication.registerHandle("space-2", handle2)
+      replication.registerHandle("group-1", handle1)
+      replication.registerHandle("group-2", handle2)
 
       replication.setSpaces([
-        { id: "space-1", type: "shared" },
-        { id: "space-2", type: "shared" },
+        { id: "group-1", type: "shared" },
+        { id: "group-2", type: "shared" },
       ])
 
       const index = createIndex()
@@ -306,8 +306,8 @@ describe("CrossSpaceIndex", () => {
 
       await vi.waitFor(() => expect(index.getAll().size).toBe(2))
 
-      // Remove space-2
-      replication.setSpaces([{ id: "space-1", type: "shared" }])
+      // Remove group-2
+      replication.setSpaces([{ id: "group-1", type: "shared" }])
 
       expect(index.getAll().size).toBe(1)
       expect(index.getAll().has("t2")).toBe(false)
@@ -319,15 +319,15 @@ describe("CrossSpaceIndex", () => {
 
   describe("queries", () => {
     it("getByType returns items of given type", async () => {
-      const handle = createMockHandle("space-1", {
+      const handle = createMockHandle("group-1", {
         items: {
           "t1": { id: "t1", type: "task", title: "Task 1" },
           "t2": { id: "t2", type: "event", title: "Event 1" },
           "t3": { id: "t3", type: "task", title: "Task 2" },
         },
       })
-      replication.registerHandle("space-1", handle)
-      replication.setSpaces([{ id: "space-1", type: "shared" }])
+      replication.registerHandle("group-1", handle)
+      replication.setSpaces([{ id: "group-1", type: "shared" }])
 
       const index = createIndex()
       index.start()
@@ -341,18 +341,18 @@ describe("CrossSpaceIndex", () => {
       index.stop()
     })
 
-    it("getBySpace returns items for given space", async () => {
-      const handle1 = createMockHandle("space-1", {
+    it("getByGroup returns items for given group", async () => {
+      const handle1 = createMockHandle("group-1", {
         items: { "t1": { id: "t1", type: "task", title: "Task 1" } },
       })
-      const handle2 = createMockHandle("space-2", {
+      const handle2 = createMockHandle("group-2", {
         items: { "t2": { id: "t2", type: "task", title: "Task 2" } },
       })
-      replication.registerHandle("space-1", handle1)
-      replication.registerHandle("space-2", handle2)
+      replication.registerHandle("group-1", handle1)
+      replication.registerHandle("group-2", handle2)
       replication.setSpaces([
-        { id: "space-1", type: "shared" },
-        { id: "space-2", type: "shared" },
+        { id: "group-1", type: "shared" },
+        { id: "group-2", type: "shared" },
       ])
 
       const index = createIndex()
@@ -360,27 +360,27 @@ describe("CrossSpaceIndex", () => {
 
       await vi.waitFor(() => expect(index.getAll().size).toBe(2))
 
-      expect(index.getBySpace("space-1").size).toBe(1)
-      expect(index.getBySpace("space-1").get("t1")?.title).toBe("Task 1")
-      expect(index.getBySpace("unknown").size).toBe(0)
+      expect(index.getByGroup("group-1").size).toBe(1)
+      expect(index.getByGroup("group-1").get("t1")?.title).toBe("Task 1")
+      expect(index.getByGroup("unknown").size).toBe(0)
 
       index.stop()
     })
 
-    it("getItemSpaceId returns correct space", async () => {
-      const handle = createMockHandle("space-1", {
+    it("getItemGroupId returns correct group", async () => {
+      const handle = createMockHandle("group-1", {
         items: { "t1": { id: "t1", type: "task", title: "Task 1" } },
       })
-      replication.registerHandle("space-1", handle)
-      replication.setSpaces([{ id: "space-1", type: "shared" }])
+      replication.registerHandle("group-1", handle)
+      replication.setSpaces([{ id: "group-1", type: "shared" }])
 
       const index = createIndex()
       index.start()
 
       await vi.waitFor(() => expect(index.getAll().size).toBe(1))
 
-      expect(index.getItemSpaceId("t1")).toBe("space-1")
-      expect(index.getItemSpaceId("nonexistent")).toBeNull()
+      expect(index.getItemGroupId("t1")).toBe("group-1")
+      expect(index.getItemGroupId("nonexistent")).toBeNull()
 
       index.stop()
     })
@@ -388,11 +388,11 @@ describe("CrossSpaceIndex", () => {
 
   describe("getFiltered", () => {
     it("returns all items when no filter", async () => {
-      const handle = createMockHandle("space-1", {
+      const handle = createMockHandle("group-1", {
         items: { "t1": { id: "t1", type: "task", title: "Task 1" } },
       })
-      replication.registerHandle("space-1", handle)
-      replication.setSpaces([{ id: "space-1", type: "shared" }])
+      replication.registerHandle("group-1", handle)
+      replication.setSpaces([{ id: "group-1", type: "shared" }])
 
       const index = createIndex()
       index.start()
@@ -400,23 +400,23 @@ describe("CrossSpaceIndex", () => {
       await vi.waitFor(() => expect(index.getAll().size).toBe(1))
 
       expect(index.getFiltered({}).size).toBe(1)
-      expect(index.getFiltered({ includedSpaces: null }).size).toBe(1)
+      expect(index.getFiltered({ includedGroups: null }).size).toBe(1)
 
       index.stop()
     })
 
-    it("filters by includedSpaces", async () => {
-      const handle1 = createMockHandle("space-1", {
+    it("filters by includedGroups", async () => {
+      const handle1 = createMockHandle("group-1", {
         items: { "t1": { id: "t1", type: "task", title: "Task 1" } },
       })
-      const handle2 = createMockHandle("space-2", {
+      const handle2 = createMockHandle("group-2", {
         items: { "t2": { id: "t2", type: "task", title: "Task 2" } },
       })
-      replication.registerHandle("space-1", handle1)
-      replication.registerHandle("space-2", handle2)
+      replication.registerHandle("group-1", handle1)
+      replication.registerHandle("group-2", handle2)
       replication.setSpaces([
-        { id: "space-1", type: "shared" },
-        { id: "space-2", type: "shared" },
+        { id: "group-1", type: "shared" },
+        { id: "group-2", type: "shared" },
       ])
 
       const index = createIndex()
@@ -424,25 +424,25 @@ describe("CrossSpaceIndex", () => {
 
       await vi.waitFor(() => expect(index.getAll().size).toBe(2))
 
-      const filtered = index.getFiltered({ includedSpaces: ["space-1"] })
+      const filtered = index.getFiltered({ includedGroups: ["group-1"] })
       expect(filtered.size).toBe(1)
       expect(filtered.has("t1")).toBe(true)
 
       index.stop()
     })
 
-    it("filters by excludedSpaces", async () => {
-      const handle1 = createMockHandle("space-1", {
+    it("filters by excludedGroups", async () => {
+      const handle1 = createMockHandle("group-1", {
         items: { "t1": { id: "t1", type: "task", title: "Task 1" } },
       })
-      const handle2 = createMockHandle("space-2", {
+      const handle2 = createMockHandle("group-2", {
         items: { "t2": { id: "t2", type: "task", title: "Task 2" } },
       })
-      replication.registerHandle("space-1", handle1)
-      replication.registerHandle("space-2", handle2)
+      replication.registerHandle("group-1", handle1)
+      replication.registerHandle("group-2", handle2)
       replication.setSpaces([
-        { id: "space-1", type: "shared" },
-        { id: "space-2", type: "shared" },
+        { id: "group-1", type: "shared" },
+        { id: "group-2", type: "shared" },
       ])
 
       const index = createIndex()
@@ -450,7 +450,7 @@ describe("CrossSpaceIndex", () => {
 
       await vi.waitFor(() => expect(index.getAll().size).toBe(2))
 
-      const filtered = index.getFiltered({ excludedSpaces: ["space-2"] })
+      const filtered = index.getFiltered({ excludedGroups: ["group-2"] })
       expect(filtered.size).toBe(1)
       expect(filtered.has("t1")).toBe(true)
 
@@ -458,23 +458,23 @@ describe("CrossSpaceIndex", () => {
     })
   })
 
-  describe("spaceFilter option", () => {
-    it("only indexes spaces matching filter", async () => {
-      const handle1 = createMockHandle("space-1", {
+  describe("groupFilter option", () => {
+    it("only indexes groups matching filter", async () => {
+      const handle1 = createMockHandle("group-1", {
         items: { "t1": { id: "t1", type: "task", title: "Task 1" } },
       })
       const handle2 = createMockHandle("personal", {
         items: { "p1": { id: "p1", type: "note", title: "Note 1" } },
       })
-      replication.registerHandle("space-1", handle1)
+      replication.registerHandle("group-1", handle1)
       replication.registerHandle("personal", handle2)
       replication.setSpaces([
-        { id: "space-1", type: "shared" },
+        { id: "group-1", type: "shared" },
         { id: "personal", type: "personal" },
       ])
 
       const index = createIndex({
-        spaceFilter: (info) => info.type === "shared",
+        groupFilter: (info) => info.type === "shared",
       })
       index.start()
 
@@ -490,9 +490,9 @@ describe("CrossSpaceIndex", () => {
   describe("onChange", () => {
     it("notifies on new items", async () => {
       const doc: TestDoc = { items: {} }
-      const handle = createMockHandle("space-1", doc)
-      replication.registerHandle("space-1", handle)
-      replication.setSpaces([{ id: "space-1", type: "shared" }])
+      const handle = createMockHandle("group-1", doc)
+      replication.registerHandle("group-1", handle)
+      replication.setSpaces([{ id: "group-1", type: "shared" }])
 
       const index = createIndex()
       const onChange = vi.fn()
@@ -515,9 +515,9 @@ describe("CrossSpaceIndex", () => {
 
     it("unsubscribe works", async () => {
       const doc: TestDoc = { items: {} }
-      const handle = createMockHandle("space-1", doc)
-      replication.registerHandle("space-1", handle)
-      replication.setSpaces([{ id: "space-1", type: "shared" }])
+      const handle = createMockHandle("group-1", doc)
+      replication.registerHandle("group-1", handle)
+      replication.setSpaces([{ id: "group-1", type: "shared" }])
 
       const index = createIndex()
       const onChange = vi.fn()
@@ -540,14 +540,14 @@ describe("CrossSpaceIndex", () => {
     })
   })
 
-  describe("reindexSpace", () => {
+  describe("reindexGroup", () => {
     it("manually reindexes after local write", async () => {
       const doc: TestDoc = {
         items: { "t1": { id: "t1", type: "task", title: "Task 1" } },
       }
-      const handle = createMockHandle("space-1", doc)
-      replication.registerHandle("space-1", handle)
-      replication.setSpaces([{ id: "space-1", type: "shared" }])
+      const handle = createMockHandle("group-1", doc)
+      replication.registerHandle("group-1", handle)
+      replication.setSpaces([{ id: "group-1", type: "shared" }])
 
       const index = createIndex()
       index.start()
@@ -556,7 +556,7 @@ describe("CrossSpaceIndex", () => {
 
       // Local write (no remote update fired)
       doc.items["t2"] = { id: "t2", type: "task", title: "Local" }
-      index.reindexSpace("space-1")
+      index.reindexGroup("group-1")
 
       expect(index.getAll().size).toBe(2)
       expect(index.getAll().get("t2")?.item.title).toBe("Local")
@@ -564,10 +564,10 @@ describe("CrossSpaceIndex", () => {
       index.stop()
     })
 
-    it("no-op for unknown space", () => {
+    it("no-op for unknown group", () => {
       const index = createIndex()
       index.start()
-      expect(() => index.reindexSpace("unknown")).not.toThrow()
+      expect(() => index.reindexGroup("unknown")).not.toThrow()
       index.stop()
     })
   })
@@ -577,9 +577,9 @@ describe("CrossSpaceIndex", () => {
       const doc: TestDoc = {
         items: { "t1": { id: "t1", type: "task", title: "Task" } },
       }
-      const handle = createMockHandle("space-1", doc)
-      replication.registerHandle("space-1", handle)
-      replication.setSpaces([{ id: "space-1", type: "shared" }])
+      const handle = createMockHandle("group-1", doc)
+      replication.registerHandle("group-1", handle)
+      replication.setSpaces([{ id: "group-1", type: "shared" }])
 
       const index = createIndex()
       index.start()
@@ -605,9 +605,9 @@ describe("CrossSpaceIndex", () => {
       const doc: TestDoc = {
         items: { "t1": { id: "t1", type: "task", title: "Task 1" } },
       }
-      const handle = createMockHandle("space-1", doc)
-      replication.registerHandle("space-1", handle)
-      replication.setSpaces([{ id: "space-1", type: "shared" }])
+      const handle = createMockHandle("group-1", doc)
+      replication.registerHandle("group-1", handle)
+      replication.setSpaces([{ id: "group-1", type: "shared" }])
 
       const index = createIndex()
       const onChange = vi.fn()
@@ -635,19 +635,19 @@ describe("CrossSpaceIndex", () => {
     })
   })
 
-  describe("race condition: duplicate addSpace", () => {
-    it("does not add the same space twice on rapid watchSpaces updates", async () => {
-      const handle = createMockHandle("space-1", {
+  describe("race condition: duplicate addGroup", () => {
+    it("does not add the same group twice on rapid watchSpaces updates", async () => {
+      const handle = createMockHandle("group-1", {
         items: { "t1": { id: "t1", type: "task", title: "Task 1" } },
       })
-      replication.registerHandle("space-1", handle)
+      replication.registerHandle("group-1", handle)
 
       const index = createIndex()
       index.start()
 
-      // Two rapid watchSpaces emissions with the same new space
-      replication.setSpaces([{ id: "space-1", type: "shared" }])
-      replication.setSpaces([{ id: "space-1", type: "shared" }])
+      // Two rapid watchSpaces emissions with the same new group
+      replication.setSpaces([{ id: "group-1", type: "shared" }])
+      replication.setSpaces([{ id: "group-1", type: "shared" }])
 
       await vi.waitFor(() => expect(index.getAll().size).toBe(1))
 

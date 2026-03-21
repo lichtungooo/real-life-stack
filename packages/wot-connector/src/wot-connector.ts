@@ -73,7 +73,7 @@ import type {
 
 import type { WotConnectorConfig, RlsSpaceDoc, SerializedItem } from "./types.js"
 import { serializeItem, deserializeItem } from "./serialization.js"
-import { CrossSpaceIndex } from "./CrossSpaceIndex.js"
+import { CrossGroupIndex } from "./CrossGroupIndex.js"
 
 // --- Constants ---
 
@@ -106,8 +106,8 @@ export class WotConnector extends BaseConnector {
   private notifyScheduled = false
   private itemCache: Item[] | null = null
   private privateSpaceId: string | null = null
-  private crossSpaceIndex: CrossSpaceIndex<RlsSpaceDoc, Item> | null = null
-  private crossSpaceUnsub: (() => void) | null = null
+  private crossGroupIndex: CrossGroupIndex<RlsSpaceDoc, Item> | null = null
+  private crossGroupUnsub: (() => void) | null = null
   private spacesSubscriptionUnsub: (() => void) | null = null
   private personalDocUnsub: (() => void) | null = null
   private contactsUnsub: (() => void) | null = null
@@ -182,9 +182,9 @@ export class WotConnector extends BaseConnector {
 
   async dispose(): Promise<void> {
     this.closeCurrentHandle()
-    this.crossSpaceUnsub?.()
-    this.crossSpaceIndex?.stop()
-    this.crossSpaceIndex = null
+    this.crossGroupUnsub?.()
+    this.crossGroupIndex?.stop()
+    this.crossGroupIndex = null
     this.privateSpaceId = null
     this.spacesSubscriptionUnsub?.()
     this.personalDocUnsub?.()
@@ -290,9 +290,9 @@ export class WotConnector extends BaseConnector {
 
   override async logout(): Promise<void> {
     this.closeCurrentHandle()
-    this.crossSpaceUnsub?.()
-    this.crossSpaceIndex?.stop()
-    this.crossSpaceIndex = null
+    this.crossGroupUnsub?.()
+    this.crossGroupIndex?.stop()
+    this.crossGroupIndex = null
     this.privateSpaceId = null
     this.spacesSubscriptionUnsub?.()
     this.personalDocUnsub?.()
@@ -462,7 +462,7 @@ export class WotConnector extends BaseConnector {
     this.closeCurrentHandle()
 
     if (id === OVERVIEW_ID) {
-      // Personal view reads from CrossSpaceIndex — no handle needed
+      // Personal view reads from CrossGroupIndex — no handle needed
       this.handleReady = Promise.resolve()
       this.notifyAllObservers()
     } else if (this.replication) {
@@ -624,8 +624,8 @@ export class WotConnector extends BaseConnector {
 
   override async getItem(id: string): Promise<Item | null> {
     await this.handleReady
-    if (this.currentGroupId === OVERVIEW_ID && this.crossSpaceIndex) {
-      const entry = this.crossSpaceIndex.getAll().get(id)
+    if (this.currentGroupId === OVERVIEW_ID && this.crossGroupIndex) {
+      const entry = this.crossGroupIndex.getAll().get(id)
       return entry?.item ?? null
     }
     const doc = this.getCurrentDoc()
@@ -658,7 +658,7 @@ export class WotConnector extends BaseConnector {
         doc.items[id] = serialized
       })
       privateHandle.close()
-      this.crossSpaceIndex?.reindexSpace(this.privateSpaceId)
+      this.crossGroupIndex?.reindexGroup(this.privateSpaceId)
       this.notifyAllObservers()
       return newItem
     }
@@ -698,9 +698,9 @@ export class WotConnector extends BaseConnector {
     })
 
     // Reindex if in personal view (handle is not currentHandle)
-    if (this.currentGroupId === OVERVIEW_ID && this.crossSpaceIndex) {
-      const spaceId = this.crossSpaceIndex.getItemSpaceId(id)
-      if (spaceId) this.crossSpaceIndex.reindexSpace(spaceId)
+    if (this.currentGroupId === OVERVIEW_ID && this.crossGroupIndex) {
+      const spaceId = this.crossGroupIndex.getItemGroupId(id)
+      if (spaceId) this.crossGroupIndex.reindexGroup(spaceId)
     }
 
     this.notifyAllObservers()
@@ -719,24 +719,70 @@ export class WotConnector extends BaseConnector {
     })
 
     // Reindex if in personal view
-    if (this.currentGroupId === OVERVIEW_ID && this.crossSpaceIndex) {
-      const spaceId = this.crossSpaceIndex.getItemSpaceId(id)
-      if (spaceId) this.crossSpaceIndex.reindexSpace(spaceId)
+    if (this.currentGroupId === OVERVIEW_ID && this.crossGroupIndex) {
+      const spaceId = this.crossGroupIndex.getItemGroupId(id)
+      if (spaceId) this.crossGroupIndex.reindexGroup(spaceId)
     }
+
+    this.notifyAllObservers()
+  }
+
+  // ==================== Item-Group Assignment (ItemGroupCapable) ====================
+
+  getItemGroupId(itemId: string): string | null {
+    if (this.crossGroupIndex) {
+      return this.crossGroupIndex.getItemGroupId(itemId)
+    }
+    // Fallback: if no index, check current group
+    if (this.currentHandle) {
+      const doc = this.currentHandle.getDoc()
+      if (doc.items?.[itemId]) return this.currentGroupId
+    }
+    return null
+  }
+
+  async moveItemToGroup(itemId: string, targetGroupId: string): Promise<void> {
+    await this.handleReady
+    if (!this.replication) throw new Error("Not connected")
+
+    const sourceGroupId = this.getItemGroupId(itemId)
+    if (!sourceGroupId) throw new Error(`Item ${itemId} not found in any group`)
+    if (sourceGroupId === targetGroupId) return
+
+    // Read item from source
+    const sourceHandle = await this.replication.openSpace<RlsSpaceDoc>(sourceGroupId)
+    const serialized = sourceHandle.getDoc().items?.[itemId]
+    if (!serialized) throw new Error(`Item ${itemId} not found in source group`)
+
+    // Write to target
+    const targetHandle = await this.replication.openSpace<RlsSpaceDoc>(targetGroupId)
+    targetHandle.transact((doc) => {
+      if (!doc.items) doc.items = {}
+      doc.items[itemId] = serialized
+    })
+
+    // Delete from source
+    sourceHandle.transact((doc) => {
+      delete doc.items[itemId]
+    })
+
+    // Reindex both groups
+    this.crossGroupIndex?.reindexGroup(sourceGroupId)
+    this.crossGroupIndex?.reindexGroup(targetGroupId)
 
     this.notifyAllObservers()
   }
 
   /**
    * Resolve the SpaceHandle that owns a given item.
-   * In personal view, looks up the space via CrossSpaceIndex and opens a temporary handle.
+   * In overview view, looks up the group via CrossGroupIndex and opens a handle.
    * In normal group view, returns the current handle.
    */
   private async resolveHandleForItem(itemId: string): Promise<SpaceHandle<RlsSpaceDoc>> {
-    if (this.currentGroupId === OVERVIEW_ID && this.crossSpaceIndex && this.replication) {
-      const spaceId = this.crossSpaceIndex.getItemSpaceId(itemId)
+    if (this.currentGroupId === OVERVIEW_ID && this.crossGroupIndex && this.replication) {
+      const spaceId = this.crossGroupIndex.getItemGroupId(itemId)
       if (!spaceId) throw new Error(`Item ${itemId} not found in any space`)
-      // The CrossSpaceIndex already has handles open for all spaces,
+      // The CrossGroupIndex already has handles open for all spaces,
       // so openSpace returns the existing handle (no extra cost)
       return this.replication.openSpace<RlsSpaceDoc>(spaceId)
     }
@@ -925,8 +971,8 @@ export class WotConnector extends BaseConnector {
     })
     this.syncProfileObservable()
 
-    // 10. CrossSpaceIndex for personal view (aggregates items across all shared spaces)
-    this.crossSpaceIndex = new CrossSpaceIndex<RlsSpaceDoc, Item>(
+    // 10. CrossGroupIndex for personal view (aggregates items across all shared spaces)
+    this.crossGroupIndex = new CrossGroupIndex<RlsSpaceDoc, Item>(
       this.replication,
       (doc) => {
         const map = new Map<string, Item>()
@@ -936,10 +982,10 @@ export class WotConnector extends BaseConnector {
         return map
       },
       (item) => item.type,
-      { spaceFilter: (info) => info.type === "shared" },
+      { groupFilter: (info) => info.type === "shared" },
     )
-    this.crossSpaceIndex.start()
-    this.crossSpaceUnsub = this.crossSpaceIndex.onChange(() => {
+    this.crossGroupIndex.start()
+    this.crossGroupUnsub = this.crossGroupIndex.onChange(() => {
       if (this.currentGroupId === OVERVIEW_ID) {
         this.notifyAllObservers()
       }
@@ -1188,8 +1234,8 @@ export class WotConnector extends BaseConnector {
 
   private getCachedItems(): Item[] {
     if (!this.itemCache) {
-      if (this.currentGroupId === OVERVIEW_ID && this.crossSpaceIndex) {
-        this.itemCache = [...this.crossSpaceIndex.getAll().values()].map((e) => e.item)
+      if (this.currentGroupId === OVERVIEW_ID && this.crossGroupIndex) {
+        this.itemCache = [...this.crossGroupIndex.getAll().values()].map((e) => e.item)
       } else {
         const doc = this.getCurrentDoc()
         this.itemCache = doc ? Object.values(doc.items ?? {}).map(deserializeItem) : []
@@ -1202,7 +1248,7 @@ export class WotConnector extends BaseConnector {
     const isPersonal = this.currentGroupId === OVERVIEW_ID
     const doc = isPersonal ? null : this.getCurrentDoc()
     const allItems = this.getCachedItems()
-    const hasData = isPersonal ? this.crossSpaceIndex != null : doc != null
+    const hasData = isPersonal ? this.crossGroupIndex != null : doc != null
 
     // Update item list observables
     for (const [key, obs] of this.itemObservables) {
@@ -1219,8 +1265,8 @@ export class WotConnector extends BaseConnector {
     for (const [id, obs] of this.itemByIdObservables) {
       if (!hasData) {
         obs.set(null)
-      } else if (isPersonal && this.crossSpaceIndex) {
-        const entry = this.crossSpaceIndex.getAll().get(id)
+      } else if (isPersonal && this.crossGroupIndex) {
+        const entry = this.crossGroupIndex.getAll().get(id)
         obs.set(entry?.item ?? null)
       } else if (doc) {
         const serialized = doc.items?.[id]

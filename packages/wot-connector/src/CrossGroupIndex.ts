@@ -3,43 +3,43 @@ import type { YjsReplicationAdapter } from "@real-life/adapter-yjs"
 
 // --- Types ---
 
-export interface CrossSpaceEntry<TItem> {
+export interface CrossGroupEntry<TItem> {
   item: TItem
-  spaceId: string
+  groupId: string
 }
 
-export interface CrossSpaceIndexOptions {
-  spaceFilter?: (info: SpaceInfo) => boolean
+export interface CrossGroupIndexOptions {
+  groupFilter?: (info: SpaceInfo) => boolean
 }
 
-// --- CrossSpaceIndex ---
+// --- CrossGroupIndex ---
 
 /**
- * Reactive item index across all spaces.
+ * Reactive item index across all groups.
  *
- * Subscribes to watchSpaces(), opens a SpaceHandle per space,
+ * Subscribes to watchSpaces(), opens a SpaceHandle per group,
  * listens to onRemoteUpdate(), and maintains a flat + type-based index
- * of all items across spaces.
+ * of all items across groups.
  */
-export class CrossSpaceIndex<TDoc, TItem> {
+export class CrossGroupIndex<TDoc, TItem> {
   private replication: YjsReplicationAdapter
   private extractItems: (doc: TDoc) => Map<string, TItem>
   private getItemType: (item: TItem) => string
-  private spaceFilter: ((info: SpaceInfo) => boolean) | undefined
+  private groupFilter: ((info: SpaceInfo) => boolean) | undefined
 
-  // Per-space state
+  // Per-group state
   private handles = new Map<string, SpaceHandle<TDoc>>()
-  private pendingSpaces = new Set<string>()
+  private pendingGroups = new Set<string>()
   private remoteUnsubs = new Map<string, () => void>()
-  private spaceItemMaps = new Map<string, Map<string, TItem>>()
+  private groupItemMaps = new Map<string, Map<string, TItem>>()
 
   // Indexes
-  private flatIndex = new Map<string, CrossSpaceEntry<TItem>>()
+  private flatIndex = new Map<string, CrossGroupEntry<TItem>>()
   private typeIndex = new Map<string, Set<string>>()
 
   // Reactive
   private listeners = new Set<() => void>()
-  private spacesUnsub: (() => void) | null = null
+  private groupsUnsub: (() => void) | null = null
   private notifyScheduled = false
   private started = false
 
@@ -47,12 +47,12 @@ export class CrossSpaceIndex<TDoc, TItem> {
     replication: YjsReplicationAdapter,
     extractItems: (doc: TDoc) => Map<string, TItem>,
     getItemType: (item: TItem) => string,
-    options?: CrossSpaceIndexOptions,
+    options?: CrossGroupIndexOptions,
   ) {
     this.replication = replication
     this.extractItems = extractItems
     this.getItemType = getItemType
-    this.spaceFilter = options?.spaceFilter
+    this.groupFilter = options?.groupFilter
   }
 
   // --- Lifecycle ---
@@ -62,11 +62,11 @@ export class CrossSpaceIndex<TDoc, TItem> {
     this.started = true
 
     const subscribable = this.replication.watchSpaces()
-    // Initial index from current spaces
-    this.syncSpaces(subscribable.getValue())
+    // Initial index from current groups
+    this.syncGroups(subscribable.getValue())
     // Subscribe to future changes
-    this.spacesUnsub = subscribable.subscribe((spaces) => {
-      this.syncSpaces(spaces)
+    this.groupsUnsub = subscribable.subscribe((spaces) => {
+      this.syncGroups(spaces)
     })
   }
 
@@ -74,8 +74,8 @@ export class CrossSpaceIndex<TDoc, TItem> {
     if (!this.started) return
     this.started = false
 
-    this.spacesUnsub?.()
-    this.spacesUnsub = null
+    this.groupsUnsub?.()
+    this.groupsUnsub = null
 
     for (const unsub of this.remoteUnsubs.values()) {
       unsub()
@@ -85,23 +85,23 @@ export class CrossSpaceIndex<TDoc, TItem> {
     }
 
     this.handles.clear()
-    this.pendingSpaces.clear()
+    this.pendingGroups.clear()
     this.remoteUnsubs.clear()
-    this.spaceItemMaps.clear()
+    this.groupItemMaps.clear()
     this.flatIndex.clear()
     this.typeIndex.clear()
   }
 
   // --- Queries ---
 
-  getAll(): Map<string, CrossSpaceEntry<TItem>> {
+  getAll(): Map<string, CrossGroupEntry<TItem>> {
     return this.flatIndex
   }
 
-  getByType(type: string): Array<CrossSpaceEntry<TItem>> {
+  getByType(type: string): Array<CrossGroupEntry<TItem>> {
     const ids = this.typeIndex.get(type)
     if (!ids) return []
-    const result: Array<CrossSpaceEntry<TItem>> = []
+    const result: Array<CrossGroupEntry<TItem>> = []
     for (const id of ids) {
       const entry = this.flatIndex.get(id)
       if (entry) result.push(entry)
@@ -109,31 +109,31 @@ export class CrossSpaceIndex<TDoc, TItem> {
     return result
   }
 
-  getBySpace(spaceId: string): Map<string, TItem> {
-    return this.spaceItemMaps.get(spaceId) ?? new Map()
+  getByGroup(groupId: string): Map<string, TItem> {
+    return this.groupItemMaps.get(groupId) ?? new Map()
   }
 
-  getItemSpaceId(itemId: string): string | null {
-    return this.flatIndex.get(itemId)?.spaceId ?? null
+  getItemGroupId(itemId: string): string | null {
+    return this.flatIndex.get(itemId)?.groupId ?? null
   }
 
   getFiltered(filters: {
-    includedSpaces?: string[] | null
-    excludedSpaces?: string[]
-  }): Map<string, CrossSpaceEntry<TItem>> {
-    const { includedSpaces, excludedSpaces } = filters
+    includedGroups?: string[] | null
+    excludedGroups?: string[]
+  }): Map<string, CrossGroupEntry<TItem>> {
+    const { includedGroups, excludedGroups } = filters
     // No filtering needed
-    if (!includedSpaces && (!excludedSpaces || excludedSpaces.length === 0)) {
+    if (!includedGroups && (!excludedGroups || excludedGroups.length === 0)) {
       return this.flatIndex
     }
 
-    const included = includedSpaces ? new Set(includedSpaces) : null
-    const excluded = excludedSpaces ? new Set(excludedSpaces) : null
+    const included = includedGroups ? new Set(includedGroups) : null
+    const excluded = excludedGroups ? new Set(excludedGroups) : null
 
-    const result = new Map<string, CrossSpaceEntry<TItem>>()
+    const result = new Map<string, CrossGroupEntry<TItem>>()
     for (const [id, entry] of this.flatIndex) {
-      if (excluded?.has(entry.spaceId)) continue
-      if (included && !included.has(entry.spaceId)) continue
+      if (excluded?.has(entry.groupId)) continue
+      if (included && !included.has(entry.groupId)) continue
       result.set(id, entry)
     }
     return result
@@ -150,91 +150,91 @@ export class CrossSpaceIndex<TDoc, TItem> {
 
   // --- Manual reindex (for local writes) ---
 
-  reindexSpace(spaceId: string): void {
-    const handle = this.handles.get(spaceId)
+  reindexGroup(groupId: string): void {
+    const handle = this.handles.get(groupId)
     if (!handle) return
-    this.indexSpace(spaceId, handle)
+    this.indexGroup(groupId, handle)
   }
 
   // --- Internal ---
 
-  private syncSpaces(spaces: SpaceInfo[]): void {
-    const filtered = this.spaceFilter
-      ? spaces.filter(this.spaceFilter)
+  private syncGroups(spaces: SpaceInfo[]): void {
+    const filtered = this.groupFilter
+      ? spaces.filter(this.groupFilter)
       : spaces
 
     const currentIds = new Set(filtered.map((s) => s.id))
-    const knownIds = new Set([...this.handles.keys(), ...this.pendingSpaces])
+    const knownIds = new Set([...this.handles.keys(), ...this.pendingGroups])
 
-    // Remove spaces that are no longer present
+    // Remove groups that are no longer present
     for (const id of knownIds) {
       if (!currentIds.has(id)) {
-        this.pendingSpaces.delete(id)
-        this.removeSpace(id)
+        this.pendingGroups.delete(id)
+        this.removeGroup(id)
       }
     }
 
-    // Add new spaces
+    // Add new groups
     for (const space of filtered) {
       if (!knownIds.has(space.id)) {
-        this.addSpace(space.id)
+        this.addGroup(space.id)
       }
     }
   }
 
-  private async addSpace(spaceId: string): Promise<void> {
-    this.pendingSpaces.add(spaceId)
+  private async addGroup(groupId: string): Promise<void> {
+    this.pendingGroups.add(groupId)
     try {
-      const handle = await this.replication.openSpace<TDoc>(spaceId)
-      this.pendingSpaces.delete(spaceId)
+      const handle = await this.replication.openSpace<TDoc>(groupId)
+      this.pendingGroups.delete(groupId)
 
       if (!this.started) {
         handle.close()
         return
       }
 
-      this.handles.set(spaceId, handle)
+      this.handles.set(groupId, handle)
 
       // Initial index
-      this.indexSpace(spaceId, handle)
+      this.indexGroup(groupId, handle)
 
       // Subscribe to remote updates
       const unsub = handle.onRemoteUpdate(() => {
-        this.indexSpace(spaceId, handle)
+        this.indexGroup(groupId, handle)
       })
-      this.remoteUnsubs.set(spaceId, unsub)
+      this.remoteUnsubs.set(groupId, unsub)
     } catch {
-      this.pendingSpaces.delete(spaceId)
-      // Space may have been deleted between watchSpaces emit and openSpace call
+      this.pendingGroups.delete(groupId)
+      // Group may have been deleted between watchSpaces emit and openSpace call
     }
   }
 
-  private removeSpace(spaceId: string): void {
+  private removeGroup(groupId: string): void {
     // Unsubscribe
-    this.remoteUnsubs.get(spaceId)?.()
-    this.remoteUnsubs.delete(spaceId)
+    this.remoteUnsubs.get(groupId)?.()
+    this.remoteUnsubs.delete(groupId)
 
     // Close handle
-    this.handles.get(spaceId)?.close()
-    this.handles.delete(spaceId)
+    this.handles.get(groupId)?.close()
+    this.handles.delete(groupId)
 
     // Remove items from indexes
-    const oldItems = this.spaceItemMaps.get(spaceId)
+    const oldItems = this.groupItemMaps.get(groupId)
     if (oldItems) {
       for (const [id, item] of oldItems) {
         this.flatIndex.delete(id)
         const type = this.getItemType(item)
         this.typeIndex.get(type)?.delete(id)
       }
-      this.spaceItemMaps.delete(spaceId)
+      this.groupItemMaps.delete(groupId)
     }
 
     this.notify()
   }
 
-  private indexSpace(spaceId: string, handle: SpaceHandle<TDoc>): void {
+  private indexGroup(groupId: string, handle: SpaceHandle<TDoc>): void {
     const newItems = this.extractItems(handle.getDoc())
-    const oldItems = this.spaceItemMaps.get(spaceId)
+    const oldItems = this.groupItemMaps.get(groupId)
 
     // Diff: remove deleted items
     if (oldItems) {
@@ -260,7 +260,7 @@ export class CrossSpaceIndex<TDoc, TItem> {
         }
       }
 
-      this.flatIndex.set(id, { item, spaceId })
+      this.flatIndex.set(id, { item, groupId })
 
       let typeSet = this.typeIndex.get(type)
       if (!typeSet) {
@@ -270,7 +270,7 @@ export class CrossSpaceIndex<TDoc, TItem> {
       typeSet.add(id)
     }
 
-    this.spaceItemMaps.set(spaceId, newItems)
+    this.groupItemMaps.set(groupId, newItems)
     this.notify()
   }
 

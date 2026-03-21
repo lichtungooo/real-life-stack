@@ -1,5 +1,5 @@
 export { WotConnector, OVERVIEW_ID } from "./wot-connector.js"
 export type { WotConnectorConfig, RlsSpaceDoc, SerializedItem } from "./types.js"
 export { serializeItem, deserializeItem } from "./serialization.js"
-export { CrossSpaceIndex } from "./CrossSpaceIndex.js"
-export type { CrossSpaceEntry, CrossSpaceIndexOptions } from "./CrossSpaceIndex.js"
+export { CrossGroupIndex } from "./CrossGroupIndex.js"
+export type { CrossGroupEntry, CrossGroupIndexOptions } from "./CrossGroupIndex.js"
