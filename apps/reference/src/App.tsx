@@ -7,7 +7,6 @@ import {
   Users,
   MessageCircle,
   Plus,
-  UserPlus,
   MapPin,
   Sun,
   Moon,
@@ -30,10 +29,7 @@ import {
   ModuleTabs,
   BottomNav,
   ConnectorSwitcher,
-  SimplePostWidget,
-  PostCard,
   StatCard,
-  ActionCard,
   KanbanBoard,
   KanbanToolbar,
   applyKanbanFilter,
@@ -82,11 +78,12 @@ import {
   CommentSection,
   CommentInput,
   ReactionBar,
+  FeedItem,
+  FeedComposerTrigger,
   type Workspace,
   type CommentQuote,
   type UserData,
   type Module,
-  type Post,
   type KanbanFilter,
   type ConnectorOption,
   type GroupDialogMode,
@@ -132,100 +129,141 @@ function resolveAuthor(userId: string, members: User[], currentUser?: User | nul
   }
 }
 
-// Helper: relative time string from Date
-function timeAgo(date: string): string {
-  const now = Date.now()
-  const diff = now - new Date(date).getTime()
-  const minutes = Math.floor(diff / 60000)
-  if (minutes < 60) return `vor ${minutes} Min.`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `vor ${hours} Stunden`
-  const days = Math.floor(hours / 24)
-  if (days === 1) return "gestern"
-  return `vor ${days} Tagen`
-}
-
-// Helper: map Item to Post for PostCard
-function itemToPost(item: Item, members: User[], currentUser?: User | null): Post {
-  return {
-    id: item.id,
-    author: resolveAuthor(item.createdBy, members, currentUser),
-    content: String(item.data.content ?? item.data.description ?? ""),
-    timestamp: timeAgo(item.createdAt),
-    likes: 0,
-    comments: 0,
-    type: "text",
-  }
-}
-
-function FeedView({ onInvite, groupId }: { onInvite?: () => void; groupId: string }) {
+function FeedView({ groupId }: { groupId: string }) {
   const { data: posts } = useItems({ type: "post" })
   const { data: events } = useItems({ type: "event" })
   const { data: members } = useMembers(groupId)
   const { mutate: createItem } = useCreateItem()
   const { data: currentUser } = useCurrentUser()
 
-  const mappedPosts = useMemo(
+  // Merge posts + events, sort newest first
+  const feedItems = useMemo(
     () =>
-      [...posts]
-        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-        .map((item) => itemToPost(item, members, currentUser)),
-    [posts, members, currentUser]
+      [...posts, ...events]
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+    [posts, events]
   )
 
-  const handlePost = (content: string) => {
-    createItem({
-      type: "post",
+  // Resolve author info
+  const memberMap = useMemo(
+    () => new Map(members.map((m) => [m.id, m])),
+    [members]
+  )
+
+  const resolveAuthor = useCallback((createdBy: string) => {
+    const member = memberMap.get(createdBy)
+    if (member) return { name: member.displayName ?? member.id, avatar: member.avatarUrl }
+    if (currentUser && createdBy === currentUser.id) return { name: currentUser.displayName ?? currentUser.id, avatar: currentUser.avatarUrl }
+    return { name: createdBy }
+  }, [memberMap, currentUser])
+
+  // Detail panel state
+  const [detailItem, setDetailItem] = useState<Item | null>(null)
+  const [detailReplyTo, setDetailReplyTo] = useState<CommentQuote | null>(null)
+  const [detailSubmit, setDetailSubmit] = useState<((text: string) => Promise<void>) | null>(null)
+  const [detailCancel, setDetailCancel] = useState<(() => void) | null>(null)
+
+  // Content type configs for the composer
+  const feedContentTypes: ContentTypeConfig[] = useMemo(() => [
+    {
+      id: "post",
+      label: "Post",
+      defaultWidgets: ["text"],
+      submitLabel: "Posten",
+    },
+    {
+      id: "event",
+      label: "Veranstaltung",
+      defaultWidgets: ["title", "text", "date", "location"],
+      submitLabel: "Erstellen",
+    },
+  ], [])
+
+  const handleCreate = useCallback(async (data: ContentComposerSubmitData) => {
+    await createItem({
+      type: data.contentType,
       createdBy: currentUser?.id ?? "anonymous",
-      data: { title: "Neuer Post", content, tags: [] },
+      data: data.data,
     })
-  }
+  }, [createItem, currentUser?.id])
 
   return (
-    <div className="space-y-6">
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        <StatCard icon={Users} value={members.length} label="Mitglieder" color="blue" />
-        <StatCard icon={Calendar} value={events.length} label="Events" color="green" />
-        <StatCard icon={MessageCircle} value={posts.length} label="Posts" color="orange" />
-      </div>
+    <div className="space-y-4">
+      {/* Composer trigger — morphs into fullscreen modal */}
+      <FeedComposerTrigger
+        placeholder="Was gibt's Neues?"
+        userName={currentUser?.displayName}
+        userAvatar={currentUser?.avatarUrl}
+      >
+        {({ onClose }) => (
+          <div className="flex flex-col h-full">
+            <ContentComposer
+              className="p-4 sm:p-6 flex-1"
+              contentTypes={feedContentTypes}
+              onSubmit={(data) => { handleCreate(data); onClose() }}
+              onCancel={onClose}
+              showPreview={false}
+            />
+          </div>
+        )}
+      </FeedComposerTrigger>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-3">
-        <ActionCard
-          icon={Plus}
-          label="Neues Event"
-          description="Termin erstellen"
-          variant="primary"
-          onClick={() => console.log("New event")}
-        />
-        <ActionCard
-          icon={UserPlus}
-          label="Einladen"
-          description="Mitglieder hinzufügen"
-          variant="secondary"
-          onClick={onInvite}
-        />
-      </div>
-
-      {/* Post Widget */}
-      <SimplePostWidget
-        placeholder="Was gibt's Neues in der Nachbarschaft?"
-        onSubmit={handlePost}
-      />
-
-      {/* Posts Feed */}
+      {/* Feed items */}
       <div className="space-y-4">
-        {mappedPosts.map((post: Post) => (
-          <PostCard
-            key={post.id}
-            post={post}
-            onLike={(id: string) => console.log("Like:", id)}
-            onComment={(id: string) => console.log("Comment:", id)}
-            onShare={(id: string) => console.log("Share:", id)}
+        {feedItems.map((item) => (
+          <FeedItem
+            key={item.id}
+            item={item}
+            author={resolveAuthor(item.createdBy)}
+            onClick={() => setDetailItem(item)}
+            reactionSlot={item.type !== "task" ? <ReactionBar itemId={item.id} /> : undefined}
+            commentCount={(item.data as Record<string, unknown>).commentCount as number | undefined}
+            onCommentClick={() => setDetailItem(item)}
           />
         ))}
       </div>
+
+      {/* Detail panel */}
+      <AdaptivePanel
+        open={detailItem !== null}
+        onClose={() => setDetailItem(null)}
+        allowedModes={["sidebar", "drawer"]}
+        sidebarWidth="420px"
+      >
+        {detailItem && (
+          <div className="flex flex-col h-full">
+            <div className="flex-1 overflow-y-auto min-h-0">
+              {/* Item content */}
+              <div className="p-4">
+                <FeedItem
+                  item={detailItem}
+                  author={resolveAuthor(detailItem.createdBy)}
+                  reactionSlot={detailItem.type !== "task" ? <ReactionBar itemId={detailItem.id} /> : undefined}
+                />
+              </div>
+              {/* Comments */}
+              <div className="border-t px-4 pt-3 pb-2">
+                <p className="text-xs font-medium text-muted-foreground mb-2">Kommentare</p>
+              </div>
+              <CommentSection
+                itemId={detailItem.id}
+                renderReactions={(commentId) => <ReactionBar itemId={commentId} />}
+                hideInput
+                onReplyChange={(replyTo, submit, cancel) => {
+                  setDetailReplyTo(replyTo)
+                  setDetailSubmit(() => submit)
+                  setDetailCancel(() => cancel)
+                }}
+              />
+            </div>
+            <CommentInput
+              onSubmit={detailSubmit ?? (async () => {})}
+              replyTo={detailReplyTo}
+              onCancelReply={detailCancel ?? undefined}
+            />
+          </div>
+        )}
+      </AdaptivePanel>
     </div>
   )
 }
@@ -1068,8 +1106,8 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
             <Button variant="outline" className="mt-4" onClick={() => navigate("/")}>Zurück zur Übersicht</Button>
           </div>
         ) : (
-          <div className={`container mx-auto px-4 pt-6 ${activeModule === "kanban" ? "max-w-5xl" : "max-w-2xl"}`}>
-            {activeModule === "feed" && <FeedView groupId={activeWorkspace?.id ?? ""} onInvite={() => activeWorkspace && openEditDialog(activeWorkspace)} />}
+          <div className={`container mx-auto px-4 pt-6 ${activeModule === "kanban" ? "max-w-5xl" : "max-w-3xl"}`}>
+            {activeModule === "feed" && <FeedView groupId={activeWorkspace?.id ?? ""} />}
             {activeModule === "kanban" && <KanbanView activeWorkspaceId={activeWorkspace?.id ?? null} groups={groups} selectedItemId={urlItemId} onItemSelect={(id) => navigate(`/spaces/${activeWorkspace?.id}/${activeModule}/item/${id}`)} onItemClose={() => navigate(`/spaces/${activeWorkspace?.id}/${activeModule}`)} />}
             {activeModule === "map" && <MapView />}
             {activeModule === "calendar" && <CalendarViewWrapper />}

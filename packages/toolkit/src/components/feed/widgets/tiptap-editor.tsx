@@ -14,11 +14,12 @@ interface TiptapEditorProps {
   value: string
   onChange: (md: string) => void
   placeholder?: string
+  autoFocus?: boolean
   className?: string
 }
 
 export const TiptapEditor = React.forwardRef<TiptapEditorHandle, TiptapEditorProps>(
-  function TiptapEditor({ value, onChange, placeholder, className }, ref) {
+  function TiptapEditor({ value, onChange, placeholder, autoFocus, className }, ref) {
     // Track whether the latest change originated from the editor itself.
     // When it did, we skip the sync effect to avoid a feedback loop.
     const isInternalChange = React.useRef(false)
@@ -30,6 +31,7 @@ export const TiptapEditor = React.forwardRef<TiptapEditorHandle, TiptapEditorPro
         }),
         Markdown,
       ],
+      autofocus: autoFocus ? "end" : false,
       content: value,
       onUpdate({ editor }) {
         const md = (editor.storage as Record<string, any>).markdown.getMarkdown() as string

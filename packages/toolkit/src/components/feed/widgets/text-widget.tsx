@@ -64,6 +64,7 @@ interface TextWidgetProps {
   onToggleWidget?: (widget: WidgetType) => void
   onMention?: (name: string) => void
   onHashtag?: (tag: string) => void
+  autoFocus?: boolean
 }
 
 type FormatAction =
@@ -84,6 +85,7 @@ export function TextWidget({
   onToggleWidget,
   onMention,
   onHashtag,
+  autoFocus,
 }: TextWidgetProps) {
   const textareaRef = React.useRef<HTMLTextAreaElement>(null)
   const tiptapRef = React.useRef<TiptapEditorHandle>(null)
@@ -308,6 +310,7 @@ export function TextWidget({
           value={value}
           onChange={handleTextChange}
           placeholder={label}
+          autoFocus={autoFocus}
           className={cn(
             "min-h-[120px] rounded-t-none border border-t-0 border-input px-3 py-2 text-sm",
             availableWidgets.length > 0 && onToggleWidget && "rounded-b-none border-b-0 shadow-none",

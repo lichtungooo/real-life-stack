@@ -362,7 +362,10 @@ export function ContentComposer({
   }
 
   // Submit
+  const canSubmit = !!(data.title?.trim() || data.text?.trim() || (data.media && data.media.length > 0))
+
   const handleSubmit = () => {
+    if (!canSubmit) return
     onSubmit({
       contentType: selectedType,
       isPublic,
@@ -470,6 +473,7 @@ export function ContentComposer({
                       onToggleWidget={toggleWidget}
                       onMention={handleMention}
                       onHashtag={handleHashtag}
+                      autoFocus={!activeWidgets.has("title")}
                     />
                   )}
                   {widgetId === "media" && (
@@ -607,6 +611,7 @@ export function ContentComposer({
                 type="button"
                 size="sm"
                 onClick={handleSubmit}
+                disabled={!canSubmit}
                 className="gap-1.5 rounded-r-none"
               >
                 {isPublic ? (
@@ -641,7 +646,7 @@ export function ContentComposer({
               </DropdownMenu>
             </div>
           ) : (
-            <Button type="button" size="sm" onClick={handleSubmit}>
+            <Button type="button" size="sm" onClick={handleSubmit} disabled={!canSubmit}>
               {submitLabel}
             </Button>
           )}
