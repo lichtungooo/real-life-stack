@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { cn } from "@/lib/utils"
 import { useComments } from "@/hooks/use-comments"
 import type { CommentWithAuthor } from "@/hooks/use-comments"
@@ -41,6 +41,11 @@ export function CommentSection({
   const { comments, allComments, canComment, createComment } = useComments(itemId)
   const [replyTo, setReplyTo] = useState<CommentQuote | null>(null)
   const [replyToFirstLevel, setReplyToFirstLevel] = useState<string | null>(null)
+  const endRef = useRef<HTMLDivElement>(null)
+  const shouldScrollRef = useRef(false)
+  const scrollToThreadRef = useRef<string | null>(null)
+  const [expandTrigger, setExpandTrigger] = useState<{ threadId: string; tick: number } | null>(null)
+  const threadRefs = useRef<Map<string, HTMLDivElement>>(new Map())
 
   // Build replies per first-level comment from allComments
   const repliesByParent = useMemo(() => {
@@ -82,17 +87,46 @@ export function CommentSection({
     if (replyTo && replyToFirstLevel) {
       const replyToComment = replyTo.id !== replyToFirstLevel ? replyTo.id : undefined
       await createComment(text, replyToFirstLevel, replyToComment)
+      // Expand the thread and scroll to it
+      setExpandTrigger((prev) => ({ threadId: replyToFirstLevel, tick: (prev?.tick ?? 0) + 1 }))
+      scrollToThreadRef.current = replyToFirstLevel
     } else {
       await createComment(text)
+      scrollToThreadRef.current = null
     }
     setReplyTo(null)
     setReplyToFirstLevel(null)
+    shouldScrollRef.current = true
   }, [createComment, replyTo, replyToFirstLevel])
 
   const handleCancelReply = useCallback(() => {
     setReplyTo(null)
     setReplyToFirstLevel(null)
   }, [])
+
+  // Scroll to the new comment after it appears in the DOM
+  useEffect(() => {
+    if (!shouldScrollRef.current) return
+    shouldScrollRef.current = false
+
+    const threadId = scrollToThreadRef.current
+    scrollToThreadRef.current = null
+
+    requestAnimationFrame(() => {
+      if (threadId) {
+        // Reply — scroll to the last reply in the thread
+        const threadEl = threadRefs.current.get(threadId)
+        if (threadEl) {
+          const lastReply = threadEl.querySelector("[data-reply]:last-child")
+          const target = lastReply ?? threadEl
+          target.scrollIntoView({ behavior: "smooth", block: "end" })
+        }
+      } else {
+        // Top-level comment — scroll to end
+        endRef.current?.previousElementSibling?.scrollIntoView({ behavior: "smooth", block: "nearest" })
+      }
+    })
+  }, [comments, allComments])
 
   // Notify consumer of reply state for external input rendering
   useEffect(() => {
@@ -105,15 +139,18 @@ export function CommentSection({
       {comments.length > 0 && (
         <div className={cn("space-y-4 p-4", className)}>
           {comments.map((comment) => (
-            <CommentThread
-              key={comment.item.id}
-              comment={comment}
-              replies={repliesByParent.get(comment.item.id) ?? []}
-              onReply={canComment ? handleReply : undefined}
-              canReply={canComment}
-              renderReactions={renderReactions}
-            />
+            <div key={comment.item.id} ref={(el) => { if (el) threadRefs.current.set(comment.item.id, el); else threadRefs.current.delete(comment.item.id) }}>
+              <CommentThread
+                comment={comment}
+                replies={repliesByParent.get(comment.item.id) ?? []}
+                expandTrigger={expandTrigger?.threadId === comment.item.id ? expandTrigger.tick : undefined}
+                onReply={canComment ? handleReply : undefined}
+                canReply={canComment}
+                renderReactions={renderReactions}
+              />
+            </div>
           ))}
+          <div ref={endRef} />
         </div>
       )}
 

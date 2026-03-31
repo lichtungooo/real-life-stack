@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { CommentWithAuthor } from "@/hooks/use-comments"
@@ -13,6 +13,8 @@ export interface CommentThreadProps {
   replies: CommentWithAuthor[]
   /** Whether replies are initially expanded. Default: false. */
   defaultExpanded?: boolean
+  /** Incrementing trigger to force-expand replies (e.g. after creating a reply). */
+  expandTrigger?: number
   /** Callback when reply button is clicked on any comment in the thread. */
   onReply?: (comment: CommentWithAuthor) => void
   /** Whether the user can reply. */
@@ -28,11 +30,17 @@ export function CommentThread({
   comment,
   replies,
   defaultExpanded = false,
+  expandTrigger,
   onReply,
   canReply = true,
   renderReactions,
 }: CommentThreadProps) {
   const [expanded, setExpanded] = useState(defaultExpanded)
+
+  // Force expand when trigger changes (e.g. after creating a reply)
+  useEffect(() => {
+    if (expandTrigger !== undefined) setExpanded(true)
+  }, [expandTrigger])
   const replyCount = replies.length
 
   return (
@@ -82,8 +90,8 @@ export function CommentThread({
                 : undefined
 
               return (
+                <div key={reply.item.id} data-reply>
                 <CommentBubble
-                  key={reply.item.id}
                   authorName={reply.authorName}
                   authorAvatar={reply.authorAvatar}
                   content={data.content}
@@ -94,6 +102,7 @@ export function CommentThread({
                   quotedText={quotedReply ? (quotedReply.item.data as { content: string }).content.slice(0, 80) : undefined}
                   reactionSlot={renderReactions?.(reply.item.id)}
                 />
+                </div>
               )
             })}
           </div>
