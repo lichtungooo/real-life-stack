@@ -195,11 +195,12 @@ function FeedView({ groupId }: { groupId: string }) {
         userName={currentUser?.displayName}
         userAvatar={currentUser?.avatarUrl}
       >
-        {({ onClose }) => (
+        {({ onClose, initialText }) => (
           <div className="flex flex-col h-full">
             <ContentComposer
               className="p-4 sm:p-6 flex-1"
               contentTypes={feedContentTypes}
+              initialData={initialText ? { text: initialText } : undefined}
               onSubmit={(data) => { handleCreate(data); onClose() }}
               onCancel={onClose}
               showPreview={false}

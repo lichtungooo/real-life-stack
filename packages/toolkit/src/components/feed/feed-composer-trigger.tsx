@@ -14,7 +14,7 @@ export interface FeedComposerTriggerProps {
   /** Current user avatar URL. */
   userAvatar?: string
   /** Content to render inside the fullscreen modal. */
-  children: (props: { onClose: () => void }) => React.ReactNode
+  children: (props: { onClose: () => void; initialText?: string }) => React.ReactNode
   /** Additional CSS classes for the trigger card. */
   className?: string
 }
@@ -47,11 +47,12 @@ export function FeedComposerTrigger({
 }: FeedComposerTriggerProps) {
   const [open, setOpen] = useState(false)
   const [visible, setVisible] = useState(false)
+  const [initialText, setInitialText] = useState<string | undefined>()
   const triggerRef = useRef<HTMLDivElement>(null)
 
-  const handleOpen = useCallback(() => {
+  const handleOpen = useCallback((text?: string) => {
+    setInitialText(text)
     setOpen(true)
-    // Trigger fade-in on next frame so the transition plays
     requestAnimationFrame(() => {
       requestAnimationFrame(() => setVisible(true))
     })
@@ -59,8 +60,10 @@ export function FeedComposerTrigger({
 
   const handleClose = useCallback(() => {
     setVisible(false)
-    // Wait for fade-out to finish before unmounting
-    setTimeout(() => setOpen(false), 200)
+    setTimeout(() => {
+      setOpen(false)
+      setInitialText(undefined)
+    }, 200)
   }, [])
 
   return (
@@ -70,8 +73,17 @@ export function FeedComposerTrigger({
         ref={triggerRef}
         role="button"
         tabIndex={0}
-        onClick={handleOpen}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleOpen() } }}
+        onClick={() => handleOpen()}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault()
+            handleOpen()
+          } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+            // Printable character — open composer with that character as initial text
+            e.preventDefault()
+            handleOpen(e.key)
+          }
+        }}
         className={cn(
           "flex items-center gap-3 rounded-lg border bg-card p-3 cursor-pointer",
           "hover:border-primary/30 hover:shadow-sm transition-all",
@@ -113,7 +125,7 @@ export function FeedComposerTrigger({
 
           {/* Content wrapper with max width, centered */}
           <div className="mx-auto max-w-3xl h-full overflow-y-auto">
-            {children({ onClose: handleClose })}
+            {children({ onClose: handleClose, initialText })}
           </div>
         </div>
       )}
