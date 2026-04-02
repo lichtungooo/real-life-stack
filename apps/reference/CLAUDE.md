@@ -45,6 +45,6 @@ adb shell am start -n org.reallifestack.reference/.MainActivity
 ### Key Notes
 - Base path defaults to `/` in `vite.config.ts` — no `VITE_BASE_PATH` env var needed
 - `tsc -b` may fail with unused-import errors; `npx vite build` works fine standalone
-- iOS signing uses Development Team `R8QCRG95T6` (configured in `project.pbxproj`)
+- iOS signing: set your own Development Team in Xcode or `project.pbxproj`
 - `viewport-fit=cover` in `index.html` is required for `env()` safe area variables to work
 - Android needs Gradle 8.14+ on PATH (no local Gradle wrapper in this project)
