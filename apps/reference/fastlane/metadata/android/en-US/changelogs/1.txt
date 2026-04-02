@@ -1,0 +1,7 @@
+Initial release:
+* Feed with posts, comments, and reactions
+* Kanban board with drag-and-drop
+* Calendar view
+* Map with location items
+* Multiple connector support (Mock, Local, GraphQL, WoT)
+* iOS safe area support
