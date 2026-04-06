@@ -129,7 +129,106 @@ function Header() {
   )
 }
 
+function PrivacyPage() {
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <main className="pt-24 pb-16 px-4">
+        <article className="max-w-3xl mx-auto prose prose-stone dark:prose-invert">
+          <h1 className="text-3xl font-bold mb-1">Datenschutzerklärung</h1>
+          <p className="text-muted-foreground text-sm mb-8">Zuletzt aktualisiert: April 2026</p>
+
+          <h2 className="text-xl font-semibold mt-8 mb-3">1. Verantwortlicher</h2>
+          <p>Anton Tranelis · E-Mail: <a href="mailto:info@real-life.org" className="text-primary hover:underline">info@real-life.org</a></p>
+
+          <h2 className="text-xl font-semibold mt-8 mb-3">2. Grundprinzip</h2>
+          <p>
+            Real Life Stack ist ein modularer Baukasten für Community-Apps.
+            <strong> Deine Daten gehören dir.</strong> Je nach gewähltem Connector werden
+            Daten ausschließlich lokal, auf deinem eigenen Server oder Ende-zu-Ende-verschlüsselt
+            gespeichert.
+          </p>
+
+          <h2 className="text-xl font-semibold mt-8 mb-3">3. Welche Daten werden verarbeitet?</h2>
+
+          <h3 className="text-lg font-medium mt-6 mb-2">Lokales Backend</h3>
+          <p>
+            Alle Daten werden ausschließlich lokal auf deinem Gerät gespeichert (IndexedDB).
+            Es findet keine Übertragung an externe Server statt.
+          </p>
+
+          <h3 className="text-lg font-medium mt-6 mb-2">GraphQL-Backend (optional)</h3>
+          <p>
+            Wenn du dich mit einem eigenen Server verbindest, gelten die Datenschutzbestimmungen
+            des jeweiligen Betreibers.
+          </p>
+
+          <h3 className="text-lg font-medium mt-6 mb-2">Web-of-Trust-Backend (optional)</h3>
+          <ul className="list-disc pl-6 space-y-1">
+            <li>Daten werden dezentral und Ende-zu-Ende-verschlüsselt synchronisiert</li>
+            <li>Öffentliche Profile (Name, Bio, Avatar) werden bewusst vom Nutzer veröffentlicht</li>
+            <li>Bestätigungen die du an andere sendest, liegen auf deren Geräten und können nicht einseitig zurückgezogen werden</li>
+          </ul>
+
+          <h2 className="text-xl font-semibold mt-8 mb-3">4. Berechtigungen</h2>
+          <p>
+            Die App fragt nur die Berechtigungen an, die für die genutzten Funktionen notwendig sind
+            (z.B. Standort für die Kartenansicht, Kamera für QR-Code-Scan, Biometrie zum Entsperren).
+            Es werden keine Daten ohne Einwilligung erhoben.
+          </p>
+
+          <h2 className="text-xl font-semibold mt-8 mb-3">5. Tracking & Analytics</h2>
+          <p>
+            <strong>Es gibt kein Tracking.</strong> Keine Analytics, keine Cookies, keine Werbe-IDs.
+            Die App enthält keine Drittanbieter-SDKs die Nutzerdaten sammeln.
+          </p>
+
+          <h2 className="text-xl font-semibold mt-8 mb-3">6. Datenlöschung</h2>
+          <p>
+            <strong>Lokale Daten</strong> kannst du jederzeit über die App löschen.
+          </p>
+          <p>
+            <strong>Server-Daten</strong> (Profile, Backups) können über die App zurückgezogen werden.
+          </p>
+          <p>
+            <strong>Einschränkung:</strong> Daten die du mit anderen geteilt hast (z.B. Bestätigungen),
+            liegen auf deren Geräten und können von dir nicht gelöscht werden.
+          </p>
+
+          <h2 className="text-xl font-semibold mt-8 mb-3">7. Deine Rechte</h2>
+          <p>
+            Du hast das Recht auf Auskunft, Berichtigung, Löschung und Einschränkung der Verarbeitung
+            deiner Daten sowie das Recht auf Datenübertragbarkeit. Du hast außerdem das Recht, dich bei
+            einer Datenschutz-Aufsichtsbehörde zu beschweren.
+          </p>
+
+          <h2 className="text-xl font-semibold mt-8 mb-3">8. Open Source</h2>
+          <p>
+            Der vollständige Quellcode ist unter der MIT-Lizenz verfügbar:{' '}
+            <a href="https://github.com/IT4Change/real-life-stack" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+              github.com/IT4Change/real-life-stack
+            </a>
+          </p>
+
+          <h2 className="text-xl font-semibold mt-8 mb-3">9. Kontakt</h2>
+          <p>Bei Fragen zum Datenschutz: <a href="mailto:info@real-life.org" className="text-primary hover:underline">info@real-life.org</a></p>
+        </article>
+      </main>
+
+      <footer className="py-12 px-4 border-t">
+        <div className="max-w-4xl mx-auto text-center text-muted-foreground">
+          <a href="/" className="text-sm hover:text-foreground transition-colors">← Zurück zur Startseite</a>
+        </div>
+      </footer>
+    </div>
+  )
+}
+
 function App() {
+  if (window.location.pathname === '/privacy' || window.location.pathname === '/privacy.html') {
+    return <PrivacyPage />
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -328,7 +427,7 @@ function App() {
               Web-of-Trust
             </a>
             <a
-              href="/privacy.html"
+              href="/privacy"
               className="hover:text-foreground transition-colors"
             >
               Datenschutz
