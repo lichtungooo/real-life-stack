@@ -1,0 +1,5 @@
+Erste Version von Real Life Stack im App Store.
+
+• Feed, Kanban, Kalender, Karte und Kontakte in einer App
+• Offline-Unterstützung via lokalem Backend
+• Open-Source (MIT-Lizenz)

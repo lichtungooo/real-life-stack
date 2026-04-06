@@ -1,0 +1,16 @@
+Real Life Stack is a modular, backend-agnostic toolkit for community apps.
+
+UI modules that work against any data backend:
+
+• Feed — posts, comments, reactions
+• Kanban — drag-and-drop task boards
+• Calendar — events and scheduling
+• Map — location-based community resources
+• Contacts — member directory
+
+Switch between data backends without changing your UI:
+• Local (IndexedDB, works offline)
+• GraphQL (server-based)
+• Web of Trust (decentralized, encrypted)
+
+Real Life Stack is free and open-source software (MIT license).

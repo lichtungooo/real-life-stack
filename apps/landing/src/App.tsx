@@ -327,6 +327,12 @@ function App() {
             >
               Web-of-Trust
             </a>
+            <a
+              href="/privacy.html"
+              className="hover:text-foreground transition-colors"
+            >
+              Datenschutz
+            </a>
           </div>
         </div>
       </footer>
