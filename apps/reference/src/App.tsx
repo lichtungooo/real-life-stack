@@ -111,11 +111,6 @@ const CONNECTOR_OPTIONS: ConnectorOption[] = [
   { id: "wot", name: "Web of Trust", description: "E2E-verschlüsselt, Multi-Device" },
 ]
 
-//** Short human-readable fallback for raw IDs (DIDs etc.) */
-function shortName(id: string): string {
-  return `User-${id.slice(-6)}`
-}
-
 function FeedView({ groupId }: { groupId: string }) {
   const { data: posts } = useItems({ type: "post" })
   const { data: events } = useItems({ type: "event" })
