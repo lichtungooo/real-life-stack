@@ -102,7 +102,7 @@ jobs:
 
       - name: Build dashboard dummy
         working-directory: apps/dashboard-dummy
-        run: pnpm vite build --base="/dashboard/"
+        run: pnpm vite build --base="/real-life-stack/dashboard/"
 
       - name: Build Storybook
         run: pnpm build:storybook
