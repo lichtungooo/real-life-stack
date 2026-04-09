@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Menu, Calendar, Map, Rss, User, Settings, LogOut, Sprout } from 'lucide-react';
+import { Menu, Calendar, Map, Rss, User, Settings, LogOut, Sprout, LayoutDashboard } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button, Avatar, AvatarFallback, AvatarImage, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@real-life-stack/toolkit';
 import { toast } from '@/components/ui/use-toast';
 import NotificationBell from '@/components/notifications/NotificationBell';
@@ -25,7 +26,12 @@ const Navbar = ({
   isMessagingOpen,
   onOpenMessaging,
 }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isDashboard = location.pathname === '/dashboard';
+
   const viewOptions = [
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'feed', label: 'Feed', icon: Rss },
     { id: 'map', label: 'Karte', icon: Map },
     { id: 'calendar', label: 'Kalender', icon: Calendar }
@@ -76,12 +82,19 @@ const Navbar = ({
             return (
               <Button
                 key={option.id}
-                variant={currentView === option.id ? "default" : "ghost"}
+                variant={(option.id === 'dashboard' ? isDashboard : (!isDashboard && currentView === option.id)) ? "default" : "ghost"}
                 size="sm"
-                onClick={() => setCurrentView(option.id)}
+                onClick={() => {
+                  if (option.id === 'dashboard') {
+                    navigate('/dashboard');
+                  } else {
+                    if (isDashboard) navigate(`/${option.id}`);
+                    setCurrentView(option.id);
+                  }
+                }}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-all ${
-                  currentView === option.id 
-                    ? 'bg-white text-purple-900 shadow-lg' 
+                  (option.id === 'dashboard' ? isDashboard : (!isDashboard && currentView === option.id))
+                    ? 'bg-white text-purple-900 shadow-lg'
                     : 'text-white hover:bg-white/20'
                 }`}
               >

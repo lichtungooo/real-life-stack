@@ -1,9 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Map, Rss } from 'lucide-react';
+import { Calendar, Map, Rss, LayoutDashboard } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const BottomMenu = ({ currentView, setCurrentView }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isDashboard = location.pathname === '/dashboard';
+
   const viewOptions = [
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'feed', label: 'Feed', icon: Rss },
     { id: 'map', label: 'Karte', icon: Map },
     { id: 'calendar', label: 'Kalender', icon: Calendar }
@@ -18,16 +24,23 @@ const BottomMenu = ({ currentView, setCurrentView }) => {
       <div className="flex items-center justify-around py-2 pb-[env(safe-area-inset-bottom)]">
         {viewOptions.map((option) => {
           const Icon = option.icon;
-          const isActive = currentView === option.id;
+          const isActive = option.id === 'dashboard' ? isDashboard : (!isDashboard && currentView === option.id);
           
           return (
             <motion.button
               key={option.id}
-              onClick={() => setCurrentView(option.id)}
+              onClick={() => {
+                if (option.id === 'dashboard') {
+                  navigate('/dashboard');
+                } else {
+                  if (isDashboard) navigate(`/${option.id}`);
+                  setCurrentView(option.id);
+                }
+              }}
               whileTap={{ scale: 0.95 }}
               className={`flex flex-col items-center space-y-1 px-4 py-2 rounded-lg transition-all ${
-                isActive 
-                  ? 'text-white' 
+                isActive
+                  ? 'text-white'
                   : 'text-white/60 hover:text-white'
               }`}
             >

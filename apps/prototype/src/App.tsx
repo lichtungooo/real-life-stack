@@ -8,6 +8,7 @@ import MainContent from '@/components/layout/MainContent';
 import { Toaster } from '@/components/ui/toaster';
 import { Button, Dialog, DialogContent, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@real-life-stack/toolkit';
 import SmartPostWidget, { POST_TYPES } from '@/components/SmartPostWidget';
+import DashboardView from '@/components/dashboard/DashboardView';
 import { initializeMockData } from '@/data/mockData';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -108,7 +109,8 @@ function App() {
               transition={{ type: "spring", damping: 30, stiffness: 250 }}
             >
               <Routes>
-                <Route path="/" element={<Navigate to="/feed" replace />} />
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/dashboard" element={<DashboardView />} />
                 {['feed', 'map', 'calendar'].map((view) => (
                   <Route key={view} path={`/${view}`} element={
                     <MainContent
@@ -131,7 +133,7 @@ function App() {
                     />
                   } />
                 ))}
-                <Route path="*" element={<Navigate to="/feed" replace />} />
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
             </motion.div>
           </div>
