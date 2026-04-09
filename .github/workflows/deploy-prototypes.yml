@@ -163,6 +163,7 @@ jobs:
           cp -R apps/reference/dist/. gh-pages/app/
           cp apps/reference/public/404.html gh-pages/404.html
           cp -R apps/prototype/dist/. gh-pages/edge/
+          cp apps/prototype/public/404.html gh-pages/edge/404.html
           cp -R packages/toolkit/storybook-static/. gh-pages/storybook/
           cp -R gh-pages-ota/updates/. gh-pages/updates/
 
