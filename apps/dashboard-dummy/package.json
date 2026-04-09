@@ -1,0 +1,26 @@
+{
+  "name": "dashboard-dummy",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "framer-motion": "^11.0.0",
+    "lucide-react": "^0.468.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.0",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "@vitejs/plugin-react": "^4.3.4",
+    "tailwindcss": "^4.1.0",
+    "typescript": "~5.7.2",
+    "vite": "^6.0.7"
+  }
+}
