@@ -5,6 +5,14 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  build: {
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+        dashboard: path.resolve(__dirname, 'dashboard.html'),
+      },
+    },
+  },
   resolve: {
     extensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
     conditions: ['import', 'module', 'browser', 'default'],
