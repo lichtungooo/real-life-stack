@@ -42,6 +42,7 @@ async function mount(value: string) {
       createElement(TiptapEditor, {
         ref,
         value,
+        placeholder: "Was gibt es Neues?",
         onChange: (md) => changed.push(md),
         onNormalise: (md) => normalised.push(md),
       }),
@@ -63,14 +64,23 @@ describe("TiptapEditor markdown contract", () => {
   // The editor understands less Markdown than the preview renders. Opening an
   // item must never be the moment its content shrinks — the normalisation
   // above stays out of the way where it cannot round-trip.
-  it.each([
-    ["an image", "![Karte vom Treffpunkt](https://example.org/karte.png)"],
-    ["a heading below h2", "### Dritte Ebene\n\nText."],
-    ["a table", "| a | b |\n|---|---|\n| 1 | 2 |"],
-  ])("does not rewrite %s it cannot express", async (_what, value) => {
-    const { changed, normalised } = await mount(value)
+  // The toolbar offers h1 and h2, but a pasted or imported document may carry
+  // deeper ones. They used to be flattened to body text on the next keystroke.
+  it("keeps a heading below h2 through an edit", async () => {
+    const { changed, normalised, editor } = await mount("### Dritte Ebene\n\nText.")
 
     expect([...changed, ...normalised]).toEqual([])
+    expect(editor.getJSON().content?.[0]).toMatchObject({ type: "heading", attrs: { level: 3 } })
+    // A level outside the toolbar's two still has to look like what it is: the
+    // extension renders anything it does not list as `levels[0]`, so an h3 used
+    // to sit there as a big h1 while being written back as h3.
+    expect(editor.view.dom.innerHTML).toContain("<h3")
+
+    await act(async () => {
+      editor.commands.insertContentAt(editor.state.doc.content.size - 1, "X")
+    })
+
+    expect(changed.at(-1)).toContain("### Dritte Ebene")
   })
 
   it("leaves text that is already Markdown alone", async () => {
@@ -99,22 +109,148 @@ describe("TiptapEditor markdown contract", () => {
     expect(changed.at(-1)).toBe("## Titel\n\nEin **fetter** Absatz.")
   })
 
-  // A mark the Markdown serializer has no syntax for is written out as a raw
-  // HTML tag, which the detail view can only show as literal text. Adding such
-  // an extension to the editor must fail here, not in someone's item.
-  it("has no mark that could only be stored as HTML", async () => {
+  // The preview renders standard Markdown and nothing else. A mark the
+  // serializer can only write as a raw tag (`<u>`) or as a non-standard
+  // extension (`++text++`) reaches the reader as visible punctuation, so the
+  // set of marks is spelled out here: adding one has to be a decision.
+  it("carries only marks the preview can render", async () => {
     const { editor } = await mount("")
-    const { schema } = editor
-    const serializer = (editor.storage as Record<string, any>).markdown.serializer
 
-    for (const type of Object.values(schema.marks)) {
+    expect(Object.keys(editor.schema.marks).sort()).toEqual(["bold", "code", "italic", "link", "strike"])
+  })
+
+  it("writes no mark as raw HTML", async () => {
+    const { editor } = await mount("")
+    const markdown = editor.storage.markdown.manager
+
+    for (const type of Object.values(editor.schema.marks)) {
       // A link without a target cannot be written in any syntax.
-      const attrs = type.spec.attrs?.href ? { href: "https://example.org" } : null
-      const doc = schema.node("doc", null, [
-        schema.node("paragraph", null, [schema.text("Wort", [type.create(attrs)])]),
+      const attrs = type.spec.attrs?.href ? { href: "https://example.org" } : undefined
+      const doc = {
+        type: "doc",
+        content: [
+          { type: "paragraph", content: [{ type: "text", text: "Wort", marks: [{ type: type.name, attrs }] }] },
+        ],
+      }
+
+      expect(markdown.serialize(doc), `mark "${type.name}"`).not.toMatch(/<[a-z/]/i)
+    }
+  })
+
+  // `![](…)` is Markdown the preview renders. Before the editor had an image
+  // node, pasting one inserted nothing at all, and a keystroke in an item that
+  // already had one dropped it from the stored text.
+  describe("images", () => {
+    const url = "https://hack.utopia-lab.org/uploads/61513c36-7cfd-45f6-9d90-81a9e6dd2d8f.jpeg"
+
+    it("keeps an image that is pasted as Markdown", async () => {
+      const { changed, editor } = await mount("")
+
+      await act(async () => {
+        paste(editor, { text: `![](${url})` })
+      })
+
+      expect(changed.at(-1)).toBe(`![](${url})`)
+    })
+
+    it("keeps its alt text", async () => {
+      const { changed, editor } = await mount("")
+
+      await act(async () => {
+        paste(editor, { text: `![Karte vom Treffpunkt](${url})` })
+      })
+
+      expect(changed.at(-1)).toBe(`![Karte vom Treffpunkt](${url})`)
+    })
+
+    it("keeps an image already in the item when the user types", async () => {
+      const { changed, editor } = await mount(`Text.\n\n![](${url})`)
+
+      await act(async () => {
+        editor.commands.insertContentAt(1, "X")
+      })
+
+      expect(changed.at(-1)).toBe(`XText.\n\n![](${url})`)
+    })
+  })
+
+  // Both are Markdown the preview renders. A table used to vanish from the
+  // document entirely when an item was opened — whole, not just its pipes —
+  // and a checklist came back as a plain list.
+  describe("tables and checklists", () => {
+    it("keeps a table between two paragraphs", async () => {
+      const table = "Davor.\n\n| a | b |\n| --- | --- |\n| 1 | 2 |\n\nDanach."
+      const { editor } = await mount(table)
+
+      await act(async () => {
+        editor.commands.insertContentAt(1, "X")
+      })
+
+      expect(editor.getMarkdown()).toContain("| 1")
+      expect(editor.getMarkdown()).toContain("Danach.")
+    })
+
+    it("keeps the boxes of a checklist", async () => {
+      const { changed, normalised, editor } = await mount("- [ ] offen\n- [x] fertig")
+
+      expect([...changed, ...normalised]).toEqual([])
+
+      const list = editor.getJSON().content?.[0]
+      expect(list).toMatchObject({ type: "taskList" })
+      expect(list?.content).toMatchObject([
+        { type: "taskItem", attrs: { checked: false } },
+        { type: "taskItem", attrs: { checked: true } },
       ])
 
-      expect(serializer.serialize(doc), `mark "${type.name}"`).not.toMatch(/<[a-z/]/i)
+      await act(async () => {
+        editor.commands.insertContentAt(3, "X")
+      })
+
+      expect(changed.at(-1)).toContain("- [ ] ")
+      expect(changed.at(-1)).toContain("- [x] fertig")
+    })
+  })
+
+  // The stylesheet renders the label from `p.is-editor-empty::before`; both
+  // the class and the attribute it reads come from the Placeholder extension,
+  // which used to be missing — so the visual editor showed no label at all.
+  it("shows its label while it is empty", async () => {
+    const { editor } = await mount("")
+
+    expect(editor.view.dom.innerHTML).toContain("is-editor-empty")
+    expect(editor.view.dom.innerHTML).toContain("Was gibt es Neues?")
+  })
+
+  // The serializer's own blank lines are dropped so that opening an item does
+  // not rewrite it — but the two spaces that carry a hard break are the user's,
+  // not the serializer's.
+  it("keeps a hard break at the end of the document", async () => {
+    const { changed, editor } = await mount("Zeile")
+
+    await act(async () => {
+      editor.commands.insertContentAt(editor.state.doc.content.size - 1, { type: "hardBreak" })
+    })
+
+    expect(changed.at(-1)).toBe("Zeile  \n")
+  })
+
+  // The label follows the chosen content type while the editor stays mounted.
+  it("follows a label that changes while it is open", async () => {
+    const host = document.createElement("div")
+    document.body.append(host)
+    const root = createRoot(host)
+    const render = async (placeholder: string) => {
+      await act(async () => {
+        root.render(
+          createElement(TiptapEditor, { value: "", onChange: () => {}, onNormalise: () => {}, placeholder }),
+        )
+      })
     }
+
+    await render("Was gibt es Neues?")
+    await render("Worum geht es?")
+
+    expect(host.innerHTML).toContain("Worum geht es?")
+    expect(host.innerHTML).not.toContain("Was gibt es Neues?")
   })
 })
