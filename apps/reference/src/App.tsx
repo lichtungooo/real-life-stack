@@ -21,6 +21,7 @@ import {
   ConnectorSwitcher,
   Button,
   GroupDialog,
+  SpaceThemePanel,
   AdaptivePanel,
   CommentNavigationProvider,
   FieldNavigationProvider,
@@ -90,6 +91,50 @@ import { CreateHostProvider, CreateSheetController } from "./create-host"
 import { DetailHostProvider, DetailHostController } from "./detail-host"
 import { UnsavedChangesGuard } from "./unsaved-changes-guard"
 import { useItemFocus } from "./hooks/use-item-focus"
+
+
+/**
+ * Die Feineinstellung des Aussehens im geteilten Modul-Panel (Space-Dialog →
+ * "Feineinstellung oeffnen"). Ohne Backdrop, damit die Seite bedienbar
+ * bleibt — man will Knoepfe und Menues mit der neuen Farbe sehen, waehrend
+ * man noch regelt.
+ *
+ * Das Panel regelt immer den AKTIVEN Space, nicht den, fuer den es geoeffnet
+ * wurde: die Tokens auf dem Bildschirm gehoeren dem aktiven, und wer den
+ * Space wechselt, soll nicht unbemerkt das Theme des vorigen ueberschreiben.
+ * Darum `useCurrentGroup` statt einer beim Oeffnen eingefrorenen Id, und ein
+ * `key` auf die Gruppen-Id, damit die Regler beim Wechsel sauber neu stehen.
+ */
+function SpaceThemePanelHost() {
+  const group = useCurrentGroup()
+  const updateGroup = useUpdateGroup()
+  if (!group) {
+    return <p className="px-4 py-6 text-sm text-muted-foreground">Kein Space geöffnet.</p>
+  }
+  return (
+    <SpaceThemePanel
+      key={group.id}
+      group={group}
+      onUpdateGroup={async (id, updates) => { await updateGroup(id, updates) }}
+    />
+  )
+}
+
+/**
+ * Reicht dem Space-Dialog einen Oeffner fuer das Panel. Als Render-Prop,
+ * weil `useModulePanel` nur innerhalb des Providers geht und `Home` selbst
+ * ausserhalb steht — dasselbe Muster wie der ThemeTweaker-Oeffner in #361.
+ */
+function SpaceThemePanelOpener({ children }: { children: (open: () => void) => ReactNode }) {
+  const panel = useModulePanel()
+  const open = () =>
+    panel.open({
+      kind: "theme",
+      backdrop: false,
+      content: <SpaceThemePanelHost />,
+    })
+  return <>{children(open)}</>
+}
 
 /**
  * Renders the single app-level ModulePanel and suspends it (hidden, kept
@@ -800,6 +845,8 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
         activeItem={activeModule}
         onItemChange={handleModuleChange}
       />
+      <SpaceThemePanelOpener>
+        {(openThemePanel) => (
       <GroupDialog
         key={groupDialogMode.type === "edit" ? `edit-${groupDialogMode.group.id}` : "create"}
         open={groupDialogOpen}
@@ -813,6 +860,13 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
         }}
         onUpdateGroup={async (id, updates) => {
           await updateGroup(id, updates)
+        }}
+        onOpenThemePanel={(group) => {
+          // Die Tokens gehoeren dem AKTIVEN Space. Aus dem Menue eines
+          // anderen geoeffnet, regelte man sonst an Farben, die gar nicht
+          // auf dem Bildschirm sind — also erst hinspringen.
+          if (activeWorkspace?.id !== group.id) handleWorkspaceChange({ id: group.id, name: group.name })
+          openThemePanel()
         }}
         onDeleteGroup={async (id) => {
           await deleteGroup(id)
@@ -834,6 +888,8 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
           await removeMember(groupId, userId)
         }}
       />
+        )}
+      </SpaceThemePanelOpener>
       <ProfilePanelHost
         userId={profileUserId}
         currentUser={currentUser}

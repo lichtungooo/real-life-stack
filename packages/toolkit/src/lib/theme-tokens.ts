@@ -35,25 +35,13 @@ export interface ThemeTokenInput {
 export type ThemeTokens = Record<string, string>
 
 /**
- * Fehler-, Warn- und Diagrammfarben gehören NICHT dem Space.
- *
- * Rot muss rot bleiben, auch wenn jemand seinen Space rot färbt: sonst
- * verlöre die Fehlerfarbe ihre Bedeutung genau dann, wenn es darauf
- * ankommt. Dasselbe gilt für die Diagrammreihen, die sich voneinander
- * unterscheiden müssen und nicht vom Akzent.
+ * Fehler-, Warn- und Diagrammfarben entstehen NICHT aus Achsen und werden
+ * hier auch nicht gesetzt. Sie gehören der Instanz (`globals.css`, dann
+ * `branding.colors`): Rot muss rot bleiben, auch wenn jemand seinen Space
+ * rot färbt — und das Ocker einer Instanz darf nicht in jedem Space von
+ * einem festen Standard überschrieben werden. Genau das tat diese Schicht,
+ * solange sie die Werte selbst mitschrieb.
  */
-const FIXED_TOKENS: ThemeTokens = {
-  "--destructive": "#dc2626",
-  "--warning": "#d97706",
-  "--warning-foreground": "#ffffff",
-  "--pink": "#db2777",
-  "--pink-foreground": "#ffffff",
-  "--chart-1": "#2563eb",
-  "--chart-2": "#16a34a",
-  "--chart-3": "#d97706",
-  "--chart-4": "#9333ea",
-  "--chart-5": "#e11d48",
-}
 
 /** Jedes Token, das diese Schicht setzt — die Liste, gegen die sie geprüft wird. */
 export const SEMANTIC_TOKENS: readonly string[] = [
@@ -82,7 +70,6 @@ export const SEMANTIC_TOKENS: readonly string[] = [
   "--sidebar-accent-foreground",
   "--sidebar-border",
   "--sidebar-ring",
-  ...Object.keys(FIXED_TOKENS),
 ]
 
 /** Stufe n einer Skala, 1-basiert wie bei Radix. */
@@ -114,11 +101,14 @@ function visibleAgainst(scale: ColorScale, background: string, minimum: number):
   return step(scale, 12)
 }
 
-export function themeTokens({ accent, gray, scheme }: ThemeTokenInput): ThemeTokens {
+export function themeTokens({ accent, gray }: ThemeTokenInput): ThemeTokens {
   const fill = step(accent, 9)
-  // Die Schrift auf der Füllfläche richtet sich nach deren Helligkeit, nicht
-  // nach dem Schema: eine helle Akzentfarbe (Gelb) braucht dunklen Text auch
-  // im dunklen Schema.
+  // Die Schrift auf der Füllfläche ist WEISS — reines Weiß, nicht das helle
+  // Ende der Grauskala (im dunklen Schema wäre das ein sichtbares Grau).
+  // Schwarz nur auf einer sehr hellen Füllung wie Gelb, nach derselben Regel
+  // wie überall sonst. Nicht nach Kontrast gewählt: auf Orange gewänne Schwarz
+  // die Zahl (7:1 gegen 3:1) und verlöre den Look — Antons Entscheidung,
+  // begründet bei `getReadableTextColor`. Die Kontrastzeilen zeigen die Zahl.
   const onFill = getReadableTextColor(fill)
 
   // Stufe 3 der Akzentskala ist eine sehr blasse Tönung. Der Text darauf
@@ -163,12 +153,73 @@ export function themeTokens({ accent, gray, scheme }: ThemeTokenInput): ThemeTok
     "--sidebar-accent-foreground": onTint,
     "--sidebar-border": step(gray, 6),
     "--sidebar-ring": ring,
-
-    ...FIXED_TOKENS,
-    // `scheme` steckt bereits in den übergebenen Skalen; der Parameter hält
-    // die Signatur vollständig, damit der Aufrufer nicht raten muss.
-    ...(scheme ? {} : {}),
   }
+}
+
+/**
+ * Welcher Text auf welcher Flaeche steht — und wie viel Kontrast er braucht.
+ *
+ * WCAG 2 unterscheidet: Fliesstext 4.5:1, Bedienelemente und grosse Schrift
+ * 3:1. Die Fuellflaeche (Stufe 9) traegt Knoepfe und Abzeichen, dort ist 3:1
+ * die richtige Latte — eine pauschale 4.5 waere kein Mehr an Strenge,
+ * sondern ein falscher Massstab: sie verboete jede kraeftige Akzentfarbe.
+ *
+ * Die Liste steht hier und nicht im Test, weil zwei Seiten sie brauchen: die
+ * Zusicherung, dass eine frei gewaehlte Farbe nichts unlesbar macht, und die
+ * Anzeige im Space, die beim Setzen einzelner Stufen zeigt, was gerade kippt.
+ * `accent` markiert die Paare, an denen die Akzentskala haengt.
+ */
+export interface TokenPair {
+  label: string
+  foreground: string
+  background: string
+  minimum: number
+  /** Haengt dieses Paar an der Akzentskala? */
+  accent: boolean
+  /**
+   * Haelt die Ableitung die Latte fuer JEDE Farbe? Fuer Text und Fokusring
+   * ja — dafuer steht sie ein. Fuer die Knopfschrift nein: dort ist Weiss
+   * gesetzt (siehe `getReadableTextColor`), und auf dem orangen Akzent liegt
+   * das bei 2.9:1. Gemessen und gezeigt wird es trotzdem.
+   */
+  guaranteed: boolean
+}
+
+export const TOKEN_PAIRS: readonly TokenPair[] = [
+  { label: "Text", foreground: "--foreground", background: "--background", minimum: 4.5, accent: false, guaranteed: true },
+  { label: "Text auf Karten", foreground: "--card-foreground", background: "--card", minimum: 4.5, accent: false, guaranteed: true },
+  { label: "Text in Aufklappern", foreground: "--popover-foreground", background: "--popover", minimum: 4.5, accent: false, guaranteed: true },
+  { label: "Schwacher Text", foreground: "--muted-foreground", background: "--background", minimum: 4.5, accent: false, guaranteed: true },
+  { label: "Schwacher Text auf Flaeche", foreground: "--muted-foreground", background: "--muted", minimum: 4.5, accent: false, guaranteed: true },
+  { label: "Text auf Nebenflaeche", foreground: "--secondary-foreground", background: "--secondary", minimum: 4.5, accent: false, guaranteed: true },
+  { label: "Knopfbeschriftung", foreground: "--primary-foreground", background: "--primary", minimum: 3, accent: true, guaranteed: false },
+  { label: "Text auf Akzentflaeche", foreground: "--accent-foreground", background: "--accent", minimum: 4.5, accent: true, guaranteed: true },
+  { label: "Text im Seitenmenue", foreground: "--sidebar-foreground", background: "--sidebar", minimum: 4.5, accent: false, guaranteed: true },
+  { label: "Knopf im Seitenmenue", foreground: "--sidebar-primary-foreground", background: "--sidebar-primary", minimum: 3, accent: true, guaranteed: false },
+  { label: "Auswahl im Seitenmenue", foreground: "--sidebar-accent-foreground", background: "--sidebar-accent", minimum: 4.5, accent: true, guaranteed: true },
+  // WCAG 2.2: Fokusindikatoren brauchen 3:1 gegen ihre Umgebung.
+  { label: "Fokusring", foreground: "--ring", background: "--background", minimum: 3, accent: true, guaranteed: true },
+]
+
+export interface ContrastCheck extends TokenPair {
+  ratio: number
+  ok: boolean
+}
+
+/**
+ * Was die Paare in einem konkreten Tokensatz erreichen.
+ *
+ * Fuer die Anzeige im Space gedacht: wer eine Stufe von Hand setzt, sieht
+ * sofort, ob dabei etwas unlesbar wird — statt es erst im Betrieb zu merken.
+ */
+export function contrastChecks(
+  tokens: ThemeTokens,
+  options: { accentOnly?: boolean } = {},
+): ContrastCheck[] {
+  return TOKEN_PAIRS.filter((pair) => !options.accentOnly || pair.accent).map((pair) => {
+    const ratio = contrast(tokens[pair.foreground], tokens[pair.background])
+    return { ...pair, ratio, ok: ratio >= pair.minimum }
+  })
 }
 
 /** Schreibt die Tokens auf ein Element — üblicherweise das Wurzelelement. */

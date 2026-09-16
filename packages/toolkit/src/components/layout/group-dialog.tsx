@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from "react"
-import { LogOut, UserMinus, UserPlus, Check, Loader2, ImagePlus, X, Camera, Pencil, ChevronUp, ChevronDown, GripVertical, Users, LayoutGrid, Search, Contrast, RotateCcw, Check as CheckIcon, type LucideIcon } from "lucide-react"
+import { LogOut, UserMinus, UserPlus, Check, Loader2, ImagePlus, X, Camera, Pencil, ChevronUp, ChevronDown, GripVertical, Users, LayoutGrid, Search, Contrast, RotateCcw, SlidersHorizontal, Check as CheckIcon, type LucideIcon } from "lucide-react"
 import { getModule, getModules, defaultModuleIds, displayableModules } from "@/lib/module-register"
 import type { Group, ContactInfo } from "@real-life-stack/data-interface"
 import { useMembers } from "../../hooks/use-groups"
@@ -315,6 +315,12 @@ export type GroupDialogMode =
   | { type: "edit"; group: Group }
 
 export interface GroupDialogProps {
+  /**
+   * Oeffnet die Feineinstellung des Aussehens (drei Achsen, Toenung,
+   * Kontraste) im Modul-Panel. Der Dialog schliesst sich dabei. Ohne Handler
+   * gibt es den Knopf nicht.
+   */
+  onOpenThemePanel?: (group: Group) => void
   open: boolean
   onOpenChange: (open: boolean) => void
   mode: GroupDialogMode
@@ -338,6 +344,7 @@ export function GroupDialog({
   currentUserId,
   onCreateGroup,
   onUpdateGroup,
+  onOpenThemePanel,
   onDeleteGroup,
   onInviteMember,
   onRemoveMember,
@@ -709,29 +716,21 @@ export function GroupDialog({
    * und sich das Bild aendert — nicht bei jedem Rendern (Spec 04, Regel 2).
    */
   const [imageColor, setImageColor] = useState<string | null>(null)
-  // Ob gerade extrahiert wird. Ohne das waere "noch keine Farbe" von "das
-  // Bild gibt keine her" nicht zu unterscheiden, und der Weg zurueck blitzte
-  // bei jedem Oeffnen kurz auf.
-  const [imageColorPending, setImageColorPending] = useState(false)
 
   useEffect(() => {
     if (!isEdit || activeSection !== "theme" || !groupImage) {
       setImageColor(null)
-      setImageColorPending(false)
       return
     }
     // Waehrend der Extraktion KEINE Farbe zeigen: sonst truege das Feld einen
     // Wert vom vorigen Bild.
     setImageColor(null)
-    setImageColorPending(true)
     let current = true
     void (async () => {
       const { dominantColor } = await import("../../lib/image-utils")
       const derived = await dominantColor(resolveAssetUrl(groupImage) ?? groupImage).catch(() => null)
       // Ein graustufiges Bild liefert keine Farbe; dann gibt es kein Feld.
-      if (!current) return
-      setImageColor(derived)
-      setImageColorPending(false)
+      if (current) setImageColor(derived)
     })()
     return () => { current = false }
   }, [isEdit, activeSection, groupImage, groupId])
@@ -1319,25 +1318,37 @@ export function GroupDialog({
                 </label>
               </div>
 
-              {/* Der Weg zurueck als Text — immer dann, wenn es KEIN Feld
-                  gibt, auf das man klicken koennte. Das ist mehr als "kein
-                  Bild": ein graustufiges Logo liefert keine dominante Farbe,
-                  und ohne diesen Knopf waere die einmal gewaehlte Farbe dort
-                  nur noch durch Loeschen des Logos zurueckzunehmen. */}
-              {!imageColor && !imageColorPending && primaryColorChoice != null && (
+              {/* Die Feineinstellung (drei Achsen, Toenung, Kontraste) lebt im
+                  Modul-Panel, nicht hier: dort bleibt die App sichtbar und
+                  bedienbar, waehrend man regelt. Der Dialog schliesst sich
+                  dafuer — ein Dialog und ein Panel zugleich waeren zwei
+                  Flaechen, die um denselben Wert streiten. */}
+              {onOpenThemePanel && (
                 <button
                   type="button"
-                  onClick={() => { void resetPrimaryColor() }}
-                  className="mx-2.5 mt-1 flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                  onClick={() => {
+                    onOpenChange(false)
+                    onOpenThemePanel(mode.group)
+                  }}
+                  className="mx-2.5 mt-2 flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  <RotateCcw className="h-3 w-3" />
-                  Zurück zur Standardfarbe
+                  <SlidersHorizontal className="h-3 w-3" />
+                  Feineinstellung öffnen
                 </button>
               )}
 
-              <p className="mt-3 px-2.5 text-xs text-muted-foreground">
-                Die Farbe gilt für alle im Space und wirkt, solange er geöffnet ist.
-              </p>
+              {/* Der Weg zurueck. Spec 04 Regel 2/3: ohne eigenen Wert stammt
+                  die Farbe aus dem Logo, sonst deterministisch aus der
+                  Space-Id. Die Toenung setzt das Panel zurueck. */}
+              {primaryColorChoice != null && (
+                <div className="px-2.5 pt-3">
+                  <Button variant="outline" size="sm" onClick={() => { void resetPrimaryColor() }}>
+                    <RotateCcw className="h-3.5 w-3.5" />
+                    Zurücksetzen
+                  </Button>
+                </div>
+              )}
+
             </>
           )}
 
