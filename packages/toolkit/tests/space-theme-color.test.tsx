@@ -316,21 +316,50 @@ describe("Lesbarkeit und Benennung der Farbwahl", () => {
 })
 
 /**
+ * Die Bildfarbe kommt ueber einen dynamischen Import, und sie wird an zwei
+ * Stellen geholt: beim Oeffnen des Bereichs "Aussehen" (fuer das
+ * Vorschlagsfeld) und beim Zuruecksetzen. Der Mock muss beides bedienen.
+ *
+ * Der Zustand liegt in `vi.hoisted`, nicht in `let`-Variablen im `describe`:
+ * `vi.mock` wird an den Dateianfang gezogen, die Factory laeuft also, bevor
+ * ein Block-Scope existiert. Griff sie darauf zu, warf sie — und weil der
+ * Aufrufer `.catch(() => null)` hat, sah das aus wie "Bild ohne Farbe".
+ *
+ * Standard ist "antwortet sofort", damit der Vorschlag ohne Timing-Akrobatik
+ * dasteht. Fuer das Rennen zwischen Extraktion und Klick schaltet ein Test
+ * auf `hold` und loest die offenen Aufrufe selbst auf; mehrere warten dann
+ * NEBENEINANDER, statt sich gegenseitig zu ueberschreiben.
+ */
+const image = vi.hoisted(() => ({
+  value: "#aabbcc" as string | null,
+  hold: false,
+  held: [] as Array<(hex: string | null) => void>,
+}))
+
+vi.mock("../src/lib/image-utils", () => ({
+  // Die echte Funktion nimmt ein File und liefert eine Data-URL. Gab der
+  // Mock das File durch, landete ein Nicht-String im `src`.
+  resizeImage: async () => "data:image/png;base64,MOCK",
+  dominantColor: () =>
+    image.hold
+      ? new Promise<string | null>((resolve) => { image.held.push(resolve) })
+      : Promise.resolve(image.value),
+}))
+
+/**
  * Drei Wege, auf denen die Farbe des Dialogs von der gespeicherten
  * abweichen konnte.
  */
 describe("Farbzustand bleibt mit dem Gespeicherten im Gleichklang", () => {
   let root: Root
   const saved: Array<Record<string, unknown>> = []
-  let resolveDominant: ((hex: string | null) => void) | undefined
-
-  // `resetPrimaryColor` holt die Bildfarbe ueber einen dynamischen Import.
-  vi.mock("../src/lib/image-utils", () => ({
-    // Die echte Funktion nimmt ein File und liefert eine Data-URL. Gab der
-    // Mock das File durch, landete ein Nicht-String im `src`.
-    resizeImage: async () => "data:image/png;base64,MOCK",
-    dominantColor: () => new Promise((resolve) => { resolveDominant = resolve }),
-  }))
+  /** Loest alles auf, was unter `hold` haengengeblieben ist. */
+  const releaseDominant = async (hex: string | null) => {
+    await act(async () => {
+      for (const resolve of image.held.splice(0)) resolve(hex)
+      await Promise.resolve()
+    })
+  }
 
   const renderWith = (data: Record<string, unknown>) => {
     act(() => {
@@ -356,6 +385,24 @@ describe("Farbzustand bleibt mit dem Gespeicherten im Gleichklang", () => {
     act(() => { entry.click() })
   }
 
+  /**
+   * Der Bereich "Aussehen" bestimmt die Bildfarbe beim Oeffnen ueber einen
+   * dynamischen Import. Bis der durch ist, vergehen ein paar
+   * Microtasks — die hier abgewartet werden.
+   */
+  const openAppearanceSettled = async () => {
+    openAppearance()
+    for (let i = 0; i < 10; i++) await act(async () => { await Promise.resolve() })
+  }
+
+  /** Was zuletzt fuer `primaryColor` geschrieben wurde. */
+  const lastSavedColorOf = (entries: Array<Record<string, unknown>>) => {
+    for (let i = entries.length - 1; i >= 0; i--) {
+      if ("primaryColor" in entries[i]) return entries[i].primaryColor as string | null
+    }
+    return undefined
+  }
+
   const pressedLabels = () =>
     Array.from(document.querySelectorAll<HTMLButtonElement>('button[aria-label^="Primärfarbe"]'))
       .filter((b) => b.getAttribute("aria-pressed") === "true")
@@ -364,7 +411,9 @@ describe("Farbzustand bleibt mit dem Gespeicherten im Gleichklang", () => {
   beforeEach(() => {
     document.body.innerHTML = ""
     saved.length = 0
-    resolveDominant = undefined
+    image.value = "#aabbcc"
+    image.hold = false
+    image.held.length = 0
     const host = document.createElement("div")
     document.body.appendChild(host)
     root = createRoot(host)
@@ -372,11 +421,17 @@ describe("Farbzustand bleibt mit dem Gespeicherten im Gleichklang", () => {
 
   it("verwirft die Bildfarbe, wenn waehrenddessen eine Farbe gewaehlt wurde", async () => {
     renderWith({ image: "data:image/png;base64,AAA", primaryColor: "#123456" })
-    openAppearance()
+    // Der Bereich bestimmt die Bildfarbe, sobald er offen ist — erst dann
+    // steht das Feld da, ueber das man zu ihr zurueckfindet.
+    await openAppearanceSettled()
 
-    // Zuruecksetzen anstossen — die Extraktion laeuft noch.
-    const reset = Array.from(document.querySelectorAll("button"))
-      .find((b) => b.textContent?.includes("Zurück")) as HTMLButtonElement
+    // Ab jetzt haengt die Extraktion, bis der Test sie freigibt.
+    image.hold = true
+
+    // Zuruecksetzen anstossen — diese Extraktion laeuft noch.
+    const reset = document.querySelector<HTMLButtonElement>(
+      'button[aria-label="Farbe aus dem Bild"]',
+    )!
     act(() => { reset.click() })
 
     // Der Nutzer waehlt inzwischen bewusst eine Farbe.
@@ -386,10 +441,77 @@ describe("Farbzustand bleibt mit dem Gespeicherten im Gleichklang", () => {
     })
 
     // Erst jetzt kommt die Bildfarbe — sie ist ueberholt.
-    await act(async () => { resolveDominant?.("#aabbcc"); await Promise.resolve() })
+    await releaseDominant("#aabbcc")
 
     expect(pressedLabels(), "die bewusste Wahl gewinnt").toEqual([`Primärfarbe ${hex}`])
     expect(saved.at(-1)?.primaryColor, "und nichts Neueres wurde ueberschrieben").toBe(hex)
+  })
+
+  /**
+   * Antons Befund: die aus dem Bild gewonnene Farbe verschwand, sobald man
+   * eine andere waehlte. Sie ist aber der Vorschlag des Space und muss
+   * sichtbar bleiben — sonst findet niemand zu ihr zurueck, und sie laesst
+   * sich auch nicht mehr mit einer anderen vergleichen.
+   */
+  it("zeigt die Bildfarbe weiter, nachdem eine andere gewaehlt wurde", async () => {
+    renderWith({ image: "data:image/png;base64,AAA", primaryColor: "#aabbcc" })
+    await openAppearanceSettled()
+
+    const swatch = () =>
+      document.querySelector<HTMLButtonElement>('button[aria-label="Farbe aus dem Bild"]')
+
+    expect(swatch(), "das Feld steht da").not.toBeNull()
+    expect(swatch()!.style.backgroundColor, "und traegt die Bildfarbe")
+      .toBe("rgb(170, 187, 204)")
+    expect(swatch()!.getAttribute("aria-pressed"), "sie gilt gerade").toBe("true")
+
+    const hex = SPACE_COLOR_SWATCHES[1]
+    await act(async () => {
+      document.querySelector<HTMLButtonElement>(`button[aria-label="Primärfarbe ${hex}"]`)!.click()
+    })
+
+    expect(swatch(), "das Feld bleibt").not.toBeNull()
+    expect(swatch()!.style.backgroundColor, "unveraendert in der Bildfarbe")
+      .toBe("rgb(170, 187, 204)")
+    expect(swatch()!.getAttribute("aria-pressed"), "nur der Haken wandert").toBe("false")
+    expect(pressedLabels()).toEqual([`Primärfarbe ${hex}`])
+  })
+
+  it("zeigt kein Bildfeld, wenn es kein Bild gibt", async () => {
+    // Ohne Bild waere der Vorschlag die Farbe aus der Space-Id — nichts,
+    // was man sich ansehen will. Der Weg zurueck steht dann als Text da.
+    renderWith({ primaryColor: SPACE_COLOR_SWATCHES[1] })
+    await openAppearanceSettled()
+
+    expect(document.querySelector('button[aria-label="Farbe aus dem Bild"]')).toBeNull()
+    const back = Array.from(document.querySelectorAll("button"))
+      .find((b) => b.textContent?.includes("Zurück zur Standardfarbe"))
+    expect(back, "der Weg zurueck bleibt erreichbar").toBeDefined()
+  })
+
+  /**
+   * Ein graustufiges Logo liefert keine dominante Farbe. Dann gibt es kein
+   * Bildfeld — und es darf trotzdem keine Sackgasse entstehen: wer eine
+   * Farbe gewaehlt hat, muss sie zuruecknehmen koennen, ohne das Logo
+   * loeschen zu muessen.
+   */
+  it("laesst eine Wahl auch bei graustufigem Logo zuruecknehmen", async () => {
+    image.value = null
+    renderWith({ image: "data:image/png;base64,AAA", primaryColor: SPACE_COLOR_SWATCHES[1] })
+    await openAppearanceSettled()
+
+    expect(
+      document.querySelector('button[aria-label="Farbe aus dem Bild"]'),
+      "ohne Farbe im Bild kein Feld",
+    ).toBeNull()
+
+    const back = Array.from(document.querySelectorAll("button"))
+      .find((b) => b.textContent?.includes("Zurück zur Standardfarbe")) as HTMLButtonElement
+    expect(back, "aber ein Weg zurueck").toBeDefined()
+
+    await act(async () => { back.click() })
+    for (let i = 0; i < 10; i++) await act(async () => { await Promise.resolve() })
+    expect(lastSavedColorOf(saved), "die Wahl ist zurueckgenommen").toBeNull()
   })
 
   it("setzt die Farbe zurueck, wenn das Bild entfernt wird", async () => {
@@ -510,10 +632,25 @@ describe("Jeder Schreibweg fuehrt die Anzeige mit", () => {
   }
 
   /** Der Haken folgt der geltenden Farbe; ohne Palettentreffer gilt "custom". */
+  /**
+   * Welche Farbe die Oberflaeche als geltend ausweist.
+   *
+   * Zwei Orte, seit die Bildfarbe ein eigenes Feld hat: die Palette traegt
+   * ihren Wert im Namen, das Bildfeld nur in seiner Flaeche.
+   */
   const shownColor = () => {
     const hit = Array.from(document.querySelectorAll<HTMLButtonElement>('button[aria-label^="Primärfarbe"]'))
       .find((b) => b.getAttribute("aria-pressed") === "true")
-    return hit?.getAttribute("aria-label")?.replace("Primärfarbe ", "") ?? "custom"
+    if (hit) return hit.getAttribute("aria-label")!.replace("Primärfarbe ", "")
+
+    const suggestion = document.querySelector<HTMLButtonElement>(
+      'button[aria-label="Farbe aus dem Bild"][aria-pressed="true"]',
+    )
+    if (!suggestion) return "custom"
+    const rgb = suggestion.style.backgroundColor.match(/\d+/g)
+    return rgb
+      ? `#${rgb.slice(0, 3).map((n) => Number(n).toString(16).padStart(2, "0")).join("")}`
+      : "custom"
   }
 
   /** Was zuletzt fuer `primaryColor` gespeichert wurde. */
@@ -566,6 +703,8 @@ describe("Jeder Schreibweg fuehrt die Anzeige mit", () => {
       await Promise.resolve()
       await Promise.resolve()
     })
+    // Das neue Bild stoesst die Extraktion neu an.
+    for (let i = 0; i < 10; i++) await act(async () => { await Promise.resolve() })
 
     const stored = lastSavedColor()
     expect(stored, "der Upload speichert eine Farbe").toBeDefined()

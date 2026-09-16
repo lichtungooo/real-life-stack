@@ -25,6 +25,23 @@ export {
   type Branding,
 } from "./lib/runtime-config"
 export {
+  deriveColorScale,
+  grayFor,
+  scalesForColor,
+  namedScale,
+  ACCENT_SCALE_NAMES,
+  GRAY_SCALE_OPTIONS,
+  type ColorScale,
+  type ColorScheme as ThemeColorScheme,
+} from "./lib/color-scales"
+export {
+  themeTokens,
+  applyThemeTokens,
+  clearThemeTokens,
+  SEMANTIC_TOKENS,
+  type ThemeTokens,
+} from "./lib/theme-tokens"
+export {
   CORE_MODULES,
   CORE_MODULE_LAYER,
   composeModules,
