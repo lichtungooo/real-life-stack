@@ -13,16 +13,18 @@
  * kleinen Host, der die Gruppe je Render neu heraussucht.
  */
 import { useEffect, useMemo, useRef, useState } from "react"
-import { RotateCcw, SlidersHorizontal } from "lucide-react"
+import { Check, RotateCcw, SlidersHorizontal } from "lucide-react"
 import type { Group } from "@real-life-stack/data-interface"
 
 import { useColorScheme } from "../../hooks/use-color-scheme"
 import { scalesForColor } from "../../lib/color-scales"
 import { contrastChecks, themeTokens } from "../../lib/theme-tokens"
-import { colorAxes, colorFromAxes, readTint } from "../../lib/space-theme"
+import { colorAxes, colorFromAxes, graySwatches, matchAccentScale, readGray, readRadius, readSurfaces, readTint, type GrayChoice, type RadiusStep, type Surfaces } from "../../lib/space-theme"
+import { AccentGrid, RadiusTiles, SurfacesToggle, ThemeSectionLabel } from "./space-theme-controls"
 import { cn, getSpacePrimaryColor } from "../../lib/utils"
 import { instanceTheme } from "../../lib/runtime-config"
 import { Button } from "../primitives/button"
+import { AdaptivePanel } from "./adaptive-panel"
 
 export interface SpaceThemePanelProps {
   group: Group
@@ -38,10 +40,19 @@ export function SpaceThemePanel({ group, onUpdateGroup, className }: SpaceThemeP
   // nach und gewinnt, sobald sie etwas anderes sagt (anderes Geraet, Reset).
   const storedColor = (group.data?.primaryColor as string | undefined) ?? null
   const storedTint = readTint(group.data?.tint)
+  const storedGray = readGray(group.data?.gray)
+  const storedRadius = readRadius(group.data?.radius)
+  const storedSurfaces = readSurfaces(group.data?.surfaces)
   const [colorChoice, setColorChoice] = useState<string | null>(storedColor)
   const [tintChoice, setTintChoice] = useState<number | null>(storedTint)
+  const [grayChoice, setGrayChoice] = useState<GrayChoice | null>(storedGray)
+  const [radiusChoice, setRadiusChoice] = useState<RadiusStep | null>(storedRadius)
+  const [surfacesChoice, setSurfacesChoice] = useState<Surfaces | null>(storedSurfaces)
   useEffect(() => { setColorChoice(storedColor) }, [storedColor])
   useEffect(() => { setTintChoice(storedTint) }, [storedTint])
+  useEffect(() => { setGrayChoice(storedGray) }, [storedGray])
+  useEffect(() => { setRadiusChoice(storedRadius) }, [storedRadius])
+  useEffect(() => { setSurfacesChoice(storedSurfaces) }, [storedSurfaces])
 
   const [error, setError] = useState<string | null>(null)
 
@@ -75,6 +86,9 @@ export function SpaceThemePanel({ group, onUpdateGroup, className }: SpaceThemeP
           pendingRef.current = null
           setColorChoice(storedColorRef.current)
           setTintChoice(storedTintRef.current)
+          setGrayChoice(readGray(groupRef.current.data?.gray))
+          setRadiusChoice(readRadius(groupRef.current.data?.radius))
+          setSurfacesChoice(readSurfaces(groupRef.current.data?.surfaces))
           setError(err instanceof Error ? err.message : "Aussehen konnte nicht gespeichert werden")
         }
       }
@@ -90,16 +104,19 @@ export function SpaceThemePanel({ group, onUpdateGroup, className }: SpaceThemeP
         : { groupId: group.id, data }
     void flush()
   }
+  const groupRef = useRef(group)
+  groupRef.current = group
   const storedColorRef = useRef(storedColor)
   storedColorRef.current = storedColor
   const storedTintRef = useRef(storedTint)
   storedTintRef.current = storedTint
 
   const effectiveColor = getSpacePrimaryColor(group.id, colorChoice)
-  // Ohne eigene Toenung erbt der Space die der Instanz (Kaskade). Der Regler
-  // zeigt, was gilt. Eine explizite 0 bleibt 0 ("keine Toenung"); nur der
-  // Reset schreibt null und stellt die Vererbung wieder her.
-  const inheritedTint = instanceTheme().tint ?? 0
+  // Ohne eigene Achsen erbt der Space die der Instanz (Kaskade). Die Regler
+  // zeigen, was gilt. Eine explizite Toenung 0 bleibt 0 ("keine Toenung");
+  // nur der Reset schreibt null und stellt die Vererbung wieder her.
+  const inherited = instanceTheme()
+  const inheritedTint = inherited.tint ?? 0
   const effectiveTint = tintChoice ?? inheritedTint
   const axes = colorAxes(effectiveColor)
   const setAxis = (key: keyof typeof axes, value: number) => {
@@ -111,18 +128,47 @@ export function SpaceThemePanel({ group, onUpdateGroup, className }: SpaceThemeP
     setTintChoice(tint)
     write({ tint })
   }
+  // "auto" ist ein Wert, kein Nichts: erbt der Space von der Instanz ein
+  // Grau, muss er "auto" ausdruecklich waehlen koennen. null erbt.
+  const effectiveGray: GrayChoice = grayChoice ?? inherited.gray ?? "auto"
+  const setGray = (gray: GrayChoice) => {
+    setGrayChoice(gray)
+    write({ gray })
+  }
+  const effectiveRadius: RadiusStep = radiusChoice ?? inherited.radius ?? "medium"
+  const effectiveSurfaces: Surfaces = surfacesChoice ?? inherited.surfaces ?? "translucent"
+  const setRadius = (radius: RadiusStep) => {
+    setRadiusChoice(radius)
+    write({ radius })
+  }
+  const setSurfaces = (surfaces: Surfaces) => {
+    setSurfacesChoice(surfaces)
+    write({ surfaces })
+  }
   /** EIN Reset fuer alles, was der Space am Aussehen gesetzt hat. */
   const reset = () => {
     setColorChoice(null)
     setTintChoice(null)
-    write({ primaryColor: null, tint: null })
+    setGrayChoice(null)
+    setRadiusChoice(null)
+    setSurfacesChoice(null)
+    write({ primaryColor: null, tint: null, gray: null, radius: null, surfaces: null })
   }
 
   const scheme = useColorScheme()
   const checks = useMemo(() => {
-    const scales = scalesForColor(effectiveColor, scheme, { tint: effectiveTint })
+    const scales = scalesForColor(effectiveColor, scheme, { tint: effectiveTint, gray: effectiveGray })
     return contrastChecks(themeTokens({ ...scales, scheme }), { accentOnly: true })
-  }, [effectiveColor, scheme, effectiveTint])
+  }, [effectiveColor, scheme, effectiveTint, effectiveGray])
+  // Akzent-Raster: welche Radix-Skala gilt gerade — oder eine eigene Farbe?
+  const accentName = matchAccentScale(effectiveColor, "light")
+  const [customOpen, setCustomOpen] = useState(false)
+  const showSliders = accentName === null || customOpen
+  const setAccentScale = (hex: string) => {
+    setCustomOpen(false)
+    setColorChoice(hex)
+    write({ primaryColor: hex })
+  }
 
   const sliders = [
     ["hue", "Farbton", 0, 360],
@@ -131,40 +177,98 @@ export function SpaceThemePanel({ group, onUpdateGroup, className }: SpaceThemeP
   ] as const
 
   return (
-    <div className={cn("flex h-full flex-col", className)} data-testid="space-theme-panel">
+    // min-h-0: in einem hoehenbegrenzten Rahmen darf der Inhalt schrumpfen,
+    // sonst laeuft er unsichtbar ueber statt zu scrollen.
+    <div className={cn("flex min-h-0 flex-1 flex-col", className)} data-testid="space-theme-panel">
       <div className="flex items-center gap-2 border-b px-4 py-3">
         <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
         <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-semibold">Feineinstellung</div>
+          <div className="truncate text-sm font-semibold">Theme</div>
           <div className="truncate text-xs text-muted-foreground">{group.name}</div>
         </div>
       </div>
 
-      <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4">
-        {/* Drei Achsen von OKLCH in Worten. Die Regler zeigen die geltende
-            Farbe und schreiben sie zurueck — genau ein Wert. */}
-        <div className="space-y-2">
-          {sliders.map(([key, label, min, max]) => (
-            <label key={key} className="flex items-center gap-3 text-xs">
-              <span className="w-20 shrink-0 text-muted-foreground">{label}</span>
-              <input
-                type="range"
-                aria-label={label}
-                min={min}
-                max={max}
-                value={axes[key]}
-                onChange={(e) => setAxis(key, Number(e.target.value))}
-                className="h-1.5 flex-1 cursor-pointer accent-primary"
-              />
-              <span className="w-8 shrink-0 text-right tabular-nums text-muted-foreground">
-                {axes[key]}{key === "hue" ? "°" : ""}
-              </span>
-            </label>
-          ))}
+      <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 py-4">
+        {/* Die Form des Radix-Playgrounds, Block fuer Block und mit seinen
+            Woertern — wer den Playground kennt, findet sich sofort zurecht.
+            Ohne Appearance und Scaling: die gehoeren dem Menschen am Geraet,
+            nicht dem Space. Die Werte sind eine Stufe reicher als bei Radix:
+            eine eigene Farbe neben den 25 Skalen, die Toenung neben den
+            sechs Neutralen. Wer nur Radix-Werte nimmt, ist exakt bei Radix. */}
+        <section className="space-y-2">
+          <ThemeSectionLabel>Akzentfarbe</ThemeSectionLabel>
+          <AccentGrid
+            effectiveColor={effectiveColor}
+            onPick={setAccentScale}
+            customActive={showSliders}
+            onCustom={() => setCustomOpen(true)}
+          />
 
-          {/* Toenung: wie stark die Flaechen die Farbe tragen. 0 = neutral,
-              der Akzent traegt allein; reallife.network liegt bei etwa 50. */}
-          <label className="flex items-center gap-3 text-xs">
+          {showSliders && (
+            <div className="space-y-2 pt-1">
+              {sliders.map(([key, label, min, max]) => (
+                <label key={key} className="flex items-center gap-3 text-xs">
+                  <span className="w-20 shrink-0 text-muted-foreground">{label}</span>
+                  <input
+                    type="range"
+                    aria-label={label}
+                    min={min}
+                    max={max}
+                    value={axes[key]}
+                    onChange={(e) => setAxis(key, Number(e.target.value))}
+                    className="h-1.5 flex-1 cursor-pointer accent-primary"
+                  />
+                  <span className="w-8 shrink-0 text-right tabular-nums text-muted-foreground">
+                    {axes[key]}{key === "hue" ? "°" : ""}
+                  </span>
+                </label>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section className="space-y-2">
+          <ThemeSectionLabel>Grau</ThemeSectionLabel>
+          <div className="flex flex-wrap items-center gap-1.5" role="radiogroup" aria-label="Gray color">
+            <button
+              type="button"
+              role="radio"
+              aria-checked={effectiveGray === "auto"}
+              aria-label="Gray auto"
+              title="auto"
+              onClick={() => setGray("auto")}
+              className={cn(
+                "h-7 rounded-full border px-2 text-[11px] text-muted-foreground transition-colors hover:text-foreground",
+                effectiveGray === "auto" && "border-foreground text-foreground",
+              )}
+            >
+              auto
+            </button>
+            {graySwatches(scheme).map(({ name, hex }) => {
+              const active = effectiveGray === name
+              return (
+                <button
+                  key={name}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  aria-label={`Gray ${name}`}
+                  title={name}
+                  onClick={() => setGray(name)}
+                  style={{ backgroundColor: hex }}
+                  className={cn(
+                    "flex h-7 w-7 items-center justify-center rounded-full transition-transform hover:scale-110",
+                    active && "ring-2 ring-foreground ring-offset-2 ring-offset-card",
+                  )}
+                >
+                  {active && <Check className="h-3.5 w-3.5 text-white" />}
+                </button>
+              )
+            })}
+          </div>
+          {/* Die Toenung — unsere Erweiterung neben Radix' Neutralen. 0 ist
+              exakt Radix; reallife.network liegt mit seinem Creme bei 50. */}
+          <label className="flex items-center gap-3 pt-1 text-xs">
             <span className="w-20 shrink-0 text-muted-foreground">Tönung</span>
             <input
               type="range"
@@ -179,7 +283,17 @@ export function SpaceThemePanel({ group, onUpdateGroup, className }: SpaceThemeP
               {Math.round(effectiveTint * 100)}
             </span>
           </label>
-        </div>
+        </section>
+
+        <section className="space-y-2">
+          <ThemeSectionLabel>Radius</ThemeSectionLabel>
+          <RadiusTiles value={effectiveRadius} onChange={setRadius} />
+        </section>
+
+        <section className="space-y-2">
+          <ThemeSectionLabel>Panel-Hintergrund</ThemeSectionLabel>
+          <SurfacesToggle value={effectiveSurfaces} onChange={setSurfaces} />
+        </section>
 
         {/* Was das fuer die Lesbarkeit bedeutet. Die Knopfschrift ist mit
             Absicht weiss (siehe getReadableTextColor) und kann darum unter
@@ -196,7 +310,7 @@ export function SpaceThemePanel({ group, onUpdateGroup, className }: SpaceThemeP
           ))}
         </div>
 
-        {(colorChoice != null || tintChoice != null) && (
+        {(colorChoice != null || tintChoice != null || grayChoice != null || radiusChoice != null || surfacesChoice != null) && (
           <Button variant="outline" size="sm" onClick={reset}>
             <RotateCcw className="h-3.5 w-3.5" />
             Zurücksetzen
@@ -207,5 +321,32 @@ export function SpaceThemePanel({ group, onUpdateGroup, className }: SpaceThemeP
 
       </div>
     </div>
+  )
+}
+
+/**
+ * Die Feineinstellung als LINKES AdaptivePanel — das Gegenstueck zum
+ * rechten, in dem Item-Details liegen (Entwurf 5b: "links ueber dem
+ * Content"). Volle Hoehe, eigenes Scrollen, schwebend auf dem Desktop,
+ * Drawer auf dem Handy, ohne Backdrop: die App bleibt sichtbar und
+ * bedienbar, und rechts kann ein Item-Detail offen bleiben, waehrend man
+ * links regelt — genau das, was man beim Einstellen sehen will. Eine
+ * lose Karte unten links verdeckte Filter und Plus und konnte nicht
+ * wachsen.
+ */
+export function SpaceThemeCard({ onClose, ...props }: SpaceThemePanelProps & { onClose: () => void }) {
+  return (
+    <AdaptivePanel
+      open
+      onClose={onClose}
+      side="left"
+      allowedModes={["floating", "drawer"]}
+      sidebarWidth="320px"
+      sidebarMinWidth="280px"
+      sidebarMaxWidth="50vw"
+      backdrop={false}
+    >
+      <SpaceThemePanel {...props} />
+    </AdaptivePanel>
   )
 }

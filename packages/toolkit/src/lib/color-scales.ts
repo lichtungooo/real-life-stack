@@ -71,8 +71,6 @@ export const GRAY_SCALE_OPTIONS: readonly GrayScaleName[] = GRAY_SCALE_NAMES
  * bleiben unter diesem Wert; alles darunter wird wie Grau behandelt.
  */
 const NEUTRAL_CHROMA = 0.03
-/** Unter dieser Helligkeit ist eine Füllung auf dunklem Grund dumpf. */
-const DARK_FILL_LIGHTNESS_MIN = 0.6
 /** Buntheit der neutralen Skala bei voller Tönung — gerade noch "neutral". */
 const TINT_CHROMA_MAX = 0.03
 
@@ -272,13 +270,13 @@ export function deriveColorScale(
   // Erst auf den Bereich ziehen, in dem eine Füllfläche liegen kann, dann
   // die Verschiebung so begrenzen, dass keine Stufe klemmt.
   //
-  // Im dunklen Schema liegt die Untergrenze höher: eine dunkle Farbe auf
-  // dunklem Grund ist dumpf. Radix umgeht das, weil seine kuratierten Skalen
-  // Stufe 9 nie so tief legen; wir lassen jede Farbe zu, also steht die Regel
-  // hier. reallife.network/app macht es von Hand — hell Forest (L 0.42),
-  // dunkel Sage (L 0.64). Im hellen Schema bleibt die Farbe, wie gewählt.
-  const floor = scheme === "dark" ? DARK_FILL_LIGHTNESS_MIN : FILL_LIGHTNESS_MIN
-  const fillL = Math.min(FILL_LIGHTNESS_MAX, Math.max(floor, target.l))
+  // In BEIDEN Schemata dieselbe Untergrenze — wie bei Radix, wo Stufe 9 hell
+  // und dunkel dieselbe Farbe ist. Eine höhere Grenze im Dunklen (L 0.6)
+  // hatte die Füllung heller gemacht als das Space-Logo, aus dem die Farbe
+  // stammt; Anton las das sofort als Unstimmigkeit (16.09.). Wirkt eine sehr
+  // dunkle Farbe im Dunklen dumpf, regelt der Space das selbst über die
+  // Helligkeit und sieht dabei genau, was er bekommt.
+  const fillL = Math.min(FILL_LIGHTNESS_MAX, Math.max(FILL_LIGHTNESS_MIN, target.l))
   const deltaL = allowedShift(template, fillL - anchor.l)
   const deltaH = target.h - anchor.h
   // Buntheit wird verhältnismäßig verschoben; eine Vorlage mit nahezu
@@ -320,6 +318,11 @@ export interface ScaleOptions {
    * ungefähr 0.5.
    */
   tint?: number
+  /**
+   * Die neutrale Skala, ausdrücklich gewählt (Radix' `grayColor`). Fehlt
+   * sie, paart {@link grayFor} automatisch (`auto`).
+   */
+  gray?: GrayScaleName | "auto" | null
 }
 
 export function scalesForColor(
@@ -328,16 +331,26 @@ export function scalesForColor(
   options: ScaleOptions = {},
 ): { accent: ColorScale; gray: ColorScale } {
   const parsed = parseColor(color)
-  const gray = namedScale(parsed ? grayFor(parsed) : "gray", scheme)
+  const chosen = options.gray === "auto" ? null : options.gray
+  const grayName = chosen ?? (parsed ? grayFor(parsed) : "gray")
+  const gray = namedScale(grayName, scheme)
   const tint = clampTint(options.tint)
-  // Eine unbunte Akzentfarbe hat keinen Farbton, der etwas bedeutet — bei
-  // #808080 liegt er zufaellig bei Rosa. Getoent wird nur, wenn der Akzent
-  // wirklich einen Ton hat (dieselbe Schwelle wie bei der Vorlagenwahl).
-  const tintable = parsed !== null && parsed.c >= NEUTRAL_CHROMA
+  // In welche Richtung getoent wird: Ist eine Neutrale ausdruecklich gewaehlt,
+  // gibt SIE den Ton vor (sand warm, slate kuehl, sage gruenlich) und die
+  // Toenung nur die Staerke — sonst ueberschriebe die Toenung die Grauwahl
+  // und die haette keine Wirkung mehr. Bei `auto` toent der Akzent. Ohne
+  // bedeutungsvollen Ton (reines gray, unbunter Akzent wie #808080) wird
+  // nicht getoent: dessen Farbton ist Zufall.
+  const hue = tintHue(chosen ? toOklch(gray[8]) : parsed, chosen ? 0.005 : NEUTRAL_CHROMA)
   return {
     accent: deriveColorScale(color, scheme),
-    gray: tintable && tint > 0 ? tintGray(gray, parsed.h, tint) : gray,
+    gray: hue !== null && tint > 0 ? tintGray(gray, hue, tint) : gray,
   }
+}
+
+/** Der Farbton, in den getönt wird — oder null, wenn er nichts bedeutet. */
+function tintHue(source: Oklch | null, minChroma: number): number | null {
+  return source !== null && source.c >= minChroma ? source.h : null
 }
 
 /** Der Wert kommt aus `Group.data` und ist ungeprüft. */

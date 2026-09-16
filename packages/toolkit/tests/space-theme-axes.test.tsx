@@ -22,7 +22,7 @@ vi.mock("../src/hooks/use-groups", () => ({
 
 const { SpaceThemePanel } = await import("../src/components/layout/space-theme-panel")
 const { GroupDialog } = await import("../src/components/layout/group-dialog")
-const { colorAxes, colorFromAxes, readTint } = await import("../src/lib/space-theme")
+const { accentSwatches, colorAxes, colorFromAxes, readTint } = await import("../src/lib/space-theme")
 const { parseColor } = await import("../src/lib/oklch")
 const { loadRuntimeConfig, resetRuntimeConfigForTests } = await import("../src/lib/runtime-config")
 
@@ -98,11 +98,65 @@ describe("SpaceThemePanel", () => {
     root = createRoot(host)
   })
 
-  it("zeigt die vier Regler und die Kontraste sofort", () => {
+  it("zeigt die Regler fuer eine eigene Farbe und die Kontraste sofort", () => {
+    // #e87520 ist keine Radix-Stufe 9 — also "eigene Farbe", Regler offen.
     render({ primaryColor: COLOR })
     for (const l of ["Farbton", "Kräftigkeit", "Helligkeit", "Tönung"]) expect(slider(l), l).not.toBeNull()
     expect(document.body.textContent).toContain("Knopfbeschriftung")
     expect(document.body.textContent).toMatch(/\d\.\d:1/)
+  })
+
+  /**
+   * Die Form des Radix-Playgrounds: 25 benannte Akzentskalen als Raster.
+   * Wer eine waehlt, bekommt genau diese Skala; die eigene Farbe steht als
+   * ein Kreis daneben, und erst dort erscheinen die Regler.
+   */
+  it("bietet die Radix-Akzentskalen an und schreibt deren Stufe 9", async () => {
+    render({ primaryColor: COLOR })
+    const indigo = document.querySelector<HTMLButtonElement>('button[aria-label="Accent indigo"]')!
+    expect(indigo).not.toBeNull()
+    await act(async () => { indigo.click() })
+    const hex = last("primaryColor") as string
+    expect(hex).toBe(accentSwatches("light").find((s) => s.name === "indigo")!.hex)
+    expect(indigo.getAttribute("aria-checked")).toBe("true")
+    expect(slider("Farbton"), "Regler nur bei eigener Farbe").toBeNull()
+    // Zurueck zur eigenen Farbe: der Kreis oeffnet die Regler wieder.
+    await act(async () => { document.querySelector<HTMLButtonElement>('button[aria-label="Eigene Farbe"]')!.click() })
+    expect(slider("Farbton")).not.toBeNull()
+  })
+
+  it("bietet die sechs Neutralen plus auto an und schreibt data.gray", async () => {
+    render({ primaryColor: COLOR })
+    expect(document.querySelector('button[aria-label="Gray auto"]')!.getAttribute("aria-checked")).toBe("true")
+    await act(async () => { document.querySelector<HTMLButtonElement>('button[aria-label="Gray sand"]')!.click() })
+    expect(last("gray")).toBe("sand")
+    // "auto" ist ein Wert, kein Loeschen — sonst griffe eine geerbte Neutrale wieder.
+    await act(async () => { document.querySelector<HTMLButtonElement>('button[aria-label="Gray auto"]')!.click() })
+    expect(last("gray")).toBe("auto")
+  })
+
+  /**
+   * Review #391: Bei branding.theme.gray = "sand" schrieb "auto" nur null —
+   * und damit griff sofort wieder "sand". Auto und Erben brauchen
+   * verschiedene Werte.
+   */
+  it("laesst auto waehlen, auch wenn die Instanz ein Grau vorgibt", async () => {
+    resetRuntimeConfigForTests()
+    await loadRuntimeConfig({
+      fetchImpl: (async () => ({ ok: true, status: 200, json: async () => ({ branding: { theme: { gray: "sand" } } }) })) as unknown as typeof fetch,
+    })
+    try {
+      render({})
+      expect(document.querySelector('button[aria-label="Gray sand"]')!.getAttribute("aria-checked"), "geerbt").toBe("true")
+      await act(async () => { document.querySelector<HTMLButtonElement>('button[aria-label="Gray auto"]')!.click() })
+      expect(last("gray")).toBe("auto")
+      expect(document.querySelector('button[aria-label="Gray auto"]')!.getAttribute("aria-checked")).toBe("true")
+      expect(document.querySelector('button[aria-label="Gray sand"]')!.getAttribute("aria-checked")).toBe("false")
+      render({ gray: "auto" })
+      expect(document.querySelector('button[aria-label="Gray auto"]')!.getAttribute("aria-checked"), "auch nach dem Nachziehen").toBe("true")
+    } finally {
+      resetRuntimeConfigForTests()
+    }
   })
 
   it("stellt die Regler auf die geltende Farbe", () => {
@@ -223,6 +277,42 @@ describe("SpaceThemePanel", () => {
     }
   })
 
+  it("setzt Rundung und Flaechen und nimmt sie mit dem Reset zurueck", async () => {
+    render({ primaryColor: COLOR })
+    const radio = (label: string) => document.querySelector<HTMLButtonElement>(`button[aria-label="${label}"]`)!
+    expect(radio("Rundung medium").getAttribute("aria-checked"), "Standard medium").toBe("true")
+    expect(radio("Flächen translucent").getAttribute("aria-checked"), "Standard durchscheinend").toBe("true")
+
+    await act(async () => { radio("Rundung large").click() })
+    expect(last("radius")).toBe("large")
+    expect(radio("Rundung large").getAttribute("aria-checked")).toBe("true")
+
+    await act(async () => { radio("Flächen solid").click() })
+    expect(last("surfaces")).toBe("solid")
+
+    await act(async () => { resetButton()!.click() })
+    for (let i = 0; i < 5; i++) await act(async () => { await Promise.resolve() })
+    const patch = saved.at(-1)!
+    expect(patch.radius).toBeNull()
+    expect(patch.surfaces).toBeNull()
+    expect(patch.gray).toBeNull()
+  })
+
+  it("erbt Rundung und Flaechen von der Instanz", async () => {
+    resetRuntimeConfigForTests()
+    await loadRuntimeConfig({
+      fetchImpl: (async () => ({ ok: true, status: 200, json: async () => ({ branding: { theme: { radius: "large", surfaces: "solid" } } }) })) as unknown as typeof fetch,
+    })
+    try {
+      render({})
+      expect(document.querySelector('button[aria-label="Rundung large"]')!.getAttribute("aria-checked")).toBe("true")
+      expect(document.querySelector('button[aria-label="Flächen solid"]')!.getAttribute("aria-checked")).toBe("true")
+      expect(resetButton(), "geerbt ist nicht gesetzt").toBeUndefined()
+    } finally {
+      resetRuntimeConfigForTests()
+    }
+  })
+
   /**
    * Das Panel bekommt die lebende Gruppe. Aendert sie sich von aussen —
    * anderes Geraet, Reset im Dialog — ziehen die Regler nach.
@@ -275,6 +365,31 @@ describe("GroupDialog → Feineinstellung", () => {
     expect(opener()).toBeUndefined()
     renderDialog({ onOpenThemePanel: () => {} })
     expect(opener()).toBeDefined()
+  })
+
+  /**
+   * Review #391: Waehrend "Rundung small" gespeichert wird, "Solid" und dann
+   * "Rundung large" waehlen — der Saver verwarf den wartenden Solid-Patch.
+   * Wartende Aenderungen werden jetzt feldweise zusammengefuehrt.
+   */
+  it("fuehrt wartende Layout-Aenderungen feldweise zusammen", async () => {
+    const releases: Array<() => void> = []
+    const saved: Array<Record<string, unknown>> = []
+    renderDialog({
+      onUpdateGroup: (_id: string, u: { data?: Record<string, unknown> }) =>
+        new Promise<void>((resolve) => { releases.push(() => { if (u.data) saved.push(u.data); resolve() }) }),
+    })
+    const click = async (label: string) => { await act(async () => { document.querySelector<HTMLButtonElement>(`button[aria-label="${label}"]`)!.click() }) }
+    await click("Rundung small")
+    await click("Flächen solid")
+    await click("Rundung large")
+    while (releases.length) {
+      const next = releases.shift()!
+      await act(async () => { next(); await Promise.resolve(); await Promise.resolve() })
+    }
+    const merged = Object.assign({}, ...saved)
+    expect(merged.surfaces, "Solid ist nicht verloren").toBe("solid")
+    expect(merged.radius, "und die letzte Rundung gilt").toBe("large")
   })
 
   it("schliesst sich und uebergibt die Gruppe", () => {

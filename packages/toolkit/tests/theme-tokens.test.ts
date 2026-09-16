@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import { deriveColorScale, namedScale, scalesForColor } from "../src/lib/color-scales"
-import { contrastChecks, SEMANTIC_TOKENS, themeTokens, TOKEN_PAIRS } from "../src/lib/theme-tokens"
+import { clearThemeTokens, contrastChecks, SEMANTIC_TOKENS, themeTokens, TOKEN_PAIRS } from "../src/lib/theme-tokens"
 import { contrastRatio, parseColor } from "../src/lib/oklch"
 
 const ok = (hex: string) => {
@@ -177,4 +177,32 @@ describe("themeTokens — Schrift auf der Fuellung", () => {
       }
     }
   })
+})
+
+describe("clearThemeTokens", () => {
+  it("raeumt auch Rundung und Flaechen weg", () => {
+    // Sonst bliebe die Rundung eines Space nach dem Wechsel in die
+    // Uebersicht stehen — inline schlaegt den Instanz-Block.
+    const el = { style: { removed: [] as string[], removeProperty(n: string) { this.removed.push(n) } } } as unknown as HTMLElement
+    clearThemeTokens(el)
+    const removed = (el.style as unknown as { removed: string[] }).removed
+    for (const n of ["--radius", "--surface-alpha", "--surface-blur", "--background"]) expect(removed).toContain(n)
+  })
+})
+
+/**
+ * Karten liegen heller als der Grund — in beiden Schemata. So war das
+ * Toolkit vor der Skalenschicht, und die Umkehrung im Hellen (Radix' Stufe
+ * 2 als Karte) fiel sofort als "grauer Karton auf hellem Grund" auf.
+ */
+describe("themeTokens — Karten heller als der Grund", () => {
+  for (const scheme of ["light", "dark"] as const) {
+    it(`in ${scheme}`, () => {
+      const t = build("#e87520", scheme)
+      const l = (hex: string) => parseColor(hex)!.l
+      expect(l(t["--card"]), "Karte heller als Grund").toBeGreaterThan(l(t["--background"]))
+      expect(t["--popover"]).toBe(t["--card"])
+      expect(t["--sidebar"], "Seitenleiste folgt dem Grund").toBe(t["--background"])
+    })
+  }
 })
