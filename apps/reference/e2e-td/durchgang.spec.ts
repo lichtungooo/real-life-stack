@@ -40,6 +40,17 @@ test.describe("A. Ankommen", () => {
     await expect(page.locator('input[type="password"]')).toHaveCount(0)
   })
 
+  test("sagt, dass es Beispieldaten sind", async ({ page }) => {
+    // Der Prototyp startet mit den Musterdaten, damit eine Stiftung ohne
+    // Anmeldung etwas sieht. Ohne Hinweis hält jeder das Gezeigte für sein
+    // eigenes Konto: Timo hat sein Profilbild nicht wiedererkannt und seine
+    // Kontakte vermisst, während sie unberührt im Web of Trust lagen.
+    await appOeffnen(page)
+    const hinweis = page.getByRole("link", { name: /Beispieldaten/ })
+    await expect(hinweis).toBeVisible()
+    await expect(hinweis).toHaveAttribute("href", /connector=wot/)
+  })
+
   test("traegt eine Ueberschrift erster Ordnung", async ({ page }) => {
     await appOeffnen(page)
     // Wer mit einer Vorlesehilfe springt, findet sonst keinen Anfang.

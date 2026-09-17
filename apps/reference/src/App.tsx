@@ -813,6 +813,24 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
           />
         </NavbarCenter>
         <NavbarEnd>
+          {/* Wer Beispieldaten sieht, soll es wissen.
+              
+              Der Prototyp startet mit dem local-Connector, damit eine Stiftung
+              ohne Anmeldung etwas sieht (Entscheidung E4). Ohne diesen Hinweis
+              hält jeder das Gezeigte für sein eigenes Konto: Timo hat sein
+              Profilbild nicht wiedererkannt und seine Kontakte vermisst,
+              während sie unberührt im Web of Trust lagen. */}
+          {activeConnectorId === "local" && (
+            <a
+              href={`${import.meta.env.BASE_URL}?connector=wot`}
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-dashed px-2.5 py-1 text-xs text-muted-foreground hover:border-primary hover:text-foreground"
+              title="Diese Ansicht zeigt Beispieldaten. Hier geht es zum eigenen Konto im Web of Trust."
+            >
+              Beispieldaten
+              <span aria-hidden="true">·</span>
+              <span className="font-medium">Mein Konto</span>
+            </a>
+          )}
           {supportsMessaging && <RelayStatusBadgeWrapper />}
           {notifications.supported ? <NotificationBell open={activityOpen} count={notifications.badgeCount} onOpenChange={setActivityOpen} /> : activity.supported && <ActivityBell open={activityOpen} onOpenChange={setActivityOpen} />}
           <Button
