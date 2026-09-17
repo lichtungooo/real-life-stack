@@ -121,8 +121,13 @@ else:
             stuecke[0].name + ". Skill td-performance.", blockiert=False)
 
 # --- Tor 6: Gedaechtnis ------------------------------------------------------
+# Das Gedaechtnis liegt im Arbeitsbereich, nicht im Repo. Auf einem fremden
+# Rechner oder in der CI gibt es das nicht, und das ist kein Fehler: Dort
+# bleibt das Tor offen, statt einen Bau abzubrechen, der sonst gruen waere.
 stand = Path("D:/Workspace/memory/stand_trustdonation.md")
-if not stand.exists():
+if not stand.parent.exists():
+    tor("Gedaechtnis", None, "Arbeitsbereich nicht vorhanden (fremder Rechner oder CI)")
+elif not stand.exists():
     tor("Gedaechtnis", False, "stand_trustdonation.md fehlt")
 else:
     kopf = stand.read_text(encoding="utf-8")[:600]

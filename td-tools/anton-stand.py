@@ -13,6 +13,7 @@ Konsole. Aendert nichts am Arbeitsstand: es wird nur gelesen.
 
 Aufruf:
     python td-tools/anton-stand.py                  # holen und berichten
+    python td-tools/anton-stand.py --ohne-pr        # ohne Blick auf offene PRs
     python td-tools/anton-stand.py --ohne-fetch
     python td-tools/anton-stand.py --basis <sha>    # gegen einen anderen Stand
 """
@@ -177,9 +178,49 @@ def haken_hinweise(von, commits, seine):
     return treffer, beruehrt
 
 
+def offene_pr():
+    """Was Anton vorhat, nicht nur was er getan hat.
+
+    Ein grosser Umbau kuendigt sich in einem Pull Request an, Wochen bevor er
+    landet. Wer das sieht, baut nicht gegen die Wand. Braucht `gh`; fehlt es,
+    bleibt der Abschnitt leer statt den Bericht zu verhindern.
+    """
+    if "--ohne-pr" in sys.argv:
+        return None
+    r = subprocess.run(
+        ["gh", "pr", "list", "--repo", "real-life-org/real-life-stack",
+         "--state", "open", "--limit", "30",
+         "--json", "number,title,updatedAt,isDraft,author"],
+        capture_output=True, text=True, encoding="utf-8")
+    if r.returncode != 0:
+        return None
+    try:
+        liste = json.loads(r.stdout or "[]")
+    except Exception:
+        return None
+    for pr in liste:
+        titel = pr.get("title", "").lower()
+        pr["unsere"] = sorted(t for t, w in THEMEN.items() if any(x in titel for x in w))
+    return liste
+
+
+# Woran wir gerade bauen. Ein offener PR, der eines dieser Worte im Titel
+# traegt, kann unsere Arbeit vorwegnehmen oder ihr widersprechen.
+THEMEN = {
+    "Felder und Widgets": ["widget", "input", "feld", "field", "formular", "composer"],
+    "Space-Konfiguration": ["space-dialog", "gruppen-dialog", "group-dialog", "space-konfig", "einstellungen"],
+    "Umschalter und Netzwerke": ["switcher", "netzwerk", "space-art", "workspace"],
+    "Register und Schichten": ["register", "manifest", "layer", "compose", "typ-register", "modul-register"],
+    "Profil": ["profil", "profile", "person"],
+    "Aussehen": ["aussehen", "theme", "farbe", "token", "design"],
+    "Module": ["modul", "module"],
+    "Laufzeit und Instanz": ["runtime", "branding", "instanz", "config"],
+}
+
+
 # ----------------------------------------------------------------- Bericht
 
-def bericht(von, commits, seine, naehte, tags, vor, nach, haken, haken_dateien):
+def bericht(von, commits, seine, naehte, tags, vor, nach, haken, haken_dateien, prs):
     kollision = sorted(seine & set(naehte))
     ruhig = sorted(set(naehte) - seine)
 
@@ -356,6 +397,29 @@ def bericht(von, commits, seine, naehte, tags, vor, nach, haken, haken_dateien):
             A("- `" + n + "`: " + ", ".join("`" + d + "`" for d in dazu))
         A("")
 
+    # --- Was er vorhat
+    A("## Was er vorhat")
+    A("")
+    if prs is None:
+        A("Nicht abgefragt. (`gh` fehlt oder `--ohne-pr` gesetzt.)")
+    elif not prs:
+        A("Keine offenen Pull Requests.")
+    else:
+        beruehrt = [p for p in prs if p.get("unsere")]
+        A(str(len(prs)) + " offene Pull Requests, davon **" + str(len(beruehrt)) + "** an Themen, an denen wir bauen.")
+        A("")
+        A("| PR | Titel | Stand | beruehrt |")
+        A("|---|---|---|---|")
+        for pr in sorted(prs, key=lambda x: (not x.get("unsere"), -x["number"])):
+            stand = "Entwurf" if pr.get("isDraft") else "offen"
+            unsere = ", ".join(pr.get("unsere") or []) or ""
+            A("| [#" + str(pr["number"]) + "](https://github.com/real-life-org/real-life-stack/pull/"
+              + str(pr["number"]) + ") | " + pr["title"].replace("|", "\|") + " | " + stand + " | " + unsere + " |")
+        if beruehrt:
+            A("")
+            A("**Vor dem Bauen ansehen:** Ein PR an unserem Thema kann unsere Arbeit vorwegnehmen oder ihr widersprechen. `gh pr view <nr> --repo real-life-org/real-life-stack`.")
+    A("")
+
     # --- Naechster Schritt
     A("## Naechster Schritt")
     A("")
@@ -369,6 +433,10 @@ def bericht(von, commits, seine, naehte, tags, vor, nach, haken, haken_dateien):
         A("- Vorher pruefen, ob ein neuer Haken eine Naht aufloest.")
     if spec:
         A("- Danach `docs/DEFINITION.md` gegen die geaenderte Spec lesen.")
+    if prs:
+        beruehrt = [p for p in prs if p.get("unsere")]
+        if beruehrt:
+            A("- Offene PRs an unseren Themen ansehen: " + ", ".join("#" + str(p["number"]) for p in beruehrt) + ".")
     A("- Nach dem Einspielen `docs/NAEHTE.md` neu messen und `memory/stand_trustdonation.md` nachziehen.")
 
     return "\n".join(z), len(commits)
@@ -389,10 +457,11 @@ def main():
     naehte = unsere_naehte(von)
     tags = neue_tags(von)
     haken, haken_dateien = haken_hinweise(von, commits, seine)
+    prs = offene_pr()
     vor = paket_versionen(von)
     nach = paket_versionen(SEIN_BRANCH) if commits else vor
 
-    text, anzahl = bericht(von, commits, seine, naehte, tags, vor, nach, haken, haken_dateien)
+    text, anzahl = bericht(von, commits, seine, naehte, tags, vor, nach, haken, haken_dateien, prs)
 
     BERICHTE.mkdir(parents=True, exist_ok=True)
     ziel = BERICHTE / ("anton-" + date.today().isoformat() + ".md")
@@ -411,6 +480,10 @@ def main():
         print("Unbenannt    " + str(len(unbenannt)) + (" <- eintragen!" if unbenannt else ""))
     print("Neue Haken   " + str(len(haken)))
     print("Neue Tags    " + str(len(tags)))
+    if prs is not None:
+        beruehrt = [p for p in prs if p.get("unsere")]
+        print("Offene PRs   " + str(len(prs)) + ", davon " + str(len(beruehrt)) + " an unseren Themen"
+              + (": " + ", ".join("#" + str(p["number"]) for p in beruehrt) if beruehrt else ""))
     print()
     print("Bericht: " + str(ziel.relative_to(REPO)))
     return 0

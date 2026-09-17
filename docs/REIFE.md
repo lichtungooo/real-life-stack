@@ -15,82 +15,48 @@ Diese Datei ist die ehrliche Liste. Sie wird nicht schoengeschrieben, und sie wi
 | **Architektur** | `ARCHITEKTUR.md`, Haken, Paketschnitt, Naht-Regeln, Grenze zum Protokoll |
 | **Naht-Register** | `NAEHTE.md`, alle 27 Stellen benannt, maschinell geprueft |
 | **Plan** | `PLAN.md`, fuenf Etappen mit vorfuehrbarem Ende |
-| **Werkzeuge** | `td-tools/anton-stand.py` (Schnittstelle zu Anton), `td-tools/pruefen.py` (alle Tore) |
-| **Skills** | elf, versioniert in `lichtungooo/trustdonation` |
-| **Gedaechtnis** | Stand, Architektur, drei Erfahrungen, Forge-Eintrag |
+| **Werkzeuge** | `td-tools/anton-stand.py` (Schnittstelle zu Anton, samt seinen offenen PRs), `td-tools/pruefen.py` (sechs Tore) |
+| **Skills** | fuenfzehn in zwei Plugins, versioniert in `lichtungooo/trustdonation` |
+| **Gedaechtnis** | Stand, Architektur, vier Erfahrungen, Forge-Eintrag |
 | **Der Prototyp** | live, mit Timos echten Spaces, ohne Login sichtbar |
+| **Betrieb** | Wacht von aussen, Sicherung gerechnet, Impressum und Datenschutz live |
+| **Entscheidungen** | `ENTSCHEIDUNGEN.md`, neun Eintraege mit Verfallsbedingung |
+| **Einstieg** | `EINSTIEG.md`, eine halbe Stunde bis zum laufenden Stand |
+
+---
+
+## Erledigt am 17.09.2026
+
+| Punkt | Was jetzt steht |
+|---|---|
+| **Tore laufen von selbst** | `.github/workflows/trustdonation-tore.yml` faehrt Typen, Regeln und `pruefen.py` bei jedem Push auf den Prototyp-Branch |
+| **Blick auf die laufende App** | `.github/workflows/wacht.yml` im Instanz-Repo prueft alle fuenfzehn Minuten **von aussen** Landing, App und `config.json`. Bei einer Stoerung ein Issue, bei Entwarnung geschlossen. Dazu `scripts/wacht.sh` fuer den Blick von innen auf den Container |
+| **Impressum und Datenschutz** | `/recht/` ist live. Was nur Timo weiss, steht als sichtbare Luecke darin. Dabei gefunden: die Fussleiste nannte einen Verein, den es noch nicht gibt |
+| **Sicherung** | Gerechnet statt vermutet: Landing, Konfiguration und Compose liegen in Git, Images sind neu baubar, Nutzerdaten liegen bei den Menschen. Uebrig bleibt die `.env` mit acht Zeilen. `scripts/sichern.sh` sichert sie, und der Wiederaufbau dauert unter einer Stunde. Steht in `trustdonation/docs/09-betrieb.md` |
+| **Entscheidungen** | `ENTSCHEIDUNGEN.md`, neun Eintraege nachgetragen, jeder mit verworfenen Alternativen und einer Verfallsbedingung |
+| **Einstieg fuer Dritte** | `EINSTIEG.md`: in einer halben Stunde vom leeren Ordner zum laufenden Prototyp |
+| **Release-Notizen** | `AUSLIEFERUNGEN.md`, proto-1 bis proto-6 nachgetragen |
+| **Antons offene Arbeit** | `anton-stand.py` liest jetzt auch seine offenen Pull Requests und markiert die an unseren Themen. Erster Lauf: 18 offen, 9 an unseren Themen, darunter #279 mit generischen Input-Widgets, die nah an unserem Feld-Register liegen |
+
+**Auf diesem Server gibt es keinen Zeitplandienst** (kein `cron`, `systemd --user` ohne Linger, kein root). Darum laeuft die Wacht von aussen, und die Sicherung haengt an der Auslieferung statt an der Uhr. Das ist der bessere Zuschnitt: Eine Pruefung auf demselben Rechner schweigt genau dann, wenn der Rechner weg ist.
 
 ---
 
 ## Was fehlt
 
-Nach Dringlichkeit, mit ehrlicher Einschaetzung des Aufwands.
+Zwei Punkte, beide benannt und keiner blockierend.
 
-### 1. Die Tore laufen nur, wenn jemand daran denkt
+### 1. Das Bundle ist doppelt so gross wie das Budget
 
-**Heute:** `pruefen.py` muss von Hand gestartet werden.
-**Fehlt:** Ein Arbeitsablauf in unserem Fork, der bei jedem Push prueft und meldet.
-**Warum es zaehlt:** Disziplin ist keine Architektur. Was nicht von selbst laeuft, faellt in der dritten Woche aus.
-**Aufwand:** klein. Antons Workflows liegen als Vorbild in `.github/workflows/`.
+**Heute:** 1758 KB groesstes Stueck, Budget 800 KB. Die Karte allein wiegt 1029 KB und wird immer geladen, auch von dem, der nie draufgeht. `dist/` gesamt 5,0 MB.
+**Naechster Schritt:** Die Karte nachladen statt mitliefern, ein `import()` am Registereintrag. Das beruehrt `apps/reference` und ist darum nach Etappe 0.5 billiger: dann ist es unsere Datei.
+**Gemessen:** `pruefen.py` zeigt es als Warnung, nicht als Blocker.
 
-### 2. Niemand sieht, wenn die laufende App bricht
+### 2. Barrierefreiheit ungeprueft
 
-**Heute:** Faellt `trustdonation.org/app` aus oder wirft die App bei einer Stiftung einen Fehler, erfahren wir es, wenn jemand anruft.
-**Fehlt:** Eine Verfuegbarkeitspruefung und ein Blick auf Fehler im Browser.
-**Warum es zaehlt:** Der Prototyp ist Pitch-Material. Ein Ausfall waehrend eines Stiftungsgespraechs kostet mehr als jede Funktion bringt.
-**Aufwand:** klein fuer die Verfuegbarkeit (ein Aufruf alle fuenf Minuten, Nachricht per Telegram), mittel fuer Fehler im Browser.
-
-### 3. Impressum und Datenschutzerklaerung auf der App
-
-**Heute:** Die Landingpage hat sie. `/app` ist eine eigene Flaeche und braucht sie ebenfalls, sobald Menschen sich dort anmelden.
-**Fehlt:** Beides, plus ein Satz, welche Daten der WoT-Connector wo speichert.
-**Warum es zaehlt:** Stiftungen pruefen so etwas. Es ist auch Pflicht.
-**Aufwand:** klein, aber es braucht eine Aussage, die stimmt. Fachlich gehoert es zu `docs/04-recht.md` im Instanz-Repo.
-
-### 4. Keine Sicherung
-
-**Heute:** Der Server traegt Images, Instanz-Konfiguration und die Landing. Die Konfiguration liegt in Git, die Images nicht.
-**Fehlt:** Eine Aussage, was bei einem Serverausfall verloren geht und wie lange der Wiederaufbau dauert.
-**Warum es zaehlt:** Solange die Antwort ungeprueft ist, ist sie eine Hoffnung.
-**Aufwand:** klein fuer die Aussage. Die Images lassen sich jederzeit neu bauen; entscheidend ist, dass der Bauordner und die `.env` gesichert sind.
-
-### 5. Das Bundle ist doppelt so gross wie das Budget
-
-**Heute:** 1758 KB groesstes Stueck, Budget 800 KB. Die Karte allein wiegt 1 MB und wird immer geladen.
-**Fehlt:** Nachladen der Karte, Messung der Ladezeit auf langsamer Leitung.
-**Warum es zaehlt:** Eine Stiftung oeffnet den Link auf dem Telefon im Zug.
-**Aufwand:** mittel. Skill `td-performance` hat die Zahlen und die Reihenfolge.
-
-### 6. Barrierefreiheit ungeprueft
-
-**Heute:** Nicht gemessen. Tastaturbedienung, Kontraste, Vorlesbarkeit sind offen.
-**Warum es zaehlt:** Ein Teil unserer Zielgruppe ist darauf angewiesen, und oeffentliche Foerderer fragen danach.
-**Aufwand:** klein fuer eine erste Messung, mittel fuer die Behebung.
-
-### 7. Entscheidungen stehen verstreut
-
-**Heute:** Anton fuehrt `docs/spec/decisions/`. Wir haben keins; unsere Entscheidungen stehen in Definition, Architektur und im Stand.
-**Fehlt:** Ein kurzer Eintrag je Entscheidung mit Datum, Alternativen und Grund.
-**Warum es zaehlt:** In sechs Monaten fragt jemand, warum der Marktplatz keine Bewertungen hat, und die Antwort muss auffindbar sein.
-**Aufwand:** klein, laufend.
-
-### 8. Kein Einstieg fuer Dritte
-
-**Heute:** Das Instanz-Repo hat `AGENTS.md` und einen Konzept-Index. Der Prototyp-Branch hat Definition und Architektur, aber keinen Weg, der sagt: „So kommst du in einer halben Stunde zum laufenden Stand."
-**Warum es zaehlt:** Timo will, dass andere mitmachen. Ohne Einstieg macht niemand mit.
-**Aufwand:** klein.
-
-### 9. Keine Release-Notizen
-
-**Heute:** `proto-1` bis `proto-6` ohne Vermerk, was sich geaendert hat. Die Commit-Titel tragen es, aber niemand liest sie.
-**Warum es zaehlt:** Beim Zurueckdrehen muss man wissen, was man verliert.
-**Aufwand:** klein, laufend.
-
-### 10. Antons offene Arbeit ist unsichtbar
-
-**Heute:** `anton-stand.py` sieht Commits, Tags und Abhaengigkeiten. Es sieht nicht, was er **vorhat**: offene Pull Requests und Issues.
-**Warum es zaehlt:** Ein grosser Umbau bei ihm kuendigt sich in einem PR an, Wochen bevor er landet. Wer das sieht, baut nicht gegen die Wand.
-**Aufwand:** klein, wenn `gh` verfuegbar ist.
+**Heute:** Nicht gemessen. Tastaturbedienung, Kontraste und Vorlesbarkeit sind offen.
+**Naechster Schritt:** Ein Lauf mit Lighthouse oder axe gegen `trustdonation.org` und `/app`, dann die Funde sortieren. Eine erste Messung kostet eine halbe Stunde.
+**Warum es zaehlt:** Ein Teil der Menschen, die wir erreichen wollen, ist darauf angewiesen, und oeffentliche Foerderer fragen danach.
 
 ---
 
@@ -108,8 +74,6 @@ Nach Dringlichkeit, mit ehrlicher Einschaetzung des Aufwands.
 
 ## Die naechsten drei
 
-Wenn nur drei Dinge gehen, dann diese:
-
 1. **Etappe 0.5** aus `PLAN.md`. Jede weitere Zeile im falschen Paket erhoeht die Kosten.
-2. **Punkt 1 und 2 dieser Liste.** Tore, die von selbst laufen, und ein Blick auf die laufende App. Zusammen ein halber Tag, und danach schlaeft man ruhiger.
-3. **Punkt 3.** Impressum und Datenschutz, bevor der Link an eine Stiftung geht.
+2. **Timo fuellt die Luecken im Impressum.** Anschrift, Vorstand, Registergericht, Vereinsregisternummer, eine gelesene E-Mail. Solange sie offen sind, hat die Seite eine sichtbare Baustelle.
+3. **Eine erste Messung der Barrierefreiheit.** Eine halbe Stunde, und wir wissen, wo wir stehen.

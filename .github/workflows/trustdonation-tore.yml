@@ -1,0 +1,64 @@
+# Faehrt die Tore aus docs/ARCHITEKTUR.md bei jedem Push auf den Prototyp.
+#
+# Disziplin ist keine Architektur: Was von Hand laufen muss, faellt in der
+# dritten Woche aus. Darum prueft das hier ohne Zutun.
+#
+# Laeuft nur auf unserem Branch. Antons master beruehrt es nicht.
+name: trustdonation Tore
+
+on:
+  push:
+    branches: [trustdonation]
+  pull_request:
+    branches: [trustdonation]
+  workflow_dispatch:
+
+jobs:
+  tore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Die Naht-Messung vergleicht mit Antons Stand und braucht darum die
+          # ganze Geschichte, nicht nur den letzten Commit.
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Abhaengigkeiten
+        run: pnpm install --frozen-lockfile
+
+      - name: Tor 1, Typen
+        run: pnpm build
+
+      - name: Tor 2, Regeln
+        run: pnpm -r test
+
+      # Antons Stand holen, damit die Naht-Messung eine Basis hat. Schlaegt es
+      # fehl (etwa ohne Zugriff), laeuft der Rest weiter.
+      - name: Antons Stand holen
+        continue-on-error: true
+        run: |
+          git remote add upstream https://github.com/real-life-org/real-life-stack.git || true
+          git fetch upstream master:refs/remotes/origin/master --tags || true
+
+      - name: Tore 3 bis 6
+        run: python td-tools/pruefen.py --schnell
+
+      - name: Bericht sichern
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: naht-bericht
+          path: td-tools/berichte/
+          if-no-files-found: ignore
+          retention-days: 30
