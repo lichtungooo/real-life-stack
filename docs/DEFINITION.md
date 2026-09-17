@@ -349,7 +349,22 @@ Regeln:
 3. Ein Space-Profil ist **so oeffentlich wie der Space**. Antons Freigabe-Mechanik aus Spec 12 gilt fuer Menschen; ein Space regelt das ueber seine Sichtbarkeit.
 4. Was eine Einrichtung ueber **sich** sagt, steht im Space. Was **andere** ueber sie sagen, sind Bestaetigungen ([Spec 05](spec/05-confirmations-and-trust.md)) und Relationen ([Spec 08](spec/08-relation-records.md)). Die beiden werden nie vermischt.
 
-Daraus folgt der Satz, der auf der Landingpage steht: Ein Eintrag, den wir recherchiert haben, gehoert der Einrichtung, sobald sie ihn uebernimmt. Technisch heisst das: Sie wird Admin ihres Space.
+Daraus folgt der Satz, der auf der Landingpage steht: Ein Eintrag, den wir recherchiert haben, gehoert der Einrichtung, sobald sie ihn uebernimmt.
+
+### Der Weg vom Eintrag zum Space
+
+Ein recherchierter Eintrag ist **noch kein Space**. Er ist ein `place`-Item mit Position, Namen und dem, was oeffentlich bekannt ist.
+
+| | Eintrag | Space |
+|---|---|---|
+| Form | `place`-Item auf der Karte | Group mit `kind: "stiftung"` |
+| Wer pflegt ihn | wir, aus oeffentlicher Recherche | die Einrichtung selbst |
+| Was er traegt | Name, Sitz, Schwerpunkte, Quelle | dazu Mitglieder, Module, Profil, eigene Inhalte |
+| Wieviele | hunderte | so viele, wie uebernommen haben |
+
+**Warum nicht gleich Spaces:** Ein Space ist ein Arbeitsraum. 234 davon waeren im Umschalter unbenutzbar, und keiner haette ein Mitglied. Ein Punkt auf der Karte braucht keinen Arbeitsraum, er braucht einen Ort und einen Namen.
+
+**Der Uebergang** ist der Moment, auf den das ganze Vorhaben zielt: Eine Stiftung sieht ihren Eintrag, erkennt sich wieder und uebernimmt ihn. Aus dem Item wird ein Space, sie wird sein Admin, und ab da sagt sie selbst, was sie foerdert. Der Eintrag verschwindet dann als Item und lebt als Space weiter.
 
 ---
 
