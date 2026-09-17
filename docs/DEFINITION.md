@@ -4,7 +4,7 @@
 **Ort:** Branch `trustdonation` in `lichtungooo/real-life-stack`
 **Verhältnis zur Spec:** ergänzend, nie widersprechend
 
-Diese Datei sagt, wie wir weiterbauen. Sie steht neben Antons [Spec](spec/README.md) und erweitert sie um die Ebenen, die unser Vorhaben braucht: Arten von Spaces, Felder, Komponenten, ein Marktplatz für Module, Profile und das Matching.
+Diese Datei sagt, wie wir weiterbauen. Sie steht neben Antons [Spec](spec/README.md) und erweitert sie um die Ebenen, die unser Vorhaben braucht: Arten von Spaces, Felder, Komponenten, ein Baukasten, Profile und das Matching.
 
 **Die Spec gewinnt.** Wo diese Datei etwas anders sähe als `docs/spec/`, gilt die Spec, und diese Datei wird berichtigt. Wo die Spec schweigt, gilt diese Datei.
 
@@ -172,7 +172,7 @@ Was unser Vorhaben braucht und in Antons Spec bewusst offen ist.
 |---|---|---|
 | **Felder je Art** | Eine Stiftung trägt andere Angaben als ein Projekt. `spaceKinds` trägt heute nur Name und Farbe. | offen |
 | **Feld-Register** | Ein neues Feld erscheint heute nur, wenn jemand Code schreibt, der es kennt. | Typ-Register deckt Item-Typen, nicht einzelne Felder |
-| **Modul-Marktplatz** | Wie ein Modul angeboten, gefunden und in eine Instanz genommen wird. | ausdrücklich offen: „Ein späteres Plugin-Konzept wäre eine eigene Sache mit eigenen Regeln" ([Spec 01, Regel 4](spec/01-app-composition.md)) |
+| **Baukasten** | Wie ein Baustein angeboten, gefunden und in eine Instanz genommen wird. | ausdrücklich offen: „Ein späteres Plugin-Konzept wäre eine eigene Sache mit eigenen Regeln" ([Spec 01, Regel 4](spec/01-app-composition.md)) |
 | **Profil eines Space** | [Spec 12](spec/12-profile.md) definiert das Profil eines **Menschen**. Ein Stiftungsprofil ist ein Space. | offen |
 | **Matching** | Wie ein Vorschlag entsteht und wie er begründet wird. | nicht Gegenstand der Spec |
 | **Angebot und Bedarf** | `docs/modules/marketplace.md` hält zwei Sätze. | früher Brainstorm |
@@ -278,15 +278,55 @@ Das Typ-Register sagt, **welche Felder** ein Typ mitbringt (über die Vokabular-
 
 ---
 
-## Teil 8: Der Marktplatz für Module
+## Teil 8: Der Baukasten
 
-**Frage, die dieser Abschnitt beantwortet:** Wie kommt ein Modul, das jemand anders gebaut hat, in meinen Space?
+**Frage, die dieser Abschnitt beantwortet:** Wie kommt etwas, das jemand anders gebaut hat, in meinen Space, auf meine Seite, in meine Instanz?
 
-Antons Spec lässt das ausdrücklich offen und sagt zugleich, was **nicht** geht: Das Modul-Register wird vor dem ersten Render einmal zusammengesetzt und eingefroren. Ein Space wählt aus dem Katalog, er trägt nichts bei. Ein Marktplatz, der zur Laufzeit fremden Code nachlädt, wäre ein Bruch dieser Regel und ein offenes Tor dazu.
+**Der Name ist eine Festlegung.** Timo am 17.09.2026: *"Ich würde das Ganze nicht Marktplatz nennen wollen, weil der Marktplatz ist für mich ein Marktplatz, den wir nachher brauchen im Web of Trust."*
+
+| Wort | Wofür es bei uns steht |
+|---|---|
+| **Baukasten** | woraus wir bauen: Rohstoffe, Bauteile, Muster, Felder, Arten, Module, Vorlagen, Sprache |
+| **Marktplatz** | wo Menschen einander Angebot und Bedarf zeigen. Siehe Teil 5, Lücke „Angebot und Bedarf" |
+
+Ein Baustein ist Werkzeug. Ein Angebot ist ein Anliegen. Wer beides denselben Namen gibt, verwechselt sie später im Code.
+
+### Acht Schichten, drei Welten
+
+Unsere drei Welten tragen **verschiedene Materialien**: Die Landingpage ist HTML und CSS, die App ist React, das Web of Trust sind Daten. Ein Knopf kann darum nicht in allen dreien dasselbe Stück sein.
+
+Was in allen dreien dasselbe sein kann, liegt eine Ebene tiefer. Darauf steht die Schichtung:
+
+| Schicht | Was drin liegt | Reicht bis |
+|---|---|---|
+| **Rohstoffe** | Farben, Schriften, Abstände, Rundungen, hell und dunkel | alle drei Welten |
+| **Bauteile** | Knopf, Karte, Band, Feld, Etikett, Avatar, Kartennadel | je Welt eine Ausprägung, ein Aussehen |
+| **Muster** | Hero, Einladung, Kontaktblock, Profilkopf, Projektvorstellung | Landingpage und App |
+| **Felder** | Förderrahmen, Antragsfrist, Anschrift, Schwerpunkt, Rechtsform | App und Daten. Siehe Teil 7 |
+| **Arten** | Stiftung, Projekt, Verein, Netzwerk, Unternehmen, Mensch | Web of Trust. Siehe Teil 6 |
+| **Module** | Karte, Liste, Board, Kalender, dazu eigene wie Förderfinder | App |
+| **Vorlagen** | eine fertige Stiftungsseite, ein Space „Stiftung", die Fragebögen | alles zusammen |
+| **Sprache** | Skills, Textbausteine: Erstansprache, Einladung, Absage | überall |
+
+**Die Rohstoffe liegen schon.** `ds-bundle/tokens/tokens.css` im Instanz-Repo führt sie als CSS-Variablen, für Landingpage und App gemeinsam. Bauteile (Band, Knöpfe, Karten) und Muster (Hero, Einladung) stehen daneben.
+
+**Was jeder Eintrag zusätzlich trägt:**
+
+| Feld | Warum |
+|---|---|
+| `herkunft` | wer es gebaut hat, als Relation auf ein Profil. Dann trägt jeder Baustein seine Vertrauenskette mit |
+| `belege` | wo es schon läuft. „Dieses Muster steht auf trustdonation.org." Das ist wertvoller als jede Bewertung und passt zu Grundsatz 2: Fakten statt Noten |
+| `abstand` | wie weit eine Übernahme sich vom Original entfernt hat. Ohne das laufen zwanzig Stiftungsseiten auseinander, und niemand merkt es, bis die Marke zerfällt |
+
+---
+
+### Module im Baukasten
+
+Antons Spec lässt das ausdrücklich offen und sagt zugleich, was **nicht** geht: Das Modul-Register wird vor dem ersten Render einmal zusammengesetzt und eingefroren. Ein Space wählt aus dem Katalog, er trägt nichts bei. Ein Baukasten, der zur Laufzeit fremden Code nachlädt, wäre ein Bruch dieser Regel und ein offenes Tor dazu.
 
 Darum zwei Stufen, und die erste kommt ohne fremden Code aus.
 
-### Was ein Marktplatz-Eintrag ist
+#### Was ein Modul-Eintrag ist
 
 **Ein Item, kein Code.** Wer ein Modul anbietet, veröffentlicht ein Item vom Typ `module` in einem Netzwerk. Es trägt:
 
@@ -302,7 +342,7 @@ Darum zwei Stufen, und die erste kommt ohne fremden Code aus.
 | `herkunft` | wer es gebaut hat, als Relation auf einen Space oder ein Profil |
 | `bezug` | bei `art: "code"`: wo das Paket liegt |
 
-### Stufe 1: Datenmodule
+#### Stufe 1: Datenmodule
 
 Ein Datenmodul besteht aus **Feldern aus dem Feld-Register** und einer der vorhandenen Ansichten. Es braucht keine Zeile fremden Code.
 
@@ -318,7 +358,7 @@ Regeln:
 2. Ein Datenmodul **führt keine Typ-Verzweigung**. Es zeigt, was seine Felder tragen (Muster 4).
 3. Eine Instanz, die den Eintrag **nicht** hat, lässt die Id in `Group.data.modules` stehen und zeigt sie nicht (Muster 5). Ein Space verliert sein Modul nicht, weil er gerade in einer anderen App geöffnet wird.
 
-### Stufe 2: Codemodule
+#### Stufe 2: Codemodule
 
 Später und mit eigenen Regeln. Was jetzt schon feststeht:
 
@@ -327,9 +367,11 @@ Später und mit eigenen Regeln. Was jetzt schon feststeht:
 3. Es wird beim **Bau der Instanz** eingebunden. Nachladen zur Laufzeit ist kein Ziel.
 4. Bis dahin ist der Weg für ein Codemodul derselbe wie heute: ein Pull Request.
 
-### Was der Marktplatz nicht ist
+### Was der Baukasten nicht ist
 
-Kein Laden, keine Bezahlung, keine Bewertungen, keine Rangliste. Wer ein Modul sucht, sieht, was es tut und wer es gebaut hat.
+Kein Laden, keine Bezahlung, keine Bewertungen, keine Rangliste. Wer einen Baustein sucht, sieht, was er tut, wer ihn gebaut hat und wo er läuft.
+
+Und er ist **kein Marktplatz**: Dort zeigen Menschen einander, was sie brauchen und was sie geben können. Das ist ein Anliegen, kein Werkzeug, und es bekommt eine eigene Definition.
 
 ---
 

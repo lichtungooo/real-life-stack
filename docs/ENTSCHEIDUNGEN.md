@@ -2,7 +2,7 @@
 
 Jede Entscheidung mit Wirkung bekommt hier einen Eintrag: **was**, **warum**, **welche Alternative** und **was sie ungültig machen würde**.
 
-In sechs Monaten fragt jemand, warum der Marktplatz keine Bewertungen hat. Die Antwort muss auffindbar sein, sonst wird sie neu verhandelt.
+In sechs Monaten fragt jemand, warum der Baukasten keine Bewertungen hat. Die Antwort muss auffindbar sein, sonst wird sie neu verhandelt.
 
 Anton führt dasselbe in `docs/spec/decisions/` für den Stack. Diese Datei ist unsere Ebene.
 
@@ -66,7 +66,7 @@ Anton führt dasselbe in `docs/spec/decisions/` für den Stack. Diese Datei ist 
 
 ---
 
-## E5. Der Marktplatz ist ein Katalog von Items
+## E5. Der Baukasten ist ein Katalog von Items
 
 **17.09.2026**
 

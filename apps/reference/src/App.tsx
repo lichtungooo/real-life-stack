@@ -1020,13 +1020,14 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
       <IncomingEventDialogs onCloseVerifyDialog={() => { if (topDialog === "verify") popDialog() }} />
 
       {/* Prototyp trustdonation: die recherchierten Stiftungen in einen echten
-          Space uebernehmen. Ueber die Adresse ausgeloest, damit es keinen Knopf
-          gibt, den eine Stiftung versehentlich drueckt:
+          Space übernehmen. Über die Adresse ausgelöst, damit es keinen Knopf
+          gibt, den eine Stiftung versehentlich drückt:
           .../<space>/feed?connector=wot&import=stiftungen */}
       <StiftungenImport
         connector={connector}
         aktiv={new URLSearchParams(window.location.search).get("import") === "stiftungen"}
         spaceName={activeWorkspace?.name}
+        beispielwelt={activeConnectorId === "local"}
       />
 
       {/* Connector FAB — bottom-left, above BottomNav (only with ?dev URL param) */}

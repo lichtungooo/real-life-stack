@@ -91,18 +91,30 @@ export function StiftungenImport({
   connector,
   aktiv,
   spaceName,
+  beispielwelt,
 }: {
   connector: DataInterface | null
   aktiv: boolean
   spaceName?: string
+  /** Der local-Connector kann schreiben, nur nützt es hier nichts: Die
+      Stiftungen liegen dort bereits als Seed. */
+  beispielwelt?: boolean
 }) {
   const [stand, setStand] = useState<ImportStand>({ art: "ruht" })
 
   useEffect(() => {
     if (aktiv && stand.art === "ruht") {
+      if (beispielwelt) {
+        setStand({
+          art: "fehler",
+          text: "Die App zeigt gerade Beispieldaten, und dort liegen die Stiftungen schon. "
+            + "Zum Übernehmen zuerst anmelden: ?connector=wot",
+        })
+        return
+      }
       setStand({ art: "fragt", anzahl: stiftungen().length })
     }
-  }, [aktiv, stand.art])
+  }, [aktiv, beispielwelt, stand.art])
 
   if (!aktiv || stand.art === "ruht") return null
 
@@ -186,7 +198,7 @@ export function StiftungenImport({
 
         {stand.art === "fehler" && (
           <>
-            <h2 className="text-lg font-semibold">Das ging nicht</h2>
+            <h2 className="text-lg font-semibold">{stand.text.startsWith("Die App zeigt") ? "Schon da" : "Das ging nicht"}</h2>
             <p className="mt-2 text-sm text-muted-foreground">{stand.text}</p>
             <div className="mt-5 flex justify-end">
               <button

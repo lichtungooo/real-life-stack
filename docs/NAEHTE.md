@@ -89,7 +89,7 @@ Stellen, die nur deshalb Nähte sind, weil wir in Antons Referenz-App gearbeitet
 
 | Datei | Umfang | Was wir tun | Danach |
 |---|---|---|---|
-| `apps/reference/src/App.tsx` | +43 / -2 | Komposition, Connector-Wahl, Musterdaten | unsere Datei |
+| `apps/reference/src/App.tsx` | +87 / -13 | Komposition, Connector-Wahl, Musterdaten, Beispieldaten-Hinweis, Stiftungs-Import | unsere Datei |
 | `apps/reference/src/hooks/use-workspace-routing.ts` | +78 / -11 | Ordnung der Spaces, Netzwerk-Felder | unsere Datei |
 | `apps/reference/public/config.json` | neu | Testkonfiguration | unsere Datei |
 | `packages/toolkit/src/components/layout/workspace-switcher.stories.tsx` | +37 | Beispiele für die Gliederung | zieht mit A2 |

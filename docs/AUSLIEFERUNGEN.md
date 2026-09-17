@@ -6,7 +6,9 @@ Das Image liegt auf dem Server als `trustdonation-app:proto-N`. Zurückgedreht w
 
 | Stand | Commit | Datum | Was drin ist |
 |---|---|---|---|
-| **proto-10** | `97fcdb56` | 17.09.2026 | **Echte Umlaute und erkennbare Pins.** 1767 Stellen mit ASCII-Ersatz berichtigt, in Dokumenten, Kommentaren, Anzeigetexten und Musterdaten. Die Stiftungs-Pins tragen jetzt alle die Farbe ihrer Art statt der ihres ersten Themas, und wer sich einen Ort teilt, bekommt einen festen kleinen Versatz: In Berlin lagen 28 auf einer Koordinate. |
+| **proto-12** | `160e319d` | 17.09.2026 | **Die Stiftungen lassen sich teilen.** Wer angemeldet ist, holt die 234 recherchierten Stiftungen über `?import=stiftungen` in seinen eigenen Space. Danach laufen sie über das Relay und jedes Mitglied sieht sie. Davor eine Rückfrage mit dem Namen des Space, denn zurücknehmen lässt sich das nicht mit einem Klick. Dazu: **die Lücke „ohne Anmeldung lesen" benannt** und als Frage an Anton gestellt. Seed-Version 9. |
+| proto-11 | `9c7996a6` | 17.09.2026 | **Beispieldaten sind als solche erkennbar.** Timo hat die App geöffnet, sein Profilbild nicht wiedererkannt und seine Kontakte vermisst. Nichts war kaputt: Die App startet mit dem local-Connector. Der Fehler war unserer, die App sagte nicht, was sie zeigt. In der Leiste steht jetzt „Beispieldaten · Mein Konto" und führt nach `?connector=wot`. 15 Erwartungen im Durchgang. |
+| proto-10 | `97fcdb56` | 17.09.2026 | **Echte Umlaute und erkennbare Pins.** 1767 Stellen mit ASCII-Ersatz berichtigt, in Dokumenten, Kommentaren, Anzeigetexten und Musterdaten. Die Stiftungs-Pins tragen jetzt alle die Farbe ihrer Art statt der ihres ersten Themas, und wer sich einen Ort teilt, bekommt einen festen kleinen Versatz: In Berlin lagen 28 auf einer Koordinate. |
 | proto-9 | `1989b69a` | 17.09.2026 | **234 recherchierte Stiftungen auf der Karte**, als place-Items im Netzwerk trustdonation. 70 davon ausgearbeitet (Schwerpunkte, Förderrahmen, Antragsweg), 164 mit Name, Sitz und Schwerpunkten. Jeder Eintrag nennt seine Quelle. Die Karte bündelt von selbst und steht nach 3,4 Sekunden; die Startlast steigt um 22 KB. |
 | proto-8 | `3071e99d` | 17.09.2026 | **Der Durchgang läuft als Test.** Zwölf Erwartungen aus dem Testplan mit Playwright, in achtzehn Sekunden. Dazu: trustdonation trägt `#b16105` statt `#d97706`, damit der aktive Reiter lesbar ist (gerechnet: 3,19 auf 4,58). Live sind damit null schwere Zugangsfunde. |
 | proto-7 | `a1b24bf3` | 17.09.2026 | **Eigene Pakete und messbare Qualität.** Die Musterdaten liegen in `packages/td-core` und gehen als Seed an den Connector; Antons Datendateien sind unberührt. Die Startlast fällt von 1596 KB auf 864 KB, weil ein Avatar mit 733 KB in den Daten steckte. Der Hell-Dunkel-Umschalter hat einen Namen, Zoomen ist wieder erlaubt, die Seite hat eine Ueberschrift: null Zugangsfunde lokal. Die Karte wird nachgeladen. |
@@ -19,20 +21,4 @@ Das Image liegt auf dem Server als `trustdonation-app:proto-N`. Zurückgedreht w
 
 ## Was noch nicht ausgeliefert ist
 
-| Commit | Was |
-|---|---|
-| `9a33f2b4` | `DEFINITION.md` und `PLAN.md` |
-| `c8bd62fe` | `ARCHITEKTUR.md`, `NAEHTE.md`, Verweis in `AGENTS.md` |
-| `116355b6` | Naht-Register vervollständigt, `td-tools/`, `REIFE.md` |
-
-Dokumente und Werkzeuge ändern die laufende App nicht. Sie gehen mit der nächsten Auslieferung mit, die Code berührt.
-
-## Wie ein Eintrag entsteht
-
-Beim Ausliefern, vor dem Umschalten von `RLS_IMAGE_TAG`:
-
-1. Neue Zeile oben, mit Stand, Commit, Datum.
-2. **Was drin ist**, in ein bis drei Sätzen. Nicht die Commit-Titel abschreiben, sondern sagen, was ein Mensch merkt.
-3. Wenn etwas herausgefallen ist: hinschreiben. Beim Zurückdrehen zählt genau das.
-
-Der Ablauf steht im Skill `td-ausliefern`.
+Nichts. Der Stand auf `trustdonation.org/app` ist `160e319d`.

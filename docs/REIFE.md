@@ -74,7 +74,7 @@ Drei Punkte, alle benannt, keiner blockierend.
 | Sache | Warum sie wartet |
 |---|---|
 | Andere KI-Modelle einbinden | Timo: "erstmal nicht Priorität" |
-| Codemodule im Marktplatz | erst wenn Datenmodule stehen |
+| Codemodule im Baukasten | erst wenn Datenmodule stehen |
 | Mehrsprachigkeit der App | die Landing ist dreisprachig, die App folgt, wenn jemand sie braucht |
 | Mobile App als Paket | Antons Capacitor-Aufbau steht, wir brauchen ihn noch nicht |
 | Eigene Server-Dienste | solange der WoT-Connector trägt, brauchen wir kein Backend |
