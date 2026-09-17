@@ -2,5 +2,5 @@
   "name": "td-tools",
   "private": true,
   "type": "module",
-  "description": "Werkzeuge des Prototyps: Antons Stand, Tore, Startlast, Zugang, Durchgang. Kein Workspace-Paket, nur ein Modul-Bereich fuer die Playwright-Konfiguration."
+  "description": "Werkzeuge des Prototyps: Antons Stand, Tore, Startlast, Zugang, Durchgang. Kein Workspace-Paket, nur ein Modul-Bereich für die Playwright-Konfiguration."
 }

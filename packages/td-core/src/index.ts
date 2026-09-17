@@ -1,8 +1,8 @@
-// Was trustdonation an Regeln und Daten mitbringt, ohne Oberflaeche.
+// Was trustdonation an Regeln und Daten mitbringt, ohne Oberfläche.
 //
 // Dieses Paket kennt Antons `data-interface`, nie sein Toolkit und nie React.
-// Ein Connector oder ein Pruefwerkzeug soll es lesen koennen, ohne eine
-// Oberflaeche zu laden (ARCHITEKTUR Teil 3, Regel 2).
+// Ein Connector oder ein Prüfwerkzeug soll es lesen können, ohne eine
+// Oberfläche zu laden (ARCHITEKTUR Teil 3, Regel 2).
 export {
   musterdaten,
   musterGroups,

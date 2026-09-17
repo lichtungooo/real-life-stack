@@ -1,8 +1,8 @@
-// Ein Architektur-Test: Die Regel, wann eine Art vollstaendig ist, darf es
+// Ein Architektur-Test: Die Regel, wann eine Art vollständig ist, darf es
 // nur einmal geben. Sie liegt in der UI-freien Schicht; `td-ui` reicht sie
 // weiter, statt sie zu doppeln.
 //
-// Ohne diesen Test faellt eine zweite Fassung erst auf, wenn beide
+// Ohne diesen Test fällt eine zweite Fassung erst auf, wenn beide
 // auseinanderlaufen, und das ist genau der Fehler, gegen den die zwei
 // Schichten gebaut sind (DEFINITION, Muster 1 und 2).
 import { describe, it, expect } from "vitest"

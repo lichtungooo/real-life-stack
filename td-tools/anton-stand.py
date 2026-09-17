@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-"""Sagt, was sich bei Anton getan hat und was das fuer uns heisst.
+"""Sagt, was sich bei Anton getan hat und was das für uns heißt.
 
 Holt seinen Stand, vergleicht ihn mit unserem, und beantwortet vier Fragen:
 
-1. Was hat er geaendert, und was davon trifft unsere Naehte?
-2. Hat er neue Erweiterungspunkte gebaut, die eine Naht aufloesen koennten?
-3. Was hat er veroeffentlicht (Tags, Versionen, Abhaengigkeiten)?
+1. Was hat er geändert, und was davon trifft unsere Nähte?
+2. Hat er neue Erweiterungspunkte gebaut, die eine Naht auflösen könnten?
+3. Was hat er veröffentlicht (Tags, Versionen, Abhängigkeiten)?
 4. Sollen wir jetzt aktualisieren, und was kostet es?
 
 Schreibt einen Bericht nach td-tools/berichte/ und eine Kurzfassung auf die
@@ -29,7 +29,7 @@ BERICHTE = REPO / "td-tools" / "berichte"
 UNSER_BRANCH = "trustdonation"
 SEIN_BRANCH = "origin/master"
 
-# Commits, die an diesen Stellen arbeiten, koennen Naehte aufloesen: Anton baut
+# Commits, die an diesen Stellen arbeiten, können Nähte auflösen: Anton baut
 # dort seine Register. Findet sich eines davon in einem neuen Commit, lohnt der
 # genaue Blick, bevor wir weiter an einer Naht festhalten.
 HAKEN_DATEIEN = [
@@ -45,7 +45,7 @@ HAKEN_WORTE = re.compile(
 
 
 # Dateien, die Antons Release-Werkzeug selbst pflegt. Eine Aenderung darin ist
-# nie eine Naht: sie entsteht beim Veroeffentlichen, nicht durch uns. Ohne
+# nie eine Naht: sie entsteht beim Veröffentlichen, nicht durch uns. Ohne
 # diesen Filter meldet der Bericht zwei Dutzend Stellen, die niemanden
 # beschaeftigen, und die echten gehen darin unter.
 RAUSCHEN = re.compile(
@@ -71,8 +71,8 @@ def zeilen(text):
 def basis():
     """Der Commit, auf dem unser Branch aufsetzt.
 
-    `--basis <sha>` sticht ihn: so laesst sich ein Bericht auch gegen einen
-    aelteren Stand ziehen, etwa um einen vergangenen Sprung nachzulesen.
+    `--basis <sha>` sticht ihn: so lässt sich ein Bericht auch gegen einen
+    älteren Stand ziehen, etwa um einen vergangenen Sprung nachzulesen.
     """
     if "--basis" in sys.argv:
         i = sys.argv.index("--basis")
@@ -96,7 +96,7 @@ def seine_dateien(von):
 
 
 def unsere_naehte(von):
-    """Dateien, die schon bei ihm existierten und die wir geaendert haben."""
+    """Dateien, die schon bei ihm existierten und die wir geändert haben."""
     geaendert = set(zeilen(git("diff", "--name-only", von + "..HEAD")))
     naehte = {}
     for d in sorted(geaendert):
@@ -119,7 +119,7 @@ def unsere_naehte(von):
 def eingetragene_naehte():
     """Welche Dateien stehen in docs/NAEHTE.md?
 
-    Das Register ist die Wahrheit darueber, was wir bewusst beruehren. Was
+    Das Register ist die Wahrheit darüber, was wir bewusst berühren. Was
     gemessen wird und dort fehlt, ist eine unbenannte Naht: laut Architektur
     Teil 4 ein Fehler, und genau den soll dieser Bericht sichtbar machen.
     """
@@ -129,11 +129,11 @@ def eingetragene_naehte():
     text = datei.read_text(encoding="utf-8")
     # Pfade stehen dort in Codezeichen: `packages/toolkit/src/...`, `AGENTS.md`,
     # `deploy/app/.env.example`. Statt Endungen zu raten wird jeder Fund gegen
-    # den Arbeitsbaum geprueft: was es wirklich gibt, zaehlt als eingetragen.
-    # Eine Endungsliste hat genau hier zwei Eintraege uebersehen.
+    # den Arbeitsbaum geprüft: was es wirklich gibt, zählt als eingetragen.
+    # Eine Endungsliste hat genau hier zwei Einträge übersehen.
     # Kein Punkt verlangt: `deploy/app/Dockerfile` hat keinen, und genau der
-    # ging darum durch. Jeder Fund wird gegen den Arbeitsbaum geprueft, das
-    # sortiert Fliesstext zuverlaessiger aus als jedes Muster.
+    # ging darum durch. Jeder Fund wird gegen den Arbeitsbaum geprüft, das
+    # sortiert Fließtext zuverlässiger aus als jedes Muster.
     roh = re.findall(r"`([A-Za-z0-9_][A-Za-z0-9_./-]*)`", text)
     return {r for r in roh if (REPO / r).is_file()}
 
@@ -184,7 +184,7 @@ def haken_hinweise(von, commits, seine):
 def offene_pr():
     """Was Anton vorhat, nicht nur was er getan hat.
 
-    Ein grosser Umbau kuendigt sich in einem Pull Request an, Wochen bevor er
+    Ein großer Umbau kündigt sich in einem Pull Request an, Wochen bevor er
     landet. Wer das sieht, baut nicht gegen die Wand. Braucht `gh`; fehlt es,
     bleibt der Abschnitt leer statt den Bericht zu verhindern.
     """
@@ -208,7 +208,7 @@ def offene_pr():
 
 
 # Woran wir gerade bauen. Ein offener PR, der eines dieser Worte im Titel
-# traegt, kann unsere Arbeit vorwegnehmen oder ihr widersprechen.
+# trägt, kann unsere Arbeit vorwegnehmen oder ihr widersprechen.
 THEMEN = {
     "Felder und Widgets": ["widget", "input", "feld", "field", "formular", "composer"],
     "Space-Konfiguration": ["space-dialog", "gruppen-dialog", "group-dialog", "space-konfig", "einstellungen"],
@@ -255,7 +255,7 @@ def bericht(von, commits, seine, naehte, tags, vor, nach, haken, haken_dateien, 
         A("Unsere Naehte stehen bei **" + str(len(naehte)) + " Dateien**. Solange er nichts aendert, kosten sie nichts.")
         A("")
         # Gerade in der Ruhe lohnt der Abgleich: Aufraeumen kostet hier nichts
-        # und spart beim naechsten Sprung die Ueberraschung.
+        # und spart beim nächsten Sprung die Ueberraschung.
         eingetragen = eingetragene_naehte()
         if eingetragen is not None:
             unbenannt = sorted(set(naehte) - eingetragen)
@@ -302,7 +302,7 @@ def bericht(von, commits, seine, naehte, tags, vor, nach, haken, haken_dateien, 
     A("")
 
     # --- Kollisionen
-    A("## Was unsere Naehte trifft")
+    A("## Was unsere Nähte trifft")
     A("")
     if kollision:
         A("| Datei | unser Umfang | seine Commits |")
@@ -360,7 +360,7 @@ def bericht(von, commits, seine, naehte, tags, vor, nach, haken, haken_dateien, 
 
     # --- Spec
     spec = sorted(d for d in seine if d.startswith("docs/spec/"))
-    A("## Was sich an der Spec geaendert hat")
+    A("## Was sich an der Spec geändert hat")
     A("")
     if spec:
         A("**Die Spec gewinnt.** Diese Dateien vor dem Einspielen lesen und `docs/DEFINITION.md` danach pruefen:")
@@ -372,7 +372,7 @@ def bericht(von, commits, seine, naehte, tags, vor, nach, haken, haken_dateien, 
     A("")
 
     # --- Releases
-    A("## Was er veroeffentlicht hat")
+    A("## Was er veröffentlicht hat")
     A("")
     if tags:
         A("| Tag | Datum |")
@@ -423,8 +423,8 @@ def bericht(von, commits, seine, naehte, tags, vor, nach, haken, haken_dateien, 
             A("**Vor dem Bauen ansehen:** Ein PR an unserem Thema kann unsere Arbeit vorwegnehmen oder ihr widersprechen. `gh pr view <nr> --repo real-life-org/real-life-stack`.")
     A("")
 
-    # --- Naechster Schritt
-    A("## Naechster Schritt")
+    # --- Nächster Schritt
+    A("## Nächster Schritt")
     A("")
     A("Skill `td-update`. Die Reihenfolge dort ist bindend, besonders die drei Tore.")
     A("")
@@ -439,7 +439,7 @@ def bericht(von, commits, seine, naehte, tags, vor, nach, haken, haken_dateien, 
     if prs:
         beruehrt = [p for p in prs if p.get("unsere")]
         if beruehrt:
-            A("- Offene PRs an unseren Themen ansehen: " + ", ".join("#" + str(p["number"]) for p in beruehrt) + ".")
+            A("- Offene PRs an unseren Themen ansehen: " + ", ".join("#" + str(p["number"]) for p in berührt) + ".")
     A("- Nach dem Einspielen `docs/NAEHTE.md` neu messen und `memory/stand_trustdonation.md` nachziehen.")
 
     return "\n".join(z), len(commits)
@@ -486,7 +486,7 @@ def main():
     if prs is not None:
         beruehrt = [p for p in prs if p.get("unsere")]
         print("Offene PRs   " + str(len(prs)) + ", davon " + str(len(beruehrt)) + " an unseren Themen"
-              + (": " + ", ".join("#" + str(p["number"]) for p in beruehrt) if beruehrt else ""))
+              + (": " + ", ".join("#" + str(p["number"]) for p in berührt) if berührt else ""))
     print()
     print("Bericht: " + str(ziel.relative_to(REPO)))
     return 0

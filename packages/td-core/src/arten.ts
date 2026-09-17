@@ -1,6 +1,6 @@
 // Regeln rund um die Arten eines Netzwerks.
 //
-// Hier liegt, was ohne Oberflaeche gilt. Wie eine Art aussieht, entscheidet
+// Hier liegt, was ohne Oberfläche gilt. Wie eine Art aussieht, entscheidet
 // `@trustdonation/ui`; ob sie taugt, entscheidet diese Datei (Muster 2: zwei
 // Schichten entlang der Paketgrenze).
 

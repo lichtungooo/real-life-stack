@@ -1,8 +1,8 @@
 // Die Musterdaten des Prototyps trustdonation.
 //
 // Sie liegen hier und nicht in `packages/data-interface/data/`, weil sie uns
-// gehoeren und nicht dem Baukasten. Beide Connectoren nehmen einen Seed als
-// Parameter; damit bleiben Antons Demodaten unberuehrt, und ein Update seiner
+// gehören und nicht dem Baukasten. Beide Connectoren nehmen einen Seed als
+// Parameter; damit bleiben Antons Demodaten unberührt, und ein Update seiner
 // Beispiele trifft uns nicht (ARCHITEKTUR Teil 4, NAEHTE Abschnitt C).
 //
 // Der Inhalt stammt aus Timos eigenen Spaces vom Dev-Server, ausgelesen aus
@@ -61,4 +61,4 @@ export const musterdaten = {
  * Solange `SEED_VERSION` im local-Connector die Wahrheit ist (Naht A5), muss
  * dort dieselbe Zahl stehen. Faellt die Naht, zaehlt allein diese hier.
  */
-export const MUSTERDATEN_VERSION = 7
+export const MUSTERDATEN_VERSION = 8

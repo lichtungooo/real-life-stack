@@ -1,7 +1,7 @@
 // In welcher Reihenfolge die Spaces im Umschalter stehen.
 //
-// Reine Funktion ueber eine Liste, ohne React und ohne Oberflaeche. Sie stand
-// in einem `useMemo` in der App und war dort nicht pruefbar, ohne einen
+// Reine Funktion über eine Liste, ohne React und ohne Oberfläche. Sie stand
+// in einem `useMemo` in der App und war dort nicht prüfbar, ohne einen
 // Browser zu starten. Hier ist sie es (ARCHITEKTUR Teil 3).
 
 /** Was die Ordnung von einem Space wissen muss. Mehr traegt sie nicht. */

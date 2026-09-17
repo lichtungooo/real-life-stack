@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-"""Faehrt alle Tore und zeigt eine Ampel.
+"""Fährt alle Tore und zeigt eine Ampel.
 
 Ein Befehl statt sechs, und nichts wird vergessen. Jedes Tor kommt aus
 docs/ARCHITEKTUR.md Teil 7.
 
-    python td-tools/pruefen.py            # alles
-    python td-tools/pruefen.py --schnell  # ohne Bau und Tests (Sekunden)
+    python td-tools/prüfen.py            # alles
+    python td-tools/prüfen.py --schnell  # ohne Bau und Tests (Sekunden)
 
-Rueckgabe 0, wenn alles gruen ist. Sonst 1: so laesst es sich in eine CI
-haengen, ohne dass jemand den Text lesen muss.
+Rückgabe 0, wenn alles grün ist. Sonst 1: so lässt es sich in eine CI
+hängen, ohne dass jemand den Text lesen muss.
 """
 import re
 import shutil
@@ -20,17 +20,17 @@ REPO = Path(__file__).resolve().parent.parent
 SCHNELL = "--schnell" in sys.argv
 
 # Was in unseren Paketen nie stehen darf: Protokoll-Aufrufe binden uns an eine
-# Version des Web of Trust, und Antons naechster Fortschritt waere unser
+# Version des Web of Trust, und Antons nächster Fortschritt wäre unser
 # Problem (ARCHITEKTUR Teil 6).
 VERBOTEN = re.compile(r"did:key|Y\.Doc|applyUpdate|@web_of_trust")
 UNSERE_PFADE = ["packages/td-core", "packages/td-ui", "apps/trustdonation"]
 
 # Budget aus ARCHITEKTUR Teil 7 und dem Skill td-performance.
 #
-# Gemessen wird die **unkomprimierte** Groesse im dist-Ordner. Ueber die
+# Gemessen wird die **unkomprimierte** Größe im dist-Ordner. Über die
 # Leitung geht rund ein Drittel davon. Die ehrlichere Zahl ist die Startlast,
 # und die misst `td-tools/startlast.py` im Browser; dieses Tor hier ist der
-# grobe Waechter, der ohne Browser auskommt.
+# grobe Wächter, der ohne Browser auskommt.
 GROESSTES_STUECK_KB = 2000
 
 ergebnisse = []
@@ -41,7 +41,7 @@ def tor(name, ok, text, hinweis="", blockiert=True):
 
     Ein Werkzeug, das immer rot leuchtet, wird nach zwei Tagen ignoriert.
     Darum halten nur die Tore die Auslieferung auf, deren Bruch etwas kaputt
-    macht: Typen, Regeln, unbenannte Naehte, die Grenze zum Protokoll. Das
+    macht: Typen, Regeln, unbenannte Nähte, die Grenze zum Protokoll. Das
     Budget warnt, denn es beschreibt ein Ziel, keinen Schaden.
     """
     ergebnisse.append({"name": name, "ok": ok, "text": text,
@@ -49,10 +49,10 @@ def tor(name, ok, text, hinweis="", blockiert=True):
 
 
 def lauf(*args, cwd=None):
-    """Ruft ein Programm auf und faengt seine Ausgabe.
+    """Ruft ein Programm auf und fängt seine Ausgabe.
 
-    `pnpm` ist auf Windows eine `.cmd` und laesst sich ohne Shell nicht
-    starten: `subprocess` findet dann keine Datei. `shutil.which` loest den
+    `pnpm` ist auf Windows eine `.cmd` und lässt sich ohne Shell nicht
+    starten: `subprocess` findet dann keine Datei. `shutil.which` löst den
     richtigen Namen auf, auf jedem System. Im Schnelllauf fiel das nicht auf,
     weil dort kein pnpm gerufen wird.
     """
@@ -89,7 +89,7 @@ else:
         fehl = [z.strip() for z in text.splitlines() if "FAIL" in z][:3]
         tor("Regeln", False, "Tests schlagen fehl", "\n".join(fehl))
 
-# --- Tor 3: Naehte -----------------------------------------------------------
+# --- Tor 3: Nähte -----------------------------------------------------------
 r = lauf(sys.executable, "td-tools/anton-stand.py", "--ohne-fetch")
 aus = r.stdout
 def zahl(feld):
@@ -140,7 +140,7 @@ else:
     ergebnisse[-1]["text"] += ", dist gesamt " + str(round(gesamt, 1)) + " MB"
 
 # --- Tor 6: Durchgang --------------------------------------------------------
-# Die pruefbaren Zeilen aus docs/TESTPLAN.md, mit Playwright gefahren. Sie
+# Die prüfbaren Zeilen aus docs/TESTPLAN.md, mit Playwright gefahren. Sie
 # brauchen einen Bau und starten sich ihre Vorschau selbst, darum laufen sie
 # nur im vollen Lauf.
 if SCHNELL:
@@ -157,10 +157,10 @@ else:
         fehl = [z.strip() for z in text.splitlines() if z.strip().startswith(("✘", "1)", "2)"))][:3]
         tor("Durchgang", False, "Durchgang scheitert", "\n".join(fehl) or text[-300:])
 
-# --- Tor 7: Gedaechtnis ------------------------------------------------------
-# Das Gedaechtnis liegt im Arbeitsbereich, nicht im Repo. Auf einem fremden
+# --- Tor 7: Gedächtnis ------------------------------------------------------
+# Das Gedächtnis liegt im Arbeitsbereich, nicht im Repo. Auf einem fremden
 # Rechner oder in der CI gibt es das nicht, und das ist kein Fehler: Dort
-# bleibt das Tor offen, statt einen Bau abzubrechen, der sonst gruen waere.
+# bleibt das Tor offen, statt einen Bau abzubrechen, der sonst grün wäre.
 stand = Path("D:/Workspace/memory/stand_trustdonation.md")
 if not stand.parent.exists():
     tor("Gedaechtnis", None, "Arbeitsbereich nicht vorhanden (fremder Rechner oder CI)")

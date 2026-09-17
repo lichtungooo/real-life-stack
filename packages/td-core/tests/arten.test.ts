@@ -1,4 +1,4 @@
-// Was zaehlt als vollstaendige Art, und was passiert mit den uebrigen Zeilen,
+// Was zählt als vollständige Art, und was passiert mit den übrigen Zeilen,
 // wenn eine unfertig ist? Beides sind Regeln, beide stehen hier.
 import { describe, it, expect } from "vitest"
 import { zeileVollstaendig, schreibbareArten } from "../src/arten.js"

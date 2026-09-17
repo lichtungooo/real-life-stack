@@ -1,41 +1,41 @@
 # Testplan
 
-**Wofuer:** Der grosse Durchgang, bevor der Prototyp einer Stiftung gezeigt wird.
+**Wofür:** Der große Durchgang, bevor der Prototyp einer Stiftung gezeigt wird.
 
-Ein Test ohne Plan ist Herumklicken. Dieser Plan sagt, **was** geprueft wird, **woran** man sieht, dass es taugt, und **was ein Fund kostet**.
+Ein Test ohne Plan ist Herumklicken. Dieser Plan sagt, **was** geprüft wird, **woran** man sieht, dass es taugt, und **was ein Fund kostet**.
 
 ---
 
-## Was vorher zu klaeren ist
+## Was vorher zu klären ist
 
-Drei Entscheidungen. Ohne sie prueft der Test etwas anderes, als er soll.
+Drei Entscheidungen. Ohne sie prüft der Test etwas anderes, als er soll.
 
 ### 1. Inhalte, oder bewusst leer?
 
-**Der Prototyp zeigt heute fuenf Spaces mit Namen, Bildern und Farben, aber keine Inhalte.** Feed, Kalender und Karte sind leer, denn die Items aus Timos Dev-Server blieben draussen: Es waren echte Beitraege von Menschen (Entscheidung E3).
+**Der Prototyp zeigt heute fünf Spaces mit Namen, Bildern und Farben, aber keine Inhalte.** Feed, Kalender und Karte sind leer, denn die Items aus Timos Dev-Server blieben draußen: Es waren echte Beiträge von Menschen (Entscheidung E3).
 
-Damit hat der Test zwei moegliche Formen:
+Damit hat der Test zwei mögliche Formen:
 
-| Form | Was geprueft wird | Wann sie richtig ist |
+| Form | Was geprüft wird | Wann sie richtig ist |
 |---|---|---|
-| **Leer** | Traegt die Struktur? Netzwerke, Arten, Zuordnung, die beiden neuen Bereiche | Der Test prueft **uns**, nicht die Wirkung |
-| **Gefuellt** | Wie sich die App anfuehlt, wenn etwas drinsteht | Der Test prueft, was eine Stiftung sehen wuerde |
+| **Leer** | Trägt die Struktur? Netzwerke, Arten, Zuordnung, die beiden neuen Bereiche | Der Test prüft **uns**, nicht die Wirkung |
+| **Gefüllt** | Wie sich die App anfühlt, wenn etwas drinsteht | Der Test prüft, was eine Stiftung sehen würde |
 
-**Empfehlung:** Erst leer testen, dann fuellt Timo ein bis zwei Spaces von Hand, dann gefuellt testen. Das trennt zwei Fragen, die sonst durcheinandergehen.
+**Empfehlung:** Erst leer testen, dann füllt Timo ein bis zwei Spaces von Hand, dann gefüllt testen. Das trennt zwei Fragen, die sonst durcheinandergehen.
 
 ### 2. Die Space-Farben: erledigt
 
-trustdonation trug `#d97706` und kam mit weissem Text auf 3,19:1. Jetzt `#b16105`, derselbe Farbton eine Stufe dunkler, 4,58:1.
+trustdonation trug `#d97706` und kam mit weißem Text auf 3,19:1. Jetzt `#b16105`, derselbe Farbton eine Stufe dunkler, 4,58:1.
 
-Gerechnet traf es **einen** von fuenf Spaces, nicht drei: Lichtung bekommt schwarzen Text und liegt bei 16,5:1. Wer im Test eine Farbe aendert, prueft danach den Reiter noch einmal.
+Gerechnet traf es **einen** von fünf Spaces, nicht drei: Lichtung bekommt schwarzen Text und liegt bei 16,5:1. Wer im Test eine Farbe ändert, prüft danach den Reiter noch einmal.
 
-### 3. Wer testet, und mit welchem Geraet?
+### 3. Wer testet, und mit welchem Gerät?
 
-Die Funde unterscheiden sich stark. Mindestens: ein Rechner mit grossem Bildschirm und ein Telefon. Wenn moeglich jemand, der die App **nicht** gebaut hat.
+Die Funde unterscheiden sich stark. Mindestens: ein Rechner mit großem Bildschirm und ein Telefon. Wenn möglich jemand, der die App **nicht** gebaut hat.
 
 ---
 
-## Der maschinelle Teil laeuft von selbst
+## Der maschinelle Teil läuft von selbst
 
 Die Abschnitte A bis F unten sind als Test geschrieben und laufen in achtzehn Sekunden:
 
@@ -45,11 +45,11 @@ npx playwright test --config playwright.trustdonation.config.ts
 npx playwright test --config playwright.trustdonation.config.ts --headed   # zum Zusehen
 ```
 
-Zwoelf Erwartungen: Ankommen ohne Anmeldung, Ueberschrift, Zoomen, die fuenf Spaces, Netzwerke oben, eigene Bilder, Gliederung nach Arten, ein Space in zwei Abschnitten, die sechs Dialog-Bereiche, Landingpage nur fuer Netzwerke, die Modul-Reiter, die Karte.
+Zwölf Erwartungen: Ankommen ohne Anmeldung, Ueberschrift, Zoomen, die fünf Spaces, Netzwerke oben, eigene Bilder, Gliederung nach Arten, ein Space in zwei Abschnitten, die sechs Dialog-Bereiche, Landingpage nur für Netzwerke, die Modul-Reiter, die Karte.
 
-Sie sind auch das sechste Tor in `td-tools/pruefen.py`; das siebte ist das Gedaechtnis.
+Sie sind auch das sechste Tor in `td-tools/pruefen.py`; das siebte ist das Gedächtnis.
 
-**Was sie nicht koennen:** Abschnitt G. Ob sich etwas falsch anfuehlt, ob ein Wort unverstaendlich ist, ob es nach Baustelle aussieht, sieht nur ein Mensch. Dafuer ist der Durchgang da; die Maschine nimmt ihm die Buchhaltung ab.
+**Was sie nicht können:** Abschnitt G. Ob sich etwas falsch anfühlt, ob ein Wort unverständlich ist, ob es nach Baustelle aussieht, sieht nur ein Mensch. Dafür ist der Durchgang da; die Maschine nimmt ihm die Buchhaltung ab.
 
 ## Vor dem Test, maschinell
 
@@ -80,73 +80,73 @@ Jede Zeile ist eine Handlung mit einer Erwartung. Was abweicht, kommt in die Fun
 
 ### A. Ankommen
 
-*Die ersten drei Zeilen und das Vergroessern pruefen sich selbst. Was bleibt: neu laden, Telefon, zwei Finger.*
+*Die ersten drei Zeilen und das Vergrößern prüfen sich selbst. Was bleibt: neu laden, Telefon, zwei Finger.*
 
 | Handlung | Erwartung |
 |---|---|
-| `trustdonation.org/app` oeffnen, ohne Anmeldung | Die App laedt und zeigt etwas. Keine Anmeldemaske. |
-| Auf den Umschalter oben links sehen | **Netzwerke:** Marker & Maps, Real Life, trustdonation, Lichtung. **Projekte:** Marker & Maps, Lichtung. **Stiftungen:** Loewenherz Stiftung. |
-| Die Bilder ansehen | Jeder Space traegt sein eigenes Bild, keine Platzhalter. |
+| `trustdonation.org/app` öffnen, ohne Anmeldung | Die App lädt und zeigt etwas. Keine Anmeldemaske. |
+| Auf den Umschalter oben links sehen | **Netzwerke:** Marker & Maps, Real Life, trustdonation, Lichtung. **Projekte:** Marker & Maps, Lichtung. **Stiftungen:** Löwenherz Stiftung. |
+| Die Bilder ansehen | Jeder Space trägt sein eigenes Bild, keine Platzhalter. |
 | Die Seite neu laden | Derselbe Space ist noch aktiv. |
-| Die Seite im Telefon oeffnen | Bedienbar, nichts laeuft ueber den Rand. |
-| Mit zwei Fingern vergroessern | **Geht.** (War bis heute abgeschaltet.) |
+| Die Seite im Telefon öffnen | Bedienbar, nichts läuft über den Rand. |
+| Mit zwei Fingern vergrößern | **Geht.** (War bis heute abgeschaltet.) |
 
 ### B. Die Gliederung
 
-*Pruefen sich selbst. Was bleibt: wie es sich beim Wechseln anfuehlt.*
+*Prüfen sich selbst. Was bleibt: wie es sich beim Wechseln anfühlt.*
 
 | Handlung | Erwartung |
 |---|---|
 | In ein anderes Netzwerk wechseln | Darunter stehen nur dessen Spaces, nach Arten gegliedert. |
-| Auf "Mein Netzwerk" gehen | Die Uebersicht ueber alle Spaces. |
-| Einen Space oeffnen, der Projekt **und** Netzwerk ist (Lichtung) | Er steht bei den Netzwerken **und** als Projekt in trustdonation. Nur einmal je Abschnitt. |
+| Auf "Mein Netzwerk" gehen | Die Übersicht über alle Spaces. |
+| Einen Space öffnen, der Projekt **und** Netzwerk ist (Lichtung) | Er steht bei den Netzwerken **und** als Projekt in trustdonation. Nur einmal je Abschnitt. |
 
 ### C. Der Bereich Netzwerk
 
 | Handlung | Erwartung |
 |---|---|
-| Zahnrad an trustdonation, Reiter **Netzwerk** | Haekchen gesetzt, zwei Arten (Stiftung, Projekt) mit Farben. |
+| Zahnrad an trustdonation, Reiter **Netzwerk** | Häkchen gesetzt, zwei Arten (Stiftung, Projekt) mit Farben. |
 | Eine Art umbenennen | Der Umschalter zeigt den neuen Namen. Die Zuordnung der Spaces bleibt. |
-| Eine Art hinzufuegen, ohne Mehrzahl | Wird nicht geschrieben, die uebrigen bleiben. |
+| Eine Art hinzufügen, ohne Mehrzahl | Wird nicht geschrieben, die übrigen bleiben. |
 | Eine Art entfernen, die Spaces nutzen | Die Spaces bleiben, sie stehen unter "Gruppen". |
-| Bei einem anderen Space Netzwerk und Art waehlen | Er wandert im Umschalter in den richtigen Abschnitt. |
-| Das Haekchen "Netzwerk" abwaehlen | Der Reiter **Landingpage** verschwindet. |
+| Bei einem anderen Space Netzwerk und Art wählen | Er wandert im Umschalter in den richtigen Abschnitt. |
+| Das Häkchen "Netzwerk" abwählen | Der Reiter **Landingpage** verschwindet. |
 
 ### D. Der Bereich Landingpage
 
 | Handlung | Erwartung |
 |---|---|
 | Zahnrad an trustdonation, Reiter **Landingpage** | Die Domain (heute noch `wir.ooo`) und ein kopierbarer Link. |
-| Domain auf `trustdonation.org` aendern | Der Link darunter baut sich neu. |
+| Domain auf `trustdonation.org` ändern | Der Link darunter baut sich neu. |
 | Auf "Kopieren" | Haken erscheint, der Link liegt in der Ablage. |
-| Den Link in einem neuen Fenster oeffnen | Fuehrt in diesen Space. |
+| Den Link in einem neuen Fenster öffnen | Führt in diesen Space. |
 
 ### E. Aussehen
 
 | Handlung | Erwartung |
 |---|---|
-| Reiter **Aussehen**, Primaerfarbe aendern | Die App uebernimmt sie sofort. |
+| Reiter **Aussehen**, Primärfarbe ändern | Die App übernimmt sie sofort. |
 | Auf hell und dunkel umschalten | Alles bleibt lesbar. |
-| Ein Bild fuer den Space setzen | Erscheint im Umschalter. |
+| Ein Bild für den Space setzen | Erscheint im Umschalter. |
 
 ### F. Die Module
 
-*Der letzte Punkt prueft sich selbst. Was bleibt: ab- und anwaehlen.*
+*Der letzte Punkt prüft sich selbst. Was bleibt: ab- und anwählen.*
 
 | Handlung | Erwartung |
 |---|---|
-| Reiter **Module**, eines abwaehlen | Der Tab verschwindet, die uebrigen bleiben. |
-| Alle abwaehlen | Mindestens einer bleibt. Kein Space ohne Tab. |
-| Auf die Karte gehen | Sie laedt (kurz "Karte wird geladen"), dann erscheint sie. |
-| Zwischen Modulen wechseln und zurueck zur Karte | Sie baut sich **nicht** neu auf. |
+| Reiter **Module**, eines abwählen | Der Tab verschwindet, die übrigen bleiben. |
+| Alle abwählen | Mindestens einer bleibt. Kein Space ohne Tab. |
+| Auf die Karte gehen | Sie lädt (kurz "Karte wird geladen"), dann erscheint sie. |
+| Zwischen Modulen wechseln und zurück zur Karte | Sie baut sich **nicht** neu auf. |
 
-### G. Was einen Menschen stoert
+### G. Was einen Menschen stört
 
 Ohne Erwartung, mit offenen Augen:
 
-- Wo zoegert die App?
+- Wo zögert die App?
 - Wo ist unklar, was ein Knopf tut?
-- Wo steht ein Wort, das jemand von aussen nicht versteht?
+- Wo steht ein Wort, das jemand von außen nicht versteht?
 - Wo sieht es nach Baustelle aus?
 
 ---
@@ -163,14 +163,14 @@ Ohne Erwartung, mit offenen Augen:
 - **Wiegt:** haelt auf / stoert / faellt auf
 ```
 
-**"Haelt auf"** heisst: Damit zeigen wir es keiner Stiftung. Das wird behoben, bevor der Link rausgeht. Alles andere kommt in `REIFE.md` und wartet.
+**"Hält auf"** heißt: Damit zeigen wir es keiner Stiftung. Das wird behoben, bevor der Link rausgeht. Alles andere kommt in `REIFE.md` und wartet.
 
 ---
 
 ## Nach dem Test
 
-1. Funde sortieren: was haelt auf, was stoert, was faellt auf.
-2. Was aufhaelt, wird behoben, dann derselbe Durchgang noch einmal fuer die betroffenen Zeilen.
+1. Funde sortieren: was hält auf, was stört, was fällt auf.
+2. Was aufhält, wird behoben, dann derselbe Durchgang noch einmal für die betroffenen Zeilen.
 3. Der Rest kommt in `REIFE.md`.
 4. `memory/stand_trustdonation.md` nachziehen.
-5. **Was aufgefallen ist und niemand vorhergesehen hat, kommt in den passenden Skill**, nicht nur in den Stand. Eine Falle nur im Stand hilft niemandem, der sie gerade auslaeuft.
+5. **Was aufgefallen ist und niemand vorhergesehen hat, kommt in den passenden Skill**, nicht nur in den Stand. Eine Falle nur im Stand hilft niemandem, der sie gerade ausläuft.

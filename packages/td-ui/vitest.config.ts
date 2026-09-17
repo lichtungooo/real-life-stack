@@ -1,8 +1,8 @@
 import { defineConfig } from "vitest/config"
 import { resolve } from "path"
 
-// Antons Toolkit loest `@/` auf sein eigenes src auf. Wer eine Komponente von
-// dort in einem Test laedt, braucht denselben Alias, sonst bricht der Import.
+// Antons Toolkit löst `@/` auf sein eigenes src auf. Wer eine Komponente von
+// dort in einem Test lädt, braucht denselben Alias, sonst bricht der Import.
 export default defineConfig({
   resolve: {
     alias: {

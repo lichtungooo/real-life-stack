@@ -1,11 +1,11 @@
 // Die Arten eines Netzwerks bearbeiten.
 //
-// Ein Netzwerk traegt die Arten, in denen seine Spaces gefuehrt werden:
+// Ein Netzwerk trägt die Arten, in denen seine Spaces geführt werden:
 // Stiftung und Projekt, Ort und Gruppe, Marker und Gruppe. Hier werden sie
-// angelegt, benannt, eingefaerbt und entfernt.
+// angelegt, benannt, eingefärbt und entfernt.
 //
-// Die Komponente haelt keinen eigenen Zustand. Sie bekommt die Zeilen und
-// meldet drei Dinge: eine Aenderung waehrend des Tippens (`onChange`), eine
+// Die Komponente hält keinen eigenen Zustand. Sie bekommt die Zeilen und
+// meldet drei Dinge: eine Aenderung während des Tippens (`onChange`), eine
 // abgeschlossene Aenderung (`onCommit`, beim Verlassen eines Feldes) und das
 // Entfernen einer Zeile. Wer sie einsetzt, entscheidet, wann geschrieben wird.
 import { Input, Button } from "@real-life-stack/toolkit"
@@ -31,8 +31,8 @@ export function ArtenEditor({ rows, onChange, onCommit, onRemove }: ArtenEditorP
   return (
     <div className="mt-2 space-y-1.5">
       {rows.map((row, i) => (
-        // Eine neue Zeile hat noch keine Id. Der Platzhalter haelt sie
-        // auseinander, bis sie beim Schreiben einen Schluessel bekommt.
+        // Eine neue Zeile hat noch keine Id. Der Platzhalter hält sie
+        // auseinander, bis sie beim Schreiben einen Schlüssel bekommt.
         <div key={row.id || `neu-${i}`} className="flex items-center gap-1.5">
           <input
             type="color"

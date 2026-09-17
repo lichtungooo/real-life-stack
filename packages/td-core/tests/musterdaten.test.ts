@@ -1,5 +1,5 @@
 // Die Musterdaten tragen die Struktur, die der Prototyp zeigt. Was hier
-// geprueft wird, ist keine Fuelle, sondern die Form: Ein Netzwerk, das seine
+// geprüft wird, ist keine Fuelle, sondern die Form: Ein Netzwerk, das seine
 // Arten verloren hat, oder ein Space, der auf ein Netzwerk zeigt, das es nicht
 // gibt, macht den Umschalter still kaputt.
 import { describe, it, expect } from "vitest"
@@ -65,7 +65,7 @@ describe("Musterdaten", () => {
   })
 
   it("liegt kein Item in zwei Spaces", () => {
-    // Der Connector laesst mehrdeutige Items in der Uebersicht bewusst weg.
+    // Der Connector lässt mehrdeutige Items in der Übersicht bewusst weg.
     // Ein Ort, der in zwei Spaces steht, verschwindet dort spurlos.
     const zahl = new Map<string, number>()
     for (const eintraege of Object.values(groupItems)) {
@@ -73,6 +73,36 @@ describe("Musterdaten", () => {
     }
     const doppelt = [...zahl.entries()].filter(([, n]) => n > 1).map(([id]) => id)
     expect(doppelt).toEqual([])
+  })
+
+  it("legt keine zwei Orte exakt aufeinander", () => {
+    // Timo beim ersten Blick auf die Karte: "Die stehen alle an einem Punkt,
+    // übereinander. Also ich sehe gar nicht, wie viele Stiftungen das sind."
+    //
+    // Ursache war die Stadtmitte als Koordinate für alle. Wer sich einen Ort
+    // teilt, bekommt jetzt einen festen kleinen Versatz. Deckungsgleiche
+    // Punkte lassen sich auch beim Aufklappen nicht auseinanderhalten.
+    const orte = new Map<string, string[]>()
+    for (const i of items) {
+      const pos = (i.data as { position?: { coordinates?: number[] } })?.position
+      if (!pos?.coordinates) continue
+      const schluessel = pos.coordinates.map((c) => c.toFixed(5)).join(",")
+      const liste = orte.get(schluessel) ?? []
+      liste.push((i.data as { title?: string }).title ?? i.id)
+      orte.set(schluessel, liste)
+    }
+    const doppelt = [...orte.entries()].filter(([, namen]) => namen.length > 1)
+    expect(doppelt.map(([ort, namen]) => `${ort}: ${namen.join(", ")}`)).toEqual([])
+  })
+
+  it("gibt jeder Stiftung die Farbe ihrer Art", () => {
+    // Antons getItemColor nimmt die Farbe des ersten Tags, wenn data.color
+    // fehlt. Unsere Items tragen dort ihr Thema, und jede Stiftung bekam eine
+    // andere Farbe. Eine Stiftung soll als Stiftung erkennbar sein.
+    const stiftungen = items.filter((i) => String(i.id).startsWith("stiftung-"))
+    expect(stiftungen.length).toBeGreaterThan(200)
+    const farben = new Set(stiftungen.map((i) => (i.data as { color?: string }).color))
+    expect(farben).toEqual(new Set(["#194294"]))
   })
 
   it("traegt eine Version, die mit den Daten hochgeht", () => {

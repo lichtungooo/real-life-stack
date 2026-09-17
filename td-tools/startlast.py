@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
-"""Misst, was beim Start der App wirklich ueber die Leitung geht.
+"""Misst, was beim Start der App wirklich über die Leitung geht.
 
-Die Groesse der Dateien im `dist`-Ordner sagt wenig: Entscheidend ist, was ein
-Browser beim ersten Aufruf tatsaechlich holt. Ein Stueck, das nur beim Oeffnen
+Die Größe der Dateien im `dist`-Ordner sagt wenig: Entscheidend ist, was ein
+Browser beim ersten Aufruf tatsächlich holt. Ein Stück, das nur beim Oeffnen
 der Karte geladen wird, kostet niemanden, der nie auf die Karte geht.
 
-Startet Chrome ohne Fenster, laedt die Seite und zaehlt jede Antwort mit.
+Startet Chrome ohne Fenster, lädt die Seite und zählt jede Antwort mit.
 
     python td-tools/startlast.py                       # gegen die Vorschau
     python td-tools/startlast.py https://trustdonation.org/app/
-    python td-tools/startlast.py --modul map           # danach die Karte oeffnen
+    python td-tools/startlast.py --modul map           # danach die Karte öffnen
 """
 import json
 import shutil
@@ -31,7 +31,7 @@ if "--modul" in sys.argv:
         MODUL = sys.argv[i + 1]
 
 # Ein Budget beschreibt ein Ziel, keinen Schaden. Darum warnt es, statt zu
-# blockieren (siehe td-tools/pruefen.py).
+# blockieren (siehe td-tools/prüfen.py).
 BUDGET_KB = 1200
 
 
@@ -58,7 +58,7 @@ def main():
         return 2
 
     # Jeder Lauf misst den ERSTEN Aufruf. Ein Profil aus dem vorigen Lauf
-    # traegt den gespeicherten Stand des local-Connectors und verfaelscht die
+    # trägt den gespeicherten Stand des local-Connectors und verfaelscht die
     # Messung: Beim zweiten Mal wird geladen, was beim ersten Mal geschrieben
     # wurde, nicht was die Musterdaten sagen.
     profil = REPO / "td-tools" / ".chrome-messung"
@@ -72,7 +72,7 @@ def main():
         "--no-first-run",
         "--no-default-browser-check",
         "--disable-gpu",
-        # Ohne das weist Chrome die Verbindung mit 403 ab: Es prueft den
+        # Ohne das weist Chrome die Verbindung mit 403 ab: Es prüft den
         # Ursprung der WebSocket-Anfrage gegen eine leere Erlaubnisliste.
         "--remote-allow-origins=*",
         "--user-data-dir=" + str(REPO / "td-tools" / ".chrome-messung"),
@@ -116,7 +116,7 @@ def main():
                     antworten[p["requestId"]]["bytes"] = p.get("encodedDataLength", 0)
             elif m == "Page.loadEventFired":
                 fertig = True
-                ende = min(ende, time.time() + 4)  # Nachzuegler einsammeln
+                ende = min(ende, time.time() + 4)  # Nachzügler einsammeln
 
         if MODUL and fertig:
             senden("Runtime.evaluate", {"expression": f"location.hash='';location.pathname.replace(/\\/[^/]*$/,'/{MODUL}')"})

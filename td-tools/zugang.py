@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
-"""Prueft, ob die Seite fuer alle bedienbar ist.
+"""Prüft, ob die Seite für alle bedienbar ist.
 
-Laedt die Seite in Chrome ohne Fenster und laesst axe-core darueber laufen.
-axe findet nicht alles, was ein Mensch findet, aber es findet zuverlaessig,
-was Maschinen finden koennen: fehlende Beschriftungen, zu schwache Kontraste,
+Lädt die Seite in Chrome ohne Fenster und lässt axe-core darüber laufen.
+axe findet nicht alles, was ein Mensch findet, aber es findet zuverlässig,
+was Maschinen finden können: fehlende Beschriftungen, zu schwache Kontraste,
 Bilder ohne Text, eine kaputte Ueberschriften-Ordnung.
 
     python td-tools/zugang.py                          # gegen die Vorschau
     python td-tools/zugang.py https://trustdonation.org/
 
-Rueckgabe 1, wenn ein schwerer Fund dabei ist.
+Rückgabe 1, wenn ein schwerer Fund dabei ist.
 """
 import json
 import shutil

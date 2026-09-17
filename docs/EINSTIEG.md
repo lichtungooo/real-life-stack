@@ -8,7 +8,7 @@
 
 Der Prototyp **trustdonation**: eine Karte, auf der Stiftungen und Projekte einander finden.
 
-Er ist ein Abzweig vom [Real Life Stack](https://github.com/real-life-org/real-life-stack), den Anton Tranelis baut. Wir nutzen seinen Baukasten und ergaenzen, was unser Vorhaben braucht.
+Er ist ein Abzweig vom [Real Life Stack](https://github.com/real-life-org/real-life-stack), den Anton Tranelis baut. Wir nutzen seinen Baukasten und ergänzen, was unser Vorhaben braucht.
 
 ```text
 trustdonation (unsere Ebene: Arten, Felder, Matching)
@@ -18,7 +18,7 @@ trustdonation (unsere Ebene: Arten, Felder, Matching)
 
 ---
 
-## In dreissig Minuten zum laufenden Stand
+## In dreißig Minuten zum laufenden Stand
 
 ### 1. Holen
 
@@ -47,45 +47,45 @@ Node 22 oder neuer. Der erste Bau dauert ein paar Minuten.
 pnpm dev:reference
 ```
 
-**Port 5173, niemals ausweichen.** Der Browser-Speicher haengt am Ursprung; ein anderer Port zeigt leere Daten.
+**Port 5173, niemals ausweichen.** Der Browser-Speicher hängt am Ursprung; ein anderer Port zeigt leere Daten.
 
 Im Browser: `http://localhost:5173/?connector=local`
 
-Der Umschalter oben links zeigt vier Netzwerke, zwei Projekte und eine Stiftung. Das Zahnrad an einem Space oeffnet die Konfiguration mit den Bereichen **Netzwerk** und **Landingpage**.
+Der Umschalter oben links zeigt vier Netzwerke, zwei Projekte und eine Stiftung. Das Zahnrad an einem Space öffnet die Konfiguration mit den Bereichen **Netzwerk** und **Landingpage**.
 
-### 4. Nachsehen, ob alles gruen ist
+### 4. Nachsehen, ob alles grün ist
 
 ```bash
 python td-tools/pruefen.py
 ```
 
-Sechs Tore. Rot haelt die Auslieferung auf, gelb warnt.
+Sechs Tore. Rot hält die Auslieferung auf, gelb warnt.
 
 ---
 
-## Die fuenf Dokumente
+## Die fünf Dokumente
 
-Lesereihenfolge fuer den ersten Tag:
+Lesereihenfolge für den ersten Tag:
 
 | Datei | Was sie beantwortet | Lesezeit |
 |---|---|---|
 | [DEFINITION.md](DEFINITION.md) | **Was** wir bauen, und nach welchen sechs Mustern | 20 min |
 | [ARCHITEKTUR.md](ARCHITEKTUR.md) | **Wo** es steht, welche Haken es gibt, wie Updates ankommen | 15 min |
-| [NAEHTE.md](NAEHTE.md) | **Wo** wir Antons Code beruehren, und warum | 10 min |
-| [PLAN.md](PLAN.md) | **Was** als Naechstes dran ist | 5 min |
+| [NAEHTE.md](NAEHTE.md) | **Wo** wir Antons Code berühren, und warum | 10 min |
+| [PLAN.md](PLAN.md) | **Was** als Nächstes dran ist | 5 min |
 | [ENTSCHEIDUNGEN.md](ENTSCHEIDUNGEN.md) | **Warum** es so ist und nicht anders | 10 min |
 
-Dazu [REIFE.md](REIFE.md) fuer das, was noch fehlt, [AUSLIEFERUNGEN.md](AUSLIEFERUNGEN.md) fuer das, was live steht, und [TESTPLAN.md](TESTPLAN.md) fuer den grossen Durchgang.
+Dazu [REIFE.md](REIFE.md) für das, was noch fehlt, [AUSLIEFERUNGEN.md](AUSLIEFERUNGEN.md) für das, was live steht, und [TESTPLAN.md](TESTPLAN.md) für den großen Durchgang.
 
 Antons Vertrag liegt in [spec/](spec/). **Bei Widerspruch gewinnt die Spec.**
 
 ---
 
-## Die drei Regeln, die hier wirklich zaehlen
+## Die drei Regeln, die hier wirklich zählen
 
-1. **Erst definieren, dann bauen.** Eine neue Sache bekommt einen Abschnitt in `DEFINITION.md`, bevor sie Code wird. Er beantwortet: welche Frage, welche eine Quelle, welche Schicht haelt was, was bei Unbekanntem passiert.
-2. **Antons Code nur an eingetragenen Naehten.** Vorher pruefen, ob ein Erweiterungspunkt reicht (ARCHITEKTUR Teil 2). Meistens reicht einer.
-3. **Jede Liste bekommt einen Test.** Listen sind die Stelle, an der Software auseinanderlaeuft.
+1. **Erst definieren, dann bauen.** Eine neue Sache bekommt einen Abschnitt in `DEFINITION.md`, bevor sie Code wird. Er beantwortet: welche Frage, welche eine Quelle, welche Schicht hält was, was bei Unbekanntem passiert.
+2. **Antons Code nur an eingetragenen Nähten.** Vorher prüfen, ob ein Erweiterungspunkt reicht (ARCHITEKTUR Teil 2). Meistens reicht einer.
+3. **Jede Liste bekommt einen Test.** Listen sind die Stelle, an der Software auseinanderläuft.
 
 ---
 
@@ -116,17 +116,17 @@ cd trustdonation
 python scripts/skills-spiegeln.py
 ```
 
-Fuenfzehn Skills in zwei Plugins, darunter `td-stand` (am Anfang jeder Runde), `td-naht` (bevor Antons Code angefasst wird), `td-anton` (wo steht er), `td-definieren`, `td-modul`, `td-test`, `td-ausliefern`.
+Fünfzehn Skills in zwei Plugins, darunter `td-stand` (am Anfang jeder Runde), `td-naht` (bevor Antons Code angefasst wird), `td-anton` (wo steht er), `td-definieren`, `td-modul`, `td-test`, `td-ausliefern`.
 
 ---
 
 ## Woran gerade gearbeitet wird
 
-[PLAN.md](PLAN.md), Etappe 0.5: eigene Pakete, damit Antons Updates uns nicht treffen. Danach: eine Stiftung sagt, was sie foerdert.
+[PLAN.md](PLAN.md), Etappe 0.5: eigene Pakete, damit Antons Updates uns nicht treffen. Danach: eine Stiftung sagt, was sie fördert.
 
 ---
 
-## Wo etwas hingehoert
+## Wo etwas hingehört
 
 | Was | Wohin |
 |---|---|
@@ -139,12 +139,12 @@ Fuenfzehn Skills in zwei Plugins, darunter `td-stand` (am Anfang jeder Runde), `
 
 ## Wenn etwas klemmt
 
-| Symptom | Ursache | Loesung |
+| Symptom | Ursache | Lösung |
 |---|---|---|
-| Neue Musterdaten erscheinen nicht | der local-Connector laedt seinen gespeicherten Stand | `SEED_VERSION` in `packages/local-connector/src/local-connector.ts` hochsetzen |
-| `Cannot find module ...` | neue Abhaengigkeit | `pnpm install` |
-| Leere App auf einem anderen Port | Browser-Speicher haengt am Ursprung | zurueck auf 5173 |
-| Ein Item fehlt in der Uebersicht | es liegt in zwei Spaces | ein Item gehoert in genau einen Space |
+| Neue Musterdaten erscheinen nicht | der local-Connector lädt seinen gespeicherten Stand | `SEED_VERSION` in `packages/local-connector/src/local-connector.ts` hochsetzen |
+| `Cannot find module ...` | neue Abhängigkeit | `pnpm install` |
+| Leere App auf einem anderen Port | Browser-Speicher hängt am Ursprung | zurück auf 5173 |
+| Ein Item fehlt in der Übersicht | es liegt in zwei Spaces | ein Item gehört in genau einen Space |
 
 ---
 
@@ -156,4 +156,4 @@ Fuenfzehn Skills in zwei Plugins, darunter `td-stand` (am Anfang jeder Runde), `
 | Architektur, Stack, Web of Trust | Anton |
 | Vorab-Versionen, Prozess, Doku | Eli |
 
-Traeger ist **Kollektiv Lichtung e.V.**
+Träger ist **Kollektiv Lichtung e.V.**

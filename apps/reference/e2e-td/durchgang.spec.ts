@@ -1,7 +1,7 @@
-// Der Durchgang aus docs/TESTPLAN.md, soweit er sich pruefen laesst.
+// Der Durchgang aus docs/TESTPLAN.md, soweit er sich prüfen lässt.
 //
-// Ein Mensch prueft, was sich falsch anfuehlt (Abschnitt G im Testplan). Diese
-// Datei prueft, was nachweislich da sein muss, und nimmt ihm die Buchhaltung
+// Ein Mensch prüft, was sich falsch anfühlt (Abschnitt G im Testplan). Diese
+// Datei prüft, was nachweislich da sein muss, und nimmt ihm die Buchhaltung
 // ab. Sie ersetzt den Durchgang nicht.
 //
 //     npx playwright test --config td-tools/e2e/playwright.config.ts
@@ -70,7 +70,7 @@ test.describe("B. Der Umschalter", () => {
     const menue = await umschalterOeffnen(page)
     const text = await menue.innerText()
     expect(text).toContain("Netzwerke")
-    // Die Uebersicht heisst "Mein Netzwerk", sobald es Netzwerke gibt
+    // Die Übersicht heißt "Mein Netzwerk", sobald es Netzwerke gibt
     // (Spec 01, Regel 2).
     expect(text).toContain("Mein Netzwerk")
     expect(text.indexOf("Netzwerke")).toBeLessThan(text.indexOf("Mein Netzwerk"))
@@ -125,8 +125,8 @@ async function spaceDialogOeffnen(page: Page, name: string) {
   await zeile.locator("button").last().click()
   const dialog = page.getByRole("dialog")
   await expect(dialog).toBeVisible()
-  // Der Titel sagt, welcher Space es wirklich ist. Ohne diese Probe prueft
-  // der Test womoeglich den falschen.
+  // Der Titel sagt, welcher Space es wirklich ist. Ohne diese Probe prüft
+  // der Test womöglich den falschen.
   await expect(dialog).toContainText(name)
   return dialog
 }
@@ -137,7 +137,7 @@ test.describe("D. Die Bereiche des Space-Dialogs", () => {
     const dialog = await spaceDialogOeffnen(page, "trustdonation")
     const text = await dialog.innerText()
 
-    // spaceConfigSections ist die eine Quelle fuer diese Liste
+    // spaceConfigSections ist die eine Quelle für diese Liste
     // (docs/DEFINITION.md Teil 4.3).
     for (const bereich of ["Mitglieder", "Aussehen", "Module", "Netzwerk", "Landingpage"]) {
       expect(text, `Bereich ${bereich} fehlt`).toContain(bereich)
@@ -145,8 +145,8 @@ test.describe("D. Die Bereiche des Space-Dialogs", () => {
   })
 
   test("zeigt Landingpage nur fuer ein Netzwerk", async ({ page }) => {
-    // Die Loewenherz Stiftung ist kein Netzwerk. Ohne Netzwerk gibt es nichts
-    // zu verlinken, also entfaellt der Bereich (docs/DEFINITION.md Teil 4.2).
+    // Die Löwenherz Stiftung ist kein Netzwerk. Ohne Netzwerk gibt es nichts
+    // zu verlinken, also entfällt der Bereich (docs/DEFINITION.md Teil 4.2).
     await appOeffnen(page, `/${TRUSTDONATION}/feed`)
     const dialog = await spaceDialogOeffnen(page, "Löwenherz Stiftung")
     const text = await dialog.innerText()
@@ -158,16 +158,16 @@ test.describe("D. Die Bereiche des Space-Dialogs", () => {
 test.describe("E. Die Module", () => {
   test("fuehrt die Module des Space als Reiter", async ({ page }) => {
     await appOeffnen(page, `/${TRUSTDONATION}/feed`)
-    // trustdonation traegt feed, kanban, calendar, map (aus den Musterdaten).
+    // trustdonation trägt feed, kanban, calendar, map (aus den Musterdaten).
     for (const modul of ["Feed", "Kalender", "Karte"]) {
       await expect(page.getByRole("button", { name: modul }).first()).toBeVisible()
     }
   })
 
   test("fuehrt die recherchierten Stiftungen als Eintraege", async ({ page }) => {
-    // 234 Stiftungen liegen als place-Items im Netzwerk. Geprueft wird hier
-    // die Liste und nicht die Karte: Die Karte haengt an einem fremden
-    // Kachel-Dienst, und ein Test, der daran haengt, misst dessen Laune.
+    // 234 Stiftungen liegen als place-Items im Netzwerk. Geprüft wird hier
+    // die Liste und nicht die Karte: Die Karte hängt an einem fremden
+    // Kachel-Dienst, und ein Test, der daran hängt, misst dessen Laune.
     await appOeffnen(page, `/${TRUSTDONATION}/collection`)
     const inhalt = page.locator("main")
     await expect(inhalt).toContainText("Stiftung", { timeout: 30_000 })
@@ -178,9 +178,9 @@ test.describe("E. Die Module", () => {
   })
 
   test("traegt die Stiftungen auf der Karte", async ({ page }) => {
-    // Bei 234 Merkmalen zeichnen einzelne Pins spuerbar langsamer. Gewartet
-    // wird, bis der Ladehinweis weg ist: Die Flaeche ist frueher sichtbar als
-    // die Karte, und ein Test, der das verwechselt, zaehlt null Merkmale.
+    // Bei 234 Merkmalen zeichnen einzelne Pins spürbar langsamer. Gewartet
+    // wird, bis der Ladehinweis weg ist: Die Fläche ist frueher sichtbar als
+    // die Karte, und ein Test, der das verwechselt, zählt null Merkmale.
     const start = Date.now()
     await appOeffnen(page, `/${TRUSTDONATION}/map`)
     await expect(page.getByText("Karte wird geladen")).toBeHidden({ timeout: 60_000 })

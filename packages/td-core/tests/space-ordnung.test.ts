@@ -15,8 +15,8 @@ describe("ordneSpaces", () => {
   })
 
   it("laesst ein Start-Netzwerk still weg, das nicht in der Liste steht", () => {
-    // Der Mensch ist dort kein Mitglied. Ein Eintrag, der ins Leere fuehrt,
-    // waere schlimmer als keiner.
+    // Der Mensch ist dort kein Mitglied. Ein Eintrag, der ins Leere führt,
+    // wäre schlimmer als keiner.
     const liste = [netz("n1"), space("a")]
     expect(ordneSpaces(liste, uebersicht, "fremd").map((w) => w.id))
       .toEqual(["__overview__", "n1", "a"])
@@ -46,7 +46,7 @@ describe("ordneSpaces", () => {
 
   it("nimmt einen Space, der Netzwerk und Mitglied zugleich ist, nur einmal", () => {
     // Die Lichtung ist ein Projekt in trustdonation und selbst ein Netzwerk.
-    // Sie gehoert in den Abschnitt Netzwerke, nicht zusaetzlich nach unten.
+    // Sie gehört in den Abschnitt Netzwerke, nicht zusaetzlich nach unten.
     const lichtung = { id: "lichtung", isNetwork: true, kind: "projekt" }
     const liste = [lichtung, space("a")]
     const raus = ordneSpaces(liste, uebersicht)
@@ -83,7 +83,7 @@ describe("gliedereNachArt", () => {
 
   it("behaelt eine unbekannte Art, statt den Space zu verlieren", () => {
     // Sie stammt aus einer anderen Version oder einem anderen Netzwerk.
-    // Muster 5: Unbekanntes bleibt erhalten und faellt sichtbar zurueck.
+    // Muster 5: Unbekanntes bleibt erhalten und fällt sichtbar zurück.
     const raus = gliedereNachArt([{ id: "x", kind: "kaffeetanten" }], arten)
     expect(raus.arten).toEqual([])
     expect(raus.ohneArt.map((s) => s.id)).toEqual(["x"])
