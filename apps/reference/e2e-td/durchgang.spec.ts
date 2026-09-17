@@ -190,7 +190,7 @@ test.describe("E. Die Module", () => {
 
   test("traegt die Stiftungen auf der Karte", async ({ page }) => {
     // Bei 234 Merkmalen zeichnen einzelne Pins spürbar langsamer. Gewartet
-    // wird, bis der Ladehinweis weg ist: Die Fläche ist frueher sichtbar als
+    // wird, bis der Ladehinweis weg ist: Die Fläche ist früher sichtbar als
     // die Karte, und ein Test, der das verwechselt, zählt null Merkmale.
     const start = Date.now()
     await appOeffnen(page, `/${TRUSTDONATION}/map`)

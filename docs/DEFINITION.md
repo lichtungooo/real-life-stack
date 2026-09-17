@@ -42,7 +42,7 @@ Antons Spec ist der Vertrag. Diese Landkarte sagt, wo was steht, damit wir nachs
 
 Dazu die Vokabulare in [spec/schemas/vocab/](spec/schemas/vocab/): `base`, `event`, `person`, `place`, `project`, `relation`, `resource`, `statement`, `task`.
 
-Nicht normativ, aber lesenswert: `docs/concepts/` (Ideen, darunter `item-types.md`, `relations.md`, `access-control.md`) und `docs/modules/` (frueher Modul-Brainstorm).
+Nicht normativ, aber lesenswert: `docs/concepts/` (Ideen, darunter `item-types.md`, `relations.md`, `access-control.md`) und `docs/modules/` (früher Modul-Brainstorm).
 
 ---
 
@@ -74,7 +74,7 @@ Register werden in fester Reihenfolge zusammengesetzt: **Core, dann App, dann Sp
 1. Eine **Definition** führt eine neue Id ein. Eine schon vergebene Id ist ein Konflikt und wird abgelehnt.
 2. Ein **Fragment** ergänzt eine vorhandene Id additiv. Mengen werden vereinigt. Ein Skalar, das die Basis schon setzt, darf ein Fragment nicht überschreiben.
 
-**Kein Shadowing, weder still noch ausdruecklich.** Ein Konflikt bricht die Zusammensetzung ab und nennt Feld und beide Schichten.
+**Kein Shadowing, weder still noch ausdrücklich.** Ein Konflikt bricht die Zusammensetzung ab und nennt Feld und beide Schichten.
 
 ### Muster 4: Feld-Präsenz statt Typ-Verzweigung
 
@@ -99,7 +99,7 @@ Widersprechen Code und Spec einander, ist das ein Fehler in einem von beiden, ni
 Sieben Regeln für alles, was wir ab jetzt bauen.
 
 1. **Erst definieren, dann bauen.** Eine neue Sache bekommt einen Abschnitt in dieser Datei, bevor sie Code wird. Der Abschnitt beantwortet: Welche Frage beantwortet das? Wo ist die eine Quelle? Welche Schicht hält was? Was passiert bei Unbekanntem?
-2. **Wir erfinden kein zweites Register für eine Frage, die Anton schon beantwortet.** Wir ergänzen seine Register über Fragmente, oder wir eröffnen ein Register für eine Frage, die er ausdruecklich offen lässt.
+2. **Wir erfinden kein zweites Register für eine Frage, die Anton schon beantwortet.** Wir ergänzen seine Register über Fragmente, oder wir eröffnen ein Register für eine Frage, die er ausdrücklich offen lässt.
 3. **Nichts wird hart verdrahtet, was eine Instanz unterscheiden kann.** Namen, Arten, Farben, Domains, Felder: alles kommt aus Daten oder aus Laufzeit-Konfiguration ([Spec 11](spec/11-runtime-config-und-branding.md)). Eine Liste im Code, die in einer anderen Instanz anders aussehen müsste, ist ein Fehler.
 4. **Was ein Mensch eingibt, steht in `data`.** Die obersten Felder eines Item gehören dem Core. Dasselbe gilt für `Group.data`.
 5. **Keine Bewertungen.** Keine Punkte, keine Sterne, keine Ranglisten, keine Passungszahl. Wo ein Vergleich nötig ist, nennen wir **Gründe**, und der Mensch entscheidet. Das ist eine Entscheidung über das Produkt, keine über die Technik, und sie steht hier, weil sie sonst im Code verloren geht.
@@ -172,10 +172,11 @@ Was unser Vorhaben braucht und in Antons Spec bewusst offen ist.
 |---|---|---|
 | **Felder je Art** | Eine Stiftung trägt andere Angaben als ein Projekt. `spaceKinds` trägt heute nur Name und Farbe. | offen |
 | **Feld-Register** | Ein neues Feld erscheint heute nur, wenn jemand Code schreibt, der es kennt. | Typ-Register deckt Item-Typen, nicht einzelne Felder |
-| **Modul-Marktplatz** | Wie ein Modul angeboten, gefunden und in eine Instanz genommen wird. | ausdruecklich offen: „Ein späteres Plugin-Konzept wäre eine eigene Sache mit eigenen Regeln" ([Spec 01, Regel 4](spec/01-app-composition.md)) |
+| **Modul-Marktplatz** | Wie ein Modul angeboten, gefunden und in eine Instanz genommen wird. | ausdrücklich offen: „Ein späteres Plugin-Konzept wäre eine eigene Sache mit eigenen Regeln" ([Spec 01, Regel 4](spec/01-app-composition.md)) |
 | **Profil eines Space** | [Spec 12](spec/12-profile.md) definiert das Profil eines **Menschen**. Ein Stiftungsprofil ist ein Space. | offen |
 | **Matching** | Wie ein Vorschlag entsteht und wie er begründet wird. | nicht Gegenstand der Spec |
-| **Angebot und Bedarf** | `docs/modules/marketplace.md` hält zwei Sätze. | frueher Brainstorm |
+| **Angebot und Bedarf** | `docs/modules/marketplace.md` hält zwei Sätze. | früher Brainstorm |
+| **Ohne Anmeldung lesen** | Der Stack kennt keinen Leser ohne Identität. Eine Stiftung soll die Karte sehen, bevor sie zwölf Wörter aufschreibt. Siehe Teil 12 und `anwendungsfaelle/01-oeffentlich-lesen.md`. | „Jeder (öffentlich)" steht in `concepts/access-control.md` als Wunsch, ohne Code. [Spec 09](spec/09-mirror-bridge.md) Invariante 9 zieht die Grenze. |
 
 Was **nicht** fehlt und was wir darum nicht neu bauen: Items, Relations, Tags, Vokabulare, Bestaetigungen, Vertrauen, Spiegel, Aktivitätslog, Laufzeit-Konfiguration, Modul-Register, Typ-Register.
 
@@ -281,7 +282,7 @@ Das Typ-Register sagt, **welche Felder** ein Typ mitbringt (über die Vokabular-
 
 **Frage, die dieser Abschnitt beantwortet:** Wie kommt ein Modul, das jemand anders gebaut hat, in meinen Space?
 
-Antons Spec lässt das ausdruecklich offen und sagt zugleich, was **nicht** geht: Das Modul-Register wird vor dem ersten Render einmal zusammengesetzt und eingefroren. Ein Space wählt aus dem Katalog, er trägt nichts bei. Ein Marktplatz, der zur Laufzeit fremden Code nachlädt, wäre ein Bruch dieser Regel und ein offenes Tor dazu.
+Antons Spec lässt das ausdrücklich offen und sagt zugleich, was **nicht** geht: Das Modul-Register wird vor dem ersten Render einmal zusammengesetzt und eingefroren. Ein Space wählt aus dem Katalog, er trägt nichts bei. Ein Marktplatz, der zur Laufzeit fremden Code nachlädt, wäre ein Bruch dieser Regel und ein offenes Tor dazu.
 
 Darum zwei Stufen, und die erste kommt ohne fremden Code aus.
 
@@ -419,3 +420,62 @@ Regeln:
 | Unser Konzept, fachlich | `docs/` in `lichtungooo/trustdonation` |
 | Der laufende Prototyp | `trustdonation.org/app`, Image `trustdonation-app:proto-N` |
 | Der Stand der Arbeit | `memory/stand_trustdonation.md` |
+
+---
+
+## Teil 12: Wer ohne Anmeldung sehen darf
+
+Timo am 17.09.2026: *"Du kannst keine Daten öffentlich sehen. Wenn du auf die Karte klickst oder wenn du App anschauen klickst, dann müssten erst die Daten angezeigt werden und dann kann ich mich anmelden, damit ich da im Web of Trust interagieren kann."*
+
+Er beschreibt die Reihenfolge, die jede Stiftung erwartet: **erst sehen, dann entscheiden.** Wer eine Anmeldung vor die Karte stellt, verliert den Besucher, bevor er verstanden hat, worum es geht.
+
+### Was der Stack heute kennt
+
+Der Stack kennt **keinen Leser ohne Identität**. Das ist kein Versehen, sondern eine Festlegung. Spec 09, Invariante 9:
+
+> Die Bridge ist Mitglied beider Spaces und verschlüsselt für den Ziel-Space neu; Relay und Nicht-Mitglieder sehen weiterhin nur Ciphertext.
+
+Ein Space ist Ende zu Ende verschlüsselt. Wer den Schlüssel nicht hat, sieht Rauschen. Das gilt für das Relay selbst, und darin liegt der Wert: Der Träger der Daten kann sie nicht lesen.
+
+In `docs/concepts/access-control.md` steht "Jeder (öffentlich)" als Wunsch, ohne Code dahinter. Vier Stufen stehen dort, und die dritte ist die, die den Weg öffnet: **"Jeder mit link/secret/einladung"**.
+
+### Die drei Wege, nach Kosten geordnet
+
+**Weg 1: Die Beispielwelt.** Steht. `trustdonation.org/app` zeigt ohne Anmeldung 234 Stiftungen auf der Karte, aus dem local-Connector.
+
+Es ist eine Kopie, kein Fenster. Was jemand im Web of Trust ändert, erscheint dort nie. Für den Pitch reicht es, und es hat den Vorteil, dass niemand versehentlich echte Daten sieht.
+
+**Weg 2: Ein Space, dessen Schlüssel öffentlich ist.** Der kurze Weg zu echten Daten, und er bleibt innerhalb der Grenze.
+
+Die Verschlüsselung bleibt, wie sie ist. Der Schlüssel des Space steht in der Adresse, wie bei einem geteilten Dokument. Der Besucher bekommt beim Öffnen eine wegwerfbare Identität und tritt als Leser bei. Den Code dafür gibt es schon: `authenticate("generate")` im wot-connector legt eine Identität ohne Passwort und ohne Speichern an.
+
+Was der Besucher sieht, ist echt und lebt. Meldet er sich danach an, steht er mit seiner eigenen Identität da, und die Wegwerf-Identität verschwindet mit dem Tab.
+
+Was daran zu klären bleibt:
+
+| Frage | Warum sie zählt |
+|---|---|
+| Darf ein Leser schreiben? | Ein Space ohne Rollen macht jeden Besucher zum Autor |
+| Was zeigt das Relay über Besucher? | Jede Wegwerf-Identität ist eine Verbindung mehr |
+| Wie kommt der Schlüssel in die Adresse, ohne im Verlauf zu landen? | Ein Link im Browserverlauf ist ein Schlüssel im Browserverlauf |
+
+Die erste Frage ist die harte: **Der Stack kennt keinen Leser-Rang.** Wer in einem Space ist, kann schreiben.
+
+**Weg 3: Ein Veröffentlichungs-Dienst.** Die echte Öffentlichkeit, und Antons Baustelle.
+
+Ein Brücken-Client liefert Mirror-Snapshots als offene Daten aus, so wie `profiles.web-of-trust.de` es für Profile tut. Ein Mirror ist bereits signiert statt verschlüsselt und bereits read-only, und er entsteht nur durch eine bewusste Freigabe. Die E2EE-Grenze bleibt darum unberührt: Veröffentlicht wird, was jemand veröffentlichen wollte.
+
+Das trägt weiter als Weg 2: lesbar ohne jeden Client, von Suchmaschinen auffindbar, als Link teilbar. Eine Stiftung, die ihren Eintrag jemandem schicken will, braucht genau das.
+
+### Was wir festlegen
+
+1. **Weg 1 bleibt die Startseite.** `trustdonation.org/app` zeigt Beispieldaten und sagt es auch. Eine Stiftung soll die Karte sehen, bevor sie irgendetwas entscheidet.
+2. **Weg 2 bauen wir, sobald der Leser-Rang steht.** Ohne ihn öffnet ein öffentlicher Schlüssel den Space für jeden Schreiber, und dann bleibt von den Daten nichts übrig.
+3. **Weg 3 formulieren wir als Anwendungsfall für Anton**, nicht als Code. Er gehört in den Stack, und er berührt die Spec.
+4. **Kein eigener Leseweg an Antons Verschlüsselung vorbei.** Die Grenze zum Protokoll gilt weiter (siehe `ARCHITEKTUR.md`). Wer hier abkürzt, baut eine zweite Wahrheit über die Sichtbarkeit, und die verliert gegen seine.
+
+### Die Reihenfolge, die Timo beschreibt
+
+Was unabhängig von allen drei Wegen gilt und heute schon gebaut werden kann:
+
+**Anmelden gehört ans Ende, nicht an den Anfang.** Wer die Karte öffnet, sieht die Karte. Der Knopf zum Anmelden steht dort, wo er gebraucht wird: an der Stelle, an der jemand etwas beitragen will.

@@ -36,7 +36,7 @@ REPO = Path(__file__).resolve().parent.parent
 BEREICHE = [
     "docs/DEFINITION.md", "docs/ARCHITEKTUR.md", "docs/NAEHTE.md", "docs/PLAN.md",
     "docs/REIFE.md", "docs/ENTSCHEIDUNGEN.md", "docs/EINSTIEG.md",
-    "docs/AUSLIEFERUNGEN.md", "docs/TESTPLAN.md",
+    "docs/AUSLIEFERUNGEN.md", "docs/TESTPLAN.md", "docs/anwendungsfaelle",
     "packages/td-core", "packages/td-ui", "td-tools",
     "apps/reference/e2e-td",
 ]
@@ -101,6 +101,14 @@ WOERTER = {
     "Toenung": "Tönung", "Vergroessern": "Vergrößern", "vergroessern": "vergrößern",
     "buendelt": "bündelt", "buendeln": "bündeln", "Buendeln": "Bündeln",
     "verknuepft": "verknüpft", "zurueckgedreht": "zurückgedreht",
+    "ausdruecklich": "ausdrücklich", "Ausdruecklich": "Ausdrücklich",
+    "ausdrueckt": "ausdrückt", "ausgedrueckt": "ausgedrückt",
+    "frueher": "früher", "Frueher": "Früher", "fruehe": "frühe", "fruehen": "frühen",
+    "fruehestens": "frühestens", "Fruehstueck": "Frühstück",
+    "beruehrt": "berührt", "unberuehrt": "unberührt", "Beruehrung": "Berührung",
+    "eingefuehrt": "eingeführt", "ausgefuehrt": "ausgeführt",
+    "gehoert": "gehört", "Gehoert": "Gehört", "gehoeren": "gehören",
+    "zugehoerig": "zugehörig", "Zugehoerigkeit": "Zugehörigkeit",
     # ae
     "waere": "wäre", "waeren": "wären", "naehme": "nähme", "saehe": "sähe",
     "braeche": "bräche", "braeuchten": "bräuchten", "haette": "hätte", "haetten": "hätten",

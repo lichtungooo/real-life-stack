@@ -20,7 +20,7 @@ Anton führt dasselbe in `docs/spec/decisions/` für den Stack. Diese Datei ist 
 
 **Verworfen:** Prozentzahl für die Passung (verdeckt die Gründe), Sterne für Stiftungen (wir bewerten keine Förderer), Rangliste der Projekte (macht aus Zusammenarbeit einen Wettbewerb).
 
-**Ungültig, wenn:** nie aus Bequemlichkeit. Nur, wenn die Menschen, die die Plattform nutzen, ausdruecklich danach fragen und einen Weg finden, der die Gründe sichtbar lässt.
+**Ungültig, wenn:** nie aus Bequemlichkeit. Nur, wenn die Menschen, die die Plattform nutzen, ausdrücklich danach fragen und einen Weg finden, der die Gründe sichtbar lässt.
 
 ---
 
@@ -76,7 +76,7 @@ Anton führt dasselbe in `docs/spec/decisions/` für den Stack. Diese Datei ist 
 
 **Verworfen:** Plugins zur Laufzeit laden (bricht die Regel, öffnet ein Tor), ein eigener Modul-Server (Backend, das wir nicht wollen).
 
-**Ungültig, wenn:** Anton ein Plugin-Konzept mit eigenen Regeln baut. Er nennt es in Spec 01 ausdruecklich als offene Möglichkeit.
+**Ungültig, wenn:** Anton ein Plugin-Konzept mit eigenen Regeln baut. Er nennt es in Spec 01 ausdrücklich als offene Möglichkeit.
 
 ---
 

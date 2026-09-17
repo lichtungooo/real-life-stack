@@ -16,7 +16,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-# Die Ausgabe der Testlaeufe traegt Zeichen, die Windows in seiner
+# Die Ausgabe der Testlaeufe trägt Zeichen, die Windows in seiner
 # Standardkodierung nicht kennt (ein schmales Leerzeichen aus Vitest hat
 # den Bericht abbrechen lassen, kurz bevor er das Ergebnis zeigte).
 for strom in (sys.stdout, sys.stderr):
