@@ -23,6 +23,11 @@ COPY packages/wot-connector/package.json packages/wot-connector/
 COPY packages/local-connector/package.json packages/local-connector/
 COPY packages/mock-connector/package.json packages/mock-connector/
 COPY packages/supabase-connector/package.json packages/supabase-connector/
+# Prototyp trustdonation: unsere beiden Pakete gehoeren in dieselbe Schicht.
+# Fehlen sie hier, installiert pnpm sie nicht, und der Bau bricht ab, sobald
+# eines von ihnen etwas aus data-interface importiert.
+COPY packages/td-core/package.json packages/td-core/
+COPY packages/td-ui/package.json packages/td-ui/
 COPY apps/reference/package.json apps/reference/
 RUN pnpm install --frozen-lockfile --filter reference...
 
