@@ -21,6 +21,7 @@ This file is about contributing to the stack itself. If you are building an app 
 ## Source of Truth
 
 - Spec index: [docs/spec/README.md](./docs/spec/README.md)
+- **Prototyp trustdonation:** [docs/DEFINITION.md](./docs/DEFINITION.md) ergaenzt die Spec um Arten, Felder, Komponenten, Modul-Marktplatz, Profile und Matching; [docs/PLAN.md](./docs/PLAN.md) haelt die Reihenfolge. Bei Widerspruch gewinnt die Spec.
 - Architecture: [docs/spec/00-architecture.md](./docs/spec/00-architecture.md)
 - App composition: [docs/spec/01-app-composition.md](./docs/spec/01-app-composition.md)
 - DataInterface core: [docs/spec/02-data-interface.md](./docs/spec/02-data-interface.md)
