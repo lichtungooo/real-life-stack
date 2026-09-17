@@ -1,6 +1,73 @@
 {
-  "group-1": ["user-1", "user-2", "user-3", "user-4"],
-  "group-2": ["user-1", "user-2", "user-5"],
-  "group-3": ["user-1", "user-2", "user-4"],
-  "group-4": ["user-1", "user-5", "user-3", "user-6"]
+  "td-netzwerk": [
+    "user-1",
+    "user-2",
+    "user-3",
+    "user-4",
+    "user-5",
+    "user-6",
+    "user-7"
+  ],
+  "stiftung-buergerstiftung-kassel": [
+    "user-1",
+    "user-4"
+  ],
+  "stiftung-b-braun-stiftung": [
+    "user-1",
+    "user-4"
+  ],
+  "stiftung-vr-partnerbank-heimatstiftungen": [
+    "user-1",
+    "user-4"
+  ],
+  "stiftung-sparkasse-fritzlar-homberg": [
+    "user-1",
+    "user-4"
+  ],
+  "stiftung-ksk-schwalm-eder-teilstiftungen": [
+    "user-1",
+    "user-4"
+  ],
+  "stiftung-eb-stiftung-kassel": [
+    "user-1",
+    "user-4"
+  ],
+  "stiftung-sagst": [
+    "user-1",
+    "user-4"
+  ],
+  "stiftung-aktion-mensch": [
+    "user-1",
+    "user-4"
+  ],
+  "projekt-lichtung": [
+    "user-1",
+    "user-2",
+    "user-3"
+  ],
+  "projekt-werkstatt-bahnhof": [
+    "user-1",
+    "user-5",
+    "user-3"
+  ],
+  "projekt-musterschule": [
+    "user-1",
+    "user-7"
+  ],
+  "projekt-macher-map": [
+    "user-1",
+    "user-2",
+    "user-6"
+  ],
+  "projekt-foerderhelden": [
+    "user-1",
+    "user-6",
+    "user-4"
+  ],
+  "projekt-garten-felsberg": [
+    "user-1",
+    "user-3",
+    "user-5",
+    "user-7"
+  ]
 }

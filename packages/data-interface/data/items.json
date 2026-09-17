@@ -2,79 +2,431 @@
   {
     "@context": [
       "https://real-life-stack.org/vocab/base/v1",
-      "https://real-life-stack.org/vocab/task/v1"
+      "https://real-life-stack.org/vocab/place/v1"
     ],
-    "id": "task-1",
-    "type": "task",
-    "createdAt": "2026-03-01T00:00:00.000Z",
-    "createdBy": "user-3",
-    "data": {
-      "title": "KanbanBoard Drag & Drop",
-      "description": "Touch-Events und Pointer-Events für mobiles Drag & Drop implementieren",
-      "status": "in-progress",
-      "order": 0
-    },
-    "tags": [
-      "toolkit",
-      "ui"
-    ],
-    "relations": [
-      {
-        "predicate": "assignedTo",
-        "target": "global:user-3"
-      }
-    ]
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1",
-      "https://real-life-stack.org/vocab/task/v1"
-    ],
-    "id": "task-2",
-    "type": "task",
-    "createdAt": "2026-03-02T00:00:00.000Z",
+    "id": "ort-buergerstiftung-kassel",
+    "type": "place",
+    "createdAt": "2026-09-01T09:00:00.000Z",
     "createdBy": "user-1",
     "data": {
-      "title": "Gruppen als Scopes implementieren",
-      "description": "setCurrentGroup() filtert getItems() nach aktuellem Scope",
-      "status": "done",
-      "order": 0
+      "title": "Buergerstiftung fuer die Stadt und den Landkreis Kassel",
+      "description": "Sitz der Stiftung. Foerderschwerpunkte: jugend, kinder, sport, kultur, natur.",
+      "address": "Wolfsschlucht 9, 34117 Kassel",
+      "position": {
+        "type": "Point",
+        "coordinates": [
+          9.4797,
+          51.3127
+        ]
+      }
     },
     "tags": [
-      "data-interface",
-      "architektur"
-    ],
-    "relations": [
-      {
-        "predicate": "assignedTo",
-        "target": "global:user-1"
-      }
+      "jugend",
+      "kinder",
+      "sport",
+      "kultur",
+      "stiftung"
     ]
   },
   {
     "@context": [
-      "https://real-life-stack.org/vocab/base/v1",
-      "https://real-life-stack.org/vocab/task/v1"
+      "https://real-life-stack.org/vocab/base/v1"
     ],
-    "id": "task-3",
-    "type": "task",
-    "createdAt": "2026-03-03T00:00:00.000Z",
+    "id": "post-buergerstiftung-kassel",
+    "type": "post",
+    "createdAt": "2026-09-02T10:00:00.000Z",
     "createdBy": "user-1",
     "data": {
-      "title": "CalendarView in Toolkit verschieben",
-      "description": "Kalender-Komponente aus der Reference App ins Toolkit Package extrahieren",
-      "status": "open",
-      "order": 1
+      "title": "Was diese Stiftung foerdert",
+      "content": "Foerderschwerpunkte: jugend, kinder, sport, kultur, natur, umwelt, gemeinwesen.\n\nFoerderrahmen: bis 5.000 Euro.\n\nAntragsweg: Online-Formular, jederzeit moeglich.\n\nZustiftung ist moeglich.\n\nQuelle: https://www.buergerstiftung-kassel.de\n\nDieser Eintrag stammt aus oeffentlicher Recherche. Die Stiftung pflegt ihn selbst, sobald sie ihn uebernimmt."
     },
     "tags": [
-      "toolkit",
-      "refactoring"
+      "jugend",
+      "kinder",
+      "sport",
+      "eintrag"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1",
+      "https://real-life-stack.org/vocab/place/v1"
     ],
-    "relations": [
-      {
-        "predicate": "assignedTo",
-        "target": "global:user-3"
+    "id": "ort-b-braun-stiftung",
+    "type": "place",
+    "createdAt": "2026-09-01T09:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "B. Braun-Stiftung",
+      "description": "Sitz der Stiftung. Foerderschwerpunkte: gesundheit, ausbildung, wissenschaft, forschung.",
+      "address": "Carl-Braun-Str. 1, 34212 Melsungen",
+      "position": {
+        "type": "Point",
+        "coordinates": [
+          9.5497,
+          51.1319
+        ]
       }
+    },
+    "tags": [
+      "gesundheit",
+      "ausbildung",
+      "wissenschaft",
+      "forschung",
+      "stiftung"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1"
+    ],
+    "id": "post-b-braun-stiftung",
+    "type": "post",
+    "createdAt": "2026-09-02T10:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Was diese Stiftung foerdert",
+      "content": "Foerderschwerpunkte: gesundheit, ausbildung, wissenschaft, forschung.\n\nFoerderrahmen: nach Absprache.\n\nAntragsweg: Fristen Feb/Maerz und Sep/Okt. Online-Bewerbung ueber bbraun-stiftung.de. Bundesweit, Melsungen ist kein Kriterium..\n\nZustiftung ist moeglich.\n\nQuelle: https://bbraun-stiftung.de\n\nDieser Eintrag stammt aus oeffentlicher Recherche. Die Stiftung pflegt ihn selbst, sobald sie ihn uebernimmt."
+    },
+    "tags": [
+      "gesundheit",
+      "ausbildung",
+      "wissenschaft",
+      "eintrag"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1",
+      "https://real-life-stack.org/vocab/place/v1"
+    ],
+    "id": "ort-vr-partnerbank-heimatstiftungen",
+    "type": "place",
+    "createdAt": "2026-09-01T09:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "VR PartnerBank Heimatstiftungen (Chattengau + Schwalm-Eder)",
+      "description": "Sitz der Stiftung. Foerderschwerpunkte: kunst, kultur, natur, umwelt, bildung.",
+      "address": "Muehlengasse 6, 34212 Melsungen",
+      "position": {
+        "type": "Point",
+        "coordinates": [
+          9.5497,
+          51.1319
+        ]
+      }
+    },
+    "tags": [
+      "kunst",
+      "kultur",
+      "natur",
+      "umwelt",
+      "stiftung"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1"
+    ],
+    "id": "post-vr-partnerbank-heimatstiftungen",
+    "type": "post",
+    "createdAt": "2026-09-02T10:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Was diese Stiftung foerdert",
+      "content": "Foerderschwerpunkte: kunst, kultur, natur, umwelt, bildung, ausbildung, sport, jugend, gemeinwesen.\n\nFoerderrahmen: 300 bis 5.000 Euro.\n\nAntragsweg: Formular vr-partnerbank.de -> Stiftung & Engagement -> Heimatstiftung. Zwei getrennte Formulare je Heimatstiftung (Zustaendigkeit nach Wohnort/Vereinssitz). Laufender Antrag, mehrmals jaehrlich..\n\nZustiftung ist moeglich.\n\nQuelle: https://vr-partnerbank.de\n\nDieser Eintrag stammt aus oeffentlicher Recherche. Die Stiftung pflegt ihn selbst, sobald sie ihn uebernimmt."
+    },
+    "tags": [
+      "kunst",
+      "kultur",
+      "natur",
+      "eintrag"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1",
+      "https://real-life-stack.org/vocab/place/v1"
+    ],
+    "id": "ort-sparkasse-fritzlar-homberg",
+    "type": "place",
+    "createdAt": "2026-09-01T09:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Sparkassenstiftung Altkreis Fritzlar-Homberg",
+      "description": "Sitz der Stiftung. Foerderschwerpunkte: heimat, jugend, kultur, ehrenamt, ausbildung.",
+      "address": "Fritzlar",
+      "position": {
+        "type": "Point",
+        "coordinates": [
+          9.2742,
+          51.1319
+        ]
+      }
+    },
+    "tags": [
+      "heimat",
+      "jugend",
+      "kultur",
+      "ehrenamt",
+      "stiftung"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1"
+    ],
+    "id": "post-sparkasse-fritzlar-homberg",
+    "type": "post",
+    "createdAt": "2026-09-02T10:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Was diese Stiftung foerdert",
+      "content": "Foerderschwerpunkte: heimat, jugend, kultur, ehrenamt, ausbildung.\n\nFoerderrahmen: 500 bis 5.000 Euro.\n\nAntragsweg: Anfrage.\n\nZustiftung ist moeglich.\n\nDieser Eintrag stammt aus oeffentlicher Recherche. Die Stiftung pflegt ihn selbst, sobald sie ihn uebernimmt."
+    },
+    "tags": [
+      "heimat",
+      "jugend",
+      "kultur",
+      "eintrag"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1",
+      "https://real-life-stack.org/vocab/place/v1"
+    ],
+    "id": "ort-ksk-schwalm-eder-teilstiftungen",
+    "type": "place",
+    "createdAt": "2026-09-01T09:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Stiftung der Kreissparkasse Schwalm-Eder (4 Teilstiftungen: Melsungen, Fritzlar, Homberg, Ziegenhain)",
+      "description": "Sitz der Stiftung. Foerderschwerpunkte: kultur, soziales, denkmalschutz, sport, jugend.",
+      "address": "Melsungen",
+      "position": {
+        "type": "Point",
+        "coordinates": [
+          9.5497,
+          51.1319
+        ]
+      }
+    },
+    "tags": [
+      "kultur",
+      "soziales",
+      "denkmalschutz",
+      "sport",
+      "stiftung"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1"
+    ],
+    "id": "post-ksk-schwalm-eder-teilstiftungen",
+    "type": "post",
+    "createdAt": "2026-09-02T10:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Was diese Stiftung foerdert",
+      "content": "Foerderschwerpunkte: kultur, soziales, denkmalschutz, sport, jugend, natur, umwelt, wissenschaft.\n\nFoerderrahmen: nach Absprache.\n\nAntragsweg: Laufender Antragsweg pro Teilstiftung (Altkreis-Zuordnung). Melsungen ist Timos Ort, Fritzlar sitzt Amtsgericht, wo Verein registriert ist..\n\nZustiftung ist moeglich.\n\nDieser Eintrag stammt aus oeffentlicher Recherche. Die Stiftung pflegt ihn selbst, sobald sie ihn uebernimmt."
+    },
+    "tags": [
+      "kultur",
+      "soziales",
+      "denkmalschutz",
+      "eintrag"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1",
+      "https://real-life-stack.org/vocab/place/v1"
+    ],
+    "id": "ort-eb-stiftung-kassel",
+    "type": "place",
+    "createdAt": "2026-09-01T09:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "EB-Stiftung (Evangelische Bank)",
+      "description": "Sitz der Stiftung. Foerderschwerpunkte: kinder, jugend, bildung, ausbildung, inklusion.",
+      "address": "Kassel",
+      "position": {
+        "type": "Point",
+        "coordinates": [
+          9.4797,
+          51.3127
+        ]
+      }
+    },
+    "tags": [
+      "kinder",
+      "jugend",
+      "bildung",
+      "ausbildung",
+      "stiftung"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1"
+    ],
+    "id": "post-eb-stiftung-kassel",
+    "type": "post",
+    "createdAt": "2026-09-02T10:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Was diese Stiftung foerdert",
+      "content": "Foerderschwerpunkte: kinder, jugend, bildung, ausbildung, inklusion.\n\nFoerderrahmen: 4.000 bis 10.000 Euro.\n\nAntragsweg: Fristen 09.10.2026 und 02.04.2027. Nur online. Ausgeschlossen: Baumassnahmen, Sanierung, Personalkosten, laufende Betriebskosten..\n\nZustiftung ist moeglich.\n\nQuelle: https://www.eb.de/ueber-uns/wir-fuer-sie/eb-stiftung.html\n\nDieser Eintrag stammt aus oeffentlicher Recherche. Die Stiftung pflegt ihn selbst, sobald sie ihn uebernimmt."
+    },
+    "tags": [
+      "kinder",
+      "jugend",
+      "bildung",
+      "eintrag"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1",
+      "https://real-life-stack.org/vocab/place/v1"
+    ],
+    "id": "ort-sagst",
+    "type": "place",
+    "createdAt": "2026-09-01T09:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Software AG-Stiftung",
+      "description": "Sitz der Stiftung. Foerderschwerpunkte: reformpaedagogik, bildung, kinder, jugend, natur.",
+      "address": "Karl-Hessenberger-Str. 20, 64354 Reinheim",
+      "position": {
+        "type": "Point",
+        "coordinates": [
+          9.4797,
+          51.3127
+        ]
+      }
+    },
+    "tags": [
+      "reformpaedagogik",
+      "bildung",
+      "kinder",
+      "jugend",
+      "stiftung"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1"
+    ],
+    "id": "post-sagst",
+    "type": "post",
+    "createdAt": "2026-09-02T10:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Was diese Stiftung foerdert",
+      "content": "Foerderschwerpunkte: reformpaedagogik, bildung, kinder, jugend, natur, innere-arbeit, potenzialentfaltung.\n\nFoerderrahmen: 5.000 bis 2.000.000 Euro.\n\nAntragsweg: zweistufig, Skizze dann Vollantrag, jederzeit.\n\nZustiftung ist moeglich.\n\nQuelle: https://www.sagst.de\n\nDieser Eintrag stammt aus oeffentlicher Recherche. Die Stiftung pflegt ihn selbst, sobald sie ihn uebernimmt."
+    },
+    "tags": [
+      "reformpaedagogik",
+      "bildung",
+      "kinder",
+      "eintrag"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1",
+      "https://real-life-stack.org/vocab/place/v1"
+    ],
+    "id": "ort-aktion-mensch",
+    "type": "place",
+    "createdAt": "2026-09-01T09:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Aktion Mensch",
+      "description": "Sitz der Stiftung. Foerderschwerpunkte: inklusion, kinder, jugend, integration, ehrenamt.",
+      "address": "Heinemannstr. 36, 53175 Bonn",
+      "position": {
+        "type": "Point",
+        "coordinates": [
+          7.0982,
+          50.7374
+        ]
+      }
+    },
+    "tags": [
+      "inklusion",
+      "kinder",
+      "jugend",
+      "integration",
+      "stiftung"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1"
+    ],
+    "id": "post-aktion-mensch",
+    "type": "post",
+    "createdAt": "2026-09-02T10:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Was diese Stiftung foerdert",
+      "content": "Foerderschwerpunkte: inklusion, kinder, jugend, integration, ehrenamt, bildung, digitalisierung, gemeinwesen.\n\nFoerderrahmen: 5.000 bis 300.000 Euro.\n\nAntragsweg: Antragsphase 01.09. bis 15.10.2026, DIAS-Portal, bis 300.000 EUR ueber 3 Jahre.\n\nQuelle: https://www.aktion-mensch.de/foerderung\n\nDieser Eintrag stammt aus oeffentlicher Recherche. Die Stiftung pflegt ihn selbst, sobald sie ihn uebernimmt."
+    },
+    "tags": [
+      "inklusion",
+      "kinder",
+      "jugend",
+      "eintrag"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1",
+      "https://real-life-stack.org/vocab/place/v1"
+    ],
+    "id": "ort-lichtung",
+    "type": "place",
+    "createdAt": "2026-09-01T09:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Kollektiv Lichtung",
+      "description": "Traeger der gemeinsamen Arbeit an Trust Donation und am Real Life Network",
+      "address": "Felsberg, Schwalm-Eder-Kreis",
+      "position": {
+        "type": "Point",
+        "coordinates": [
+          9.4236,
+          51.1389
+        ]
+      }
+    },
+    "tags": [
+      "gemeinwesen",
+      "digitalisierung",
+      "ehrenamt",
+      "projekt"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1"
+    ],
+    "id": "post-lichtung",
+    "type": "post",
+    "createdAt": "2026-09-03T11:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Unser Vorhaben",
+      "content": "Das Kollektiv Lichtung e.V. traegt die Entwicklung von Trust Donation. Wir bauen die Plattform, pflegen die Stiftungseintraege und begleiten die ersten Projekte auf ihrem Weg zur Foerderung."
+    },
+    "tags": [
+      "gemeinwesen",
+      "digitalisierung",
+      "ehrenamt"
     ]
   },
   {
@@ -82,45 +434,19 @@
       "https://real-life-stack.org/vocab/base/v1",
       "https://real-life-stack.org/vocab/task/v1"
     ],
-    "id": "task-4",
+    "id": "bedarf-lichtung-1",
     "type": "task",
-    "createdAt": "2026-03-04T00:00:00.000Z",
-    "createdBy": "user-4",
+    "createdAt": "2026-09-04T12:00:00.000Z",
+    "createdBy": "user-1",
     "data": {
-      "title": "GraphQL Subscriptions testen",
-      "description": "WebSocket-Verbindung mit Mercurius und graphql-ws verifizieren",
-      "status": "open",
-      "order": 2
+      "title": "Foerderantrag Plattform-Entwicklung schreiben",
+      "description": "Wir suchen Menschen mit Antragserfahrung fuer die erste Welle.",
+      "status": "open"
     },
     "tags": [
-      "graphql",
-      "backend"
-    ],
-    "relations": [
-      {
-        "predicate": "assignedTo",
-        "target": "global:user-4"
-      }
-    ]
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1",
-      "https://real-life-stack.org/vocab/task/v1"
-    ],
-    "id": "task-5",
-    "type": "task",
-    "createdAt": "2026-03-05T00:00:00.000Z",
-    "createdBy": "user-2",
-    "data": {
-      "title": "Schein-Design finalisieren",
-      "description": "Vorder- und Rückseite der Zeitgutscheine mit Silberdruck-Vorlage fertigstellen",
-      "status": "in-progress",
-      "order": 0
-    },
-    "tags": [
-      "design",
-      "druck"
+      "gemeinwesen",
+      "digitalisierung",
+      "bedarf"
     ],
     "relations": [
       {
@@ -134,174 +460,19 @@
       "https://real-life-stack.org/vocab/base/v1",
       "https://real-life-stack.org/vocab/task/v1"
     ],
-    "id": "task-6",
+    "id": "bedarf-lichtung-2",
     "type": "task",
-    "createdAt": "2026-03-05T00:00:00.000Z",
+    "createdAt": "2026-09-04T12:00:00.000Z",
     "createdBy": "user-1",
     "data": {
-      "title": "Online-Shop Bestellflow",
-      "description": "Personalisierte Gutscheine bestellen mit Logo-Upload und Textanpassung",
-      "status": "open",
-      "order": 1
+      "title": "Rechtliche Pruefung der Stiftungseintraege",
+      "description": "Ein Blick von jemandem, der Datenschutz und Vereinsrecht kennt.",
+      "status": "open"
     },
     "tags": [
-      "shop",
-      "feature"
-    ],
-    "relations": [
-      {
-        "predicate": "assignedTo",
-        "target": "global:user-1"
-      }
-    ]
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1",
-      "https://real-life-stack.org/vocab/task/v1"
-    ],
-    "id": "task-7",
-    "type": "task",
-    "createdAt": "2026-03-03T00:00:00.000Z",
-    "createdBy": "user-1",
-    "data": {
-      "title": "Multiplikatoren-Pakete versenden",
-      "description": "50 Scheine pro Multiplikator vorbereiten und verschicken — erste 20 Pakete",
-      "status": "in-progress",
-      "order": 2
-    },
-    "tags": [
-      "launch",
-      "logistik"
-    ],
-    "relations": [
-      {
-        "predicate": "assignedTo",
-        "target": "global:user-5"
-      }
-    ]
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1",
-      "https://real-life-stack.org/vocab/task/v1"
-    ],
-    "id": "task-8",
-    "type": "task",
-    "createdAt": "2026-03-01T00:00:00.000Z",
-    "createdBy": "user-1",
-    "data": {
-      "title": "MessagingAdapter End-to-End Test",
-      "description": "WebSocket Relay mit Heartbeat, ACK und Outbox-Pattern testen",
-      "status": "done",
-      "order": 0
-    },
-    "tags": [
-      "messaging",
-      "test"
-    ],
-    "relations": [
-      {
-        "predicate": "assignedTo",
-        "target": "global:user-1"
-      }
-    ]
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1",
-      "https://real-life-stack.org/vocab/task/v1"
-    ],
-    "id": "task-9",
-    "type": "task",
-    "createdAt": "2026-03-06T00:00:00.000Z",
-    "createdBy": "user-2",
-    "data": {
-      "title": "Migration auf automerge-repo",
-      "description": "Automerge-repo für automatische Persistenz und Sync statt manuellem save/load",
-      "status": "open",
-      "order": 1
-    },
-    "tags": [
-      "crdt",
-      "architektur"
-    ],
-    "relations": [
-      {
-        "predicate": "assignedTo",
-        "target": "global:user-1"
-      }
-    ]
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1",
-      "https://real-life-stack.org/vocab/task/v1"
-    ],
-    "id": "task-10",
-    "type": "task",
-    "createdAt": "2026-03-04T00:00:00.000Z",
-    "createdBy": "user-5",
-    "data": {
-      "title": "Beete vorbereiten",
-      "description": "Erde umgraben und Kompost einarbeiten für die Frühjahrspflanzung",
-      "status": "open",
-      "order": 0
-    },
-    "tags": [
-      "garten",
-      "frühling"
-    ],
-    "relations": [
-      {
-        "predicate": "assignedTo",
-        "target": "global:user-5"
-      }
-    ]
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1",
-      "https://real-life-stack.org/vocab/task/v1"
-    ],
-    "id": "task-11",
-    "type": "task",
-    "createdAt": "2026-03-05T00:00:00.000Z",
-    "createdBy": "user-1",
-    "data": {
-      "title": "Samen bestellen",
-      "description": "Tomaten, Zucchini, Kräuter — samenfeste Sorten von Dreschflegel",
-      "status": "in-progress",
-      "order": 1
-    },
-    "tags": [
-      "garten",
-      "einkauf"
-    ],
-    "relations": [
-      {
-        "predicate": "assignedTo",
-        "target": "global:user-1"
-      }
-    ]
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1",
-      "https://real-life-stack.org/vocab/task/v1"
-    ],
-    "id": "task-12",
-    "type": "task",
-    "createdAt": "2026-03-06T00:00:00.000Z",
-    "createdBy": "user-3",
-    "data": {
-      "title": "Wasserschlauch reparieren",
-      "description": "Leck am Verbindungsstück abdichten",
-      "status": "done",
-      "order": 2
-    },
-    "tags": [
-      "infrastruktur"
+      "gemeinwesen",
+      "digitalisierung",
+      "bedarf"
     ],
     "relations": [
       {
@@ -313,21 +484,424 @@
   {
     "@context": [
       "https://real-life-stack.org/vocab/base/v1",
+      "https://real-life-stack.org/vocab/place/v1"
+    ],
+    "id": "ort-werkstatt-bahnhof",
+    "type": "place",
+    "createdAt": "2026-09-01T09:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Werkstatt am Bahnhof",
+      "description": "Offene Werkstatt fuer Jugendliche, Handwerk zum Anfassen",
+      "address": "Bahnhofstrasse, 34212 Melsungen",
+      "position": {
+        "type": "Point",
+        "coordinates": [
+          9.5497,
+          51.1319
+        ]
+      }
+    },
+    "tags": [
+      "jugend",
+      "handwerk",
+      "ausbildung",
+      "projekt"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1"
+    ],
+    "id": "post-werkstatt-bahnhof",
+    "type": "post",
+    "createdAt": "2026-09-03T11:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Unser Vorhaben",
+      "content": "Eine offene Werkstatt am Bahnhof: Holz, Metall, Fahrrad, 3D-Druck. Jugendliche bauen hier ihre eigenen Sachen und lernen dabei Werkzeuge kennen, die ihnen sonst niemand in die Hand gibt."
+    },
+    "tags": [
+      "jugend",
+      "handwerk",
+      "ausbildung"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1",
+      "https://real-life-stack.org/vocab/task/v1"
+    ],
+    "id": "bedarf-werkstatt-bahnhof-1",
+    "type": "task",
+    "createdAt": "2026-09-04T12:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Werkbaenke und Grundausstattung",
+      "description": "Sechs Werkbaenke, Handwerkzeug, Absaugung. Rund 14.000 Euro.",
+      "status": "open"
+    },
+    "tags": [
+      "jugend",
+      "handwerk",
+      "bedarf"
+    ],
+    "relations": [
+      {
+        "predicate": "assignedTo",
+        "target": "global:user-5"
+      }
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1",
+      "https://real-life-stack.org/vocab/task/v1"
+    ],
+    "id": "bedarf-werkstatt-bahnhof-2",
+    "type": "task",
+    "createdAt": "2026-09-04T12:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Anleitung an zwei Nachmittagen",
+      "description": "Jemand aus dem Handwerk, der zwei Nachmittage pro Woche da ist.",
+      "status": "open"
+    },
+    "tags": [
+      "jugend",
+      "handwerk",
+      "bedarf"
+    ],
+    "relations": [
+      {
+        "predicate": "assignedTo",
+        "target": "global:user-3"
+      }
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1",
+      "https://real-life-stack.org/vocab/place/v1"
+    ],
+    "id": "ort-musterschule",
+    "type": "place",
+    "createdAt": "2026-09-01T09:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Musterschule Gudensberg",
+      "description": "Schule, die vom Kind aus denkt",
+      "address": "Gudensberg, Schwalm-Eder-Kreis",
+      "position": {
+        "type": "Point",
+        "coordinates": [
+          9.3667,
+          51.1806
+        ]
+      }
+    },
+    "tags": [
+      "bildung",
+      "kinder",
+      "reformpaedagogik",
+      "projekt"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1"
+    ],
+    "id": "post-musterschule",
+    "type": "post",
+    "createdAt": "2026-09-03T11:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Unser Vorhaben",
+      "content": "Eine Schule, die vom Kind aus denkt: Lernen in Projekten, Werkstatt statt Frontalunterricht, Natur als taeglicher Ort. Wir bereiten die Gruendung vor und suchen Partner, die den langen Atem mitbringen."
+    },
+    "tags": [
+      "bildung",
+      "kinder",
+      "reformpaedagogik"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1",
+      "https://real-life-stack.org/vocab/task/v1"
+    ],
+    "id": "bedarf-musterschule-1",
+    "type": "task",
+    "createdAt": "2026-09-04T12:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Konzeptphase finanzieren",
+      "description": "Zwoelf Monate Vorbereitung: Paedagogik, Gebaeude, Genehmigung.",
+      "status": "open"
+    },
+    "tags": [
+      "bildung",
+      "kinder",
+      "bedarf"
+    ],
+    "relations": [
+      {
+        "predicate": "assignedTo",
+        "target": "global:user-7"
+      }
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1",
+      "https://real-life-stack.org/vocab/place/v1"
+    ],
+    "id": "ort-macher-map",
+    "type": "place",
+    "createdAt": "2026-09-01T09:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Macher-Map Nordhessen",
+      "description": "Karte der Menschen, die etwas koennen und etwas vorhaben",
+      "address": "Kassel, Nordhessen",
+      "position": {
+        "type": "Point",
+        "coordinates": [
+          9.4797,
+          51.3127
+        ]
+      }
+    },
+    "tags": [
+      "gemeinwesen",
+      "digitalisierung",
+      "ehrenamt",
+      "projekt"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1"
+    ],
+    "id": "post-macher-map",
+    "type": "post",
+    "createdAt": "2026-09-03T11:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Unser Vorhaben",
+      "content": "Eine Karte, auf der sichtbar wird, wer in der Region was kann und was sucht. Werkstaetten, Gaerten, Repair-Cafes, Initiativen. Wer Hilfe braucht, findet sie im eigenen Ort statt im naechsten Portal."
+    },
+    "tags": [
+      "gemeinwesen",
+      "digitalisierung",
+      "ehrenamt"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1",
+      "https://real-life-stack.org/vocab/task/v1"
+    ],
+    "id": "bedarf-macher-map-1",
+    "type": "task",
+    "createdAt": "2026-09-04T12:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Redaktion fuer die ersten 200 Eintraege",
+      "description": "Recherche, Ansprache, Pflege. Ein halbes Jahr, geringfuegig.",
+      "status": "open"
+    },
+    "tags": [
+      "gemeinwesen",
+      "digitalisierung",
+      "bedarf"
+    ],
+    "relations": [
+      {
+        "predicate": "assignedTo",
+        "target": "global:user-2"
+      }
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1",
+      "https://real-life-stack.org/vocab/place/v1"
+    ],
+    "id": "ort-foerderhelden",
+    "type": "place",
+    "createdAt": "2026-09-01T09:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Foerderhelden",
+      "description": "Menschen mit Antragserfahrung begleiten Projekte durch die Foerderung",
+      "address": "Nordhessen und ueberregional",
+      "position": {
+        "type": "Point",
+        "coordinates": [
+          9.4797,
+          51.3127
+        ]
+      }
+    },
+    "tags": [
+      "foerderhelden",
+      "ehrenamt",
+      "bildung",
+      "projekt"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1"
+    ],
+    "id": "post-foerderhelden",
+    "type": "post",
+    "createdAt": "2026-09-03T11:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Unser Vorhaben",
+      "content": "Wer schon einmal einen Foerderantrag durchgebracht hat, weiss, wo die Stolpersteine liegen. Die Foerderhelden geben diese Erfahrung weiter: Sprechstunde, Gegenlesen, Begleitung bis zur Bewilligung. Stiftungen bringen ihre Sicht mit ein."
+    },
+    "tags": [
+      "foerderhelden",
+      "ehrenamt",
+      "bildung"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1",
+      "https://real-life-stack.org/vocab/task/v1"
+    ],
+    "id": "bedarf-foerderhelden-1",
+    "type": "task",
+    "createdAt": "2026-09-04T12:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Zehn Foerderhelden fuer die erste Runde",
+      "description": "Erfahrung mit Antraegen ab 5.000 Euro, zwei Stunden im Monat.",
+      "status": "open"
+    },
+    "tags": [
+      "foerderhelden",
+      "ehrenamt",
+      "bedarf"
+    ],
+    "relations": [
+      {
+        "predicate": "assignedTo",
+        "target": "global:user-6"
+      }
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1",
+      "https://real-life-stack.org/vocab/place/v1"
+    ],
+    "id": "ort-garten-felsberg",
+    "type": "place",
+    "createdAt": "2026-09-01T09:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Gemeinschaftsgarten Felsberg",
+      "description": "Zwoelf Beete, Kraeuterspirale, Kompost und eine Sitzecke fuer alle",
+      "address": "Felsberg, Schwalm-Eder-Kreis",
+      "position": {
+        "type": "Point",
+        "coordinates": [
+          9.4236,
+          51.1389
+        ]
+      }
+    },
+    "tags": [
+      "natur",
+      "gemeinwesen",
+      "ernaehrung",
+      "projekt"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1"
+    ],
+    "id": "post-garten-felsberg",
+    "type": "post",
+    "createdAt": "2026-09-03T11:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Unser Vorhaben",
+      "content": "Ein Garten mitten im Ort, in dem Nachbarn gemeinsam anbauen. Zwoelf Beete, Obstbaeume, Wasseranschluss. Offen fuer alle, die mitmachen moechten."
+    },
+    "tags": [
+      "natur",
+      "gemeinwesen",
+      "ernaehrung"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1",
+      "https://real-life-stack.org/vocab/task/v1"
+    ],
+    "id": "bedarf-garten-felsberg-1",
+    "type": "task",
+    "createdAt": "2026-09-04T12:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Wasseranschluss und Geraetehaus",
+      "description": "Rund 6.000 Euro, dazu zwei Arbeitswochenenden.",
+      "status": "open"
+    },
+    "tags": [
+      "natur",
+      "gemeinwesen",
+      "bedarf"
+    ],
+    "relations": [
+      {
+        "predicate": "assignedTo",
+        "target": "global:user-3"
+      }
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1"
+    ],
+    "id": "post-willkommen",
+    "type": "post",
+    "createdAt": "2026-09-05T08:00:00.000Z",
+    "createdBy": "user-1",
+    "data": {
+      "title": "Wie Trust Donation funktioniert",
+      "content": "Projekte zeigen, was sie vorhaben und was ihnen fehlt. Stiftungen zeigen, was sie foerdern und wie ein Antrag bei ihnen laeuft. Beide Seiten stehen auf derselben Karte.\n\nWer zueinander passt, entscheiden die Menschen selbst. Wir sortieren nach Naehe, Thema und Foerderrahmen. Punkte, Sterne und Ranglisten gibt es hier nicht.\n\nDas Vertrauen traegt das Web of Trust: jede Bestaetigung kommt von einem Menschen, der mit seinem Namen dafuer steht."
+    },
+    "tags": [
+      "trustdonation",
+      "start"
+    ]
+  },
+  {
+    "@context": [
+      "https://real-life-stack.org/vocab/base/v1",
       "https://real-life-stack.org/vocab/event/v1"
     ],
-    "id": "event-1",
+    "id": "event-foerderhelden",
     "type": "event",
-    "createdAt": "2026-03-01T00:00:00.000Z",
-    "createdBy": "user-1",
+    "createdAt": "2026-09-05T09:00:00.000Z",
+    "createdBy": "user-6",
     "data": {
-      "title": "RLS Weekly",
-      "description": "Wöchentliches Standup — Stand der Module, offene Fragen, nächste Schritte",
-      "start": "2026-03-10T10:00:00Z",
-      "end": "2026-03-10T11:00:00Z"
+      "title": "Foerderhelden-Sprechstunde",
+      "description": "Offene Runde fuer alle, die gerade an einem Antrag sitzen. Bringt eure Entwuerfe mit.",
+      "start": "2026-10-08T17:00:00Z",
+      "end": "2026-10-08T18:30:00Z"
     },
     "tags": [
-      "meeting",
-      "weekly"
+      "foerderhelden",
+      "antrag"
     ]
   },
   {
@@ -335,431 +909,19 @@
       "https://real-life-stack.org/vocab/base/v1",
       "https://real-life-stack.org/vocab/event/v1"
     ],
-    "id": "event-2",
+    "id": "event-stiftungsrunde",
     "type": "event",
-    "createdAt": "2026-03-02T00:00:00.000Z",
-    "createdBy": "user-3",
-    "data": {
-      "title": "Storybook Review",
-      "description": "Gemeinsam die neuen Toolkit-Komponenten in Storybook durchgehen",
-      "start": "2026-03-14T14:00:00Z",
-      "end": "2026-03-14T15:30:00Z"
-    },
-    "tags": [
-      "review",
-      "ui"
-    ]
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1",
-      "https://real-life-stack.org/vocab/event/v1",
-      "https://real-life-stack.org/vocab/place/v1"
-    ],
-    "id": "event-3",
-    "type": "event",
-    "createdAt": "2026-03-03T00:00:00.000Z",
-    "createdBy": "user-2",
-    "data": {
-      "title": "Money Printer Launch",
-      "description": "Offizielle Vorstellung der Zeitgutscheine — erste Scheine an Multiplikatoren",
-      "start": "2026-03-29T18:00:00Z",
-      "end": "2026-03-29T21:00:00Z",
-      "address": "Bad Salzschlirf",
-      "position": {
-        "type": "Point",
-        "coordinates": [
-          9.68,
-          50.56
-        ]
-      }
-    },
-    "tags": [
-      "launch",
-      "event"
-    ]
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1",
-      "https://real-life-stack.org/vocab/event/v1",
-      "https://real-life-stack.org/vocab/place/v1"
-    ],
-    "id": "event-4",
-    "type": "event",
-    "createdAt": "2026-03-04T00:00:00.000Z",
+    "createdAt": "2026-09-05T09:10:00.000Z",
     "createdBy": "user-1",
     "data": {
-      "title": "Pflanzaktion",
-      "description": "Gemeinsam Frühjahrspflanzen setzen — bitte Handschuhe mitbringen",
-      "start": "2026-03-22T10:00:00Z",
-      "end": "2026-03-22T14:00:00Z",
-      "address": "Gemeinschaftsgarten Sonnenhügel, Am Sonnenhügel 5",
-      "position": {
-        "type": "Point",
-        "coordinates": [
-          8.6804,
-          50.1103
-        ]
-      }
+      "title": "Stiftungsrunde Nordhessen",
+      "description": "Stiftungen und Projekte aus der Region an einem Tisch. Wir zeigen den Prototyp und hoeren zu.",
+      "start": "2026-10-22T14:00:00Z",
+      "end": "2026-10-22T17:00:00Z"
     },
     "tags": [
-      "garten",
-      "gemeinschaft"
-    ]
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1",
-      "https://real-life-stack.org/vocab/event/v1"
-    ],
-    "id": "event-5",
-    "type": "event",
-    "createdAt": "2026-03-05T00:00:00.000Z",
-    "createdBy": "user-4",
-    "data": {
-      "title": "WoT Demo Session",
-      "description": "Live-Demo: Identität erstellen, Attestierung austauschen, Relay-Verbindung",
-      "start": "2026-03-18T16:00:00Z",
-      "end": "2026-03-18T17:30:00Z"
-    },
-    "tags": [
-      "demo",
-      "wot"
-    ]
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1"
-    ],
-    "id": "post-1",
-    "type": "post",
-    "createdAt": "2026-03-08T10:00:00.000Z",
-    "createdBy": "user-3",
-    "data": {
-      "title": "Feature-Komponenten umstrukturiert",
-      "content": "Habe die UI-Komponenten von ui/ nach primitives/ verschoben und das KanbanBoard komplett überarbeitet. Drag & Drop funktioniert jetzt auch auf Touch-Geräten. Bitte mal testen!"
-    },
-    "tags": [
-      "update",
-      "toolkit"
-    ]
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1"
-    ],
-    "id": "post-2",
-    "type": "post",
-    "createdAt": "2026-03-07T14:00:00.000Z",
-    "createdBy": "user-1",
-    "data": {
-      "title": "Connector-Architektur bewährt sich",
-      "content": "Wir haben jetzt Mock, Local und GraphQL Connector — alle gegen dasselbe Interface. Der Wechsel zur Laufzeit funktioniert. Das validiert unsere Architektur-Entscheidung von Anfang an."
-    },
-    "tags": [
-      "architektur",
-      "milestone"
-    ]
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1"
-    ],
-    "id": "post-3",
-    "type": "post",
-    "createdAt": "2026-03-06T09:00:00.000Z",
-    "createdBy": "user-2",
-    "data": {
-      "title": "Erste Scheine gedruckt!",
-      "content": "Die ersten Zeitgutscheine sind aus der Druckerei. Silberdruck sieht fantastisch aus. Jetzt geht es an die Multiplikatoren-Pakete — 100 Leute bekommen je 50 Scheine zum Verschenken."
-    },
-    "tags": [
-      "launch",
-      "money-printer"
-    ]
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1"
-    ],
-    "id": "post-4",
-    "type": "post",
-    "createdAt": "2026-03-09T11:00:00.000Z",
-    "createdBy": "user-1",
-    "data": {
-      "title": "E2E-Verschlüsselung steht",
-      "content": "Der AutomergeReplicationAdapter funktioniert: Automerge CRDT + AES-256-GCM Verschlüsselung + GroupKeyService. Spaces werden verschlüsselt über den Relay gesynct. 31 Tests passen."
-    },
-    "tags": [
-      "wot",
-      "crypto",
-      "milestone"
-    ]
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1"
-    ],
-    "id": "post-5",
-    "type": "post",
-    "createdAt": "2026-03-05T08:00:00.000Z",
-    "createdBy": "user-5",
-    "data": {
-      "title": "Gartenplan für die Saison",
-      "content": "Habe einen Bepflanzungsplan gemacht: Beet 1 Tomaten & Basilikum, Beet 2 Zucchini & Kürbis, Beet 3 Kräuterspirale. Wer hat noch Ideen?"
-    },
-    "tags": [
-      "garten",
-      "planung"
-    ]
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1",
-      "https://real-life-stack.org/vocab/place/v1"
-    ],
-    "id": "place-1",
-    "type": "place",
-    "createdAt": "2026-02-01T00:00:00.000Z",
-    "createdBy": "user-1",
-    "data": {
-      "title": "Gemeinschaftsgarten Sonnenhügel",
-      "description": "Unser Garten — 12 Beete, Kräuterspirale, Kompost und Sitzecke",
-      "address": "Am Sonnenhügel 5, 60000 Frankfurt",
-      "position": {
-        "type": "Point",
-        "coordinates": [
-          8.68,
-          50.11
-        ]
-      }
-    },
-    "tags": [
-      "garten"
-    ]
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1",
-      "https://real-life-stack.org/vocab/place/v1"
-    ],
-    "id": "place-2",
-    "type": "place",
-    "createdAt": "2026-02-01T00:00:00.000Z",
-    "createdBy": "user-5",
-    "data": {
-      "title": "Saatgut-Bibliothek",
-      "description": "Samenfeste Sorten tauschen und ausleihen",
-      "address": "Nachbarweg 12, 60000 Frankfurt",
-      "position": {
-        "type": "Point",
-        "coordinates": [
-          8.685,
-          50.112
-        ]
-      }
-    },
-    "tags": [
-      "garten",
-      "sharing"
-    ]
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1"
-    ],
-    "id": "post-6",
-    "type": "post",
-    "createdAt": "2026-03-10T09:30:00.000Z",
-    "createdBy": "user-6",
-    "data": {
-      "title": "Kleine Straßenausstellung im April",
-      "content": "Ich plane eine kleine Fotoausstellung an der Mauer gegenüber vom Garten — 10 Prints, selbst aufgehängt, eine Woche lang. Wer möchte mitmachen oder helfen?"
-    },
-    "tags": [
-      "fotografie",
-      "ausstellung",
-      "nachbarschaft"
-    ]
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1"
-    ],
-    "id": "post-7",
-    "type": "post",
-    "createdAt": "2026-03-14T17:00:00.000Z",
-    "createdBy": "user-6",
-    "data": {
-      "title": "Moment des Tages",
-      "content": "Heute Morgen beim Aufhängen der Schaukästen: eine ältere Frau ist stehengeblieben und hat eine Weile auf das Bild vom Markt geschaut. Das ist der Grund."
-    },
-    "tags": [
-      "fotografie"
-    ]
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1",
-      "https://real-life-stack.org/vocab/event/v1",
-      "https://real-life-stack.org/vocab/place/v1"
-    ],
-    "id": "event-6",
-    "type": "event",
-    "createdAt": "2026-03-15T00:00:00.000Z",
-    "createdBy": "user-6",
-    "data": {
-      "title": "Eröffnung: Nachbarschaft im Bild",
-      "description": "Kleine Vernissage zur Straßenausstellung. Kommt vorbei, bringt Freunde mit — es gibt Getränke und wir reden über die Fotos.",
-      "start": "2026-04-12T16:00:00.000Z",
-      "end": "2026-04-12T19:00:00.000Z",
-      "address": "Gartenstraße 3, 60000 Frankfurt",
-      "position": {
-        "type": "Point",
-        "coordinates": [
-          8.6819,
-          50.1108
-        ]
-      }
-    },
-    "tags": [
-      "ausstellung",
-      "nachbarschaft"
-    ]
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1",
-      "https://real-life-stack.org/vocab/place/v1"
-    ],
-    "id": "place-3",
-    "type": "place",
-    "createdAt": "2026-03-15T00:00:00.000Z",
-    "createdBy": "user-6",
-    "data": {
-      "title": "Ausstellungsmauer Gartenstraße",
-      "description": "Mauer mit Schaukästen für temporäre Fotoausstellungen — offen für alle Nachbarschaftsprojekte",
-      "address": "Gartenstraße 3, 60000 Frankfurt",
-      "position": {
-        "type": "Point",
-        "coordinates": [
-          8.6815,
-          50.1105
-        ]
-      }
-    },
-    "tags": [
-      "fotografie",
-      "ausstellung",
-      "nachbarschaft"
-    ]
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1"
-    ],
-    "id": "capabilities",
-    "type": "feature",
-    "createdAt": "2026-01-01T00:00:00.000Z",
-    "createdBy": "system",
-    "data": {
-      "kanban": {
-        "customColumns": true
-      },
-      "feed": true,
-      "calendar": true,
-      "map": true
-    }
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1",
-      "https://real-life-stack.org/vocab/event/v1",
-      "https://real-life-stack.org/vocab/place/v1"
-    ],
-    "id": "event-cross-1",
-    "type": "event",
-    "createdAt": "2026-06-05T10:00:00.000Z",
-    "createdBy": "user-1",
-    "data": {
-      "title": "Permakultur-Workshop in der Markthalle",
-      "description": "Hochbeete bauen, Saison-Planung, gemeinsamer Imbiss",
-      "start": "2026-07-15T18:00:00Z",
-      "end": "2026-07-15T20:00:00Z",
-      "position": {
-        "type": "Point",
-        "coordinates": [
-          13.4023,
-          52.496
-        ]
-      },
-      "address": "Marheinekeplatz 15, 10961 Berlin",
-      "locationName": "Markthalle Neun"
-    },
-    "tags": [
-      "workshop",
-      "permakultur"
-    ]
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1",
-      "https://real-life-stack.org/vocab/event/v1",
-      "https://real-life-stack.org/vocab/place/v1"
-    ],
-    "id": "event-cross-2",
-    "type": "event",
-    "createdAt": "2026-06-05T11:00:00.000Z",
-    "createdBy": "user-2",
-    "data": {
-      "title": "Wochenmarkt im Sonnenhügel-Garten",
-      "description": "Verkauf von Saatgut, Setzlingen und Eingewecktem",
-      "start": "2026-06-20T09:00:00Z",
-      "end": "2026-06-20T13:00:00Z",
-      "position": {
-        "type": "Point",
-        "coordinates": [
-          8.6796,
-          50.1097
-        ]
-      },
-      "address": "Am Sonnenhügel 5, 60000 Frankfurt",
-      "locationName": "Gemeinschaftsgarten Sonnenhügel"
-    },
-    "tags": [
-      "markt",
-      "garten"
-    ]
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1",
-      "https://real-life-stack.org/vocab/event/v1",
-      "https://real-life-stack.org/vocab/place/v1"
-    ],
-    "id": "event-cross-3",
-    "type": "event",
-    "createdAt": "2026-06-05T12:00:00.000Z",
-    "createdBy": "user-3",
-    "data": {
-      "title": "Repair-Café im Stadtteilzentrum",
-      "description": "Bringt eure kaputten Geräte! Werkzeug und Expertise vor Ort",
-      "start": "2026-07-04T14:00:00Z",
-      "end": "2026-07-04T18:00:00Z",
-      "position": {
-        "type": "Point",
-        "coordinates": [
-          13.452,
-          52.505
-        ]
-      },
-      "address": "Friedrichshain, 10243 Berlin",
-      "locationName": "Stadtteilzentrum Friedrichshain"
-    },
-    "tags": [
-      "repair",
-      "community"
+      "stiftung",
+      "region"
     ]
   }
 ]

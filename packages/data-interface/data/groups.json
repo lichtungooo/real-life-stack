@@ -1,57 +1,374 @@
 [
   {
-    "id": "group-1",
-    "name": "Real Life Stack",
+    "id": "td-netzwerk",
+    "name": "Trust Donation",
     "data": {
       "scope": "group",
-      "description": "Modulare Community-App mit austauschbarem Backend",
-      "primaryColor": "#e87520",
-      "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjE2IiBmaWxsPSIjZTg3NTIwIi8+CiAgPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CiAgICA8cGF0aCBkPSJNMTUuMzkgNC4zOWExIDEgMCAwIDAgMS42OC0uNDc0IDIuNSAyLjUgMCAxIDEgMy4wMTQgMy4wMTUgMSAxIDAgMCAwLS40NzQgMS42OGwxLjY4MyAxLjY4MmEyLjQxNCAyLjQxNCAwIDAgMSAwIDMuNDE0TDE5LjYxIDE1LjM5YTEgMSAwIDAgMS0xLjY4LS40NzQgMi41IDIuNSAwIDEgMC0zLjAxNCAzLjAxNSAxIDEgMCAwIDEgLjQ3NCAxLjY4bC0xLjY4MyAxLjY4MmEyLjQxNCAyLjQxNCAwIDAgMS0zLjQxNCAwTDguNjEgMTkuNjFhMSAxIDAgMCAwLTEuNjguNDc0IDIuNSAyLjUgMCAxIDEtMy4wMTQtMy4wMTUgMSAxIDAgMCAwIC40NzQtMS42OGwtMS42ODMtMS42ODJhMi40MTQgMi40MTQgMCAwIDEgMC0zLjQxNEw0LjM5IDguNjFhMSAxIDAgMCAxIDEuNjguNDc0IDIuNSAyLjUgMCAxIDAgMy4wMTQtMy4wMTUgMSAxIDAgMCAxLS40NzQtMS42OGwxLjY4My0xLjY4MmEyLjQxNCAyLjQxNCAwIDAgMSAzLjQxNCAweiIgLz4KICA8L3N2Zz4KPC9zdmc+Cg==",
-      "access": "invite-member",
-      "modules": ["kanban", "feed", "calendar", "collection"],
-      "roles": ["admin", "member"],
-      "memberCount": 5
-    }
-  },
-  {
-    "id": "group-2",
-    "name": "Money Printer",
-    "data": {
-      "scope": "group",
-      "description": "Persönliche Zeitgutscheine als alternative Währung",
-      "primaryColor": "#2d5a3d",
-      "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjE2IiBmaWxsPSIjMmQ1YTNkIi8+CiAgPHN2ZyB4PSIzMCIgeT0iMTYiIHdpZHRoPSI0MCIgaGVpZ2h0PSI2OCIgdmlld0JveD0iMCAwIDI4OCA1MTIiIGZpbGw9IiNmNWYwZTAiPgogICAgPHBhdGggZD0iTTIwOS4yIDIzMy40bC0xMDgtMzEuNkM4OC43IDE5OC4yIDgwIDE4Ni41IDgwIDE3My41YzAtMTYuMyAxMy4yLTI5LjUgMjkuNS0yOS41aDY2LjNjMTIuMiAwIDI0LjIgMy43IDM0LjIgMTAuNSA2LjEgNC4xIDE0LjMgMy4xIDE5LjUtMmwzNC44LTM0YzcuMS02LjkgNi4xLTE4LjQtMS44LTI0LjVDMjM4IDc0LjggMjA3LjQgNjQuMSAxNzYgNjRWMTZjMC04LjgtNy4yLTE2LTE2LTE2aC0zMmMtOC44IDAtMTYgNy4yLTE2IDE2djQ4aC0yLjVDNDUuOCA2NC01LjQgMTE4LjcuNSAxODMuNmM0LjIgNDYuMSAzOS40IDgzLjYgODMuOCA5Ni42bDEwMi41IDMwYzEyLjUgMy43IDIxLjIgMTUuMyAyMS4yIDI4LjMgMCAxNi4zLTEzLjIgMjkuNS0yOS41IDI5LjVoLTY2LjNDMTAwIDM2OCA4OCAzNjQuMyA3OCAzNTcuNWMtNi4xLTQuMS0xNC4zLTMuMS0xOS41IDJsLTM0LjggMzRjLTcuMSA2LjktNi4xIDE4LjQgMS44IDI0LjUgMjQuNSAxOS4yIDU1LjEgMjkuOSA4Ni41IDMwdjQ4YzAgOC44IDcuMiAxNiAxNiAxNmgzMmM4LjggMCAxNi03LjIgMTYtMTZ2LTQ4LjJjNDYuNi0uOSA5MC4zLTI4LjYgMTA1LjctNzIuNyAyMS41LTYxLjYtMTQuNi0xMjQuOC03Mi41LTE0MS43eiIvPgogIDwvc3ZnPgo8L3N2Zz4K",
-      "access": "invite-member",
-      "modules": ["kanban", "feed", "calendar", "collection"],
-      "roles": ["admin", "member"],
-      "memberCount": 4
-    }
-  },
-  {
-    "id": "group-3",
-    "name": "Web of Trust",
-    "data": {
-      "scope": "group",
-      "description": "Dezentrales Identitäts- und Vertrauensnetzwerk",
-      "primaryColor": "#2563eb",
-      "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjE2IiBmaWxsPSIjMjU2M2ViIi8+CiAgPHN2ZyB4PSIxOCIgeT0iMTgiIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAxIDIzIDIyIiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPgogICAgPGNpcmNsZSBjeD0iMTguNzIiIGN5PSI4LjgyIiByPSIyLjUiIC8+CiAgICA8Y2lyY2xlIGN4PSI1LjI4IiBjeT0iNS4yOCIgcj0iMi41IiAvPgogICAgPGNpcmNsZSBjeD0iOC44MiIgY3k9IjE4LjcyIiByPSIyLjUiIC8+CiAgICA8bGluZSB4MT0iNi4wNCIgeDI9IjguMDYiIHkxPSI4LjE4IiB5Mj0iMTUuODIiIC8+CiAgICA8bGluZSB4MT0iMTUuODEiIHgyPSI4LjE4IiB5MT0iOC4wNSIgeTI9IjYuMDQiIC8+CiAgICA8bGluZSB4MT0iMTYuNTkiIHgyPSIxMC45NCIgeTE9IjEwLjk0IiB5Mj0iMTYuNTkiIC8+CiAgPC9zdmc+Cjwvc3ZnPgo=",
-      "access": "invite-member",
-      "modules": ["kanban", "feed", "calendar", "collection"],
-      "roles": ["admin", "member"],
-      "memberCount": 4
-    }
-  },
-  {
-    "id": "group-4",
-    "name": "Gemeinschaftsgarten Sonnenhügel",
-    "data": {
-      "scope": "group",
-      "description": "Unser Garten in der Nachbarschaft",
-      "primaryColor": "#7cb342",
+      "description": "Stiftungen und Projekte finden einander. Vertrauen zaehlt, Bewertungen gibt es keine.",
+      "primaryColor": "#1f4e5f",
+      "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjE4IiBmaWxsPSIjMWY0ZTVmIi8+PHRleHQgeD0iNTAiIHk9IjUwIiBmb250LWZhbWlseT0iSW50ZXIsIHN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzOCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIj5URDwvdGV4dD48L3N2Zz4=",
       "access": "open",
-      "modules": ["kanban", "feed", "calendar", "map", "collection"],
-      "roles": ["admin", "member"],
-      "memberCount": 8
+      "modules": [
+        "map",
+        "feed",
+        "calendar",
+        "collection"
+      ],
+      "roles": [
+        "admin",
+        "member"
+      ],
+      "memberCount": 7,
+      "isNetwork": true,
+      "domain": "trustdonation.org",
+      "spaceKinds": [
+        {
+          "id": "stiftung",
+          "label": "Stiftung",
+          "labelPlural": "Stiftungen",
+          "color": "#2d7a4f"
+        },
+        {
+          "id": "projekt",
+          "label": "Projekt",
+          "labelPlural": "Projekte",
+          "color": "#e87520"
+        }
+      ]
+    }
+  },
+  {
+    "id": "stiftung-buergerstiftung-kassel",
+    "name": "Buergerstiftung fuer die Stadt und den Landkreis Kassel",
+    "data": {
+      "scope": "group",
+      "description": "Foerdert jugend, kinder, sport, kultur. Sitz in Kassel.",
+      "primaryColor": "#2d7a4f",
+      "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjE4IiBmaWxsPSIjMmQ3YTRmIi8+PHRleHQgeD0iNTAiIHk9IjUwIiBmb250LWZhbWlseT0iSW50ZXIsIHN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzOCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIj5CRjwvdGV4dD48L3N2Zz4=",
+      "access": "open",
+      "modules": [
+        "map",
+        "feed",
+        "collection"
+      ],
+      "roles": [
+        "admin",
+        "member"
+      ],
+      "memberCount": 2,
+      "network": "td-netzwerk",
+      "kind": "stiftung"
+    }
+  },
+  {
+    "id": "stiftung-b-braun-stiftung",
+    "name": "B. Braun-Stiftung",
+    "data": {
+      "scope": "group",
+      "description": "Foerdert gesundheit, ausbildung, wissenschaft, forschung. Sitz in Melsungen.",
+      "primaryColor": "#1f6f8b",
+      "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjE4IiBmaWxsPSIjMWY2ZjhiIi8+PHRleHQgeD0iNTAiIHk9IjUwIiBmb250LWZhbWlseT0iSW50ZXIsIHN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzOCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIj5CQjwvdGV4dD48L3N2Zz4=",
+      "access": "open",
+      "modules": [
+        "map",
+        "feed",
+        "collection"
+      ],
+      "roles": [
+        "admin",
+        "member"
+      ],
+      "memberCount": 2,
+      "network": "td-netzwerk",
+      "kind": "stiftung"
+    }
+  },
+  {
+    "id": "stiftung-vr-partnerbank-heimatstiftungen",
+    "name": "VR PartnerBank Heimatstiftungen (Chattengau + Schwalm-Eder)",
+    "data": {
+      "scope": "group",
+      "description": "Foerdert kunst, kultur, natur, umwelt. Sitz in Melsungen.",
+      "primaryColor": "#3f7d3f",
+      "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjE4IiBmaWxsPSIjM2Y3ZDNmIi8+PHRleHQgeD0iNTAiIHk9IjUwIiBmb250LWZhbWlseT0iSW50ZXIsIHN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzOCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIj5WUDwvdGV4dD48L3N2Zz4=",
+      "access": "open",
+      "modules": [
+        "map",
+        "feed",
+        "collection"
+      ],
+      "roles": [
+        "admin",
+        "member"
+      ],
+      "memberCount": 2,
+      "network": "td-netzwerk",
+      "kind": "stiftung"
+    }
+  },
+  {
+    "id": "stiftung-sparkasse-fritzlar-homberg",
+    "name": "Sparkassenstiftung Altkreis Fritzlar-Homberg",
+    "data": {
+      "scope": "group",
+      "description": "Foerdert heimat, jugend, kultur, ehrenamt. Sitz in Fritzlar.",
+      "primaryColor": "#4c7a2e",
+      "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjE4IiBmaWxsPSIjNGM3YTJlIi8+PHRleHQgeD0iNTAiIHk9IjUwIiBmb250LWZhbWlseT0iSW50ZXIsIHN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzOCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIj5TQTwvdGV4dD48L3N2Zz4=",
+      "access": "open",
+      "modules": [
+        "map",
+        "feed",
+        "collection"
+      ],
+      "roles": [
+        "admin",
+        "member"
+      ],
+      "memberCount": 2,
+      "network": "td-netzwerk",
+      "kind": "stiftung"
+    }
+  },
+  {
+    "id": "stiftung-ksk-schwalm-eder-teilstiftungen",
+    "name": "Stiftung der Kreissparkasse Schwalm-Eder (4 Teilstiftungen: Melsungen, Fritzlar, Homberg, Ziegenhain)",
+    "data": {
+      "scope": "group",
+      "description": "Foerdert kultur, soziales, denkmalschutz, sport. Sitz in Melsungen.",
+      "primaryColor": "#2f6f5e",
+      "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjE4IiBmaWxsPSIjMmY2ZjVlIi8+PHRleHQgeD0iNTAiIHk9IjUwIiBmb250LWZhbWlseT0iSW50ZXIsIHN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzOCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIj5TRDwvdGV4dD48L3N2Zz4=",
+      "access": "open",
+      "modules": [
+        "map",
+        "feed",
+        "collection"
+      ],
+      "roles": [
+        "admin",
+        "member"
+      ],
+      "memberCount": 2,
+      "network": "td-netzwerk",
+      "kind": "stiftung"
+    }
+  },
+  {
+    "id": "stiftung-eb-stiftung-kassel",
+    "name": "EB-Stiftung (Evangelische Bank)",
+    "data": {
+      "scope": "group",
+      "description": "Foerdert kinder, jugend, bildung, ausbildung. Sitz in Kassel.",
+      "primaryColor": "#356b8a",
+      "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjE4IiBmaWxsPSIjMzU2YjhhIi8+PHRleHQgeD0iNTAiIHk9IjUwIiBmb250LWZhbWlseT0iSW50ZXIsIHN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzOCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIj5FUzwvdGV4dD48L3N2Zz4=",
+      "access": "open",
+      "modules": [
+        "map",
+        "feed",
+        "collection"
+      ],
+      "roles": [
+        "admin",
+        "member"
+      ],
+      "memberCount": 2,
+      "network": "td-netzwerk",
+      "kind": "stiftung"
+    }
+  },
+  {
+    "id": "stiftung-sagst",
+    "name": "Software AG-Stiftung",
+    "data": {
+      "scope": "group",
+      "description": "Foerdert reformpaedagogik, bildung, kinder, jugend. Sitz in Darmstadt.",
+      "primaryColor": "#2c6e49",
+      "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjE4IiBmaWxsPSIjMmM2ZTQ5Ii8+PHRleHQgeD0iNTAiIHk9IjUwIiBmb250LWZhbWlseT0iSW50ZXIsIHN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzOCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIj5TQTwvdGV4dD48L3N2Zz4=",
+      "access": "open",
+      "modules": [
+        "map",
+        "feed",
+        "collection"
+      ],
+      "roles": [
+        "admin",
+        "member"
+      ],
+      "memberCount": 2,
+      "network": "td-netzwerk",
+      "kind": "stiftung"
+    }
+  },
+  {
+    "id": "stiftung-aktion-mensch",
+    "name": "Aktion Mensch",
+    "data": {
+      "scope": "group",
+      "description": "Foerdert inklusion, kinder, jugend, integration. Sitz in Bonn.",
+      "primaryColor": "#5a7d2a",
+      "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjE4IiBmaWxsPSIjNWE3ZDJhIi8+PHRleHQgeD0iNTAiIHk9IjUwIiBmb250LWZhbWlseT0iSW50ZXIsIHN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzOCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIj5BTTwvdGV4dD48L3N2Zz4=",
+      "access": "open",
+      "modules": [
+        "map",
+        "feed",
+        "collection"
+      ],
+      "roles": [
+        "admin",
+        "member"
+      ],
+      "memberCount": 2,
+      "network": "td-netzwerk",
+      "kind": "stiftung"
+    }
+  },
+  {
+    "id": "projekt-lichtung",
+    "name": "Kollektiv Lichtung",
+    "data": {
+      "scope": "group",
+      "description": "Traeger der gemeinsamen Arbeit an Trust Donation und am Real Life Network",
+      "primaryColor": "#e87520",
+      "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjE4IiBmaWxsPSIjZTg3NTIwIi8+PHRleHQgeD0iNTAiIHk9IjUwIiBmb250LWZhbWlseT0iSW50ZXIsIHN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzOCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIj5LTDwvdGV4dD48L3N2Zz4=",
+      "access": "open",
+      "modules": [
+        "map",
+        "feed",
+        "calendar",
+        "kanban",
+        "collection"
+      ],
+      "roles": [
+        "admin",
+        "member"
+      ],
+      "memberCount": 3,
+      "network": "td-netzwerk",
+      "kind": "projekt"
+    }
+  },
+  {
+    "id": "projekt-werkstatt-bahnhof",
+    "name": "Werkstatt am Bahnhof",
+    "data": {
+      "scope": "group",
+      "description": "Offene Werkstatt fuer Jugendliche, Handwerk zum Anfassen",
+      "primaryColor": "#d1642a",
+      "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjE4IiBmaWxsPSIjZDE2NDJhIi8+PHRleHQgeD0iNTAiIHk9IjUwIiBmb250LWZhbWlseT0iSW50ZXIsIHN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzOCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIj5XQTwvdGV4dD48L3N2Zz4=",
+      "access": "open",
+      "modules": [
+        "map",
+        "feed",
+        "calendar",
+        "kanban",
+        "collection"
+      ],
+      "roles": [
+        "admin",
+        "member"
+      ],
+      "memberCount": 3,
+      "network": "td-netzwerk",
+      "kind": "projekt"
+    }
+  },
+  {
+    "id": "projekt-musterschule",
+    "name": "Musterschule Gudensberg",
+    "data": {
+      "scope": "group",
+      "description": "Schule, die vom Kind aus denkt",
+      "primaryColor": "#c9552f",
+      "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjE4IiBmaWxsPSIjYzk1NTJmIi8+PHRleHQgeD0iNTAiIHk9IjUwIiBmb250LWZhbWlseT0iSW50ZXIsIHN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzOCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIj5NRzwvdGV4dD48L3N2Zz4=",
+      "access": "open",
+      "modules": [
+        "map",
+        "feed",
+        "calendar",
+        "kanban",
+        "collection"
+      ],
+      "roles": [
+        "admin",
+        "member"
+      ],
+      "memberCount": 2,
+      "network": "td-netzwerk",
+      "kind": "projekt"
+    }
+  },
+  {
+    "id": "projekt-macher-map",
+    "name": "Macher-Map Nordhessen",
+    "data": {
+      "scope": "group",
+      "description": "Karte der Menschen, die etwas koennen und etwas vorhaben",
+      "primaryColor": "#e0913a",
+      "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjE4IiBmaWxsPSIjZTA5MTNhIi8+PHRleHQgeD0iNTAiIHk9IjUwIiBmb250LWZhbWlseT0iSW50ZXIsIHN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzOCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIj5NTTwvdGV4dD48L3N2Zz4=",
+      "access": "open",
+      "modules": [
+        "map",
+        "feed",
+        "calendar",
+        "kanban",
+        "collection"
+      ],
+      "roles": [
+        "admin",
+        "member"
+      ],
+      "memberCount": 3,
+      "network": "td-netzwerk",
+      "kind": "projekt"
+    }
+  },
+  {
+    "id": "projekt-foerderhelden",
+    "name": "Foerderhelden",
+    "data": {
+      "scope": "group",
+      "description": "Menschen mit Antragserfahrung begleiten Projekte durch die Foerderung",
+      "primaryColor": "#b8562b",
+      "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjE4IiBmaWxsPSIjYjg1NjJiIi8+PHRleHQgeD0iNTAiIHk9IjUwIiBmb250LWZhbWlseT0iSW50ZXIsIHN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzOCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIj5GTzwvdGV4dD48L3N2Zz4=",
+      "access": "open",
+      "modules": [
+        "map",
+        "feed",
+        "calendar",
+        "kanban",
+        "collection"
+      ],
+      "roles": [
+        "admin",
+        "member"
+      ],
+      "memberCount": 3,
+      "network": "td-netzwerk",
+      "kind": "projekt"
+    }
+  },
+  {
+    "id": "projekt-garten-felsberg",
+    "name": "Gemeinschaftsgarten Felsberg",
+    "data": {
+      "scope": "group",
+      "description": "Zwoelf Beete, Kraeuterspirale, Kompost und eine Sitzecke fuer alle",
+      "primaryColor": "#7cb342",
+      "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjE4IiBmaWxsPSIjN2NiMzQyIi8+PHRleHQgeD0iNTAiIHk9IjUwIiBmb250LWZhbWlseT0iSW50ZXIsIHN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzOCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIj5HRjwvdGV4dD48L3N2Zz4=",
+      "access": "open",
+      "modules": [
+        "map",
+        "feed",
+        "calendar",
+        "kanban",
+        "collection"
+      ],
+      "roles": [
+        "admin",
+        "member"
+      ],
+      "memberCount": 4,
+      "network": "td-netzwerk",
+      "kind": "projekt"
     }
   }
 ]

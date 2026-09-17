@@ -13,7 +13,7 @@ import { expect, test } from "@playwright/test"
  */
 test.describe("Der Browser malt seine eigenen Flächen mit", () => {
   test("folgt im dunklen Modus dem dunklen Schema, mit schmaler Leiste ohne Spur", async ({ page }) => {
-    await page.goto("/group-1/feed?connector=local")
+    await page.goto("/td-netzwerk/feed?connector=local")
     await page.evaluate(() => localStorage.setItem("rls-theme", "dark"))
     await page.reload()
     await expect(page.locator("main")).toBeVisible()
@@ -38,7 +38,7 @@ test.describe("Der Browser malt seine eigenen Flächen mit", () => {
   })
 
   test("folgt im hellen Modus dem hellen Schema", async ({ page }) => {
-    await page.goto("/group-1/feed?connector=local")
+    await page.goto("/td-netzwerk/feed?connector=local")
     await page.evaluate(() => localStorage.setItem("rls-theme", "light"))
     await page.reload()
     await expect(page.locator("main")).toBeVisible()
