@@ -49,20 +49,15 @@ Diese Datei ist die ehrliche Liste. Sie wird nicht schoengeschrieben, und sie wi
 
 Zwei Funde, beide gemessen, beide bei Anton zu Hause.
 
-### 1. Kontrast des aktiven Reiters auf heller Space-Farbe
+### 1. Kontrast des aktiven Reiters: behoben, Ursache bleibt bei Anton
 
-**Gemessen:** `python td-tools/zugang.py https://trustdonation.org/app/` meldet `color-contrast` am aktiven Modul-Reiter (`.bg-primary > span`).
+**Behoben am 17.09.2026.** trustdonation traegt `#b16105` statt `#d97706`: derselbe Farbton eine Stufe dunkler, Kontrast von 3,19 auf 4,58. Live sind damit **null schwere Zugangsfunde**.
 
-**Ursache, und sie ist kein Versehen:** Anton fuehrt in `packages/toolkit/src/lib/theme-tokens.ts` eine Liste von Farbpaaren mit ihrer Mindestforderung. Das Paar "Knopfbeschriftung" (`--primary-foreground` auf `--primary`) traegt dort `minimum: 3` und ausdruecklich **`guaranteed: false`**. Er weiss also, dass dieses eine Paar nicht garantiert ist. 3:1 genuegt fuer grossen Text; der Reitertext ist klein und braeuchte 4,5:1.
+**Die Ursache bleibt.** Anton fuehrt in `packages/toolkit/src/lib/theme-tokens.ts` das Paar "Knopfbeschriftung" mit `minimum: 3` und ausdruecklich **`guaranteed: false`**. Er weiss also, dass es nicht garantiert ist. Jeder Space mit heller Primaerfarbe trifft es wieder, und der naechste Mensch, der eine Farbe waehlt, merkt es nicht.
 
-**Wen es trifft, gerechnet statt geschaetzt:** Von fuenf Spaces genau **einen**. trustdonation trug `#d97706` und kam mit weissem Text auf 3,19:1. Lichtung (`#f3e3bb`) bekommt schwarzen Text und liegt bei 16,5:1, Real Life bei 7,6, Marker & Maps bei 7,4, Loewenherz bei 8,9.
+**Gerechnet statt geschaetzt:** Von fuenf Spaces traf es genau **einen**. Lichtung (`#f3e3bb`) bekommt schwarzen Text und liegt bei 16,5:1, Real Life bei 7,6, Marker & Maps bei 7,4, Loewenherz bei 8,9. Eine erste Fassung dieses Abschnitts nannte drei. Das war geschaetzt.
 
-Eine erste Fassung dieses Abschnitts nannte drei betroffene Spaces. Das war geschaetzt. Die Rechnung (`scratchpad/farben.py`, WCAG-Formel gegen Antons `getReadableTextColor`) sagt: einer.
-
-**Was wir tun:** nichts an seinem Farbsystem. Es ist durchdacht, und ein Schnellschuss darin waere schlimmer als der Fund. Zwei Wege stehen offen:
-
-1. **Erledigt am 17.09.:** trustdonation traegt jetzt `#b16105`, denselben Farbton eine Stufe dunkler, mit 4,58:1. Timos Farbwahl bleibt erkennbar.
-2. **Dauerhaft:** Als Anwendungsfall an Anton, mit der Messung. Sein eigenes `guaranteed: false` ist der beste Aufhaenger.
+**Was noch fehlt:** der Anwendungsfall an Anton, mit der Messung. Sein eigenes `guaranteed: false` ist der beste Aufhaenger.
 
 ### 2. Bildbeschreibung wiederholt den Namen
 

@@ -35,6 +35,22 @@ Die Funde unterscheiden sich stark. Mindestens: ein Rechner mit grossem Bildschi
 
 ---
 
+## Der maschinelle Teil laeuft von selbst
+
+Die Abschnitte A bis F unten sind als Test geschrieben und laufen in achtzehn Sekunden:
+
+```bash
+cd apps/reference
+npx playwright test --config playwright.trustdonation.config.ts
+npx playwright test --config playwright.trustdonation.config.ts --headed   # zum Zusehen
+```
+
+Zwoelf Erwartungen: Ankommen ohne Anmeldung, Ueberschrift, Zoomen, die fuenf Spaces, Netzwerke oben, eigene Bilder, Gliederung nach Arten, ein Space in zwei Abschnitten, die sechs Dialog-Bereiche, Landingpage nur fuer Netzwerke, die Modul-Reiter, die Karte.
+
+Sie sind auch das siebte Tor in `td-tools/pruefen.py`.
+
+**Was sie nicht koennen:** Abschnitt G. Ob sich etwas falsch anfuehlt, ob ein Wort unverstaendlich ist, ob es nach Baustelle aussieht, sieht nur ein Mensch. Dafuer ist der Durchgang da; die Maschine nimmt ihm die Buchhaltung ab.
+
 ## Vor dem Test, maschinell
 
 ```bash
