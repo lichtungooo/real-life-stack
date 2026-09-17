@@ -40,6 +40,19 @@ Heute arbeiten wir in Antons Referenz-App und schreiben in seine Pakete. Danach 
 6. **`NAEHTE.md` neu messen.** Aus 27 Dateien sollen fuenf werden, aus rund 800 geaenderten Zeilen unter 60.
 7. **Die fuenf Wuensche als Pull Requests** an Anton formulieren, jeder mit dem Anwendungsfall zuerst.
 
+### Stand am 17.09.2026 abends
+
+**Erledigt:**
+
+- `packages/td-core` steht, UI-frei: Musterdaten als Seed, Space-Ordnung, Arten-Regeln, 19 Tests.
+- `packages/td-ui` steht: der Arten-Editor, und ein Test wacht darueber, dass Regeln nicht gedoppelt werden.
+- **Sieben Datennaehte aufgeloest.** Antons fuenf Datendateien, `demo-data.ts` und `schema-validation.test.ts` stehen wieder auf seinem Stand.
+- Das Tor **Grenze** misst jetzt echt und ist gruen: keine Protokoll-Aufrufe in unseren Paketen.
+
+**Bewusst nicht gemacht:** `apps/trustdonation` als eigene App. Die Messung sprach dagegen: `apps/reference` hat 4020 Zeilen, unsere Naehte darin 134. Eine eigene App taeuschte 134 Zeilen Naht gegen 4000 Zeilen Duplikat ein und naehme uns seine Verbesserungen an der Referenz-App.
+
+**Offen und aus gutem Grund:** Die beiden grossen Naehte (`group-dialog` 387, `workspace-switcher` 219) sind genau die Arbeit, die als **PR #379** bei Anton liegt. Sie jetzt umzubauen waere Arbeit, die bei seiner Uebernahme wegfaellt.
+
 ### Fertig, wenn
 
 `git diff --numstat <antons-stand>..trustdonation` nennt fuenf Dateien von Anton, jede unter zwanzig Zeilen, jede mit Eintrag in `NAEHTE.md` und einem Wunsch daneben. Und ein Update von Anton laesst sich in einer Sitzung einspielen.

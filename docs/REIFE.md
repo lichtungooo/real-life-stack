@@ -36,6 +36,9 @@ Diese Datei ist die ehrliche Liste. Sie wird nicht schoengeschrieben, und sie wi
 | **Entscheidungen** | `ENTSCHEIDUNGEN.md`, neun Eintraege nachgetragen, jeder mit verworfenen Alternativen und einer Verfallsbedingung |
 | **Einstieg fuer Dritte** | `EINSTIEG.md`: in einer halben Stunde vom leeren Ordner zum laufenden Prototyp |
 | **Release-Notizen** | `AUSLIEFERUNGEN.md`, proto-1 bis proto-6 nachgetragen |
+| **Zugang** | `td-tools/zugang.py` laesst axe-core ueber die laufende App laufen. Erster Lauf: drei Verstoesse, zwei schwer (Umschalter ohne Namen, Zoomen abgeschaltet, keine Ueberschrift). Alle behoben, lokal null Funde |
+| **Startlast** | `td-tools/startlast.py` misst im Browser, was beim ersten Aufruf wirklich geholt wird. Von **1596 KB auf 864 KB**: das groesste Einzelstueck war kein Code, sondern ein Avatar mit 733 KB. Jetzt 3 KB. Die Karte wird nachgeladen statt mitgeliefert |
+| **Eigene Pakete** | `packages/td-core` (UI-frei) und `packages/td-ui`. Musterdaten, Space-Ordnung und Arten-Regeln liegen dort, mit 19 Tests. Sieben Datennaehte aufgeloest |
 | **Antons offene Arbeit** | `anton-stand.py` liest jetzt auch seine offenen Pull Requests und markiert die an unseren Themen. Erster Lauf: 18 offen, 9 an unseren Themen, darunter #279 mit generischen Input-Widgets, die nah an unserem Feld-Register liegen |
 
 **Auf diesem Server gibt es keinen Zeitplandienst** (kein `cron`, `systemd --user` ohne Linger, kein root). Darum laeuft die Wacht von aussen, und die Sicherung haengt an der Auslieferung statt an der Uhr. Das ist der bessere Zuschnitt: Eine Pruefung auf demselben Rechner schweigt genau dann, wenn der Rechner weg ist.
@@ -44,19 +47,28 @@ Diese Datei ist die ehrliche Liste. Sie wird nicht schoengeschrieben, und sie wi
 
 ## Was fehlt
 
-Zwei Punkte, beide benannt und keiner blockierend.
+Zwei Funde, beide gemessen, beide bei Anton zu Hause.
 
-### 1. Das Bundle ist doppelt so gross wie das Budget
+### 1. Kontrast des aktiven Reiters auf heller Space-Farbe
 
-**Heute:** 1758 KB groesstes Stueck, Budget 800 KB. Die Karte allein wiegt 1029 KB und wird immer geladen, auch von dem, der nie draufgeht. `dist/` gesamt 5,0 MB.
-**Naechster Schritt:** Die Karte nachladen statt mitliefern, ein `import()` am Registereintrag. Das beruehrt `apps/reference` und ist darum nach Etappe 0.5 billiger: dann ist es unsere Datei.
-**Gemessen:** `pruefen.py` zeigt es als Warnung, nicht als Blocker.
+**Gemessen:** `python td-tools/zugang.py https://trustdonation.org/app/` meldet `color-contrast` am aktiven Modul-Reiter (`.bg-primary > span`).
 
-### 2. Barrierefreiheit ungeprueft
+**Ursache, und sie ist kein Versehen:** Anton fuehrt in `packages/toolkit/src/lib/theme-tokens.ts` eine Liste von Farbpaaren mit ihrer Mindestforderung. Das Paar "Knopfbeschriftung" (`--primary-foreground` auf `--primary`) traegt dort `minimum: 3` und ausdruecklich **`guaranteed: false`**. Er weiss also, dass dieses eine Paar nicht garantiert ist. 3:1 genuegt fuer grossen Text; der Reitertext ist klein und braeuchte 4,5:1.
 
-**Heute:** Nicht gemessen. Tastaturbedienung, Kontraste und Vorlesbarkeit sind offen.
-**Naechster Schritt:** Ein Lauf mit Lighthouse oder axe gegen `trustdonation.org` und `/app`, dann die Funde sortieren. Eine erste Messung kostet eine halbe Stunde.
-**Warum es zaehlt:** Ein Teil der Menschen, die wir erreichen wollen, ist darauf angewiesen, und oeffentliche Foerderer fragen danach.
+**Wen es trifft:** jeden Space mit heller Primaerfarbe. In unseren Musterdaten: trustdonation (`#d97706`), Christianskies (`#e8e102`), Lichtung (`#f3e3bb`).
+
+**Was wir tun:** nichts an seinem Farbsystem. Es ist durchdacht, und ein Schnellschuss darin waere schlimmer als der Fund. Zwei Wege stehen offen:
+
+1. **Sofort, ohne Code:** Timo waehlt fuer die betroffenen Spaces eine dunklere Primaerfarbe im Reiter Aussehen. Ein Klick je Space.
+2. **Dauerhaft:** Als Anwendungsfall an Anton, mit der Messung. Sein eigenes `guaranteed: false` ist der beste Aufhaenger.
+
+### 2. Bildbeschreibung wiederholt den Namen
+
+**Gemessen:** `image-redundant-alt`, klein. Das Space-Bild traegt `alt="trustdonation"`, und direkt daneben steht derselbe Name. Eine Vorlesehilfe sagt ihn zweimal.
+
+**Wo:** Antons Avatar-Komponente. Die richtige Loesung ist ein leeres `alt`, wenn der Name daneben steht; das gehoert in seine Komponente, nicht in unsere Daten.
+
+**Was wir tun:** als Anwendungsfall an ihn, zusammen mit Fund 1.
 
 ---
 
