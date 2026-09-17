@@ -11,3 +11,9 @@ export { ArtenEditor, type ArtZeile, type ArtenEditorProps } from "./arten-edito
 // Die Regel, wann eine Art vollständig ist, liegt in der UI-freien Schicht.
 // Sie hier zu doppeln wäre eine zweite Wahrheit über dieselbe Sache.
 export { zeileVollstaendig, schreibbareArten } from "@trustdonation/core"
+
+export {
+  StiftungenImport,
+  stiftungenSchreiben,
+  type ImportStand,
+} from "./stiftungen-import.js"

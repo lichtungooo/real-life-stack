@@ -275,6 +275,9 @@ importers:
       '@trustdonation/core':
         specifier: workspace:*
         version: link:../../packages/td-core
+      '@trustdonation/ui':
+        specifier: workspace:*
+        version: link:../../packages/td-ui
       leaflet:
         specifier: ^1.9.4
         version: 1.9.4

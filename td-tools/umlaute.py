@@ -233,7 +233,7 @@ KEIN_UMLAUT = {
 
 
 def ist_ersetzbar(wort):
-    return wort in WOERTER
+    return wort in WOERTER and WOERTER[wort] != wort
 
 
 def ersetze_in_text(text):
@@ -243,7 +243,12 @@ def ersetze_in_text(text):
     def tausch(m):
         nonlocal zahl
         w = m.group(0)
-        if w in WOERTER:
+        # Sechs Einträge der Liste stehen dort als "bleibt so" (`Wunsch`,
+        # `Schutz`, `zueinander`, `manueller`, `hinzuerfunden`, `misst`): Sie
+        # sehen aus wie ein ASCII-Ersatz und sind keiner. Sie zu zählen hat
+        # die Prüfung in eine Schleife gelegt, in der sie dreißig Stellen
+        # meldete, berichtigte und wieder dieselben dreißig fand.
+        if w in WOERTER and WOERTER[w] != w:
             zahl += 1
             return WOERTER[w]
         return w

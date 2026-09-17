@@ -49,6 +49,23 @@ def cdp_ziele():
     raise SystemExit("Chrome antwortet nicht auf Port " + str(PORT))
 
 
+
+def chrome_beenden(prozess):
+    """Beendet Chrome samt seiner Kindprozesse.
+
+    `terminate()` trifft nur den Elternteil. Die Renderer laufen weiter, und
+    nach ein paar Messlaeufen liegen zwanzig davon herum: Genug Last, um einen
+    zeitabhaengigen Test kippen zu lassen. Das ist einmal passiert.
+    """
+    try:
+        prozess.terminate()
+        prozess.wait(timeout=10)
+    except Exception:
+        try:
+            prozess.kill()
+        except Exception:
+            pass
+
 def main():
     try:
         from websocket import create_connection  # type: ignore
@@ -124,7 +141,7 @@ def main():
 
         ws.close()
     finally:
-        chrome.terminate()
+        chrome_beenden(chrome)
 
     # --- Auswertung
     dateien = [a for a in antworten.values() if a["bytes"] > 0]

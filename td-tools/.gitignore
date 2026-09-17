@@ -4,3 +4,4 @@
 .chrome-messung/
 .chrome-zugang/
 
+__pycache__/

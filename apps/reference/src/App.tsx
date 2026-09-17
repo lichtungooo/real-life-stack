@@ -84,6 +84,7 @@ import {
 // nicht aus Antons Demodaten. Beide Connectoren nehmen einen Seed als
 // Parameter, darum bleiben seine Dateien unberuehrt (NAEHTE Abschnitt C).
 import { musterdaten } from "@trustdonation/core/musterdaten"
+import { StiftungenImport } from "@trustdonation/ui"
 import { MockConnector } from "@real-life-stack/mock-connector"
 import { LocalConnector } from "@real-life-stack/local-connector"
 import { ModuleOutlet } from "./views/module-outlet"
@@ -1017,6 +1018,16 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
 
       {/* Incoming event dialogs */}
       <IncomingEventDialogs onCloseVerifyDialog={() => { if (topDialog === "verify") popDialog() }} />
+
+      {/* Prototyp trustdonation: die recherchierten Stiftungen in einen echten
+          Space uebernehmen. Ueber die Adresse ausgeloest, damit es keinen Knopf
+          gibt, den eine Stiftung versehentlich drueckt:
+          .../<space>/feed?connector=wot&import=stiftungen */}
+      <StiftungenImport
+        connector={connector}
+        aktiv={new URLSearchParams(window.location.search).get("import") === "stiftungen"}
+        spaceName={activeWorkspace?.name}
+      />
 
       {/* Connector FAB — bottom-left, above BottomNav (only with ?dev URL param) */}
       {initialDevMode && (
