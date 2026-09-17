@@ -21,6 +21,7 @@ import {
   ConnectorSwitcher,
   Button,
   GroupDialog,
+  SpaceThemeCard,
   AdaptivePanel,
   CommentNavigationProvider,
   FieldNavigationProvider,
@@ -91,6 +92,33 @@ import { CreateHostProvider, CreateSheetController } from "./create-host"
 import { DetailHostProvider, DetailHostController } from "./detail-host"
 import { UnsavedChangesGuard } from "./unsaved-changes-guard"
 import { useItemFocus } from "./hooks/use-item-focus"
+
+
+/**
+ * Links ODER rechts, nie beide. Die Feineinstellung (links) und das
+ * Modul-Panel (rechts: Details, Composer, Debug) schliessen einander aus:
+ * oeffnet das eine, geht das andere zu. Zwei offene Panels liessen dem
+ * Inhalt auf dem Laptop kaum Platz und waeren auf dem Handy zwei Drawer.
+ *
+ * Sitzt im Provider-Baum, weil `useModulePanel` nur dort geht; `Home`
+ * selbst steht ausserhalb.
+ */
+function PanelExclusivity({ themeOpen, onCloseTheme }: { themeOpen: boolean; onCloseTheme: () => void }) {
+  const panel = useModulePanel()
+  const rightOpen = panel.current !== null
+  const rightKey = panel.current ? `${panel.current.kind}:${panel.current.itemId ?? ""}` : null
+  const prevRightKey = useRef(rightKey)
+  const prevThemeOpen = useRef(themeOpen)
+  useEffect(() => {
+    // Die Feineinstellung ist gerade aufgegangen → rechts schliessen.
+    if (themeOpen && !prevThemeOpen.current && rightOpen) panel.close()
+    // Rechts ist gerade etwas (Neues) aufgegangen → Feineinstellung schliessen.
+    if (rightKey !== null && rightKey !== prevRightKey.current && themeOpen) onCloseTheme()
+    prevThemeOpen.current = themeOpen
+    prevRightKey.current = rightKey
+  }, [themeOpen, rightOpen, rightKey, panel, onCloseTheme])
+  return null
+}
 
 /**
  * Renders the single app-level ModulePanel and suspends it (hidden, kept
@@ -597,6 +625,22 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
 
   // Group dialog state
   const [groupDialogOpen, setGroupDialogOpen] = useState(false)
+  /**
+   * Die Feineinstellung des Aussehens als schwebende Karte ueber dem Inhalt
+   * (Entwurf 5b) — kein Dialog, kein Modul-Panel. Sie regelt immer den
+   * AKTIVEN Space (useCurrentGroup), ein key setzt die Regler beim Wechsel
+   * sauber neu.
+   */
+  const [themeCardOpen, setThemeCardOpen] = useState(false)
+  /**
+   * Fuer WELCHEN Space die Karte angefragt wurde. Der Wechsel dorthin laeuft
+   * ueber die URL und setzt die aktuelle Gruppe erst in einem Effekt; bis
+   * dahin liefert useCurrentGroup noch die vorige — und die Karte schriebe
+   * in den falschen Space. Gerendert wird erst, wenn beide uebereinstimmen.
+   */
+  const [themeGroupId, setThemeGroupId] = useState<string | null>(null)
+  const currentGroup = useCurrentGroup()
+  const themeGroup = currentGroup && currentGroup.id === themeGroupId ? currentGroup : null
   const [groupDialogMode, setGroupDialogMode] = useState<GroupDialogMode>({ type: "create" })
   const openCreateDialog = useCallback(() => {
     setGroupDialogMode({ type: "create" })
@@ -855,6 +899,14 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
         onUpdateGroup={async (id, updates) => {
           await updateGroup(id, updates)
         }}
+        onOpenThemePanel={(group) => {
+          // Die Tokens gehoeren dem AKTIVEN Space. Aus dem Menue eines
+          // anderen geoeffnet, regelte man sonst an Farben, die gar nicht
+          // auf dem Bildschirm sind — also erst hinspringen.
+          if (activeWorkspace?.id !== group.id) handleWorkspaceChange({ id: group.id, name: group.name })
+          setThemeGroupId(group.id)
+          setThemeCardOpen(true)
+        }}
         onDeleteGroup={async (id) => {
           await deleteGroup(id)
           // If deleted group was active, switch to first remaining
@@ -875,6 +927,16 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
           await removeMember(groupId, userId)
         }}
       />
+      <PanelExclusivity themeOpen={themeCardOpen} onCloseTheme={() => setThemeCardOpen(false)} />
+      {themeCardOpen && themeGroup && (
+        <SpaceThemeCard
+          key={themeGroup.id}
+          group={themeGroup}
+          onUpdateGroup={async (id, updates) => { await updateGroup(id, updates) }}
+          onClose={() => setThemeCardOpen(false)}
+        />
+      )}
+
       <ProfilePanelHost
         userId={profileUserId}
         currentUser={currentUser}

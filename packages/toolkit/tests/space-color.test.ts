@@ -54,4 +54,22 @@ describe("getReadableTextColor", () => {
   it("defaults to white for invalid input", () => {
     expect(getReadableTextColor("nope")).toBe("#ffffff")
   })
+
+  /**
+   * Weiss auf der Akzentfarbe — auch dort, wo Schwarz den besseren Kontrast
+   * haette. Auf dem orangen Akzent gewinnt Schwarz die WCAG-Zahl (7:1 gegen
+   * 3:1) und sieht ueberall falsch aus: Modulmenue, Kartenmarker, Composer.
+   * Antons Entscheidung; die Schwelle behaelt nur die Faelle, in denen Weiss
+   * wirklich unlesbar waere.
+   */
+  it("bleibt weiss auf kraeftigen Akzenten, auch auf mittlerem Grau", () => {
+    expect(getReadableTextColor("#e87520")).toBe("#ffffff")
+    expect(getReadableTextColor("#999999")).toBe("#ffffff")
+    expect(getReadableTextColor("#3e5e2e")).toBe("#ffffff")
+  })
+
+  it("bleibt bei den eindeutigen Faellen, wie sie waren", () => {
+    expect(getReadableTextColor("#ffff00")).toBe("#000000")
+    expect(getReadableTextColor("#1a1a1a")).toBe("#ffffff")
+  })
 })

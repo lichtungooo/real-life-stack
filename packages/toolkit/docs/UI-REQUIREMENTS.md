@@ -48,7 +48,7 @@ Jede Checkbox repräsentiert eine einzelne, aktivierbare Entscheidung.
 ## Navbar
 
 - [x] **navbar-fixed-sections**: NavbarStart/NavbarEnd haben feste Breite (`w-56`) für stabile Mitte
-- [x] **navbar-glass**: Navbar mit Glasmorphism (`backdrop-blur-12`, `bg-background/80`)
+- [x] **navbar-glass**: Navbar mit Glasmorphism (`.glass-navbar`; Deckkraft und Weichzeichnung aus `--surface-alpha`/`--surface-blur`, gesteuert von der Achse `surfaces: translucent | solid` des Space bzw. der Instanz)
 - [x] **navbar-sticky**: Navbar bleibt beim Scrollen oben (`sticky top-0`)
 
 ---
@@ -82,6 +82,56 @@ Jede Checkbox repräsentiert eine einzelne, aktivierbare Entscheidung.
 
 - [x] **user-avatar-round**: User-Avatar ist rund (Standard)
 - [ ] **user-avatar-square**: User-Avatar ist eckig
+
+---
+
+## Space-Konfiguration
+
+Entwurf: Claude-Design-Projekt „RLS System Design", Datei `Space Menu.dc.html` (Turn 3 und 4).
+
+- [x] **space-config-side-menu**: Bereiche stehen in einem Seitenmenü links, nicht in einer Reiterleiste — die Leiste war schon bei drei Einträgen am Anschlag
+- [x] **space-config-section-list**: Menü, Inhalt und Startwert lesen **eine** Liste (`spaceConfigSections`); keine zweite Aufzählung der Bereiche
+- [x] **space-config-identity-in-header**: Bild und Name stehen über den Bereichen und bleiben in jedem Bereich änderbar; es gibt keinen Bereich „Allgemein"
+- [x] **space-config-fixed-frame**: Fester Rahmen, nur der Inhalt scrollt — Kopf, Menü und Fußzeile stehen
+- [x] **space-config-dialog-is-space-window**: Der ganze Dialog trägt die Primärfarbe des bearbeiteten Space — er setzt `--primary`, `--primary-foreground`, `--ring` und den `--accent`-Tint lokal, dieselben Variablen, die `use-workspace-routing` auf `:root` legt. Öffnet man ihn aus der Übersicht oder einem anderen Space, stünden sonst zwei Farben nebeneinander: das Menü in der Farbe des bearbeiteten Space, der Einladen-Knopf in der der laufenden App
+- [x] **space-config-active-in-space-color**: Der aktive Menüeintrag trägt die Primärfarbe des Space. Spec 04 nennt „aktive Navigations- und Sidebar-Items" ausdrücklich; damit spricht das Menü dieselbe Sprache wie die Modulleiste, und eine Farbänderung zeigt sich sofort daneben. Die Farbe kommt aus dem Dialog, nicht aus `--primary`: aus der Übersicht geöffnet wäre der bearbeitete Space nicht der aktive
+- [x] **space-config-no-section-heading**: Kein Bereichsname als Überschrift über dem Inhalt — der Menüeintrag daneben nennt ihn auf gleicher Höhe und hebt ihn farbig hervor; für Screenreader trägt ihn die Fläche als `role="region"` mit `aria-label`
+- [x] **space-config-single-section-no-menu**: Bleibt genau ein Bereich übrig, entfällt das Menü; ein einzelner Eintrag wäre eine Wahl ohne Alternative
+- [x] **space-config-section-fallback**: Fällt der gewählte Bereich weg (Adminrecht steht beim Öffnen noch nicht fest), fällt die Auswahl auf den ersten zurück statt eine leere Fläche zu zeigen
+- [x] **space-config-reset-on-close**: Beim Schließen fallen Bereich, Suche und Kontaktfilter zurück — der Dialog bleibt montiert und öffnete sonst für den nächsten Space im Bereich des vorigen
+- [x] **space-config-no-name-autofocus**: Der Name fängt beim Öffnen keinen Fokus; er stand markiert da und ein Tastendruck hätte den Space umbenannt
+- [x] **space-config-image-badge-persistent**: Das Stift-Abzeichen am Bild ist dauerhaft sichtbar, nicht erst bei Hover — auf einem Tastfeld gibt es kein Hover
+- [x] **space-config-menu-horizontal-mobile**: Auf schmalen Schirmen liegt das Menü waagerecht über dem Inhalt
+- [ ] **space-config-menu-as-page-mobile**: Auf schmalen Schirmen klappt das Menü zur Liste, der Bereich öffnet als zweite Seite mit „‹ Zurück" (Entwurf Turn 4)
+
+### Mitglieder
+
+- [x] **space-members-grouped**: Admins und übrige Mitglieder stehen in getrennten Gruppen; `members` ist nach DID sortiert, ein Abzeichen in flacher Liste sagte nichts über die Rolle
+- [x] **space-members-no-admin-badge**: Kein Admin-Abzeichen an der Zeile — die Gruppe sagt es bereits
+- [x] **space-members-search-threshold**: Suchfeld ab neun Mitgliedern; darunter überschaut man die Liste
+- [x] **space-members-search-sticky**: Ein eingegebener Suchbegriff hält das Feld sichtbar, auch wenn die Zahl unter die Schwelle fällt — sonst bliebe ein wirksamer Filter ohne Bedienteil zurück (rls#377)
+- [ ] **space-members-invited-by**: Herkunftszeile „eingeladen von …" je Mitglied und Gruppe „Offene Einladungen" (Entwurf 4c) — braucht `invitedBy` und einen Einladungszustand im `data-interface`
+
+### Aussehen
+
+- [x] **space-theme-own-section**: Aussehen ist ein eigener Bereich zwischen Einladen und Modulen
+- [x] **space-theme-admin-gated**: Nur Admins ändern das Aussehen — das Design eines Space ist geteilte Wirklichkeit, kein persönlicher Geschmack
+- [x] **space-theme-house-palette**: Die Farbvorschläge sind `TAG_PALETTE.accent`, dieselbe Palette wie die Tags (Spec 04, Regel 1) — keine zweite Farbwelt
+- [x] **space-theme-custom-color**: Neben der Palette steht der native Farbwähler; eine geltende Farbe außerhalb der Palette wird als „eigene" markiert, nicht als „keine"
+- [x] **space-theme-reset-to-fallback**: „Zurück zur Farbe aus dem Bild" schreibt `null` und stellt den Rückfall her (Logo-Farbe, sonst deterministisch aus der Space-Id), statt eine Farbe einzufrieren
+- [x] **space-theme-accent-only**: Die Space-Farbe bleibt Akzent — Hintergründe und Karten unberührt (Spec 04, „Verwendung der Primärfarbe", Regel 1)
+- [ ] **space-theme-scheme-tiles**: Theme-Kacheln Standard / Dunkel / Eigenes mit Datei-Upload (Entwurf 3c) — wartet auf die Entscheidung zur Theme-Kaskade
+- [ ] **space-theme-manual-vs-derived**: Eine von Hand gewählte Farbe überlebt Logo-Upload und Logo-Entfernen. Heute überschreibt der Upload sie mit der Bildfarbe, das Entfernen setzt `null`; beide Pfade unterscheiden nicht zwischen gewählt und abgeleitet
+
+---
+
+### Einladen
+
+- [x] **space-invite-own-section**: Einladen ist ein eigener Bereich, kein Unterzustand von Mitgliedern; „Einladen" bei den Mitgliedern springt dorthin statt aufzuklappen
+- [x] **space-invite-not-admin-gated**: Der Bereich hängt nicht am Adminrecht — im WoT lädt jedes Mitglied ein, nur der Creator entfernt
+- [x] **space-invite-verified-only**: Einladbar sind nur verifizierte Kontakte, die noch nicht Mitglied sind; es gibt bewusst keine Einladung per Link
+- [ ] **space-invite-shared-space-subtitle**: Untertitel „gemeinsamer Space" an der Kontaktzeile (Entwurf 4a) — `ContactInfo` kennt keinen Bezug zu Spaces
+- [ ] **space-invite-history**: „Von dir eingeladen" mit Zeitpunkt und Status Mitglied/Offen — nicht im Modell; gezeigt wird nur, wer in dieser Sitzung eingeladen wurde
 
 ---
 
@@ -195,3 +245,5 @@ Jede Checkbox repräsentiert eine einzelne, aktivierbare Entscheidung.
 | 2026-07-17 | Listen- und Rasterdichte zur CollectionView-Linse mit session-lokalem Toggle zusammengeführt |
 | 2026-07-17 | Vollbreite Linsen-Scroller, gemeinsamer Inhaltsrahmen und gemessene Raster-Zeilenabstände dokumentiert |
 | 2026-07-17 | CollectionView-Toggle erhält den Linsen-Innenabstand oben; Rasterkarten nutzen reihenfolgestabile, gemessene Masonry-Lanes |
+| 2026-09-15 | Space-Konfiguration als Seitenmenü mit Bereichen Mitglieder, Einladen, Module (Entwurf „Space Menu") |
+| 2026-09-16 | Bereich „Aussehen“: Space-Primärfarbe aus der Haus-Palette, eigene Farbe, Rückweg zum Rückfall |

@@ -13,6 +13,7 @@ import {
 } from "@/components/primitives/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/primitives/avatar"
 import type { SpaceKind } from "@/lib/space-kinds"
+import { type GrayChoice, type RadiusStep, type Surfaces } from "../../lib/space-theme"
 
 export interface Workspace {
   id: string
@@ -31,6 +32,14 @@ export interface Workspace {
   kinds?: readonly SpaceKind[]
   /** Domain der Landingpage eines Netzwerks (`Group.data.domain`); nur bei `isNetwork`. */
   domain?: string
+  /** Tönung der Flächen, 0–1 (`data.tint`); fehlt sie, bleiben sie neutral. */
+  tint?: number
+  /** Neutrale Skala oder "auto" (`data.gray`); fehlt sie, erbt der Space von der Instanz. */
+  gray?: GrayChoice
+  /** Rundung (`data.radius`), fünf Stufen; fehlt sie, erbt der Space von der Instanz. */
+  radius?: RadiusStep
+  /** Flächen der App-Hülle (`data.surfaces`): translucent | solid. */
+  surfaces?: Surfaces
 }
 
 interface WorkspaceSwitcherProps {

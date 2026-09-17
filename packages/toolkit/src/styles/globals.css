@@ -100,6 +100,17 @@
 
   --radius: 0.5rem;
 
+  /* Flaechen der App-Huelle (Navbar, Bottom-Nav, schwebende Leisten):
+     durchscheinend mit Weichzeichnung — oder deckend, wenn ein Space oder
+     die Instanz `surfaces: solid` setzt (siehe lib/space-theme.ts). */
+  --surface-alpha: 0.8;
+  --surface-blur: 12px;
+  /* Flaechen INNERHALB eines Glasrahmens (klebender Kommentar-Fuss): keine
+     zweite Farbschicht — zwei mal 80 % waeren 96 %, also deckend — nur die
+     Weichzeichnung gegen den darunter scrollenden Inhalt. Erst im Modus
+     "deckend" wird auch die Innenflaeche deckend (1). */
+  --surface-inner-alpha: 0;
+
   /*
    * Hoehe der Navbar. Bisher stand sie als `top-14` an jeder Stelle, die
    * darunter beginnt — die schwebende Detail-Karte braucht sie rechnerisch
@@ -303,10 +314,21 @@
   --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  /* Alle Rundungen als FAKTOR der einen Variable, nicht als Summe: bei
+     "keine Rundung" (--radius: 0) muss auch der Panel-Rahmen eckig werden.
+     Additiv (+8px) blieb ein Rest stehen. Bei 0.5rem ergeben die Faktoren
+     dieselben Werte wie zuvor (4/6/8/12/16/24px). */
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: calc(var(--radius) * 0.75);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) * 1.5);
+  --radius-2xl: calc(var(--radius) * 2);
+  --radius-3xl: calc(var(--radius) * 3);
+  /* Pillen (Filter-Knopf, Plus-Knopf, Connector-Umschalter): kein festes
+     9999px, sondern ebenfalls ein Faktor — bei "medium" 32px, also fuer
+     Knoepfe bis 64px weiter ein Kreis; bei "keine" eckig wie alles andere.
+     Radix macht bei radius="none" auch seine Pillen eckig. */
+  --radius-pill: calc(var(--radius) * 4);
 
   --shadow-2xs: var(--shadow-2xs);
   --shadow-xs: var(--shadow-xs);
@@ -324,10 +346,20 @@
 /* Die Navbar liegt UEBER dem Inhalt, traegt also die erhabene Flaeche und
    nicht die getoente Seitenflaeche — sonst verschwimmt sie mit dem Modul
    darunter, sobald der Hintergrund getoent ist. */
-.glass-navbar {
-  background-color: oklch(from var(--card) l c h / 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+/* NUR die unpraefixte Deklaration. Stand daneben von Hand noch
+   `-webkit-backdrop-filter`, fasste Lightning CSS im Produktionsbuild beide
+   zusammen und behielt die praefixte — mit einem `var()` als Wert. Chrome
+   kennt die nicht: der Blur fehlte im Deploy, im Dev-Server nicht. Den
+   Praefix setzt der Build nach seinen Zielen selbst. */
+.glass-navbar,
+.surface-glass {
+  background-color: oklch(from var(--card) l c h / var(--surface-alpha));
+  backdrop-filter: blur(var(--surface-blur));
+}
+
+.surface-glass-inner {
+  background-color: oklch(from var(--card) l c h / var(--surface-inner-alpha));
+  backdrop-filter: blur(var(--surface-blur));
 }
 
 /* Drop shadow under map markers (the rendered pin SVG is an <img>; a CSS

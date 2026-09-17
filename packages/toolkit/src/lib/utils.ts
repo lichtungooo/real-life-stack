@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react"
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { accentSwatches } from "./space-theme"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -38,6 +39,19 @@ export function getTagColor(tag: string): string {
 export function getTagAccentColor(tag: string): string {
   return paletteEntry(tag).accent
 }
+
+/**
+ * Die waehlbaren Primaerfarben eines Space — dieselbe Palette wie die Tags.
+ *
+ * Spec 04 ("Space-Primaerfarbe", Regel 1) bindet `primaryColor` ausdruecklich
+ * an `TAG_PALETTE.accent`. Eine zweite Farbwelt neben den Tags waere genau die
+ * Doppelliste, die das Modul-Register einmal eingesammelt hat: sie liefe
+ * lautlos auseinander, sobald jemand eine Farbe ergaenzt.
+ */
+// Die Palette des Space-Dialogs sind Radix' Akzentskalen (Stufe 9), nach
+// Farbton geordnet — dieselben wie in der Feineinstellung (Entwurf Turn 5).
+// Bis 09/2026 war es die Tag-Palette; die gehoert den Tags.
+export const SPACE_COLOR_SWATCHES: readonly string[] = accentSwatches("light").map((s) => s.hex)
 
 const HEX6 = /^#[0-9a-fA-F]{6}$/
 
@@ -82,9 +96,17 @@ export function getActivePanelGlow(color: string): CSSProperties {
 }
 
 /**
- * Readable text color (`#000000` / `#ffffff`) for text on a colored accent
- * surface, chosen by perceived luminance so it works for light and dark
- * accents alike.
+ * Text color (`#000000` / `#ffffff`) on a colored accent surface.
+ *
+ * White, unless the accent is very light (yellow, pale pastels). This is a
+ * product decision, not a contrast optimum: on the orange brand accent black
+ * would win the WCAG ratio (7:1 vs 3:1) and yet looks wrong everywhere the
+ * accent appears — module menu, map marker, composer chips. Anton chose the
+ * look; the threshold keeps only the cases where white is truly unreadable.
+ *
+ * Consequence, stated plainly: a mid grey accent (#999999) gets white text at
+ * 2.85:1, under the 3:1 WCAG asks of UI elements. The space theme shows that
+ * in its contrast lines, so whoever picks such an accent sees it.
  */
 export function getReadableTextColor(hex: string): string {
   if (!HEX6.test(hex)) return "#ffffff"
@@ -132,7 +154,10 @@ export function getItemColor(
  * `<img src>` that consumes a stored asset path (logos, badges, …).
  */
 export function resolveAssetUrl(url: string | undefined): string | undefined {
-  if (!url) return url
+  // `data.image` stammt aus einem `Record<string, unknown>` und wird beim
+  // Lesen gecastet — was dort steht, ist nicht garantiert eine Zeichenkette.
+  // Ein Nicht-String darf hier nicht werfen, sondern faellt durch.
+  if (!url || typeof url !== "string") return url
   if (/^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(url)) return url
   if (!url.startsWith("/")) return url
   const base = (import.meta as { env?: { BASE_URL?: string } }).env?.BASE_URL ?? "/"

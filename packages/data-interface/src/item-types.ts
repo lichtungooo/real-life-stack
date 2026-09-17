@@ -426,10 +426,23 @@ export interface GroupData {
   scope?: string
   /** Enabled UI modules for this group (e.g. ["feed", "kanban", "calendar", "map"]). */
   modules?: string[]
-  /** Group image URL or filename. */
+  /**
+   * Das Bild des Space als AUFLOESBARE Quelle — eine Data-URL, wie sie der
+   * Space-Dialog beim Hochladen schreibt, eine absolute URL, oder ein
+   * wurzel-relativer Pfad, den `resolveAssetUrl` gegen den Basispfad der
+   * Auslieferung aufloest.
+   *
+   * KEIN blosser Dateiname: er traegt seinen Ablageort nicht, und
+   * `resolveAssetUrl` reicht ihn unveraendert durch — jede Leseflaeche
+   * muesste ihn selbst zusammensetzen. Ein zweites Feld `avatar` fuer
+   * denselben Zweck gab es bis 09/2026; es trug genau solche Dateinamen,
+   * wurde an einer einzigen Stelle mit dem Basispfad verbunden und blieb
+   * ueberall sonst unsichtbar — unter anderem im Space-Dialog.
+   *
+   * Der leere String bedeutet "kein Bild" und ist der Zustand nach dem
+   * Entfernen des Logos; `null` loescht den Schluessel (Merge-Patch).
+   */
   image?: string
-  /** Group avatar URL or filename (alternative to image). */
-  avatar?: string
 }
 
 // ============================================================

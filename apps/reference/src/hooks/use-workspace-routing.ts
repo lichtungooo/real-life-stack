@@ -6,7 +6,16 @@ import {
   useCurrentGroup,
   useItem,
   getSpacePrimaryColor,
-  getReadableTextColor,
+  scalesForColor,
+  instanceTheme,
+  readRadius,
+  readGray,
+  readSurfaces,
+  layoutTokens,
+  useColorScheme,
+  themeTokens,
+  applyThemeTokens,
+  clearThemeTokens,
   moduleIds,
   getModule,
   resolveSpaceModules,
@@ -161,7 +170,12 @@ export function useWorkspaceRouting(): WorkspaceRouting {
   // The space the URL names (aggregate slug → internal overview id).
   const urlSpaceId = urlScope ? slugToScope(urlScope) : undefined
 
-  const basePath = import.meta.env.BASE_URL
+  // Hell oder dunkel entscheidet der Mensch, nicht der Space. Gelesen wird das
+  // im Toolkit: der Space-Dialog zeigt die Kontraste derselben Skala und
+  // braucht dasselbe Schema — zwei Leser mit eigenem Code waeren zwei
+  // Wahrheiten.
+  const scheme = useColorScheme()
+
   const workspaces: Workspace[] = useMemo(() => {
     // Netzwerke stehen vor allem anderen — das Start-Netzwerk der Instanz
     // (Spec 11, "Zuhause-Space") zuerst, damit `workspaces[0]` (der Anfang
@@ -174,9 +188,14 @@ export function useWorkspaceRouting(): WorkspaceRouting {
       return {
         id: g.id,
         name: g.name,
-        avatar: g.data?.image as string | undefined ?? (g.data?.avatar ? `${basePath}${g.data.avatar}` : undefined),
+        avatar: g.data?.image as string | undefined,
         scope: g.data?.scope as string | undefined,
         primaryColor: g.data?.primaryColor as string | undefined,
+        // Ungeprueft durchgereicht; `scalesForColor` kappt und verwirft.
+        tint: g.data?.tint as number | undefined,
+        gray: readGray(g.data?.gray) ?? undefined,
+        radius: readRadius(g.data?.radius) ?? undefined,
+        surfaces: readSurfaces(g.data?.surfaces) ?? undefined,
         kind: typeof g.data?.kind === "string" ? g.data.kind : undefined,
         isNetwork,
         network: typeof g.data?.network === "string" ? g.data.network : undefined,
@@ -196,7 +215,7 @@ export function useWorkspaceRouting(): WorkspaceRouting {
       ...networks.filter((w) => w !== home),
       ...list.filter((w) => !w.isNetwork),
     ]
-  }, [groups, basePath])
+  }, [groups])
 
   // Derive active workspace from the URL scope (fallback localStorage → first space).
   const activeWorkspace: Workspace | null = useMemo(() => {
@@ -353,36 +372,35 @@ export function useWorkspaceRouting(): WorkspaceRouting {
   // state keep the default brand color.
   useEffect(() => {
     const root = document.documentElement
-    const PRIMARY_VARS = [
-      "--primary", "--primary-foreground", "--ring",
-      "--accent", "--accent-foreground",
-      "--sidebar-primary", "--sidebar-primary-foreground", "--sidebar-ring",
-      "--sidebar-accent", "--sidebar-accent-foreground",
-    ]
-    if (activeWorkspace && !isOverview) {
-      const c = getSpacePrimaryColor(activeWorkspace.id, activeWorkspace.primaryColor)
-      const fg = getReadableTextColor(c)
-      const tint = `color-mix(in srgb, ${c} 14%, transparent)`
-      root.style.setProperty("--primary", c)
-      root.style.setProperty("--primary-foreground", fg)
-      root.style.setProperty("--ring", c)
-      root.style.setProperty("--accent", tint)
-      // Text on the faint tinted accent surface must stay readable in both
-      // light and dark mode — the surface is only a 14% tint of `c`, so the
-      // raw space color (esp. a dark one in dark mode) would be unreadable.
-      // `.dark` lives on <html> (App.tsx), so var(--foreground) resolves to
-      // the active mode's foreground on this same element.
-      root.style.setProperty("--accent-foreground", "var(--foreground)")
-      root.style.setProperty("--sidebar-primary", c)
-      root.style.setProperty("--sidebar-primary-foreground", fg)
-      root.style.setProperty("--sidebar-ring", c)
-      root.style.setProperty("--sidebar-accent", tint)
-      root.style.setProperty("--sidebar-accent-foreground", "var(--sidebar-foreground)")
-    } else {
-      PRIMARY_VARS.forEach((v) => root.style.removeProperty(v))
+    if (!activeWorkspace || isOverview) {
+      clearThemeTokens(root)
+      return
     }
-    return () => PRIMARY_VARS.forEach((v) => root.style.removeProperty(v))
-  }, [activeWorkspace?.id, activeWorkspace?.primaryColor, isOverview])
+    // Aus der Space-Farbe wird eine zwoelfstufige Skala, aus ihr und einer
+    // neutralen Skala die Tokens, aus denen jede Flaeche schoepft. Frueher
+    // wurden nur Primaer- und Akzent-Token gesetzt und der Rest blieb fest;
+    // jetzt zieht der ganze Satz mit — Flaechen, Rahmen, Text.
+    const seed = getSpacePrimaryColor(activeWorkspace.id, activeWorkspace.primaryColor)
+    // `scalesForColor` waehlt zur Akzentskala den Grauton, der sie ergaenzt
+    // — Radix paart beides automatisch. Der Unterschied ist klein und soll
+    // es sein: er gestaltet nicht, er stimmt ab.
+    // Die Toenung ist die zweite Achse des Space: wie stark die Flaechen die
+    // Farbe tragen. Setzt der Space keine, erbt er die der Instanz — so
+    // bleibt eine cremefarbene Instanz auch in jedem Space cremefarben.
+    const inherited = instanceTheme()
+    const scales = scalesForColor(seed, scheme, {
+      tint: activeWorkspace.tint ?? inherited.tint,
+      gray: activeWorkspace.gray ?? inherited.gray,
+    })
+    // Rundung und Flaechen gehoeren zum selben Satz: gesetzt und weggeraeumt
+    // mit den Farben, sonst bliebe die Rundung eines Space in der Uebersicht.
+    const layout = layoutTokens({
+      radius: activeWorkspace.radius ?? inherited.radius,
+      surfaces: activeWorkspace.surfaces ?? inherited.surfaces,
+    })
+    applyThemeTokens(root, { ...themeTokens({ ...scales, scheme }), ...layout })
+    return () => clearThemeTokens(root)
+  }, [activeWorkspace?.id, activeWorkspace?.primaryColor, activeWorkspace?.tint, activeWorkspace?.gray, activeWorkspace?.radius, activeWorkspace?.surfaces, isOverview, scheme])
 
   // Switch workspace (keep the module if offered). Item focus is space-scoped → dropped.
   const handleWorkspaceChange = useCallback((workspace: Workspace) => {

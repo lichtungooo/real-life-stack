@@ -1,5 +1,54 @@
 # Changelog
 
+## [0.1.10](https://github.com/real-life-org/real-life-stack/compare/toolkit-v0.1.9...toolkit-v0.1.10) (2026-09-16)
+
+
+### Bug Fixes
+
+* **toolkit:** Blur der Glasflaechen im Produktionsbuild ([#392](https://github.com/real-life-org/real-life-stack/issues/392)) ([8f9188d](https://github.com/real-life-org/real-life-stack/commit/8f9188d2c59c1a55c84d7d93af7327d60c35d65b))
+
+## [0.1.9](https://github.com/real-life-org/real-life-stack/compare/toolkit-v0.1.8...toolkit-v0.1.9) (2026-09-16)
+
+
+### Features
+
+* **toolkit:** Aussehen als Achsen — Farbe mit drei Reglern, Tönung, ein Reset ([#389](https://github.com/real-life-org/real-life-stack/issues/389)) ([f3a5722](https://github.com/real-life-org/real-life-stack/commit/f3a572283b19e817fb9f330b6972438d022b8e66))
+* **toolkit:** Bereich Aussehen — Space-Primärfarbe wählen ([#381](https://github.com/real-life-org/real-life-stack/issues/381)) ([84461f0](https://github.com/real-life-org/real-life-stack/commit/84461f0e9e92d88ebe903a5bc258d7e099afee4c))
+* **toolkit:** Farbmathematik in OKLCH — aus [#361](https://github.com/real-life-org/real-life-stack/issues/361) herausgelöst ([#386](https://github.com/real-life-org/real-life-stack/issues/386)) ([6507fcb](https://github.com/real-life-org/real-life-stack/commit/6507fcbd18f7490d2e0defee4ceada5bd8f8a336))
+* **toolkit:** Rundung und Flächen als Achsen des Aussehens ([#391](https://github.com/real-life-org/real-life-stack/issues/391)) ([66f2e07](https://github.com/real-life-org/real-life-stack/commit/66f2e07f4656ebc59cbc04a274e77ae3797c0a55))
+* **toolkit:** zwölfstufige Farbskalen aus einer frei gewählten Farbe ([#387](https://github.com/real-life-org/real-life-stack/issues/387)) ([9b6e298](https://github.com/real-life-org/real-life-stack/commit/9b6e298f51339471cd71df70c80e1bdabd738561))
+
+
+### Bug Fixes
+
+* **toolkit:** Space-Bild — Regel in Spec 04 und ihre Einlösung im Dialog ([#385](https://github.com/real-life-org/real-life-stack/issues/385)) ([50005cb](https://github.com/real-life-org/real-life-stack/commit/50005cbd88d804c165f9ff0e6af58f5b9d418b00))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @real-life-stack/data-interface bumped to 0.2.1
+
+## [0.1.8](https://github.com/real-life-org/real-life-stack/compare/toolkit-v0.1.7...toolkit-v0.1.8) (2026-09-15)
+
+
+### Features
+
+* Markdown über die nativen tiptap-Extensions ([#367](https://github.com/real-life-org/real-life-stack/issues/367)) ([6d8f849](https://github.com/real-life-org/real-life-stack/commit/6d8f849add1629567bbd36c894b94479615d754b))
+* **toolkit:** Space-Konfiguration als Seitenmenü — Mitglieder und Module ([#369](https://github.com/real-life-org/real-life-stack/issues/369)) ([134fe48](https://github.com/real-life-org/real-life-stack/commit/134fe4828707394ff822f322609fa4ca52cc9063))
+
+
+### Bug Fixes
+
+* Markdown-Editor speichert kein HTML mehr ([#363](https://github.com/real-life-org/real-life-stack/issues/363)) ([3e77f92](https://github.com/real-life-org/real-life-stack/commit/3e77f923a3c986d71228df9e6d91e9fc486cd3b0))
+
+
+### Performance Improvements
+
+* eine Karte parst ihren Text nur, wenn er sich geändert hat ([#372](https://github.com/real-life-org/real-life-stack/issues/372)) ([879f8d5](https://github.com/real-life-org/real-life-stack/commit/879f8d5e2b4a6de319c7f5a876174a8c07781d20))
+* eine Karte rendert nur noch, wenn sie sich geaendert hat ([#376](https://github.com/real-life-org/real-life-stack/issues/376)) ([ba88ef1](https://github.com/real-life-org/real-life-stack/commit/ba88ef180de144b2b45fd44bc89541119acd2872))
+
 ## [0.1.7](https://github.com/real-life-org/real-life-stack/compare/toolkit-v0.1.6...toolkit-v0.1.7) (2026-09-13)
 
 

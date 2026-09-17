@@ -5,6 +5,7 @@ import {
   getRuntimeConfig,
   resetRuntimeConfigForTests,
   applyBranding,
+  instanceTheme,
   DEFAULT_RUNTIME_CONFIG,
   parseHomeSpaceId,
   type RuntimeConfig,
@@ -464,5 +465,88 @@ describe("homeSpaceId (Spec 11, Zuhause-Space)", () => {
       fetchImpl: stubFetch({ ok: true, json: { homeSpaceId: "space-home" } }),
     })
     expect(cfg.homeSpaceId).toBe("space-home")
+  })
+})
+
+/**
+ * Die Achsen der Instanz (Spec-Entwurf #390): `branding.theme` mit `accent`
+ * und `tint`. Geprueft, bevor sie gelten; abgeleitet in den Branding-Block,
+ * vor den Handkorrekturen.
+ */
+describe("branding.theme — Achsen der Instanz", () => {
+  beforeEach(() => {
+    resetRuntimeConfigForTests()
+    brandingZuruecksetzen()
+  })
+  afterEach(() => vi.restoreAllMocks())
+
+  it("liest Akzent und Toenung", async () => {
+    const cfg = await loadRuntimeConfig({
+      fetchImpl: stubFetch({ ok: true, json: { branding: { theme: { accent: "#3E5E2E", tint: 0.5 } } } }),
+    })
+    expect(cfg.branding?.theme).toEqual({ accent: "#3e5e2e", tint: 0.5 })
+    expect(instanceTheme()).toEqual({ accent: "#3e5e2e", tint: 0.5 })
+  })
+
+  it("verwirft, was kein #rrggbb oder keine Zahl ist, und kappt die Toenung", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
+    const cfg = await loadRuntimeConfig({
+      fetchImpl: stubFetch({ ok: true, json: { branding: { theme: { accent: "gruen", tint: 7 } } } }),
+    })
+    expect(cfg.branding?.theme).toEqual({ tint: 1 })
+    expect(warn).toHaveBeenCalled()
+  })
+
+  it("ist ohne Konfiguration leer", () => {
+    expect(instanceTheme()).toEqual({})
+  })
+
+  it("leitet aus den Achsen den ganzen Tokensatz ab — hell und dunkel", () => {
+    applyBranding({ theme: { accent: "#3e5e2e", tint: 0.5 } })
+    const block = document.getElementById("rls-branding")?.textContent ?? ""
+    expect(block).toContain(":root:not(.dark)")
+    expect(block).toContain(":root.dark")
+    for (const name of ["--background", "--card", "--primary", "--muted-foreground", "--ring"]) {
+      expect(block, name).toContain(`${name}:`)
+    }
+    expect(wirksam("--primary")).toBe("#3e5e2e")
+  })
+
+  it("laesst Handkorrekturen ueber die Ableitung stechen", () => {
+    applyBranding({ theme: { accent: "#3e5e2e" }, colors: { light: { ring: "#8c9a5b" } } })
+    expect(wirksam("--ring")).toBe("#8c9a5b")
+    expect(wirksam("--primary")).toBe("#3e5e2e")
+  })
+
+  it("schreibt keine Warn- oder Diagrammfarben aus der Ableitung", () => {
+    applyBranding({ theme: { accent: "#3e5e2e" } })
+    const block = document.getElementById("rls-branding")?.textContent ?? ""
+    expect(block).not.toContain("--warning")
+    expect(block).not.toContain("--chart-1")
+  })
+})
+
+describe("branding.theme — Rundung und Flaechen", () => {
+  beforeEach(() => {
+    resetRuntimeConfigForTests()
+    brandingZuruecksetzen()
+  })
+  afterEach(() => vi.restoreAllMocks())
+
+  it("liest bekannte Stufen und verwirft unbekannte", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
+    const cfg = await loadRuntimeConfig({
+      fetchImpl: stubFetch({ ok: true, json: { branding: { theme: { radius: "large", surfaces: "glass", gray: "sand" } } } }),
+    })
+    expect(cfg.branding?.theme).toEqual({ radius: "large", gray: "sand" })
+    expect(warn).toHaveBeenCalled()
+  })
+
+  it("legt Rundung und Flaechen in beide Bloecke — sie kennen kein Schema", () => {
+    applyBranding({ theme: { radius: "large", surfaces: "solid" } })
+    const block = document.getElementById("rls-branding")?.textContent ?? ""
+    expect(block.split("--radius: 0.75rem").length - 1).toBe(2)
+    expect(block.split("--surface-alpha: 1").length - 1).toBe(2)
+    expect(wirksam("--radius")).toBe("0.75rem")
   })
 })

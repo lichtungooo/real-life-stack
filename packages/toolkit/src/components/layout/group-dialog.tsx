@@ -1,11 +1,14 @@
 import { useState, useCallback, useEffect, useRef } from "react"
-import { LogOut, UserMinus, UserPlus, Check, Loader2, ImagePlus, X, Camera, Pencil, ChevronUp, ChevronDown, GripVertical, Plus } from "lucide-react"
+import { LogOut, UserMinus, UserPlus, Check, Loader2, ImagePlus, X, Camera, Pencil, ChevronUp, ChevronDown, GripVertical, Users, LayoutGrid, Search, Contrast, RotateCcw, SlidersHorizontal, Check as CheckIcon, Plus, Network, type LucideIcon } from "lucide-react"
 import { getModule, getModules, defaultModuleIds, displayableModules } from "@/lib/module-register"
 import { parseSpaceKinds, kindIdFromLabel, type SpaceKind } from "@/lib/space-kinds"
 import type { Group, ContactInfo } from "@real-life-stack/data-interface"
 import { useMembers } from "../../hooks/use-groups"
 import { resolveAdminView } from "../../lib/group-admin-view"
-import { cn } from "../../lib/utils"
+import { cn, getReadableTextColor, getSpacePrimaryColor, resolveAssetUrl, SPACE_COLOR_SWATCHES } from "../../lib/utils"
+import { instanceTheme } from "../../lib/runtime-config"
+import { readRadius, readSurfaces, type RadiusStep, type Surfaces } from "../../lib/space-theme"
+import { AccentGrid, RadiusTiles, SurfacesToggle, ThemeSectionLabel } from "./space-theme-controls"
 import {
   Dialog,
   DialogContent,
@@ -87,6 +90,161 @@ export function knownModules(modules: readonly string[]): string[] {
 // App-Schicht nicht mehr (Review #277).
 const defaults = () => defaultModuleIds()
 
+/** Die Bereiche der Space-Konfiguration (Entwurf "Space Menu", Turn 3/4). */
+export type SpaceConfigSectionId = "members" | "modules" | "invite" | "theme" | "netzwerk"
+
+export interface SpaceConfigSection {
+  id: SpaceConfigSectionId
+  label: string
+  icon: LucideIcon
+}
+
+/**
+ * Welche Bereiche dieser Dialog zeigt — die EINE Stelle, die das beantwortet.
+ *
+ * Menue, Inhalte und Startwert fragen alle hier; sonst waere dieselbe Liste
+ * dreimal geschrieben und liefe lautlos auseinander, wie es die fuenf
+ * Modul-Listen vor dem Modul-Register (Spec 01) getan haben.
+ *
+ * Bild und Name sind KEIN Bereich: sie stehen im Kopf, wo sie immer sichtbar
+ * und immer aenderbar sind.
+ *
+ * Module sind Admin-Sache: wer sie nicht aendern darf, bekommt keinen leeren
+ * Bereich zu sehen, sondern gar keinen.
+ *
+ * Einladen ist ein eigener Bereich, kein Unterzustand von Mitgliedern
+ * (Entwurf Turn 4), und haengt NICHT am Adminrecht: im WoT laedt jedes
+ * Mitglied ein, nur der Creator entfernt.
+ *
+ * Aussehen dagegen IST Admin-Sache wie die Module: das Design eines Space ist
+ * geteilte Wirklichkeit, kein persoenlicher Geschmack. Reihenfolge: erst die
+ * Menschen, dann das Aussehen, dann die Flaechen.
+ *
+ * Netzwerk steht zuletzt und ebenfalls nur fuer Admins (Spec 04, "Netzwerk und
+ * Space-Art"): Ob ein Space ein Netzwerk ist, welche Arten seine Gruppen
+ * tragen und unter welcher Domain er erreichbar ist, entscheidet nicht der
+ * Geschmack eines Mitglieds.
+ */
+export function spaceConfigSections({
+  isAdmin,
+  canInvite,
+  canTheme,
+}: {
+  isAdmin: boolean
+  canInvite: boolean
+  canTheme: boolean
+}): SpaceConfigSection[] {
+  const sections: SpaceConfigSection[] = [
+    { id: "members", label: "Mitglieder", icon: Users },
+  ]
+  if (canInvite) sections.push({ id: "invite", label: "Einladen", icon: UserPlus })
+  if (canTheme) sections.push({ id: "theme", label: "Aussehen", icon: Contrast })
+  if (isAdmin) sections.push({ id: "modules", label: "Module", icon: LayoutGrid })
+  if (isAdmin) sections.push({ id: "netzwerk", label: "Netzwerk", icon: Network })
+  return sections
+}
+
+/**
+ * Welcher Farbvorschlag den Haken traegt.
+ *
+ * Drei Antworten, nicht zwei. Die Farbe aus dem Space-Bild hat ihr eigenes
+ * Feld ("suggestion") und darf nicht als "eigene Farbe" durchgehen: sonst
+ * verschwindet sie in dem Augenblick, in dem man eine andere waehlt, und
+ * niemand sieht mehr, wohin der Rueckweg fuehrt.
+ *
+ * Verglichen wird der Wert, nicht die Herkunft. Das muss so sein: die aus
+ * dem Bild gewonnene Farbe wird beim Hochladen in denselben Schluessel
+ * geschrieben wie eine von Hand gewaehlte, "ist gesetzt" trennt die beiden
+ * also nicht. Gibt es kein Bild (oder laeuft die Extraktion noch), gibt es
+ * auch kein Feld, das einen Haken tragen koennte.
+ */
+export function activeSpaceSwatch(effectiveColor: string, imageColor: string | null): string {
+  const hex = effectiveColor.toLowerCase()
+  if (imageColor && hex === imageColor.toLowerCase()) return "suggestion"
+  return SPACE_COLOR_SWATCHES.includes(hex) ? hex : "custom"
+}
+
+/**
+ * Die Kontaktliste im Bereich "Einladen" (Entwurf 4a): dieselbe Quelle wie
+ * zuvor der Picker — aktiv, nicht Mitglied, nicht gerade eingeladen —, nur
+ * zusaetzlich nach Suchbegriff gefiltert. Gesucht wird ueber Name UND
+ * Kennung: ohne gesetzten Namen ist die Kennung alles, was eine Zeile
+ * unterscheidet.
+ */
+export function filterInvitableContacts<T extends { id: string; name?: string }>(
+  contacts: readonly T[],
+  search: string,
+): T[] {
+  const needle = search.trim().toLowerCase()
+  if (!needle) return [...contacts]
+  return contacts.filter(
+    (c) =>
+      (c.name ?? "").toLowerCase().includes(needle) || c.id.toLowerCase().includes(needle),
+  )
+}
+
+/**
+ * Haelt die Auswahl auf einem Bereich, den es wirklich gibt.
+ *
+ * `isAdmin` stammt aus den Mitgliedern und steht beim Oeffnen noch nicht fest
+ * (useMembers laedt). Der Modul-Bereich kann darum nach dem ersten Rendern
+ * verschwinden — der Dialog zeigte dann den Inhalt eines Eintrags an, den es
+ * nicht mehr gibt. Der Rueckfall ist der erste Bereich.
+ */
+export function resolveConfigSection(
+  requested: SpaceConfigSectionId,
+  sections: readonly SpaceConfigSection[],
+): SpaceConfigSectionId {
+  return sections.some((s) => s.id === requested) ? requested : sections[0].id
+}
+
+/** Ab wie vielen Mitgliedern die Liste ein Suchfeld bekommt. */
+const MEMBER_SEARCH_THRESHOLD = 8
+
+/**
+ * Ob die Mitgliederliste ein Suchfeld zeigt.
+ *
+ * Sichtbarkeit des Feldes und Wirksamkeit des Filters MUESSEN dieselbe Frage
+ * beantworten. Vorher hing das Feld an der Mitgliederzahl und der Filter am
+ * Suchbegriff: sank die Zahl waehrend einer Suche unter die Schwelle — weil
+ * das gesuchte Mitglied entfernt wurde oder eine Synchronisierung eintraf —
+ * verschwand das Feld, der Suchbegriff blieb, und die verbliebenen
+ * Mitglieder waren nicht mehr erreichbar. Ohne Feld liess sich der Filter
+ * auch nicht loeschen; nur Schliessen und Wiederoeffnen half (#377).
+ *
+ * Darum haelt ein eingegebener Suchbegriff das Feld offen, unabhaengig von
+ * der Zahl. Es verschwindet erst, wenn die Suche geleert ist.
+ */
+export function showsMemberSearch(memberCount: number, search: string): boolean {
+  return memberCount > MEMBER_SEARCH_THRESHOLD || search !== ""
+}
+
+/**
+ * Teilt die Mitglieder in Admins und uebrige und filtert sie nach Suchbegriff
+ * (Entwurf "Space Menu", 3a).
+ *
+ * `members` ist nach DID sortiert, das Admin-Abzeichen stand also an
+ * beliebiger Stelle einer flachen Liste — wer den Space verwaltet, war nicht
+ * auf einen Blick erkennbar. Gesucht wird ueber Anzeigename UND Kennung:
+ * ohne gesetzten Namen ist die Kennung alles, was eine Zeile unterscheidet.
+ */
+export function groupMembersForDisplay<T extends { id: string; displayName?: string }>(
+  members: readonly T[],
+  isAdmin: (member: T) => boolean,
+  search: string,
+): { admins: T[]; others: T[] } {
+  const needle = search.trim().toLowerCase()
+  const matches = (m: T) =>
+    !needle ||
+    (m.displayName ?? "").toLowerCase().includes(needle) ||
+    m.id.toLowerCase().includes(needle)
+  const visible = members.filter(matches)
+  return {
+    admins: visible.filter(isAdmin),
+    others: visible.filter((m) => !isAdmin(m)),
+  }
+}
+
 /**
  * Serialize saves so a slow older request can never overwrite a newer state:
  * at most one save runs at a time; states arriving meanwhile collapse to the
@@ -102,6 +260,16 @@ export function createLatestWinsSaver<T>(
   onError: (error: unknown, failedValue: T, lastSavedValue: T | undefined) => void,
   /** A save was confirmed — the moment to clear a stale failure notice. */
   onSaved?: (value: T) => void,
+  options: {
+    /**
+     * Wie ein wartender Wert mit dem naechsten zusammengeht. Ohne `merge`
+     * gewinnt der letzte als Ganzes — richtig fuer EINEN Wert (die Farbe),
+     * falsch fuer einen Patch mit mehreren Feldern: "Solid" waere verloren,
+     * sobald "Rundung large" nachkam (Review #391). Mit `merge` gewinnt der
+     * letzte je Feld.
+     */
+    merge?: (queued: T, next: T) => T
+  } = {},
 ): (value: T) => void {
   let inFlight = false
   let queued: { value: T } | null = null
@@ -141,7 +309,7 @@ export function createLatestWinsSaver<T>(
     )
   }
   return (value: T) => {
-    if (inFlight) queued = { value }
+    if (inFlight) queued = { value: queued && options.merge ? options.merge(queued.value, value) : value }
     else run(value)
   }
 }
@@ -149,6 +317,15 @@ export function createLatestWinsSaver<T>(
 /** Human-readable fallback for raw IDs (e.g. DIDs) */
 function shortName(id: string): string {
   return `User-${id.slice(-6)}`
+}
+
+/** Ueberschrift einer Mitglieder-Gruppe (Entwurf "Space Menu", 3a). */
+function MemberGroupLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="px-2.5 pt-2.5 pb-1 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+      {children}
+    </div>
+  )
 }
 
 // --- Types ---
@@ -175,6 +352,12 @@ export interface GroupCreateData {
 type KindRow = SpaceKind
 
 export interface GroupDialogProps {
+  /**
+   * Oeffnet die Feineinstellung des Aussehens (drei Achsen, Toenung,
+   * Kontraste) im Modul-Panel. Der Dialog schliesst sich dabei. Ohne Handler
+   * gibt es den Knopf nicht.
+   */
+  onOpenThemePanel?: (group: Group) => void
   open: boolean
   onOpenChange: (open: boolean) => void
   mode: GroupDialogMode
@@ -321,6 +504,7 @@ export function GroupDialog({
   spaceLink,
   onCreateGroup,
   onUpdateGroup,
+  onOpenThemePanel,
   onDeleteGroup,
   onInviteMember,
   onRemoveMember,
@@ -475,6 +659,26 @@ export function GroupDialog({
   // and two operations failing with the same text (`Network request failed`)
   // still collided. Separate state = ownership by construction (rls#232).
   const [moduleError, setModuleError] = useState<string | null>(null)
+  // Eigener Zustand wie beim Modul-Fehler: haengt die Farbe am gemeinsamen
+  // `error`, loescht ihr Erfolg die Meldung des Umbenennens oder Einladens
+  // gleich mit. Zugehoerigkeit durch Konstruktion, nicht durch Vermutung
+  // (rls#232).
+  const [colorError, setColorError] = useState<string | null>(null)
+
+  // Das gewaehlte Fach. `tabs` haengt an isCurrentUserAdmin, das aus den
+  // Mitgliedern abgeleitet wird und beim Oeffnen noch nicht feststeht — daher
+  // laeuft die Auswahl durch resolveConfigTab, statt roh an Radix zu gehen.
+  const [requestedSection, setRequestedSection] = useState<SpaceConfigSectionId>("members")
+  const sections = spaceConfigSections({
+    isAdmin: isCurrentUserAdmin,
+    canInvite: Boolean(onInviteMember),
+    canTheme: isCurrentUserAdmin,
+  })
+  const activeSection = resolveConfigSection(requestedSection, sections)
+  /** Suche in der Mitgliederliste (Entwurf 3a). */
+  const [memberSearch, setMemberSearch] = useState("")
+  /** Suche in der Kontaktliste des Bereichs "Einladen" (Entwurf 4a). */
+  const [inviteSearch, setInviteSearch] = useState("")
 
   // Persisting the module list: rapid ↑/↓ clicks fire faster than a save
   // round-trips, and two in-flight saves can settle out of order — the older
@@ -512,6 +716,122 @@ export function GroupDialog({
       () => setModuleError(null),
     )
   }
+
+  // Die gewaehlte Primaerfarbe liegt lokal, aus demselben Grund wie Name,
+  // Bild und Modulliste: `mode.group` ist ein SNAPSHOT vom Oeffnen, den die
+  // App nicht nachfuehrt, solange der Dialog steht. Direkt daraus gelesen
+  // bewegte sich der Haken nach einem Klick nicht — gespeichert wurde, aber
+  // es sah aus, als sei nichts passiert.
+  const [primaryColorChoice, setPrimaryColorChoice] = useState<string | null>(() =>
+    mode.type === "edit" ? ((mode.group.data?.primaryColor as string | undefined) ?? null) : null,
+  )
+  /**
+   * Das Ziel haengt am WERT, nicht am Zeitpunkt der Ausfuehrung. Der Saver
+   * lebt so lange wie der Dialog; ein eingereihter Vorgang laeuft erst, wenn
+   * der vorige settled ist. Laese er das Ziel dann aus `modeRef`, schriebe er
+   * in den Space, der inzwischen offen ist — ein fremder Space bekaeme still
+   * die Farbe, die man dem vorigen zugedacht hatte.
+   */
+  /**
+   * Laufende Nummer der Farbabsicht. Jede bewusste Wahl und jedes Entfernen
+   * des Bildes zaehlt hoch; ein Zuruecksetzen, dessen Bildfarbe erst danach
+   * eintrifft, erkennt daran, dass es ueberholt ist.
+   */
+  const colorRequestRef = useRef(0)
+
+  /**
+   * Die EINE Stelle, an der die angezeigte Farbe umgesetzt wird.
+   *
+   * `primaryColor` hat drei Schreibwege — die bewusste Wahl, das Entfernen
+   * des Bildes und der Upload. Jeder MUSS hier durch, sonst zeigt der Dialog
+   * eine andere Farbe als die App daneben. Genau das passierte, als die
+   * ersten beiden einzeln nachgezogen wurden und der dritte liegen blieb.
+   *
+   * Die laufende Nummer entwertet zugleich ein Zuruecksetzen, dessen
+   * Bildfarbe erst danach eintrifft: sie gehoerte zu einem frueheren Stand.
+   */
+  const rememberPrimaryColor = (hex: string | null) => {
+    colorRequestRef.current++
+    setPrimaryColorChoice(hex)
+  }
+  const savePrimaryColorRef = useRef<((v: { groupId: string; hex: string | null }) => void) | null>(null)
+  if (!savePrimaryColorRef.current) {
+    savePrimaryColorRef.current = createLatestWinsSaver<{ groupId: string; hex: string | null }>(
+      ({ groupId: target, hex }) =>
+        // Minimaler PATCH: `null` loescht den Schluessel und stellt damit den
+        // Rueckfall her (Spec 04 Regel 3), ohne image/modules zu beruehren.
+        onUpdateGroupRef.current(target, { data: { primaryColor: hex } }),
+      (err, failed, lastSaved) => {
+        const current = modeRef.current
+        // Ein Fehlschlag fuer einen anderen Space darf die Anzeige des
+        // gerade offenen nicht anfassen — gemeldet wird er trotzdem.
+        if (current.type === "edit" && failed.groupId === current.group.id) {
+          // Zurueck auf den zuletzt BESTAETIGTEN Wert — ein Haken auf einer
+          // Farbe, die nie ankam, behauptet eine Aenderung, die es nicht gibt.
+          setPrimaryColorChoice(
+            lastSaved?.groupId === current.group.id
+              ? lastSaved.hex
+              : ((current.group.data?.primaryColor as string | undefined) ?? null),
+          )
+        }
+        setColorError(err instanceof Error ? err.message : "Farbe konnte nicht gespeichert werden")
+      },
+      () => setColorError(null),
+    )
+  }
+  /**
+   * Rundung und Flaechen im Dialog — Entwurf 5a. Ein eigener Saver fuer die
+   * Layout-Achsen neben dem Farbsaver: die Felder sind disjunkt, also gibt
+   * es keine Reihenfolge, die zwischen beiden zaehlen koennte. Der Reset
+   * schreibt hier ausserdem Toenung und Grau auf null: "setzt alles auf den
+   * Toolkit-Default", auch was nur die Feineinstellung setzen kann.
+   */
+  const [radiusChoice, setRadiusChoice] = useState<RadiusStep | null>(() =>
+    mode.type === "edit" ? readRadius(mode.group.data?.radius) : null,
+  )
+  const [surfacesChoice, setSurfacesChoice] = useState<Surfaces | null>(() =>
+    mode.type === "edit" ? readSurfaces(mode.group.data?.surfaces) : null,
+  )
+  const saveLayoutRef = useRef<((v: { groupId: string; patch: Record<string, unknown> }) => void) | null>(null)
+  if (!saveLayoutRef.current) {
+    saveLayoutRef.current = createLatestWinsSaver<{ groupId: string; patch: Record<string, unknown> }>(
+      ({ groupId: target, patch }) => onUpdateGroupRef.current(target, { data: patch }),
+      (err, failed) => {
+        const current = modeRef.current
+        if (current.type === "edit" && failed.groupId === current.group.id) {
+          setRadiusChoice(readRadius(current.group.data?.radius))
+          setSurfacesChoice(readSurfaces(current.group.data?.surfaces))
+        }
+        setColorError(err instanceof Error ? err.message : "Aussehen konnte nicht gespeichert werden")
+      },
+      () => setColorError(null),
+      {
+        // Wartende Patches feldweise zusammenfuehren — sonst verdraengt
+        // "Rundung large" ein noch wartendes "Solid". Ein anderes Ziel
+        // (anderer Space) wird nicht gemischt.
+        merge: (queued, next) =>
+          queued.groupId === next.groupId ? { groupId: next.groupId, patch: { ...queued.patch, ...next.patch } } : next,
+      },
+    )
+  }
+  const applyRadius = (radius: RadiusStep) => {
+    if (!isEdit) return
+    setRadiusChoice(radius)
+    saveLayoutRef.current?.({ groupId: mode.group.id, patch: { radius } })
+  }
+  const applySurfaces = (surfaces: Surfaces) => {
+    if (!isEdit) return
+    setSurfacesChoice(surfaces)
+    saveLayoutRef.current?.({ groupId: mode.group.id, patch: { surfaces } })
+  }
+  /** Alles zurueck: Farbe ueber ihren eigenen Weg (Bildfarbe neu bestimmen), die uebrigen Achsen hier. */
+  const resetLayout = () => {
+    if (!isEdit) return
+    setRadiusChoice(null)
+    setSurfacesChoice(null)
+    saveLayoutRef.current?.({ groupId: mode.group.id, patch: { radius: null, surfaces: null, tint: null, gray: null } })
+  }
+
   const applyModules = useCallback((next: string[]) => {
     setActiveModules(next)
     saveModulesRef.current?.(next)
@@ -575,9 +895,17 @@ export function GroupDialog({
         setConfirmDelete(false)
         setError(null)
         setModuleError(null)
+        setColorError(null)
         setInvitingId(null)
         setInvitedIds(new Set())
         setInviteErrors(new Map())
+        // Der Dialog bleibt zwischen zwei Aufrufen montiert. Ohne diesen
+        // Rueckfall oeffnete er fuer den NAECHSTEN Space im zuletzt
+        // gewaehlten Bereich — mit Suchbegriff und offenem Kontakt-Picker
+        // eines anderen Space.
+        setRequestedSection("members")
+        setMemberSearch("")
+        setInviteSearch("")
       }
       onOpenChange(nextOpen)
     },
@@ -622,6 +950,10 @@ export function GroupDialog({
       // grayscale logo dominantColor returns null -> clear it so reads fall
       // back to the deterministic id color.
       const primaryColor = await dominantColor(dataUrl).catch(() => null)
+      // Derselbe Weg wie die beiden anderen Schreiber: erst merken, dann
+      // speichern. Ohne das behielt der Dialog die vorige Farbe, waehrend
+      // die App schon die des neuen Logos trug.
+      rememberPrimaryColor(primaryColor)
       // Minimal patch — updateGroup merges per key (null removes), so this
       // cannot clobber e.g. a module order saved meanwhile (rls#234).
       void onUpdateGroup(mode.group.id, {
@@ -636,6 +968,8 @@ export function GroupDialog({
   const handleImageRemove = () => {
     if (!isEdit) return
     setGroupImage("")
+    // Der Patch unten verwirft `primaryColor` — die Anzeige muss mit.
+    rememberPrimaryColor(null)
     // Drop the cached accent too, so it falls back to the deterministic id
     // color — `null` removes the key (patch contract), `undefined` would be
     // dropped by JSON transports and leave the stale accent behind.
@@ -692,6 +1026,138 @@ export function GroupDialog({
   )
   const justInvitedContacts = (contacts ?? []).filter(
     (c) => invitedIds.has(c.id) && !memberIds.has(c.id)
+  )
+
+  const { admins: shownAdmins, others: shownOthers } = groupMembersForDisplay(
+    members,
+    memberIsAdmin,
+    memberSearch,
+  )
+
+  const shownInvitable = filterInvitableContacts(invitableContacts, inviteSearch)
+
+  /**
+   * Die Farbe des Space-Bildes — als Feld in der Palette.
+   *
+   * Sie muss sichtbar bleiben, auch nachdem jemand eine andere gewaehlt hat,
+   * sonst ist sie weg, sobald man einmal danebentippt. Dafuer muss sie
+   * bekannt sein, und das heisst: aus dem Bild bestimmen.
+   *
+   * NUR mit Bild. Ohne Bild waere der Vorschlag der deterministische
+   * Rueckfall aus der Space-Id — eine Farbe, die niemand gewaehlt hat und
+   * die man sich auch nicht ansehen will; dort genuegt der Textknopf.
+   *
+   * Der Effekt laeuft darum genau dann, wenn der Bereich "Aussehen" offen ist
+   * und sich das Bild aendert — nicht bei jedem Rendern (Spec 04, Regel 2).
+   */
+  const [imageColor, setImageColor] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!isEdit || activeSection !== "theme" || !groupImage) {
+      setImageColor(null)
+      return
+    }
+    // Waehrend der Extraktion KEINE Farbe zeigen: sonst truege das Feld einen
+    // Wert vom vorigen Bild.
+    setImageColor(null)
+    let current = true
+    void (async () => {
+      const { dominantColor } = await import("../../lib/image-utils")
+      const derived = await dominantColor(resolveAssetUrl(groupImage) ?? groupImage).catch(() => null)
+      // Ein graustufiges Bild liefert keine Farbe; dann gibt es kein Feld.
+      if (current) setImageColor(derived)
+    })()
+    return () => { current = false }
+  }, [isEdit, activeSection, groupImage, groupId])
+
+  /**
+   * Die Farbe, die gerade GILT — gesetzter Wert, sonst die aus dem Logo
+   * gewonnene, sonst der deterministische Rueckfall aus der Space-Id
+   * (Spec 04, "Space-Primaerfarbe", Regel 3/5).
+   */
+  const effectiveColor = getSpacePrimaryColor(groupId, primaryColorChoice)
+  const currentSwatch = activeSpaceSwatch(effectiveColor, imageColor)
+
+  /**
+   * Erst die Anzeige, dann das Speichern: der Haken springt sofort, der
+   * Saver holt es nach und rollt bei einem Fehlschlag zurueck.
+   */
+  const applyPrimaryColor = (hex: string | null) => {
+    if (!isEdit) return
+    rememberPrimaryColor(hex)
+    savePrimaryColorRef.current?.({ groupId: mode.group.id, hex })
+  }
+
+  /**
+   * Zurueck zum Vorschlag. Mit Bild heisst das: die dominante Farbe des
+   * Bildes NEU bestimmen und schreiben.
+   *
+   * `null` allein genuegt hier nicht. Die aus dem Bild gewonnene Farbe steht
+   * im selben Schluessel wie die von Hand gewaehlte; wer von Hand waehlt,
+   * ueberschreibt sie. Ein spaeteres `null` fiele darum nicht auf das Bild
+   * zurueck, sondern auf die Farbe aus der Space-Id — der Knopf haette
+   * versprochen, was er nicht halten kann.
+   *
+   * Die Extraktion laeuft damit ein zweites Mal, aber auf ausdrueckliche
+   * Nutzeraktion, nicht bei jedem Rendern (Spec 04, Regel 2).
+   */
+  const resetPrimaryColor = async () => {
+    if (!isEdit) return
+    if (!groupImage) {
+      applyPrimaryColor(null)
+      return
+    }
+    // Die Extraktion dauert. Waehlt der Nutzer inzwischen bewusst eine Farbe,
+    // ist das Ergebnis ueberholt und DARF sie nicht ueberschreiben — sonst
+    // sprang die Farbe Augenblicke nach dem Klick von selbst zurueck.
+    const ticket = ++colorRequestRef.current
+    const { dominantColor } = await import("../../lib/image-utils")
+    // Liefert ein graustufiges Bild keine Farbe, bleibt der Id-Rueckfall.
+    // Auch hier der aufgeloeste Pfad: sonst laedt die Farbextraktion unter
+    // einem Unterpfad nichts und faellt still auf die Id-Farbe zurueck.
+    const derived = await dominantColor(resolveAssetUrl(groupImage) ?? groupImage).catch(() => null)
+    if (ticket !== colorRequestRef.current) return
+    applyPrimaryColor(derived)
+  }
+
+  /** Zahlen am Menue — die Suche aendert sie nicht, sie zaehlen den Bestand. */
+  const sectionCounts: Record<SpaceConfigSectionId, number | undefined> = {
+    members: members.length || undefined,
+    modules: visibleModules.length || undefined,
+    invite: undefined,
+    theme: undefined,
+    netzwerk: undefined,
+  }
+
+  const renderMemberRow = (member: (typeof members)[number]) => (
+    <div
+      key={member.id}
+      className="group flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 transition-colors hover:bg-muted/50"
+    >
+      <Avatar className="h-7 w-7">
+        {member.avatarUrl && <AvatarImage src={member.avatarUrl} />}
+        <AvatarFallback className="text-[10px]">
+          {getInitials(member.displayName ?? shortName(member.id))}
+        </AvatarFallback>
+      </Avatar>
+      <span className="min-w-0 flex-1 truncate text-sm">
+        {member.displayName ?? shortName(member.id)}
+        {member.id === currentUserId && (
+          <span className="ml-1 text-xs text-muted-foreground">(du)</span>
+        )}
+      </span>
+      {isCurrentUserAdmin && onRemoveMember && member.id !== currentUserId && (
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={() => handleRemoveMember(member.id)}
+          title="Mitglied entfernen"
+          className="h-6 w-6 opacity-50 sm:opacity-0 sm:group-hover:opacity-100"
+        >
+          <UserMinus className="h-3.5 w-3.5 text-muted-foreground" />
+        </Button>
+      )}
+    </div>
   )
 
   // --- Create Mode ---
@@ -758,267 +1224,539 @@ export function GroupDialog({
   // --- Edit Mode ---
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-sm gap-0 p-0 overflow-hidden max-h-[90dvh] flex flex-col" aria-describedby={undefined}>
+      <DialogContent
+        // Die Glasflaeche (Achse Panel-Hintergrund) gilt auch fuer das
+        // Space-Menue — durchscheinend oder deckend wie Navbar und Panels.
+        className="surface-glass flex h-[85vh] max-h-[560px] flex-col gap-0 overflow-hidden p-0 sm:max-w-[620px]"
+        aria-describedby={undefined}
+        // Dieser Dialog ist ein FENSTER IN DEN SPACE und traegt darum dessen
+        // Primaerfarbe — auch wenn gerade ein anderer Space oder die
+        // Uebersicht aktiv ist. Sonst stuenden zwei Farben nebeneinander: das
+        // Menue in der Farbe des bearbeiteten Space, der Einladen-Knopf in
+        // der der laufenden App.
+        //
+        // Gesetzt werden dieselben Variablen, die `use-workspace-routing` auf
+        // `:root` legt, nur lokal. Alle Flaechen darin ziehen dadurch mit,
+        // statt dass jede fuer sich eine Farbe inline bekommt — und ein
+        // Farbwechsel im Bereich "Aussehen" faerbt den ganzen Dialog um,
+        // nicht bloss den Menueeintrag.
+        style={
+          {
+            "--primary": effectiveColor,
+            "--primary-foreground": getReadableTextColor(effectiveColor),
+            "--ring": effectiveColor,
+            "--accent": `color-mix(in srgb, ${effectiveColor} 14%, transparent)`,
+            // Text auf der schwach getoenten Flaeche muss in hell UND dunkel
+            // lesbar bleiben; die rohe Space-Farbe waere es nicht.
+            "--accent-foreground": "var(--foreground)",
+          } as React.CSSProperties
+        }
+        // Ohne das faengt der Name als erstes Feld den Fokus und steht
+        // markiert da — ein Tastendruck ueberschriebe den Space-Namen. Der
+        // Fokus bleibt im Dialog (Tab und Escape wirken), nur eben nicht
+        // in einem Eingabefeld.
+        onOpenAutoFocus={(e) => {
+          e.preventDefault()
+          ;(e.currentTarget as HTMLElement | null)?.focus()
+        }}
+      >
         <DialogTitle className="sr-only">{isEdit ? mode.group.name : "Neue Gruppe"}</DialogTitle>
-        {/* Der Koerper scrollt, die Fusszeile bleibt stehen — ein Space mit
-            Netzwerk, Arten, Mitgliedern und Modulen ist laenger als ein Schirm. */}
-        <div className="min-h-0 flex-1 overflow-y-auto">
-        {/* Group Identity Header */}
-        <div className="relative px-6 pt-6 pb-5">
-          <div className="flex items-start gap-4">
-            {/* Group Image */}
-            <div className="relative group shrink-0">
-              {groupImage ? (
-                <>
-                  <img src={groupImage} alt={name} className="w-14 h-14 rounded-xl object-cover ring-2 ring-background shadow-sm" />
-                  <button
-                    onClick={handleImageRemove}
-                    className="absolute -top-1 -right-1 p-0.5 bg-destructive text-white rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                  <label className="absolute -bottom-0.5 -right-0.5 p-1 bg-card border border-border rounded-full shadow-sm cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity hover:bg-accent">
-                    <Camera className="h-2.5 w-2.5 text-muted-foreground" />
-                    <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                  </label>
-                </>
-              ) : (
-                <label className="w-14 h-14 rounded-xl border-2 border-dashed border-border hover:border-primary/50 bg-muted/30 flex items-center justify-center cursor-pointer transition-all hover:bg-muted/50">
-                  <ImagePlus className="h-5 w-5 text-muted-foreground/40" />
-                  <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                </label>
-              )}
-            </div>
-
-            {/* Name Input */}
-            <div className="flex-1 min-w-0 pt-1 group/name">
-              <div className="relative">
-                <Input
-                  ref={nameInputRef}
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  onBlur={handleNameBlur}
-                  className="h-8 text-base font-semibold border-transparent shadow-none bg-transparent -ml-1.5 px-1 min-w-32 max-w-[calc(100%-2rem)] hover:bg-muted/50 focus:shadow-sm focus:bg-card focus:border-input focus:ml-0 focus:px-2 focus:max-w-[calc(100%-2rem)] transition-all truncate"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault()
-                      handleNameBlur()
-                      ;(e.target as HTMLInputElement).blur()
-                    }
-                  }}
-                />
+        {/* Kopf — Bild und Name gehoeren dem Space als Ganzem und bleiben
+            ueber den Bereichen stehen, aenderbar egal welcher offen ist.
+            Der Stift am Bild ist dauerhaft sichtbar statt erst bei Hover:
+            auf einem Tastfeld gibt es kein Hover (Entwurf "Space Menu", 3a). */}
+        <div className="flex shrink-0 items-center gap-3.5 border-b px-6 py-4">
+          <div className="group relative shrink-0">
+            {groupImage ? (
+              <>
+                {/* Ueber `resolveAssetUrl` wie `AvatarImage`: ein
+                    wurzel-relativer Pfad wie `/logo.png` laedt sonst vom
+                    falschen Ort, sobald die App unter einem Unterpfad
+                    ausgeliefert wird. Data-URLs reicht die Funktion
+                    unveraendert durch. */}
+                <img src={resolveAssetUrl(groupImage)} alt={name} className="h-12 w-12 rounded-xl object-cover ring-2 ring-background shadow-sm" />
                 <button
-                  type="button"
-                  onClick={() => nameInputRef.current?.focus()}
-                  className="absolute top-1/2 -translate-y-1/2 group-focus-within/name:hidden text-muted-foreground/30 group-hover/name:text-muted-foreground/60 transition-colors"
-                  style={{ left: `${Math.min(name.length + 1, 20)}ch` }}
+                  onClick={handleImageRemove}
+                  aria-label="Bild entfernen"
+                  className="absolute -top-1 -right-1 rounded-full bg-destructive p-0.5 text-white opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
                 >
-                  <Pencil className="h-3 w-3" />
+                  <X className="h-3 w-3" />
                 </button>
+              </>
+            ) : (
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl border-2 border-dashed border-border bg-muted/30">
+                <ImagePlus className="h-5 w-5 text-muted-foreground/40" />
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {membersLoading ? "Mitglieder werden geladen…" : `${members.length} Mitglieder`}
-              </p>
+            )}
+            <label
+              title="Bild waehlen"
+              className="absolute -right-1.5 -bottom-1.5 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border border-border bg-card shadow-sm transition-colors hover:bg-accent"
+            >
+              <Camera className="h-2.5 w-2.5 text-muted-foreground" />
+              <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+            </label>
+          </div>
+
+          <div className="min-w-0 flex-1 group/name">
+            <div className="relative">
+              <Input
+                ref={nameInputRef}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onBlur={handleNameBlur}
+                className="h-7 -ml-1.5 min-w-32 max-w-[calc(100%-2rem)] truncate border-transparent bg-transparent px-1 text-[17px] font-semibold shadow-none transition-all hover:bg-muted/50 focus:ml-0 focus:max-w-[calc(100%-2rem)] focus:border-input focus:bg-card focus:px-2 focus:shadow-sm"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault()
+                    handleNameBlur()
+                    ;(e.target as HTMLInputElement).blur()
+                  }
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => nameInputRef.current?.focus()}
+                className="absolute top-1/2 -translate-y-1/2 text-muted-foreground/30 transition-colors group-hover/name:text-muted-foreground/60 group-focus-within/name:hidden"
+                style={{ left: `${Math.min(name.length + 1, 20)}ch` }}
+              >
+                <Pencil className="h-3 w-3" />
+              </button>
             </div>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {membersLoading
+                ? "Mitglieder werden geladen…"
+                : `${members.length} ${members.length === 1 ? "Mitglied" : "Mitglieder"}`}
+              {isCurrentUserAdmin && " · du bist Admin"}
+            </p>
           </div>
         </div>
 
-        {/* Netzwerk und Art (Spec 04): der Admin waehlt, Mitglieder lesen. Was
-            einer nicht darf, erscheint nicht — kein ausgegrauter Regler. */}
-        {isCurrentUserAdmin ? (
-          <div className="px-6 pb-4 space-y-3">
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={isNetwork}
-                onChange={(e) => handleIsNetworkChange(e.target.checked)}
-                className="h-4 w-4 accent-primary"
-              />
-              Dieser Space ist ein Netzwerk
-            </label>
-            {isNetwork && (
-              <>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Arten der Gruppen in diesem Netzwerk</Label>
-                  <KindsEditor rows={kindRows} onChange={setKindRows} onCommit={commitKinds} onRemove={removeKind} />
-                </div>
-                <div>
-                  <Label htmlFor="group-domain" className="text-xs text-muted-foreground">Domain der Landingpage</Label>
-                  <Input
-                    id="group-domain"
-                    value={domain}
-                    placeholder="z.B. lichtung.ooo"
-                    className="mt-1.5 h-9 text-sm"
-                    onChange={(e) => setDomain(e.target.value)}
-                    onBlur={commitDomain}
-                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); commitDomain() } }}
-                  />
-                </div>
-                {link && (
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Link für den Knopf auf eurer Landingpage</Label>
-                    <div className="mt-1.5 flex items-center gap-1.5">
-                      <Input readOnly value={link} className="h-9 text-sm" onFocus={(e) => e.currentTarget.select()} />
-                      <Button variant="outline" size="sm" className="h-9 shrink-0" onClick={copyLink}>
-                        {linkKopiert ? <Check className="h-3.5 w-3.5" /> : "Kopieren"}
-                      </Button>
-                    </div>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Führt Mitglieder direkt hinein. Wer noch kein Mitglied ist, braucht eine Einladung.
-                    </p>
-                  </div>
-                )}
-              </>
-            )}
-            {/* Ein Netzwerk kann zugleich zu einem anderen gehoeren — die
-                Lichtung ist ein Projekt in Real Life und selbst ein Netzwerk. */}
-            {otherNetworks.length > 0 && (
-              <div>
-                <Label htmlFor="group-network" className="text-xs text-muted-foreground">
-                  {isNetwork ? "Gehört zum Netzwerk" : "Netzwerk"}
-                </Label>
-                <div className="mt-1.5">
-                  <NativeSelect id="group-network" options={networkOptions} value={network} emptyLabel="Keins" onChange={handleNetworkChange} />
-                </div>
-              </div>
-            )}
-            {availableKinds.length > 0 && (
-              <div>
-                <Label htmlFor="group-kind" className="text-xs text-muted-foreground">Art</Label>
-                <div className="mt-1.5">
-                  <NativeSelect id="group-kind" options={availableKinds} value={kind} emptyLabel="Keine" onChange={handleKindChange} />
-                </div>
-              </div>
-            )}
-          </div>
-        ) : isNetwork || network || kind ? (
-          <p className="px-6 pb-4 text-sm text-muted-foreground">
-            {[
-              isNetwork ? (domain ? `Netzwerk · ${domain}` : "Netzwerk") : undefined,
-              otherNetworks.find((n) => n.id === network)?.name,
-              availableKinds.find((k) => k.id === kind)?.label ?? (kind || undefined),
-            ].filter(Boolean).join(" · ")}
-          </p>
-        ) : null}
-
-        {/* Members */}
-        <div className="px-6 pb-2">
-          <div className="space-y-1 max-h-48 overflow-y-auto">
-            {membersLoading &&
-              members.length === 0 &&
-              Array.from({ length: 3 }).map((_, i) => (
-                <div key={`member-skeleton-${i}`} className="flex items-center gap-2.5 px-2 py-1.5" aria-hidden>
-                  <Skeleton className="h-7 w-7 shrink-0 rounded-full" />
-                  <Skeleton className="h-3.5 w-32" />
-                </div>
-              ))}
-            {members.map((member) => (
-              <div
-                key={member.id}
-                className="group flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-muted/50 transition-colors"
-              >
-                <Avatar className="h-7 w-7">
-                  {member.avatarUrl && <AvatarImage src={member.avatarUrl} />}
-                  <AvatarFallback className="text-[10px]">
-                    {getInitials(member.displayName ?? shortName(member.id))}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="flex-1 truncate text-sm">
-                  {member.displayName ?? shortName(member.id)}
-                </span>
-                {memberIsAdmin(member) && (
-                  <span className="text-[10px] text-muted-foreground px-1.5 py-0.5 bg-muted rounded-full">Admin</span>
-                )}
-                {isCurrentUserAdmin && onRemoveMember && member.id !== currentUserId && (
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => handleRemoveMember(member.id)}
-                    title="Mitglied entfernen"
-                    className="h-6 w-6 opacity-50 sm:opacity-0 sm:group-hover:opacity-100"
-                  >
-                    <UserMinus className="h-3.5 w-3.5 text-muted-foreground" />
-                  </Button>
-                )}
-              </div>
-            ))}
-
-            {/* Just invited feedback */}
-            {justInvitedContacts.map((c) => (
-              <div key={c.id} className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 bg-green-500/5">
-                <Avatar className="h-7 w-7">
-                  <AvatarFallback className="text-[10px] bg-green-500/10 text-green-700">
-                    {getInitials(c.name ?? shortName(c.id))}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="flex-1 truncate text-sm">{c.name ?? shortName(c.id)}</span>
-                <Check className="h-3.5 w-3.5 text-green-600" />
-              </div>
-            ))}
-          </div>
-
-          {/* Invite Section */}
-          {onInviteMember && invitableContacts.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-border/50">
-              <Label className="text-xs text-muted-foreground">Kontakt einladen</Label>
-              <div className="mt-2 max-h-32 space-y-1 overflow-y-auto">
-                {invitableContacts.map((contact) => {
-                  const isInviting = invitingId === contact.id
-                  const inviteError = inviteErrors.get(contact.id)
+        {/* Menue und Inhalt. Auf schmalen Schirmen liegt das Menue als
+            waagerechte Leiste ueber dem Inhalt — 190px Seitenspalte plus
+            Inhalt passen dort nicht nebeneinander. */}
+        <div className="flex min-h-0 flex-1 flex-col sm:flex-row">
+          {/* Ein Menue mit einem einzigen Eintrag waere eine Wahl ohne
+              Alternative — ohne Modulrecht bleibt nur ein Bereich uebrig. */}
+          {sections.length > 1 && (
+            <nav
+              aria-label="Bereiche"
+              className="shrink-0 border-b bg-muted/50 p-2.5 sm:w-[190px] sm:border-b-0 sm:border-r dark:bg-muted/20"
+            >
+              <div className="flex gap-1 overflow-x-auto sm:flex-col sm:gap-0.5 sm:overflow-visible">
+                {sections.map((section) => {
+                  const Icon = section.icon
+                  const active = section.id === activeSection
+                  const count = sectionCounts[section.id]
                   return (
-                    <div key={contact.id}>
-                      <div className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-muted/50">
-                        <Avatar className="h-7 w-7">
-                          {contact.avatar && <AvatarImage src={contact.avatar} />}
-                          <AvatarFallback className="text-[10px]">
-                            {getInitials(contact.name ?? contact.id)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="flex-1 truncate text-sm">{contact.name ?? shortName(contact.id)}</span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-7 text-xs"
-                          onClick={() => handleInviteContact(contact.id)}
-                          disabled={isInviting || invitingId !== null}
-                        >
-                          {isInviting ? (
-                            <Loader2 className="h-3 w-3 animate-spin" />
-                          ) : (
-                            <UserPlus className="h-3 w-3" />
-                          )}
-                          <span className="ml-1">Einladen</span>
-                        </Button>
-                      </div>
-                      {inviteError && (
-                        <p className="text-xs text-destructive ml-11 -mt-0.5 mb-1">{inviteError}</p>
+                    <button
+                      key={section.id}
+                      type="button"
+                      aria-current={active ? "page" : undefined}
+                      onClick={() => setRequestedSection(section.id)}
+                      // Der aktive Eintrag traegt die Farbe des Space — Spec 04
+                      // ("Verwendung der Primaerfarbe", Regel 1) nennt aktive
+                      // Navigations- und Sidebar-Items ausdruecklich. Damit
+                      // spricht das Menue dieselbe Sprache wie die Modulleiste
+                      // in der Navbar. Die Farbe kommt aus den Tokens, die der
+                      // Dialog setzt — keine zweite Mechanik daneben.
+                      className={cn(
+                        "flex items-center gap-2.5 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-left text-xs transition-colors",
+                        active
+                          ? "bg-primary font-semibold text-primary-foreground shadow-sm"
+                          : "font-medium text-muted-foreground hover:bg-muted/60",
                       )}
-                    </div>
+                    >
+                      <Icon className={cn("h-3.5 w-3.5 shrink-0", !active && "text-muted-foreground")} />
+                      <span className="flex-1">{section.label}</span>
+                      {count !== undefined && (
+                        <span className={cn("text-[10px]", active ? "opacity-70" : "text-muted-foreground")}>
+                          {count}
+                        </span>
+                      )}
+                    </button>
                   )
                 })}
               </div>
-            </div>
+            </nav>
           )}
 
-          {/* No contacts hint */}
-          {onInviteMember && invitableContacts.length === 0 && justInvitedContacts.length === 0 && (
-            <p className="text-xs text-muted-foreground mt-3 pt-3 border-t border-border/50">
-              {(contacts ?? []).some((c) => c.status === "active")
-                ? "Alle Kontakte sind bereits Mitglied."
-                : "Keine verifizierten Kontakte."}
-            </p>
+          {/* Der Name des Bereichs stand hier frueher als Ueberschrift — direkt
+              neben dem Menueeintrag, der ihn auf gleicher Hoehe schon nennt
+              und ihn in der Space-Farbe hervorhebt. Fuer Screenreader traegt
+              ihn jetzt die Flaeche selbst, sichtbar wiederholt wird er nicht. */}
+          <div
+            role="region"
+            aria-label={sections.find((s) => s.id === activeSection)?.label}
+            className="min-w-0 flex-1 overflow-y-auto px-6 py-4"
+          >
+          {activeSection === "members" && (
+            <>
+              <div className="mb-3 flex items-center gap-2.5">
+                {/* Einladen bleibt allen Mitgliedern offen, nicht nur Admins:
+                    im WoT laedt jedes Mitglied ein, nur der Creator entfernt.
+                    Der Knopf springt in den Bereich, statt einen Picker
+                    aufzuklappen (Entwurf Turn 4). */}
+                {onInviteMember && (
+                  <Button
+                    size="sm"
+                    className="ml-auto h-7 text-xs"
+                    onClick={() => setRequestedSection("invite")}
+                  >
+                    <UserPlus className="h-3 w-3" />
+                    <span className="ml-1">Einladen</span>
+                  </Button>
+                )}
+              </div>
+
+              {/* Suchen lohnt erst, wenn die Liste nicht mehr auf einen Blick
+                  zu ueberschauen ist — ein laufender Suchbegriff haelt das
+                  Feld aber offen, sonst bliebe der Filter ohne Bedienteil
+                  zurueck (#377). */}
+              {showsMemberSearch(members.length, memberSearch) && (
+                <div className="relative mb-2">
+                  <Search className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    value={memberSearch}
+                    onChange={(e) => setMemberSearch(e.target.value)}
+                    placeholder="Suchen…"
+                    className="h-8 pl-8 text-xs"
+                  />
+                </div>
+              )}
+
+              {membersLoading && members.length === 0 && (
+                <div className="space-y-1">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={`member-skeleton-${i}`} className="flex items-center gap-2.5 px-2.5 py-1.5" aria-hidden>
+                      <Skeleton className="h-7 w-7 shrink-0 rounded-full" />
+                      <Skeleton className="h-3.5 w-32" />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Drei Gruppen statt einer flachen Liste: `members` ist nach
+                  DID sortiert, das Admin-Abzeichen sass also an beliebiger
+                  Stelle. Die Gruppe sagt es jetzt, das Abzeichen entfaellt. */}
+              {shownAdmins.length > 0 && (
+                <>
+                  <MemberGroupLabel>Admin</MemberGroupLabel>
+                  <div className="space-y-0.5">{shownAdmins.map(renderMemberRow)}</div>
+                </>
+              )}
+              {shownOthers.length > 0 && (
+                <>
+                  <MemberGroupLabel>{`Mitglieder · ${shownOthers.length}`}</MemberGroupLabel>
+                  <div className="space-y-0.5">{shownOthers.map(renderMemberRow)}</div>
+                </>
+              )}
+              {!membersLoading && shownAdmins.length === 0 && shownOthers.length === 0 && (
+                <p className="px-2.5 py-3 text-xs text-muted-foreground">Niemand gefunden.</p>
+              )}
+
+              {justInvitedContacts.length > 0 && (
+                <>
+                  <MemberGroupLabel>{`Eingeladen · ${justInvitedContacts.length}`}</MemberGroupLabel>
+                  <div className="space-y-0.5">
+                    {justInvitedContacts.map((c) => (
+                      <div key={c.id} className="flex items-center gap-2.5 rounded-lg bg-green-500/5 px-2.5 py-1.5">
+                        <Avatar className="h-7 w-7">
+                          <AvatarFallback className="bg-green-500/10 text-[10px] text-green-700">
+                            {getInitials(c.name ?? shortName(c.id))}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="flex-1 truncate text-sm">{c.name ?? shortName(c.id)}</span>
+                        <Check className="h-3.5 w-3.5 text-green-600" />
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
           )}
 
-          {/* Modules (admin only): the ACTIVE list is ordered — data.modules
+          {/* Einladen (Entwurf 4a): eigener Bereich, kein Unterzustand von
+              Mitgliedern. Es gibt keine Einladung per Link — eingeladen wird
+              nur, wen man persoenlich getroffen und verifiziert hat. Die
+              Quelle ist darum dieselbe wie bisher: verifizierte Kontakte,
+              die noch nicht Mitglied sind. */}
+          {activeSection === "invite" && onInviteMember && (
+            <>
+              <div className="relative mb-3">
+                <Search className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={inviteSearch}
+                  onChange={(e) => setInviteSearch(e.target.value)}
+                  placeholder="Kontakt suchen…"
+                  className="h-8 pl-8 text-xs"
+                />
+              </div>
+
+              {shownInvitable.length > 0 ? (
+                <>
+                  <MemberGroupLabel>{`Kontakte · ${shownInvitable.length}`}</MemberGroupLabel>
+                  <div className="space-y-0.5">
+                    {shownInvitable.map((contact) => {
+                      const isInviting = invitingId === contact.id
+                      const inviteError = inviteErrors.get(contact.id)
+                      return (
+                        <div key={contact.id}>
+                          <div className="flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 transition-colors hover:bg-muted/50">
+                            <Avatar className="h-7 w-7">
+                              {contact.avatar && <AvatarImage src={contact.avatar} />}
+                              <AvatarFallback className="text-[10px]">
+                                {getInitials(contact.name ?? contact.id)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="min-w-0 flex-1 truncate text-sm">
+                              {contact.name ?? shortName(contact.id)}
+                            </span>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs"
+                              onClick={() => handleInviteContact(contact.id)}
+                              disabled={isInviting || invitingId !== null}
+                            >
+                              {isInviting ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              ) : (
+                                <UserPlus className="h-3 w-3" />
+                              )}
+                              <span className="ml-1">Einladen</span>
+                            </Button>
+                          </div>
+                          {inviteError && (
+                            <p className="-mt-0.5 mb-1 ml-11 text-xs text-destructive">{inviteError}</p>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </>
+              ) : (
+                <p className="px-2.5 py-3 text-xs text-muted-foreground">
+                  {invitableContacts.length > 0
+                    ? "Kein Kontakt gefunden."
+                    : (contacts ?? []).some((c) => c.status === "active")
+                      ? "Alle Kontakte sind bereits Mitglied."
+                      : "Keine verifizierten Kontakte."}
+                </p>
+              )}
+
+              {/* "Von dir eingeladen" zeigt der Entwurf mit Zeitpunkt und
+                  Status (Mitglied / Offen). Beides steht nicht im Modell:
+                  `User` kennt nur `isAdmin`, `ContactInfo` keinen Bezug zu
+                  diesem Space. Was hier steht, ist darum auf DIESE Sitzung
+                  begrenzt — mehr traegt die Quelle nicht. */}
+              {justInvitedContacts.length > 0 && (
+                <>
+                  <MemberGroupLabel>{`Von dir eingeladen · ${justInvitedContacts.length}`}</MemberGroupLabel>
+                  <div className="space-y-0.5">
+                    {justInvitedContacts.map((c) => (
+                      <div key={c.id} className="flex items-center gap-2.5 rounded-lg px-2.5 py-1.5">
+                        <Avatar className="h-7 w-7">
+                          {c.avatar && <AvatarImage src={c.avatar} />}
+                          <AvatarFallback className="text-[10px]">
+                            {getInitials(c.name ?? shortName(c.id))}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="min-w-0 flex-1 truncate text-sm">
+                          {c.name ?? shortName(c.id)}
+                          <span className="ml-1 text-xs text-muted-foreground">gerade eben</span>
+                        </span>
+                        <span className="text-xs font-semibold text-primary">Offen</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
+          )}
+
+          {/* Aussehen (Entwurf "Space Menu", 3c): die Primaerfarbe des Space.
+              Sie wirkt, solange dieser Space aktiv ist — Spec 04
+              ("Verwendung der Primaerfarbe"): Akzent, keine vollflaechige
+              Themefarbe. Hintergruende und Karten bleiben unberuehrt. */}
+          {activeSection === "theme" && isCurrentUserAdmin && (
+            <>
+              {/* Entwurf 5a: die drei Regler, die den Space sichtbar praegen —
+                  Akzentfarbe (Radix-Palette plus eigene, und vorn die aus dem
+                  Bild gewonnene), Radius, Panel-Hintergrund. Grau, Toenung
+                  und Kontrast bleiben der Feineinstellung vorbehalten. */}
+              <div className="space-y-4 px-2.5 py-2">
+                <section className="space-y-2">
+                  <ThemeSectionLabel>Akzentfarbe</ThemeSectionLabel>
+                  <AccentGrid
+                    effectiveColor={effectiveColor}
+                    onPick={(hex) => applyPrimaryColor(hex)}
+                    customActive={currentSwatch === "custom"}
+                    onCustom={() => {}}
+                    customAsLabel
+                    swatchLabel={(s) => `Primärfarbe ${s.hex}`}
+                    leading={imageColor ? (
+                      <>
+                        <button
+                          type="button"
+                          title="Farbe aus dem Bild"
+                          aria-label="Farbe aus dem Bild"
+                          aria-pressed={currentSwatch === "suggestion"}
+                          onClick={() => { void resetPrimaryColor() }}
+                          style={{ backgroundColor: imageColor }}
+                          className={cn(
+                            "flex h-7 w-7 items-center justify-center rounded-full transition-transform hover:scale-110",
+                            currentSwatch === "suggestion" && "ring-2 ring-foreground ring-offset-2 ring-offset-card",
+                          )}
+                        >
+                          {currentSwatch === "suggestion" ? (
+                            <CheckIcon className="h-3.5 w-3.5" style={{ color: getReadableTextColor(imageColor) }} />
+                          ) : (
+                            <Camera className="h-3.5 w-3.5" style={{ color: getReadableTextColor(imageColor) }} />
+                          )}
+                        </button>
+                        <span className="mx-0.5 h-5 w-px bg-border" aria-hidden />
+                      </>
+                    ) : undefined}
+                    customChildren={
+                      // Der native Farbwaehler: er kennt die Bedienhilfen des
+                      // Systems, und ein eigener Farbkreis waere eine zweite
+                      // Farbwelt neben der Palette.
+                      <input
+                        type="color"
+                        aria-label="Eigene Farbe"
+                        value={effectiveColor}
+                        onChange={(e) => applyPrimaryColor(e.target.value)}
+                        className="sr-only"
+                      />
+                    }
+                  />
+                </section>
+
+                <section className="space-y-2">
+                  <ThemeSectionLabel>Radius</ThemeSectionLabel>
+                  <RadiusTiles value={radiusChoice ?? instanceTheme().radius ?? "medium"} onChange={applyRadius} />
+                </section>
+
+                <section className="space-y-2">
+                  <ThemeSectionLabel>Panel-Hintergrund</ThemeSectionLabel>
+                  <SurfacesToggle value={surfacesChoice ?? instanceTheme().surfaces ?? "translucent"} onChange={applySurfaces} />
+                </section>
+
+                {/* Die Feineinstellung (Grau, Toenung, Kontraste) lebt als
+                    schwebende Karte ueber dem Inhalt, nicht hier: dort bleibt
+                    die App sichtbar und bedienbar. Der Dialog schliesst sich. */}
+                {onOpenThemePanel && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onOpenChange(false)
+                      onOpenThemePanel(mode.group)
+                    }}
+                    className="flex items-center gap-1.5 text-sm text-primary transition-colors hover:underline"
+                  >
+                    <SlidersHorizontal className="h-3.5 w-3.5" />
+                    Feineinstellung öffnen
+                  </button>
+                )}
+
+                {/* Der Weg zurueck fuer alles: Farbe (Spec 04 Regel 2/3 — aus dem
+                    Logo, sonst aus der Space-Id), Rundung, Flaechen, und was nur
+                    die Feineinstellung setzt. */}
+                {(primaryColorChoice != null || radiusChoice != null || surfacesChoice != null) && (
+                  <div>
+                    <Button variant="outline" size="sm" onClick={() => { resetLayout(); void resetPrimaryColor() }}>
+                      <RotateCcw className="h-3.5 w-3.5" />
+                      Zurücksetzen
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* Module (admin only): the ACTIVE list is ordered — data.modules
               is what the nav renders, top row = first tab. Reorder by DRAGGING
               a row (one gesture, any distance), deactivate via ✕; available
               modules append at the end. The ↑/↓ buttons stay as the keyboard
               path and appear ONLY on keyboard focus — with the mouse you
               drag, so showing them on hover was pure noise. Dragging alone
               would lock out keyboard and screen-reader users. */}
-          {isCurrentUserAdmin && (
-            <div className="mt-3 pt-3 border-t border-border/50">
-              <Label className="text-xs text-muted-foreground">Module (ziehen zum Sortieren)</Label>
+          {activeSection === "netzwerk" && isCurrentUserAdmin && (
+            <div className="space-y-5">
+              {/* Ein Space kann ein Netzwerk SEIN und zugleich zu einem
+                  gehoeren (Spec 04): die Lichtung ist ein Projekt in Real Life
+                  und selbst ein Netzwerk mit eigener Domain. */}
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={isNetwork}
+                  onChange={(e) => handleIsNetworkChange(e.target.checked)}
+                  className="h-4 w-4 accent-primary"
+                />
+                Dieser Space ist ein Netzwerk
+              </label>
+
+              {isNetwork && (
+                <>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Arten der Gruppen in diesem Netzwerk</Label>
+                    <p className="mt-1 mb-2 text-xs text-muted-foreground">
+                      Zum Beispiel Stiftung und Projekt. Der Umschalter gliedert die Gruppen danach.
+                    </p>
+                    <KindsEditor rows={kindRows} onChange={setKindRows} onCommit={commitKinds} onRemove={removeKind} />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="group-domain" className="text-xs text-muted-foreground">Domain der Landingpage</Label>
+                    <Input
+                      id="group-domain"
+                      value={domain}
+                      onChange={(e) => setDomain(e.target.value)}
+                      onBlur={commitDomain}
+                      placeholder="trustdonation.org"
+                      className="mt-1 h-9"
+                    />
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Nur Auskunft. Der Link unten wird daraus gebaut.
+                    </p>
+                  </div>
+
+                  {spaceLink && (
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Link fuer den Knopf auf der Landingpage</Label>
+                      <div className="mt-1 flex items-center gap-2">
+                        <Input readOnly value={link} className="h-9 font-mono text-xs" />
+                        <Button variant="outline" size="sm" onClick={copyLink} className="shrink-0">
+                          {linkKopiert ? <Check className="h-3.5 w-3.5" /> : "Kopieren"}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Jede Gruppe waehlt ihr Netzwerk und darin ihre Art. Ein Space
+                  ist nie sein eigenes Netzwerk, darum `otherNetworks`. */}
+              <div className="grid grid-cols-2 gap-3 border-t pt-4">
+                <div>
+                  <Label htmlFor="group-network" className="text-xs text-muted-foreground">Gehoert zum Netzwerk</Label>
+                  <div className="mt-1">
+                    <NativeSelect id="group-network" options={networkOptions} value={network} emptyLabel="Keins" onChange={handleNetworkChange} />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="group-kind" className="text-xs text-muted-foreground">Art</Label>
+                  <div className="mt-1">
+                    <NativeSelect id="group-kind" options={availableKinds} value={kind} emptyLabel="Keine" onChange={handleKindChange} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeSection === "modules" && isCurrentUserAdmin && (
+            <>
+              <Label className="text-xs text-muted-foreground">Ziehen zum Sortieren</Label>
               <div className="mt-2 space-y-0.5" onDragOver={(e) => e.preventDefault()} onDrop={handleModuleDrop}>
                 {visibleModules.map((id, index) => {
                   const mod = getModule(id)!
@@ -1113,21 +1851,27 @@ export function GroupDialog({
                   </div>
                 </div>
               )}
-            </div>
+            </>
           )}
+          </div>
         </div>
 
         {/* Errors: module-save failures have their own state (ownership by
-            construction, rls#232) and can coexist with a general error. */}
+            construction, rls#232) and can coexist with a general error.
+            Beide stehen AUSSERHALB der Faecher: ein Fehler beim Speichern der
+            Module darf nicht verschwinden, weil man inzwischen im Fach
+            "Mitglieder" steht. */}
         {moduleError && (
           <p className="text-xs text-destructive px-6 pb-2">{moduleError}</p>
+        )}
+        {colorError && (
+          <p className="text-xs text-destructive px-6 pb-2">{colorError}</p>
         )}
         {error && (
           <p className="text-xs text-destructive px-6 pb-2">{error}</p>
         )}
 
         {/* Footer */}
-        </div>
         <DialogFooter className="flex-row! px-6 py-3 border-t bg-muted/20">
           <Button
             variant={confirmDelete ? "destructive" : "ghost"}

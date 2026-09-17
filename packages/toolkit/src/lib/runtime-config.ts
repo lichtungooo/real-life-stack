@@ -1,3 +1,6 @@
+import { scalesForColor } from "./color-scales"
+import { themeTokens } from "./theme-tokens"
+import { layoutTokens, readGray, readRadius, readSurfaces, type GrayChoice, type RadiusStep, type Surfaces } from "./space-theme"
 /**
  * Runtime-Konfiguration einer RLS-Instanz.
  *
@@ -27,11 +30,31 @@ export interface BrandingColors {
   dark?: Record<string, string>
 }
 
+/**
+ * Die Achsen des Aussehens. Aus ihnen entsteht der Tokensatz der Instanz —
+ * und sie sind das, was ein Space erbt, wenn er selbst nichts setzt
+ * (Kaskade Space → Instanz → Toolkit).
+ */
+export interface BrandingTheme {
+  /** Akzentfarbe, `#rrggbb`. */
+  accent?: string
+  /** Tönung der Flächen, 0–1. 0 = neutral. */
+  tint?: number
+  /** Die neutrale Skala (Radix' grayColor) oder "auto"; fehlt sie: auto. */
+  gray?: GrayChoice
+  /** Rundung, fünf Stufen: none | small | medium | large | full. */
+  radius?: RadiusStep
+  /** Flächen der App-Hülle: translucent | solid. */
+  surfaces?: Surfaces
+}
+
 export interface Branding {
   /** Anzeigename; setzt zugleich den Dokumenttitel. */
   appName?: string
   faviconUrl?: string
-  /** Farbtokens, direkt in der Konfiguration. */
+  /** Die Achsen, aus denen der Tokensatz entsteht. */
+  theme?: BrandingTheme
+  /** Handkorrekturen einzelner Tokens — nach der Ableitung. */
   colors?: BrandingColors
   /**
    * Alternativ: Pfad auf eine Datei mit denselben Farbtokens. Sie wird
@@ -243,6 +266,14 @@ export async function loadRuntimeConfig(opts: LoadOptions = {}): Promise<Runtime
 
     let branding = isPlainObject(fromFile.branding) ? (fromFile.branding as Branding) : undefined
 
+    // Die Achsen werden geprueft, bevor sie gelten (Spec 11, Herkunft Regel 5).
+    if (branding && "theme" in branding) {
+      const theme = pickTheme(branding.theme)
+      branding = { ...branding }
+      if (theme) branding.theme = theme
+      else delete branding.theme
+    }
+
     // Farben aus einer eigenen Datei: getrennt geladen, damit ein Fehler dort
     // nur die Farben kostet.
     if (branding?.colorsUrl) {
@@ -262,8 +293,65 @@ export async function loadRuntimeConfig(opts: LoadOptions = {}): Promise<Runtime
   return inFlight
 }
 
+const HEX6 = /^#[0-9a-fA-F]{6}$/
+
+/**
+ * Der Akzent des Toolkits ohne jede Konfiguration — dasselbe Orange, das
+ * `globals.css` als `--primary` traegt. Steht hier, damit eine Instanz, die
+ * nur die Toenung setzt, trotzdem eine vollstaendige Ableitung bekommt.
+ */
+export const TOOLKIT_ACCENT = "#e87520"
+
+/** Was von `branding.theme` gelten darf. Ungueltiges wird verworfen und gemeldet. */
+function pickTheme(value: unknown): BrandingTheme | undefined {
+  if (!isPlainObject(value)) {
+    console.warn("[rls] branding.theme ist kein Objekt — uebersprungen.")
+    return undefined
+  }
+  const out: BrandingTheme = {}
+  const accent = (value as Record<string, unknown>).accent
+  if (accent !== undefined) {
+    if (typeof accent === "string" && HEX6.test(accent)) out.accent = accent.toLowerCase()
+    else console.warn(`[rls] branding.theme.accent="${String(accent)}" ist kein #rrggbb — uebersprungen.`)
+  }
+  const tint = (value as Record<string, unknown>).tint
+  if (tint !== undefined) {
+    if (typeof tint === "number" && Number.isFinite(tint)) out.tint = Math.min(1, Math.max(0, tint))
+    else console.warn(`[rls] branding.theme.tint="${String(tint)}" ist keine Zahl — uebersprungen.`)
+  }
+  const gray = (value as Record<string, unknown>).gray
+  if (gray !== undefined) {
+    const name = readGray(gray)
+    if (name) out.gray = name
+    else console.warn(`[rls] branding.theme.gray="${String(gray)}" ist keine der sechs Neutralen — uebersprungen.`)
+  }
+  const radius = (value as Record<string, unknown>).radius
+  if (radius !== undefined) {
+    const step = readRadius(radius)
+    if (step) out.radius = step
+    else console.warn(`[rls] branding.theme.radius="${String(radius)}" ist keine bekannte Stufe — uebersprungen.`)
+  }
+  const surfaces = (value as Record<string, unknown>).surfaces
+  if (surfaces !== undefined) {
+    const kind = readSurfaces(surfaces)
+    if (kind) out.surfaces = kind
+    else console.warn(`[rls] branding.theme.surfaces="${String(surfaces)}" ist weder solid noch translucent — uebersprungen.`)
+  }
+  return Object.keys(out).length > 0 ? out : undefined
+}
+
+/**
+ * Die Achsen der Instanz, wie geladen — fuer alles, was von ihr erbt: die
+ * Space-Schicht faellt auf sie zurueck, das Panel zeigt sie als geerbten
+ * Wert. Ohne Konfiguration leer.
+ */
+export function instanceTheme(): BrandingTheme {
+  return getRuntimeConfig().branding?.theme ?? {}
+}
+
 /** Tief einfrieren — sonst bleiben `colors.light` und `colors.dark` mutierbar. */
 function freezeBranding(b: Branding): Branding {
+  if (b.theme) Object.freeze(b.theme)
   if (b.colors) {
     if (b.colors.light) Object.freeze(b.colors.light)
     if (b.colors.dark) Object.freeze(b.colors.dark)
@@ -375,8 +463,22 @@ export function applyBranding(branding: Branding | undefined, doc: Document = do
 
   const known = knownTokens(doc)
 
-  const light = filterTokens(branding.colors?.light, known)
-  const dark = filterTokens(branding.colors?.dark, known)
+  // Erst die Ableitung aus den Achsen, dann die Handkorrekturen: in
+  // derselben Regel gewinnt die spaetere Deklaration, `colors` sticht also
+  // tokenweise, was aus `theme` entstand.
+  const derived = (scheme: "light" | "dark"): [string, string][] => {
+    const theme = branding.theme
+    if (!theme) return []
+    const colors =
+      theme.accent === undefined && theme.tint === undefined && theme.gray === undefined
+        ? {}
+        : themeTokens({ ...scalesForColor(theme.accent ?? TOOLKIT_ACCENT, scheme, { tint: theme.tint, gray: theme.gray }), scheme })
+    // Rundung und Flaechen kennen kein Schema; sie stehen in beiden Bloecken.
+    const layout = layoutTokens({ radius: theme.radius, surfaces: theme.surfaces })
+    return Object.entries({ ...colors, ...layout }).map(([n, v]) => [n.slice(2), v])
+  }
+  const light = [...derived("light"), ...filterTokens(branding.colors?.light, known)]
+  const dark = [...derived("dark"), ...filterTokens(branding.colors?.dark, known)]
   if (light.length === 0 && dark.length === 0) return
 
   // Name und Wert sind zu diesem Zeitpunkt geprueft: der Name ist ein einfacher

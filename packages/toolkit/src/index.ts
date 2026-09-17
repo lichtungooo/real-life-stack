@@ -17,6 +17,8 @@ export {
 } from "./lib/color-scheme"
 export {
   loadRuntimeConfig,
+  instanceTheme,
+  TOOLKIT_ACCENT,
   getRuntimeConfig,
   applyBranding,
   DEFAULT_RUNTIME_CONFIG,
@@ -24,8 +26,26 @@ export {
   type RuntimeEndpoints,
   type Branding,
   parseHomeSpaceId,
+  type BrandingTheme,
 } from "./lib/runtime-config"
 export { parseSpaceKinds, kindIdFromLabel, type SpaceKind } from "./lib/space-kinds"
+export {
+  deriveColorScale,
+  grayFor,
+  scalesForColor,
+  namedScale,
+  ACCENT_SCALE_NAMES,
+  GRAY_SCALE_OPTIONS,
+  type ColorScale,
+  type ColorScheme as ThemeColorScheme,
+} from "./lib/color-scales"
+export {
+  themeTokens,
+  applyThemeTokens,
+  clearThemeTokens,
+  SEMANTIC_TOKENS,
+  type ThemeTokens,
+} from "./lib/theme-tokens"
 export {
   CORE_MODULES,
   CORE_MODULE_LAYER,
@@ -74,3 +94,5 @@ export * from "./components"
 // Hooks
 export * from "./hooks"
 export * from "./components/navigation"
+export { readRadius, readSurfaces, readGray, layoutTokens, RADIUS_ORDER, RADIUS_STEPS, SURFACES } from "./lib/space-theme"
+export type { GrayChoice, RadiusStep, Surfaces } from "./lib/space-theme"
