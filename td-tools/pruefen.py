@@ -139,7 +139,25 @@ else:
     gesamt = sum(p.stat().st_size for p in dist.parent.rglob("*") if p.is_file()) / 1024 / 1024
     ergebnisse[-1]["text"] += ", dist gesamt " + str(round(gesamt, 1)) + " MB"
 
-# --- Tor 6: Gedaechtnis ------------------------------------------------------
+# --- Tor 6: Durchgang --------------------------------------------------------
+# Die pruefbaren Zeilen aus docs/TESTPLAN.md, mit Playwright gefahren. Sie
+# brauchen einen Bau und starten sich ihre Vorschau selbst, darum laufen sie
+# nur im vollen Lauf.
+if SCHNELL:
+    tor("Durchgang", None, "uebersprungen (--schnell)")
+else:
+    r = lauf("npx", "playwright", "test", "--config", "playwright.trustdonation.config.ts",
+             cwd=REPO / "apps" / "reference")
+    text = r.stdout + r.stderr
+    m = re.search(r"(\d+) passed", text)
+    anzahl = m.group(1) if m else "?"
+    if r.returncode == 0:
+        tor("Durchgang", True, anzahl + " Erwartungen aus dem Testplan erfuellt")
+    else:
+        fehl = [z.strip() for z in text.splitlines() if z.strip().startswith(("✘", "1)", "2)"))][:3]
+        tor("Durchgang", False, "Durchgang scheitert", "\n".join(fehl) or text[-300:])
+
+# --- Tor 7: Gedaechtnis ------------------------------------------------------
 # Das Gedaechtnis liegt im Arbeitsbereich, nicht im Repo. Auf einem fremden
 # Rechner oder in der CI gibt es das nicht, und das ist kein Fehler: Dort
 # bleibt das Tor offen, statt einen Bau abzubrechen, der sonst gruen waere.

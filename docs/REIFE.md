@@ -55,11 +55,13 @@ Zwei Funde, beide gemessen, beide bei Anton zu Hause.
 
 **Ursache, und sie ist kein Versehen:** Anton fuehrt in `packages/toolkit/src/lib/theme-tokens.ts` eine Liste von Farbpaaren mit ihrer Mindestforderung. Das Paar "Knopfbeschriftung" (`--primary-foreground` auf `--primary`) traegt dort `minimum: 3` und ausdruecklich **`guaranteed: false`**. Er weiss also, dass dieses eine Paar nicht garantiert ist. 3:1 genuegt fuer grossen Text; der Reitertext ist klein und braeuchte 4,5:1.
 
-**Wen es trifft:** jeden Space mit heller Primaerfarbe. In unseren Musterdaten: trustdonation (`#d97706`), Christianskies (`#e8e102`), Lichtung (`#f3e3bb`).
+**Wen es trifft, gerechnet statt geschaetzt:** Von fuenf Spaces genau **einen**. trustdonation trug `#d97706` und kam mit weissem Text auf 3,19:1. Lichtung (`#f3e3bb`) bekommt schwarzen Text und liegt bei 16,5:1, Real Life bei 7,6, Marker & Maps bei 7,4, Loewenherz bei 8,9.
+
+Eine erste Fassung dieses Abschnitts nannte drei betroffene Spaces. Das war geschaetzt. Die Rechnung (`scratchpad/farben.py`, WCAG-Formel gegen Antons `getReadableTextColor`) sagt: einer.
 
 **Was wir tun:** nichts an seinem Farbsystem. Es ist durchdacht, und ein Schnellschuss darin waere schlimmer als der Fund. Zwei Wege stehen offen:
 
-1. **Sofort, ohne Code:** Timo waehlt fuer die betroffenen Spaces eine dunklere Primaerfarbe im Reiter Aussehen. Ein Klick je Space.
+1. **Erledigt am 17.09.:** trustdonation traegt jetzt `#b16105`, denselben Farbton eine Stufe dunkler, mit 4,58:1. Timos Farbwahl bleibt erkennbar.
 2. **Dauerhaft:** Als Anwendungsfall an Anton, mit der Messung. Sein eigenes `guaranteed: false` ist der beste Aufhaenger.
 
 ### 2. Bildbeschreibung wiederholt den Namen
