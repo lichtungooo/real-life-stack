@@ -21,7 +21,7 @@ This file is about contributing to the stack itself. If you are building an app 
 ## Source of Truth
 
 - Spec index: [docs/spec/README.md](./docs/spec/README.md)
-- **Prototyp trustdonation:** [docs/DEFINITION.md](./docs/DEFINITION.md) sagt, was wir bauen (Arten, Felder, Komponenten, Modul-Marktplatz, Profile, Matching); [docs/ARCHITEKTUR.md](./docs/ARCHITEKTUR.md) sagt, wo es steht und wie Updates ankommen; [docs/NAEHTE.md](./docs/NAEHTE.md) fuehrt jede Stelle, an der wir Code von Anton beruehren; [docs/PLAN.md](./docs/PLAN.md) haelt die Reihenfolge. **Bei Widerspruch gewinnt die Spec.** Vor jeder Aenderung an Code aus `packages/` oder `apps/reference/`: erst pruefen, ob ein Erweiterungspunkt reicht (ARCHITEKTUR Teil 2), sonst eintragen (NAEHTE).
+- **Prototyp trustdonation:** [docs/DEFINITION.md](./docs/DEFINITION.md) sagt, was wir bauen (Arten, Felder, Komponenten, Modul-Marktplatz, Profile, Matching); [docs/ARCHITEKTUR.md](./docs/ARCHITEKTUR.md) sagt, wo es steht und wie Updates ankommen; [docs/NAEHTE.md](./docs/NAEHTE.md) fuehrt jede Stelle, an der wir Code von Anton beruehren; [docs/PLAN.md](./docs/PLAN.md) haelt die Reihenfolge, [docs/EINSTIEG.md](./docs/EINSTIEG.md) fuehrt in einer halben Stunde zum laufenden Stand. **Bei Widerspruch gewinnt die Spec.** Vor jeder Aenderung an Code aus `packages/` oder `apps/reference/`: erst pruefen, ob ein Erweiterungspunkt reicht (ARCHITEKTUR Teil 2), sonst eintragen (NAEHTE).
 - Architecture: [docs/spec/00-architecture.md](./docs/spec/00-architecture.md)
 - App composition: [docs/spec/01-app-composition.md](./docs/spec/01-app-composition.md)
 - DataInterface core: [docs/spec/02-data-interface.md](./docs/spec/02-data-interface.md)

@@ -75,7 +75,7 @@ Lesereihenfolge fuer den ersten Tag:
 | [PLAN.md](PLAN.md) | **Was** als Naechstes dran ist | 5 min |
 | [ENTSCHEIDUNGEN.md](ENTSCHEIDUNGEN.md) | **Warum** es so ist und nicht anders | 10 min |
 
-Dazu [REIFE.md](REIFE.md) fuer das, was noch fehlt, und [AUSLIEFERUNGEN.md](AUSLIEFERUNGEN.md) fuer das, was live steht.
+Dazu [REIFE.md](REIFE.md) fuer das, was noch fehlt, [AUSLIEFERUNGEN.md](AUSLIEFERUNGEN.md) fuer das, was live steht, und [TESTPLAN.md](TESTPLAN.md) fuer den grossen Durchgang.
 
 Antons Vertrag liegt in [spec/](spec/). **Bei Widerspruch gewinnt die Spec.**
 
@@ -93,7 +93,15 @@ Antons Vertrag liegt in [spec/](spec/). **Bei Widerspruch gewinnt die Spec.**
 
 ```bash
 python td-tools/anton-stand.py     # was hat Anton getan, was trifft uns, was hat er vor
-python td-tools/pruefen.py         # alle Tore, --schnell laesst Bau und Tests aus
+python td-tools/pruefen.py         # sechs Tore, --schnell laesst Bau und Tests aus
+python td-tools/startlast.py       # was beim ersten Aufruf wirklich geladen wird
+python td-tools/zugang.py          # axe-core ueber die laufende App
+```
+
+Die letzten beiden brauchen eine laufende Vorschau:
+
+```bash
+pnpm --filter reference exec vite preview --port 4173 &
 ```
 
 ---
@@ -108,7 +116,7 @@ cd trustdonation
 python scripts/skills-spiegeln.py
 ```
 
-Fuenfzehn Skills, darunter `td-stand` (am Anfang jeder Runde), `td-naht` (bevor Antons Code angefasst wird), `td-anton` (wo steht er), `td-definieren`, `td-modul`, `td-test`, `td-ausliefern`.
+Fuenfzehn Skills in zwei Plugins, darunter `td-stand` (am Anfang jeder Runde), `td-naht` (bevor Antons Code angefasst wird), `td-anton` (wo steht er), `td-definieren`, `td-modul`, `td-test`, `td-ausliefern`.
 
 ---
 
