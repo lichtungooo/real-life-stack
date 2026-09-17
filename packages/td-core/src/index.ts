@@ -12,3 +12,15 @@ export {
   musterGroupItems,
   MUSTERDATEN_VERSION,
 } from "./musterdaten.js"
+
+export {
+  ordneSpaces,
+  gliedereNachArt,
+  type OrdnungsEintrag,
+} from "./space-ordnung.js"
+
+export {
+  zeileVollstaendig,
+  schreibbareArten,
+  type ArtZeile,
+} from "./arten.js"

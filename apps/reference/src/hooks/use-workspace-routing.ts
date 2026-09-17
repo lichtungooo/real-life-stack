@@ -27,6 +27,7 @@ import {
 } from "@real-life-stack/toolkit"
 import type { Group, Item } from "@real-life-stack/data-interface"
 import { hasGroups, moduleHintsFor, type ModuleHints } from "@real-life-stack/data-interface"
+import { ordneSpaces } from "@trustdonation/core"
 
 export const STORAGE_KEY_GROUP = "rls-active-group"
 export const STORAGE_KEY_MODULE = "rls-active-module"
@@ -203,18 +204,12 @@ export function useWorkspaceRouting(): WorkspaceRouting {
         domain: isNetwork && typeof g.data?.domain === "string" ? g.data.domain : undefined,
       }
     })
-    const networks = list.filter((w) => w.isNetwork)
-    const home = networks.find((w) => w.id === homeId)
-    // Nur das Start-Netzwerk steht vor der Uebersicht: `workspaces[0]` ist
-    // der Anfang ohne URL und ohne Merker (Spec 11, Regel 4). Ohne Start-
-    // Netzwerk bleibt die Uebersicht der Anfang (Regel 1); die uebrigen
-    // Netzwerke stehen dahinter, ihre Reihenfolge traegt keine Bedeutung.
-    return [
-      ...(home ? [home] : []),
-      overviewWorkspace(networks.length > 0),
-      ...networks.filter((w) => w !== home),
-      ...list.filter((w) => !w.isNetwork),
-    ]
+    // Die Ordnung selbst ist eine reine Funktion und liegt darum in
+    // `@trustdonation/core`, wo sie ohne Browser pruefbar ist. Ihre Regeln
+    // stehen in Spec 11 ("Zuhause-Space"): Start-Netzwerk zuerst, dann die
+    // Uebersicht, dann die uebrigen Netzwerke, dann alles andere.
+    const hatNetzwerke = list.some((w) => w.isNetwork)
+    return ordneSpaces(list, overviewWorkspace(hatNetzwerke), homeId)
   }, [groups])
 
   // Derive active workspace from the URL scope (fallback localStorage → first space).
