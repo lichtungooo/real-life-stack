@@ -773,6 +773,14 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
     <AppShell>
       <Navbar>
         <NavbarStart>
+          {/* Jede Seite braucht eine Ueberschrift erster Ordnung. Wer mit
+              einem Screenreader springt, findet sonst keinen Anfang. Sie
+              steht IN der vorhandenen Leiste: ein eigener header daneben
+              waere ein zweiter gleichnamiger Bereich, und dann weiss die
+              Vorlesehilfe nicht mehr, welcher der Kopf der Seite ist. */}
+          <h1 className="sr-only">
+            {activeWorkspace?.name ?? getRuntimeConfig().branding?.appName ?? "Real Life Stack"}
+          </h1>
           {workspaces.length > 0 ? (
             // Switcher stays available even when activeWorkspace is null
             // (no-access URL) so the user can navigate to their spaces.
@@ -811,6 +819,7 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
             variant="ghost"
             size="icon"
             onClick={toggleTheme}
+            aria-label={isDark ? "Zur hellen Ansicht wechseln" : "Zur dunklen Ansicht wechseln"}
             className="h-9 w-9"
           >
             {isDark ? (

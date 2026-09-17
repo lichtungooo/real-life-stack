@@ -1,0 +1,5 @@
+# Die Messwerkzeuge starten Chrome mit einem eigenen Profil und loeschen es
+# vor jedem Lauf. Es gehoert nicht ins Repo: hunderte Dateien, die niemand
+# liest, und bei jedem Lauf andere.
+.chrome-messung/
+.chrome-zugang/

@@ -9,13 +9,15 @@ Diese Datei ist vollstaendig. Wer Antons Code aendert, traegt hier ein.
 
 ## Zahlen
 
-| | heute | Ziel nach Etappe 0.5 |
-|---|---:|---:|
-| Dateien von Anton, die wir aendern | 27 | 5 |
-| Geaenderte Zeilen in seinen Dateien | rund 800 | unter 60 |
-| Naehte mit offenem Wunsch an Anton | 0 | 5 |
+| | 17.09. morgens | 17.09. abends | Ziel |
+|---|---:|---:|---:|
+| Dateien von Anton, die wir aendern | 27 | 21 | 5 |
+| Geaenderte Zeilen in seinen Dateien | rund 800 | rund 790 | unter 60 |
+| Naehte mit offenem Wunsch an Anton | 0 | 8 | alle |
 
-Die Messung: `git diff --numstat f9c56fff..trustdonation`.
+Die sieben Datennaehte sind vollstaendig weg. Die beiden grossen (A1, A2) stehen noch: Sie sind genau die Arbeit, die als **PR #379** bei Anton liegt. Sie jetzt umzubauen waere Arbeit, die bei seiner Uebernahme wegfaellt.
+
+Gemessen wird nicht von Hand: `python td-tools/anton-stand.py`.
 
 ---
 
@@ -95,33 +97,32 @@ Stellen, die nur deshalb Naehte sind, weil wir in Antons Referenz-App gearbeitet
 
 ---
 
-## C. Naehte in Daten
+## C. Naehte in Daten: erledigt
 
-Fuenf Datendateien, die Anton mitliefert und die wir ersetzt haben.
+**Am 17.09.2026 aufgeloest.** Fuenf Datendateien mit 990 geaenderten Zeilen, dazu `demo-data.ts` und `schema-validation.test.ts`.
 
-| Datei | Umfang |
-|---|---|
-| `packages/data-interface/data/groups.json` | +185 |
-| `packages/data-interface/data/items.json` | -766 |
-| `packages/data-interface/data/users.json` | +11 / -11 |
-| `packages/data-interface/data/group-members.json` | +19 / -19 |
-| `packages/data-interface/data/group-items.json` | +9 / -9 |
-
-**Diese fuenf Naehte sind vollstaendig vermeidbar.** Beide Connectoren nehmen einen Seed als Parameter:
+Die Musterdaten liegen jetzt in `packages/td-core/daten/` und gehen als Seed an den Connector:
 
 ```ts
-new LocalConnector(unsereMusterdaten)
-new MockConnector(unsereMusterdaten)
+new LocalConnector(musterdaten)
+new MockConnector(musterdaten)
 ```
 
-Nach Etappe 0.5 liegen unsere Musterdaten in `apps/trustdonation/src/musterdaten.ts`, und Antons Dateien werden auf seinen Stand zurueckgesetzt. Ein Update seiner Demodaten trifft uns dann gar nicht.
+Antons Dateien stehen wieder auf seinem Stand. Ein Update seiner Demodaten trifft uns nicht mehr.
 
-Zwei Folgeaenderungen haengen daran und fallen mit weg:
+---
 
-| Datei | Umfang | Grund |
-|---|---|---|
-| `packages/data-interface/src/demo-data.ts` | +9 / -1 | Ein leeres JSON-Array wird `never[]`. Mit eigenem Seed bleibt seine Datei, wie sie ist. |
-| `packages/data-interface/tests/schema-validation.test.ts` | +6 / -2 | Der Test verlangt einen nicht-leeren Datensatz. Mit seinen Daten an ihrem Platz gilt sein Test unveraendert. |
+## H. Zugang und Geschwindigkeit
+
+Drei echte Fehler, gefunden am 17.09.2026 von `td-tools/zugang.py` und `td-tools/startlast.py`. Alle behoben. **Diese drei gehoeren Anton**: Es sind Fehler in seiner Referenz-App, keine Eigenheiten unseres Prototyps.
+
+| Datei | Umfang | Was wir tun | Wunsch an Anton |
+|---|---|---|---|
+| `apps/reference/index.html` | 1 Zeile | `user-scalable=no` und `maximum-scale=1` entfernt | Als PR anbieten. Zoomen abzuschalten trifft jeden, der vergroessern muss, um zu lesen (WCAG 1.4.4). |
+| `apps/reference/src/App.tsx` | 8 Zeilen | Der Hell-Dunkel-Umschalter hat einen Namen bekommen; eine Ueberschrift erster Ordnung steht in der Leiste | Als PR anbieten. Ein Screenreader las vorher nur "Schaltflaeche", und die Seite hatte keinen Anfang zum Anspringen. |
+| `apps/reference/src/module-register.tsx` | 12 Zeilen | Die Karte wird nachgeladen statt mitgeliefert | Als PR anbieten. Die Kartenbibliothek wiegt ein Megabyte. |
+
+**Messbar geworden:** Zugang von drei Verstoessen (zwei schwer) auf null. Startlast von 1596 KB auf 864 KB, vor allem weil ein Avatar mit 733 KB in den Musterdaten steckte; er ist jetzt 3 KB und liegt in unserem Paket.
 
 ---
 

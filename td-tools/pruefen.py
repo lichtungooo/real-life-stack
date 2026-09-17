@@ -25,7 +25,12 @@ VERBOTEN = re.compile(r"did:key|Y\.Doc|applyUpdate|@web_of_trust")
 UNSERE_PFADE = ["packages/td-core", "packages/td-ui", "apps/trustdonation"]
 
 # Budget aus ARCHITEKTUR Teil 7 und dem Skill td-performance.
-GROESSTES_STUECK_KB = 800
+#
+# Gemessen wird die **unkomprimierte** Groesse im dist-Ordner. Ueber die
+# Leitung geht rund ein Drittel davon. Die ehrlichere Zahl ist die Startlast,
+# und die misst `td-tools/startlast.py` im Browser; dieses Tor hier ist der
+# grobe Waechter, der ohne Browser auskommt.
+GROESSTES_STUECK_KB = 2000
 
 ergebnisse = []
 
@@ -119,6 +124,8 @@ else:
     else:
         tor("Budget", False, "groesstes Stueck " + str(round(kb)) + " KB, Budget " + str(GROESSTES_STUECK_KB) + " KB",
             stuecke[0].name + ". Skill td-performance.", blockiert=False)
+    gesamt = sum(p.stat().st_size for p in dist.parent.rglob("*") if p.is_file()) / 1024 / 1024
+    ergebnisse[-1]["text"] += ", dist gesamt " + str(round(gesamt, 1)) + " MB"
 
 # --- Tor 6: Gedaechtnis ------------------------------------------------------
 # Das Gedaechtnis liegt im Arbeitsbereich, nicht im Repo. Auf einem fremden
