@@ -23,11 +23,11 @@ Damit hat der Test zwei moegliche Formen:
 
 **Empfehlung:** Erst leer testen, dann fuellt Timo ein bis zwei Spaces von Hand, dann gefuellt testen. Das trennt zwei Fragen, die sonst durcheinandergehen.
 
-### 2. Die drei hellen Space-Farben
+### 2. Die Space-Farben: erledigt
 
-trustdonation (`#d97706`), Christianskies (`#e8e102`) und Lichtung (`#f3e3bb`) tragen helle Primaerfarben. Der aktive Modul-Reiter darauf hat zu wenig Kontrast (siehe `REIFE.md`). Das ist **beim Test sofort sichtbar** und lenkt ab.
+trustdonation trug `#d97706` und kam mit weissem Text auf 3,19:1. Jetzt `#b16105`, derselbe Farbton eine Stufe dunkler, 4,58:1.
 
-**Ein Klick je Space** im Reiter Aussehen loest es. Vorher machen, sonst diskutieren wir im Test darueber.
+Gerechnet traf es **einen** von fuenf Spaces, nicht drei: Lichtung bekommt schwarzen Text und liegt bei 16,5:1. Wer im Test eine Farbe aendert, prueft danach den Reiter noch einmal.
 
 ### 3. Wer testet, und mit welchem Geraet?
 
@@ -47,7 +47,7 @@ npx playwright test --config playwright.trustdonation.config.ts --headed   # zum
 
 Zwoelf Erwartungen: Ankommen ohne Anmeldung, Ueberschrift, Zoomen, die fuenf Spaces, Netzwerke oben, eigene Bilder, Gliederung nach Arten, ein Space in zwei Abschnitten, die sechs Dialog-Bereiche, Landingpage nur fuer Netzwerke, die Modul-Reiter, die Karte.
 
-Sie sind auch das siebte Tor in `td-tools/pruefen.py`.
+Sie sind auch das sechste Tor in `td-tools/pruefen.py`; das siebte ist das Gedaechtnis.
 
 **Was sie nicht koennen:** Abschnitt G. Ob sich etwas falsch anfuehlt, ob ein Wort unverstaendlich ist, ob es nach Baustelle aussieht, sieht nur ein Mensch. Dafuer ist der Durchgang da; die Maschine nimmt ihm die Buchhaltung ab.
 
@@ -55,7 +55,7 @@ Sie sind auch das siebte Tor in `td-tools/pruefen.py`.
 
 ```bash
 cd /d/Workspace/20-repos/rls-uebersicht
-python td-tools/pruefen.py                             # sechs Tore, voll
+python td-tools/pruefen.py                             # sieben Tore, voll
 python td-tools/anton-stand.py                         # steht Anton still?
 pnpm --filter reference exec vite preview --port 4173 &
 python td-tools/zugang.py                              # null Funde erwartet
@@ -80,6 +80,8 @@ Jede Zeile ist eine Handlung mit einer Erwartung. Was abweicht, kommt in die Fun
 
 ### A. Ankommen
 
+*Die ersten drei Zeilen und das Vergroessern pruefen sich selbst. Was bleibt: neu laden, Telefon, zwei Finger.*
+
 | Handlung | Erwartung |
 |---|---|
 | `trustdonation.org/app` oeffnen, ohne Anmeldung | Die App laedt und zeigt etwas. Keine Anmeldemaske. |
@@ -90,6 +92,8 @@ Jede Zeile ist eine Handlung mit einer Erwartung. Was abweicht, kommt in die Fun
 | Mit zwei Fingern vergroessern | **Geht.** (War bis heute abgeschaltet.) |
 
 ### B. Die Gliederung
+
+*Pruefen sich selbst. Was bleibt: wie es sich beim Wechseln anfuehlt.*
 
 | Handlung | Erwartung |
 |---|---|
@@ -112,7 +116,7 @@ Jede Zeile ist eine Handlung mit einer Erwartung. Was abweicht, kommt in die Fun
 
 | Handlung | Erwartung |
 |---|---|
-| Zahnrad an trustdonation, Reiter **Landingpage** | Domain (`wir.ooo`) und ein kopierbarer Link. |
+| Zahnrad an trustdonation, Reiter **Landingpage** | Die Domain (heute noch `wir.ooo`) und ein kopierbarer Link. |
 | Domain auf `trustdonation.org` aendern | Der Link darunter baut sich neu. |
 | Auf "Kopieren" | Haken erscheint, der Link liegt in der Ablage. |
 | Den Link in einem neuen Fenster oeffnen | Fuehrt in diesen Space. |
@@ -126,6 +130,8 @@ Jede Zeile ist eine Handlung mit einer Erwartung. Was abweicht, kommt in die Fun
 | Ein Bild fuer den Space setzen | Erscheint im Umschalter. |
 
 ### F. Die Module
+
+*Der letzte Punkt prueft sich selbst. Was bleibt: ab- und anwaehlen.*
 
 | Handlung | Erwartung |
 |---|---|
