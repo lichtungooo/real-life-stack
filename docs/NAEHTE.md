@@ -51,7 +51,7 @@ Stellen, an denen ein Haken fehlt und wir ihn uns wuenschen.
 
 | | |
 |---|---|
-| **Dateien** | `packages/toolkit/src/lib/runtime-config.ts` (+22), `packages/toolkit/src/index.ts` (+2) |
+| **Dateien** | `packages/toolkit/src/lib/runtime-config.ts` (+22), `packages/toolkit/src/index.ts` (+2), `packages/toolkit/tests/runtime-config.test.ts` (+26) |
 | **Was wir tun** | `homeSpaceId` gelesen und geprueft, `parseHomeSpaceId` exportiert |
 | **Warum kein Haken** | Die Konfiguration hat ein festes Feld-Set. |
 | **Risiko bei Update** | **niedrig.** Additiv, an einer ruhigen Stelle. |
@@ -158,6 +158,33 @@ Solange der PR offen ist, bleiben sie. Wird er nicht uebernommen, ziehen die Inh
 
 ---
 
+## F. Naehte in der Auslieferung
+
+Gefunden am 17.09.2026 vom Bericht `td-tools/anton-stand.py`, der sie im Register vermisste. Alle tragen dieselbe Sache: **das Start-Netzwerk der Instanz** (`RLS_HOME_SPACE_ID`, Spec 11).
+
+| Datei | Umfang | Was wir tun |
+|---|---|---|
+| `deploy/app/entrypoint.sh` | +5 | schreibt `homeSpaceId` in die `config.json` |
+| `deploy/app/docker-compose.yml` | +2 | reicht die Variable an den Container |
+| `deploy/app/docker-compose.preview.yml` | +1 | dasselbe fuer die Vorschau |
+| `deploy/app/.env.example` | +5 | dokumentiert sie |
+| `deploy/app/README.md` | +11 | erklaert sie |
+
+| | |
+|---|---|
+| **Risiko bei Update** | **niedrig.** Alles additiv, an ruhigen Stellen. |
+| **Wunsch an Anton** | Teil von PR #379, zusammen mit A3. Faellt weg, sobald er `homeSpaceId` uebernimmt. |
+
+## G. Wegweiser
+
+| | |
+|---|---|
+| **Datei** | `AGENTS.md` (+1 / -0) |
+| **Was wir tun** | Eine Zeile, die auf `docs/DEFINITION.md`, `docs/ARCHITEKTUR.md`, `docs/NAEHTE.md` und `docs/PLAN.md` verweist |
+| **Warum kein Haken** | Die Datei ist der Einstieg fuer jeden Agenten im Repo. Ohne den Verweis findet niemand unsere Ebene. |
+| **Risiko bei Update** | **niedrig.** Eine Zeile an einer Liste. |
+| **Wunsch an Anton** | Keiner. Diese Naht bleibt, solange wir in seinem Repo arbeiten, und kostet nichts. |
+
 ## Wie eingetragen wird
 
 Bei jeder Aenderung an einer Datei von Anton, vor dem Commit:
@@ -167,8 +194,10 @@ Bei jeder Aenderung an einer Datei von Anton, vor dem Commit:
 3. **Zahlen oben nachziehen.**
 4. Wachsen die Naehte, ohne dass ein Wunsch unterwegs ist: anhalten und fragen, ob es doch einen Haken gibt.
 
-Messbefehl:
+Gemessen wird nicht von Hand:
 
 ```bash
-git diff --numstat <antons-stand>..trustdonation
+python td-tools/anton-stand.py
 ```
+
+Der Bericht zaehlt die Naehte, gleicht sie mit dieser Datei ab und nennt jede Datei, die hier fehlt. Er hat die Abschnitte F und G selbst gefunden.
