@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from "react"
-import { LogOut, UserMinus, UserPlus, Check, Loader2, ImagePlus, X, Camera, Pencil, ChevronUp, ChevronDown, GripVertical, Users, LayoutGrid, Search, Contrast, RotateCcw, SlidersHorizontal, Check as CheckIcon, Plus, Network, type LucideIcon } from "lucide-react"
+import { LogOut, UserMinus, UserPlus, Check, Loader2, ImagePlus, X, Camera, Pencil, ChevronUp, ChevronDown, GripVertical, Users, LayoutGrid, Search, Contrast, RotateCcw, SlidersHorizontal, Check as CheckIcon, Plus, Network, Globe, type LucideIcon } from "lucide-react"
 import { getModule, getModules, defaultModuleIds, displayableModules } from "@/lib/module-register"
 import { parseSpaceKinds, kindIdFromLabel, type SpaceKind } from "@/lib/space-kinds"
 import type { Group, ContactInfo } from "@real-life-stack/data-interface"
@@ -91,7 +91,7 @@ export function knownModules(modules: readonly string[]): string[] {
 const defaults = () => defaultModuleIds()
 
 /** Die Bereiche der Space-Konfiguration (Entwurf "Space Menu", Turn 3/4). */
-export type SpaceConfigSectionId = "members" | "modules" | "invite" | "theme" | "netzwerk"
+export type SpaceConfigSectionId = "members" | "modules" | "invite" | "theme" | "netzwerk" | "landing"
 
 export interface SpaceConfigSection {
   id: SpaceConfigSectionId
@@ -121,18 +121,23 @@ export interface SpaceConfigSection {
  * Menschen, dann das Aussehen, dann die Flaechen.
  *
  * Netzwerk steht zuletzt und ebenfalls nur fuer Admins (Spec 04, "Netzwerk und
- * Space-Art"): Ob ein Space ein Netzwerk ist, welche Arten seine Gruppen
- * tragen und unter welcher Domain er erreichbar ist, entscheidet nicht der
- * Geschmack eines Mitglieds.
+ * Space-Art"): Ob ein Space ein Netzwerk ist und welche Arten seine Gruppen
+ * tragen, entscheidet nicht der Geschmack eines Mitglieds.
+ *
+ * Landingpage steht dahinter und nur fuer Netzwerke: Domain und Link haben
+ * keinen Sinn, solange niemand hinter dem Space steht. Die Trennung haelt
+ * beide Bereiche kurz genug, dass sie ohne Rollen in ein Fenster passen.
  */
 export function spaceConfigSections({
   isAdmin,
   canInvite,
   canTheme,
+  isNetwork = false,
 }: {
   isAdmin: boolean
   canInvite: boolean
   canTheme: boolean
+  isNetwork?: boolean
 }): SpaceConfigSection[] {
   const sections: SpaceConfigSection[] = [
     { id: "members", label: "Mitglieder", icon: Users },
@@ -141,6 +146,7 @@ export function spaceConfigSections({
   if (canTheme) sections.push({ id: "theme", label: "Aussehen", icon: Contrast })
   if (isAdmin) sections.push({ id: "modules", label: "Module", icon: LayoutGrid })
   if (isAdmin) sections.push({ id: "netzwerk", label: "Netzwerk", icon: Network })
+  if (isAdmin && isNetwork) sections.push({ id: "landing", label: "Landingpage", icon: Globe })
   return sections
 }
 
@@ -673,6 +679,7 @@ export function GroupDialog({
     isAdmin: isCurrentUserAdmin,
     canInvite: Boolean(onInviteMember),
     canTheme: isCurrentUserAdmin,
+    isNetwork,
   })
   const activeSection = resolveConfigSection(requestedSection, sections)
   /** Suche in der Mitgliederliste (Entwurf 3a). */
@@ -1127,6 +1134,7 @@ export function GroupDialog({
     invite: undefined,
     theme: undefined,
     netzwerk: undefined,
+    landing: undefined,
   }
 
   const renderMemberRow = (member: (typeof members)[number]) => (
@@ -1705,33 +1713,6 @@ export function GroupDialog({
                     </p>
                     <KindsEditor rows={kindRows} onChange={setKindRows} onCommit={commitKinds} onRemove={removeKind} />
                   </div>
-
-                  <div>
-                    <Label htmlFor="group-domain" className="text-xs text-muted-foreground">Domain der Landingpage</Label>
-                    <Input
-                      id="group-domain"
-                      value={domain}
-                      onChange={(e) => setDomain(e.target.value)}
-                      onBlur={commitDomain}
-                      placeholder="trustdonation.org"
-                      className="mt-1 h-9"
-                    />
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Nur Auskunft. Der Link unten wird daraus gebaut.
-                    </p>
-                  </div>
-
-                  {spaceLink && (
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Link fuer den Knopf auf der Landingpage</Label>
-                      <div className="mt-1 flex items-center gap-2">
-                        <Input readOnly value={link} className="h-9 font-mono text-xs" />
-                        <Button variant="outline" size="sm" onClick={copyLink} className="shrink-0">
-                          {linkKopiert ? <Check className="h-3.5 w-3.5" /> : "Kopieren"}
-                        </Button>
-                      </div>
-                    </div>
-                  )}
                 </>
               )}
 
@@ -1751,6 +1732,40 @@ export function GroupDialog({
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {activeSection === "landing" && isCurrentUserAdmin && isNetwork && (
+            <div className="space-y-5">
+              {/* Die Landingpage steht ausserhalb der App. Hier steht nur,
+                  unter welcher Domain sie liegt und welcher Link von dort
+                  in dieses Netzwerk fuehrt. */}
+              <div>
+                <Label htmlFor="group-domain" className="text-xs text-muted-foreground">Domain der Landingpage</Label>
+                <Input
+                  id="group-domain"
+                  value={domain}
+                  onChange={(e) => setDomain(e.target.value)}
+                  onBlur={commitDomain}
+                  placeholder="trustdonation.org"
+                  className="mt-1 h-9"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Nur Auskunft. Der Link unten wird daraus gebaut.
+                </p>
+              </div>
+
+              {spaceLink && (
+                <div>
+                  <Label className="text-xs text-muted-foreground">Link fuer den Knopf auf der Landingpage</Label>
+                  <div className="mt-1 flex items-center gap-2">
+                    <Input readOnly value={link} className="h-9 font-mono text-xs" />
+                    <Button variant="outline" size="sm" onClick={copyLink} className="shrink-0">
+                      {linkKopiert ? <Check className="h-3.5 w-3.5" /> : "Kopieren"}
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

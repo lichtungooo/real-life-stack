@@ -226,6 +226,29 @@ describe("spaceConfigSections — Aussehen", () => {
 })
 
 /**
+ * Landingpage traegt Domain und Link. Beides hat nur Sinn, wenn hinter dem
+ * Space ein Netzwerk steht — darum haengt der Bereich am Schalter, nicht nur
+ * am Adminrecht. Die Trennung von "Netzwerk" haelt beide Bereiche kurz genug,
+ * dass sie ohne Rollen in ein Fenster passen.
+ */
+describe("spaceConfigSections — Landingpage", () => {
+  it("steht hinter Netzwerk, sobald der Space ein Netzwerk ist", () => {
+    expect(spaceConfigSections({ isAdmin: true, canInvite: true, canTheme: true, isNetwork: true }).map((s) => s.id))
+      .toEqual(["members", "invite", "theme", "modules", "netzwerk", "landing"])
+  })
+
+  it("bleibt weg, solange der Space kein Netzwerk ist", () => {
+    expect(spaceConfigSections({ isAdmin: true, canInvite: true, canTheme: true, isNetwork: false }).map((s) => s.id))
+      .toEqual(["members", "invite", "theme", "modules", "netzwerk"])
+  })
+
+  it("bleibt weg ohne Adminrecht, auch bei einem Netzwerk", () => {
+    expect(spaceConfigSections({ isAdmin: false, canInvite: false, canTheme: false, isNetwork: true }).map((s) => s.id))
+      .toEqual(["members"])
+  })
+})
+
+/**
  * Die Farbvorschlaege sind die Haus-Palette: Spec 04 ("Space-Primaerfarbe",
  * Regel 1) bindet `primaryColor` ausdruecklich an `TAG_PALETTE.accent`. Eine
  * zweite Farbwelt neben den Tags waere genau die Doppelliste, die das
