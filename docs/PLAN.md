@@ -1,7 +1,7 @@
 # Plan
 
 **Stand:** 17.09.2026
-**Grundlage:** [DEFINITION.md](DEFINITION.md)
+**Grundlage:** [DEFINITION.md](DEFINITION.md), [ARCHITEKTUR.md](ARCHITEKTUR.md), [NAEHTE.md](NAEHTE.md)
 **Ziel:** Stiftungen sehen, wie Projekte und Foerderung zueinander finden, und foerdern den Bau.
 
 Jede Etappe schliesst eine Luecke aus [DEFINITION, Teil 5](DEFINITION.md). Jede beginnt mit einem Abschnitt in der Definition und endet mit etwas, das man vorfuehren kann.
@@ -21,6 +21,35 @@ Jede Etappe schliesst eine Luecke aus [DEFINITION, Teil 5](DEFINITION.md). Jede 
 
 ---
 
+## Etappe 0.5: Das eigene Haus
+
+**Luecke:** 27 Dateien von Anton, in die wir hineingeschrieben haben
+**Grundlage:** [ARCHITEKTUR.md](ARCHITEKTUR.md), [NAEHTE.md](NAEHTE.md)
+
+Diese Etappe kommt **vor allem anderen**. Jede weitere Zeile im falschen Paket erhoeht die Kosten, und sie kommt nie guenstiger als jetzt.
+
+Heute arbeiten wir in Antons Referenz-App und schreiben in seine Pakete. Danach haben wir ein eigenes Haus, das seine Pakete benutzt.
+
+### Schritte
+
+1. **`apps/trustdonation` anlegen**, aus `apps/reference` abgeleitet. Eigene Komposition, eigenes Routing, eigene Register-Schichten. Damit werden `App.tsx`, `use-workspace-routing.ts` und `config.json` **unsere** Dateien statt Naehte.
+2. **`packages/td-core` anlegen**, UI-frei, mit Testgeruest. Zieht die Arten aus `toolkit/src/lib/space-kinds.ts` zu sich.
+3. **`packages/td-ui` anlegen**, haengt an `td-core` und an Antons Toolkit.
+4. **Unsere Dialog-Bereiche nach `td-ui` ziehen.** Im `group-dialog.tsx` bleibt ein Einhaengepunkt. Aus 383 Zeilen werden etwa 20.
+5. **Musterdaten als Seed uebergeben.** `new LocalConnector(unsereMusterdaten)` in unserer App, Antons fuenf Datendateien auf seinen Stand zurueck. Damit fallen auch `demo-data.ts` und `schema-validation.test.ts` weg.
+6. **`NAEHTE.md` neu messen.** Aus 27 Dateien sollen fuenf werden, aus rund 800 geaenderten Zeilen unter 60.
+7. **Die fuenf Wuensche als Pull Requests** an Anton formulieren, jeder mit dem Anwendungsfall zuerst.
+
+### Fertig, wenn
+
+`git diff --numstat <antons-stand>..trustdonation` nennt fuenf Dateien von Anton, jede unter zwanzig Zeilen, jede mit Eintrag in `NAEHTE.md` und einem Wunsch daneben. Und ein Update von Anton laesst sich in einer Sitzung einspielen.
+
+### Was dabei nicht passiert
+
+**Wir bauen keine Kopie seines Toolkits.** Was sein Toolkit kann, benutzen wir. Eine eigene Fassung derselben Komponente ist der teuerste Fehler, den man hier machen kann.
+
+---
+
 ## Etappe 1: Eine Stiftung sagt, was sie foerdert
 
 **Luecke:** Felder je Art, Feld-Register
@@ -31,8 +60,8 @@ Heute traegt ein Stiftungs-Space einen Namen, ein Bild und eine Farbe. Danach tr
 ### Schritte
 
 1. **Feld-Register beschreiben.** Den Abschnitt in der Definition schaerfen: die geschlossene Liste der `shape`-Werte festzurren, an drei echten Feldern durchspielen.
-2. **Feld-Manifest bauen** in `data-interface`: `id`, `shape`, `multiple`. UI-frei, mit Test fuer die Zusammensetzung (Core, App, Space; Konflikt statt Shadowing).
-3. **Feld-Darstellung bauen** im Toolkit: `label`, `icon`, `input`, `display`, `short`. Mit dem Rueckfall auf die `shape`, wenn kein Eintrag da ist.
+2. **Feld-Manifest bauen** in `packages/td-core`: `id`, `shape`, `multiple`. UI-frei, mit Test fuer die Zusammensetzung (Core, App, Space; Konflikt statt Shadowing).
+3. **Feld-Darstellung bauen** in `packages/td-ui`: `label`, `icon`, `input`, `display`, `short`. Mit dem Rueckfall auf die `shape`, wenn kein Eintrag da ist.
 4. **Vokabulare anlegen** nach Antons Muster in `docs/spec/schemas/vocab/`: `foundation/v1`, `initiative/v1`. Je `context.jsonld`, `schema.json`, ein gueltiges Beispiel. Die CI prueft sie von selbst.
 5. **`vocab` in `spaceKinds`** ergaenzen, additiv. Eine Art ohne `vocab` bleibt gueltig.
 6. **Bereich Profil** im Space-Dialog: zeigt die Felder der eigenen Art, aus dem Register gebaut, ohne eine einzige Verzweigung nach Art.
@@ -54,7 +83,7 @@ Ein Bedarf ist ein Item, kein Feld: Ein Projekt hat mehrere, sie haben eigene Fr
 ### Schritte
 
 1. **`need/v1` beschreiben und anlegen:** `worum`, `umfang`, `bis`, `art` (Sache, Geld, Zeit, Wissen).
-2. **Typ-Register ergaenzen** um `need`, ueber ein Fragment, nach Antons Muster. Manifest in `data-interface`, Darstellung im Toolkit.
+2. **Typ-Register ergaenzen** um `need`, ueber `composeTypeManifest` mit eigener Schicht. Manifest in `td-core`, Darstellung in `td-ui`. Kein Eingriff in Antons Pakete.
 3. **Bedarfe erscheinen**, wo ihre Felder hingehoeren: mit `bis` im Kalender, im Feed als Karte, in der Liste. Ueber Feld-Praesenz, nie ueber `type`.
 4. **Die Karte zeigt sie am Ort des Projekts**, ueber die Relation zum Space.
 
