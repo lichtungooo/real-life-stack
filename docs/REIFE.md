@@ -47,17 +47,17 @@ Diese Datei ist die ehrliche Liste. Sie wird nicht schoengeschrieben, und sie wi
 
 ## Was fehlt
 
-Zwei Funde, beide gemessen, beide bei Anton zu Hause.
+Drei Punkte, alle benannt, keiner blockierend.
 
-### 1. Kontrast des aktiven Reiters: behoben, Ursache bleibt bei Anton
+### 1. Die Anschriften fehlen
 
-**Behoben am 17.09.2026.** trustdonation trägt `#b16105` statt `#d97706`: derselbe Farbton eine Stufe dunkler, Kontrast von 3,19 auf 4,58. Live sind damit **null schwere Zugangsfunde**.
+**Heute:** 234 Stiftungen tragen die Koordinate ihrer Stadt, nicht ihre Anschrift. Wer sich einen Ort teilt, bekommt einen festen kleinen Versatz, damit die Punkte sich auffächern. Die Beschreibung sagt das: *"Der Punkt zeigt die Stadt, nicht die Anschrift."*
 
-**Die Ursache bleibt.** Anton führt in `packages/toolkit/src/lib/theme-tokens.ts` das Paar "Knopfbeschriftung" mit `minimum: 3` und ausdruecklich **`guaranteed: false`**. Er weiß also, dass es nicht garantiert ist. Jeder Space mit heller Primärfarbe trifft es wieder, und der nächste Mensch, der eine Farbe wählt, merkt es nicht.
+**Was fehlt:** Geokodierung der **70 Einträge, die eine Anschrift tragen**. Die übrigen 164 haben keine, dort bleibt die Stadt die ehrliche Auskunft.
 
-**Gerechnet statt geschätzt:** Von fünf Spaces traf es genau **einen**. Lichtung (`#f3e3bb`) bekommt schwarzen Text und liegt bei 16,5:1, Real Life bei 7,6, Marker & Maps bei 7,4, Löwenherz bei 8,9. Eine erste Fassung dieses Abschnitts nannte drei. Das war geschätzt.
+**Wie:** `createNominatimGeocoder` liegt in Antons Toolkit. Ein Lauf über 70 Adressen, mit Pause zwischen den Anfragen.
 
-**Was noch fehlt:** der Anwendungsfall an Anton, mit der Messung. Sein eigenes `guaranteed: false` ist der beste Aufhänger.
+**Warum es zählt:** Timo beim ersten Blick: *"Da müssten dann schon die Orte, die Straßen, das wirklich genau eingetragen sein. Ansonsten ist das nicht zielführend."*
 
 ### 2. Bildbeschreibung wiederholt den Namen
 
