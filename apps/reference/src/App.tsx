@@ -80,7 +80,10 @@ import { initialDarkMode, rememberColorScheme } from "./initial-color-scheme"
 import type { DataInterface, User } from "@real-life-stack/data-interface"
 import {
   type Item, isAuthenticatable, hasMessaging, hasEncounterVerification, hasProfile, moduleHintsFor } from "@real-life-stack/data-interface"
-import { demoItems, demoGroups, demoUsers, demoGroupMembers, demoGroupItems } from "@real-life-stack/data-interface/demo-data"
+// Prototyp trustdonation: Die Musterdaten kommen als Seed aus unserem Paket,
+// nicht aus Antons Demodaten. Beide Connectoren nehmen einen Seed als
+// Parameter, darum bleiben seine Dateien unberuehrt (NAEHTE Abschnitt C).
+import { musterdaten } from "@trustdonation/core/musterdaten"
 import { MockConnector } from "@real-life-stack/mock-connector"
 import { LocalConnector } from "@real-life-stack/local-connector"
 import { ModuleOutlet } from "./views/module-outlet"
@@ -1013,14 +1016,6 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
   )
 }
 
-const demoData = {
-  items: demoItems,
-  groups: demoGroups,
-  users: demoUsers,
-  groupMembers: demoGroupMembers,
-  groupItems: demoGroupItems,
-}
-
 async function createConnector(type: string): Promise<DataInterface> {
   if (type === "wot") {
     const { WotConnector } = await import("@real-life-stack/wot-connector")
@@ -1037,7 +1032,7 @@ async function createConnector(type: string): Promise<DataInterface> {
     return connector
   }
   if (type === "local") {
-    const c = new LocalConnector(demoData)
+    const c = new LocalConnector(musterdaten)
     await c.init()
     return c
   }
@@ -1054,7 +1049,7 @@ async function createConnector(type: string): Promise<DataInterface> {
     // existing login survives reloads and skips the gate.
     return connector
   }
-  const c = new MockConnector()
+  const c = new MockConnector(musterdaten)
   await c.init()
   return c
 }

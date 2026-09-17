@@ -25,6 +25,7 @@
     "@real-life-stack/supabase-connector": "workspace:*",
     "@real-life-stack/toolkit": "workspace:*",
     "@real-life-stack/wot-connector": "workspace:*",
+    "@trustdonation/core": "workspace:*",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.468.0",
     "maplibre-gl": "^5.24.0",

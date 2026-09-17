@@ -1,7 +1,6 @@
 {
-  "30455be1-a5f9-465d-8d19-a72dd8da2d83": [],
-  "e32b9572-b553-441a-aa67-b7b8d675c386": [],
-  "9bcda2a4-44ca-4e23-9de2-8dc899c2e28a": [],
-  "dced9221-a8c8-4446-9fd5-ec05c7a3578f": [],
-  "c1a99110-713b-409a-9e63-0b63fa8a63d0": []
+  "group-1": ["task-1", "task-2", "task-3", "task-4", "event-1", "event-2", "post-1", "post-2"],
+  "group-2": ["task-5", "task-6", "task-7", "event-3", "post-3"],
+  "group-3": ["task-8", "task-9", "event-5", "post-4"],
+  "group-4": ["task-10", "task-11", "task-12", "event-4", "post-5", "place-1", "place-2"]
 }

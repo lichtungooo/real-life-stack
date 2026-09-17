@@ -11,15 +11,7 @@ export const demoGroups: Group[] = rawGroups as Group[]
 export const demoGroupMembers: Record<string, string[]> = rawGroupMembers
 export const demoGroupItems: Record<string, string[]> = rawGroupItems
 
-// Der Prototyp trustdonation bringt die Spaces vom Dev-Server mit und laesst
-// die Inhalte leer. TypeScript leitet aus einem leeren JSON-Array `never[]` ab,
-// darum steht die Form hier ausdruecklich statt aus der Datei erraten.
-type RohItem = Omit<Item, "data" | "relations"> & {
-  data?: unknown
-  relations?: unknown
-}
-
-export const demoItems: Item[] = (rawItems as unknown as RohItem[]).map((item) => ({
+export const demoItems: Item[] = rawItems.map((item) => ({
   ...item,
   data: item.data as Record<string, unknown>,
   relations: item.relations as Item["relations"],

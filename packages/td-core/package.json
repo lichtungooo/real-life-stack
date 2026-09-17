@@ -1,0 +1,36 @@
+{
+  "name": "@trustdonation/core",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/src/index.js",
+  "module": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "development": "./src/index.ts",
+      "import": "./dist/src/index.js"
+    },
+    "./musterdaten": {
+      "types": "./dist/src/musterdaten.d.ts",
+      "development": "./src/musterdaten.ts",
+      "import": "./dist/src/musterdaten.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@real-life-stack/data-interface": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "~5.7.2",
+    "vitest": "^4.1.0"
+  }
+}
