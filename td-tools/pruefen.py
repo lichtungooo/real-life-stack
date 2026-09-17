@@ -11,6 +11,7 @@ Rueckgabe 0, wenn alles gruen ist. Sonst 1: so laesst es sich in eine CI
 haengen, ohne dass jemand den Text lesen muss.
 """
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -48,7 +49,18 @@ def tor(name, ok, text, hinweis="", blockiert=True):
 
 
 def lauf(*args, cwd=None):
-    return subprocess.run(args, cwd=str(cwd or REPO), capture_output=True, text=True,
+    """Ruft ein Programm auf und faengt seine Ausgabe.
+
+    `pnpm` ist auf Windows eine `.cmd` und laesst sich ohne Shell nicht
+    starten: `subprocess` findet dann keine Datei. `shutil.which` loest den
+    richtigen Namen auf, auf jedem System. Im Schnelllauf fiel das nicht auf,
+    weil dort kein pnpm gerufen wird.
+    """
+    befehl = list(args)
+    pfad = shutil.which(befehl[0])
+    if pfad:
+        befehl[0] = pfad
+    return subprocess.run(befehl, cwd=str(cwd or REPO), capture_output=True, text=True,
                           encoding="utf-8", errors="replace")
 
 

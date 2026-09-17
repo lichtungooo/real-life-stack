@@ -131,8 +131,11 @@ def eingetragene_naehte():
     # `deploy/app/.env.example`. Statt Endungen zu raten wird jeder Fund gegen
     # den Arbeitsbaum geprueft: was es wirklich gibt, zaehlt als eingetragen.
     # Eine Endungsliste hat genau hier zwei Eintraege uebersehen.
-    roh = re.findall(r"`([A-Za-z0-9_][A-Za-z0-9_./-]*\.[A-Za-z0-9_.-]+)`", text)
-    return {r for r in roh if (REPO / r).exists()}
+    # Kein Punkt verlangt: `deploy/app/Dockerfile` hat keinen, und genau der
+    # ging darum durch. Jeder Fund wird gegen den Arbeitsbaum geprueft, das
+    # sortiert Fliesstext zuverlaessiger aus als jedes Muster.
+    roh = re.findall(r"`([A-Za-z0-9_][A-Za-z0-9_./-]*)`", text)
+    return {r for r in roh if (REPO / r).is_file()}
 
 
 def neue_tags(von):

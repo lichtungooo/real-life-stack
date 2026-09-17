@@ -176,6 +176,17 @@ Gefunden am 17.09.2026 vom Bericht `td-tools/anton-stand.py`, der sie im Registe
 | **Risiko bei Update** | **niedrig.** Alles additiv, an ruhigen Stellen. |
 | **Wunsch an Anton** | Teil von PR #379, zusammen mit A3. Faellt weg, sobald er `homeSpaceId` uebernimmt. |
 
+## I. Der Bau kennt unsere Pakete
+
+| | |
+|---|---|
+| **Datei** | `deploy/app/Dockerfile` (+5 / -0) |
+| **Was wir tun** | `packages/td-core/package.json` und `packages/td-ui/package.json` in die Abhaengigkeits-Schicht aufgenommen |
+| **Warum kein Haken** | Der Bau kopiert jede `package.json` einzeln, damit die Schicht im Cache bleibt, solange sich keine Abhaengigkeit aendert. Eine Liste, die jedes Paket nennt, muss jedes Paket nennen. |
+| **Risiko bei Update** | **niedrig.** Zwei Zeilen an einer Liste. Aendert Anton die Liste, ist der Konflikt in einer Minute geloest. |
+| **Wunsch an Anton** | Keiner mit Nachdruck. Ein `COPY packages/*/package.json` ginge nicht (Docker flacht das Ziel ein), und seine Loesung ist bewusst gewaehlt. |
+| **Merke** | **Bei jedem neuen Paket den Dockerfile ergaenzen.** Lokal faellt es nicht auf, weil dort alles installiert ist; der Server-Bau bricht erst ab, wenn das neue Paket etwas importiert. Das hat einen Durchgang gekostet. |
+
 ## G. Wegweiser
 
 | | |
