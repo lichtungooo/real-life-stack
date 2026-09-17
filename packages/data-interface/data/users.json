@@ -1,32 +1,7 @@
 [
   {
-    "id": "user-1",
+    "id": "timo",
     "displayName": "Timo",
     "avatarUrl": "/personas/timo.png"
-  },
-  {
-    "id": "user-2",
-    "displayName": "Anton",
-    "avatarUrl": "/personas/anton.png"
-  },
-  {
-    "id": "user-3",
-    "displayName": "Holger"
-  },
-  {
-    "id": "user-4",
-    "displayName": "Marlene"
-  },
-  {
-    "id": "user-5",
-    "displayName": "Jonas"
-  },
-  {
-    "id": "user-6",
-    "displayName": "Katrin"
-  },
-  {
-    "id": "user-7",
-    "displayName": "Ruth"
   }
 ]

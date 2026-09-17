@@ -1,71 +1,12 @@
 {
-  "td-netzwerk": [
-    "post-willkommen",
-    "event-foerderhelden",
-    "event-stiftungsrunde"
-  ],
-  "stiftung-buergerstiftung-kassel": [
-    "ort-buergerstiftung-kassel",
-    "post-buergerstiftung-kassel"
-  ],
-  "stiftung-b-braun-stiftung": [
-    "ort-b-braun-stiftung",
-    "post-b-braun-stiftung"
-  ],
-  "stiftung-vr-partnerbank-heimatstiftungen": [
-    "ort-vr-partnerbank-heimatstiftungen",
-    "post-vr-partnerbank-heimatstiftungen"
-  ],
-  "stiftung-sparkasse-fritzlar-homberg": [
-    "ort-sparkasse-fritzlar-homberg",
-    "post-sparkasse-fritzlar-homberg"
-  ],
-  "stiftung-ksk-schwalm-eder-teilstiftungen": [
-    "ort-ksk-schwalm-eder-teilstiftungen",
-    "post-ksk-schwalm-eder-teilstiftungen"
-  ],
-  "stiftung-eb-stiftung-kassel": [
-    "ort-eb-stiftung-kassel",
-    "post-eb-stiftung-kassel"
-  ],
-  "stiftung-sagst": [
-    "ort-sagst",
-    "post-sagst"
-  ],
-  "stiftung-aktion-mensch": [
-    "ort-aktion-mensch",
-    "post-aktion-mensch"
-  ],
-  "projekt-lichtung": [
-    "ort-lichtung",
-    "post-lichtung",
-    "bedarf-lichtung-1",
-    "bedarf-lichtung-2"
-  ],
-  "projekt-werkstatt-bahnhof": [
-    "ort-werkstatt-bahnhof",
-    "post-werkstatt-bahnhof",
-    "bedarf-werkstatt-bahnhof-1",
-    "bedarf-werkstatt-bahnhof-2"
-  ],
-  "projekt-musterschule": [
-    "ort-musterschule",
-    "post-musterschule",
-    "bedarf-musterschule-1"
-  ],
-  "projekt-macher-map": [
-    "ort-macher-map",
-    "post-macher-map",
-    "bedarf-macher-map-1"
-  ],
-  "projekt-foerderhelden": [
-    "ort-foerderhelden",
-    "post-foerderhelden",
-    "bedarf-foerderhelden-1"
-  ],
-  "projekt-garten-felsberg": [
-    "ort-garten-felsberg",
-    "post-garten-felsberg",
-    "bedarf-garten-felsberg-1"
-  ]
+  "30455be1-a5f9-465d-8d19-a72dd8da2d83": [],
+  "c1a99110-713b-409a-9e63-0b63fa8a63d0": [],
+  "dced9221-a8c8-4446-9fd5-ec05c7a3578f": [],
+  "9bcda2a4-44ca-4e23-9de2-8dc899c2e28a": [],
+  "a010142b-c110-4545-829e-d83e32afcdf7": [],
+  "490b132e-d4ce-43a6-b8e9-98c3feb0ca06": [],
+  "6509135a-05d8-460b-b445-5ae8a2534808": [],
+  "e32b9572-b553-441a-aa67-b7b8d675c386": [],
+  "33fbe79f-8359-4c5a-9639-10318ffa2d6e": [],
+  "1af17bc1-93c8-4cab-9853-dd5e32170ae0": []
 }
