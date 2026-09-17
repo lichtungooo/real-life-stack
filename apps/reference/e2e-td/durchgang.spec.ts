@@ -164,6 +164,35 @@ test.describe("E. Die Module", () => {
     }
   })
 
+  test("fuehrt die recherchierten Stiftungen als Eintraege", async ({ page }) => {
+    // 234 Stiftungen liegen als place-Items im Netzwerk. Geprueft wird hier
+    // die Liste und nicht die Karte: Die Karte haengt an einem fremden
+    // Kachel-Dienst, und ein Test, der daran haengt, misst dessen Laune.
+    await appOeffnen(page, `/${TRUSTDONATION}/collection`)
+    const inhalt = page.locator("main")
+    await expect(inhalt).toContainText("Stiftung", { timeout: 30_000 })
+
+    // Eine Stichprobe: eine, die wir kennen, steht wirklich drin.
+    await page.getByPlaceholder(/suche/i).first().fill("Bürgerstiftung")
+    await expect(inhalt).toContainText("Bürgerstiftung", { timeout: 15_000 })
+  })
+
+  test("traegt die Stiftungen auf der Karte", async ({ page }) => {
+    // Bei 234 Merkmalen zeichnen einzelne Pins spuerbar langsamer. Gewartet
+    // wird, bis der Ladehinweis weg ist: Die Flaeche ist frueher sichtbar als
+    // die Karte, und ein Test, der das verwechselt, zaehlt null Merkmale.
+    const start = Date.now()
+    await appOeffnen(page, `/${TRUSTDONATION}/map`)
+    await expect(page.getByText("Karte wird geladen")).toBeHidden({ timeout: 60_000 })
+    const dauer = Date.now() - start
+
+    const marker = await page.locator(
+      '.maplibregl-marker, .leaflet-marker-icon, [data-slot="map-marker"], .maplibregl-canvas'
+    ).count()
+    console.log(`Karte stand nach ${dauer} ms, ${marker} Merkmale im Baum`)
+    expect(marker, "die Karte zeigt nichts").toBeGreaterThan(0)
+  })
+
   test("oeffnet die Karte, ohne die App zu brechen", async ({ page }) => {
     await appOeffnen(page, `/${TRUSTDONATION}/feed`)
     await page.getByRole("button", { name: "Karte" }).first().click()
