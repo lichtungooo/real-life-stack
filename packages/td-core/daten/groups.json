@@ -15,7 +15,8 @@
         "feed",
         "kanban",
         "calendar",
-        "map"
+        "map",
+        "baukasten"
       ],
       "isNetwork": true,
       "primaryColor": "#b16105",
@@ -51,7 +52,8 @@
         "feed",
         "kanban",
         "calendar",
-        "map"
+        "map",
+        "baukasten"
       ],
       "isNetwork": true,
       "spaceKinds": [
@@ -87,7 +89,8 @@
         "feed",
         "kanban",
         "calendar",
-        "map"
+        "map",
+        "baukasten"
       ],
       "isNetwork": true,
       "network": "30455be1-a5f9-465d-8d19-a72dd8da2d83",
@@ -125,7 +128,8 @@
         "feed",
         "kanban",
         "calendar",
-        "map"
+        "map",
+        "baukasten"
       ],
       "isNetwork": true,
       "network": "30455be1-a5f9-465d-8d19-a72dd8da2d83",

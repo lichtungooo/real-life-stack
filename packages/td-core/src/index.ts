@@ -24,3 +24,11 @@ export {
   schreibbareArten,
   type ArtZeile,
 } from "./arten.js"
+
+export {
+  baukasten,
+  type Baukasten,
+  type BaukastenSchicht,
+  type BaukastenStueck,
+  type BaukastenLuecke,
+} from "./baukasten.js"

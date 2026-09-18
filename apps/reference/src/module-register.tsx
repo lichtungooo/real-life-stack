@@ -8,6 +8,7 @@
 // Einmal importieren, vor dem ersten Render (main.tsx).
 
 import { Suspense, lazy } from "react"
+import { Blocks } from "lucide-react"
 import type { Group } from "@real-life-stack/data-interface"
 import {
   CORE_MODULE_LAYER,
@@ -22,6 +23,7 @@ import { KanbanView } from "./views/kanban-view"
 import { CollectionView } from "./views/collection-view"
 import { ResonanceView } from "./views/resonance-view"
 import { GraphViewWrapper } from "./views/graph-view"
+import { BaukastenView } from "./views/baukasten-view"
 
 // Die Views haben historisch leicht unterschiedliche Signaturen; hier werden
 // sie auf den gemeinsamen Vertrag gebracht, damit der Dispatch nichts ueber
@@ -29,6 +31,7 @@ import { GraphViewWrapper } from "./views/graph-view"
 const Feed = ({ groupId }: ModuleViewProps) => <FeedView groupId={groupId} />
 const Calendar = ({ groupId }: ModuleViewProps) => <CalendarViewWrapper groupId={groupId} />
 const Resonance = ({ groupId }: ModuleViewProps) => <ResonanceView groupId={groupId} />
+const Baukasten = ({ groupId }: ModuleViewProps) => <BaukastenView groupId={groupId} />
 // Die Karte wird nachgeladen statt mitgeliefert. Sie bringt die
 // Kartenbibliothek mit (rund ein Megabyte) und ist damit das groesste
 // Einzelstueck der App. Wer nie auf die Karte geht, soll sie nicht laden:
@@ -59,7 +62,17 @@ const Collection = ({ groupId, selectionFocusVisibleArea }: ModuleViewProps) => 
 // muss sich fragen, ob er zu frueh gelesen hat (Review #277).
 export const MODULE_REGISTRY = composeModules([
   CORE_MODULE_LAYER,
+  // Die Schicht von trustdonation. Sie ergaenzt, sie ersetzt nichts: Antons
+  // sieben Module bleiben unberuehrt (Spec 01, Regel 2).
+  //
+  // `enabledByDefault` fehlt mit Absicht. Der Baukasten erscheint erst, wenn
+  // ein Netzwerk ihn in `Group.data.modules` aufnimmt: Eine Stiftung, die
+  // ihren Eintrag ansieht, braucht ihn nicht.
+  { name: "trustdonation", definitions: [
+    { id: "baukasten", label: "Baukasten", icon: Blocks, fill: "bleed" },
+  ] },
   { name: "app", extensions: [
+    { id: "baukasten", view: Baukasten },
     { id: "feed", view: Feed },
     { id: "kanban", view: Kanban },
     { id: "calendar", view: Calendar },

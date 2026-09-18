@@ -7,6 +7,12 @@
 /* Scan toolkit source files for Tailwind classes */
 @source "../../../packages/toolkit/src/**/*.tsx";
 
+/* NAHT trustdonation: Unsere Pakete tragen eigene Klassen. Ohne diese Zeile
+   erzeugt Tailwind sie nicht, und die Flaechen aus `td-ui` erscheinen ohne
+   Gestaltung: Der Arten-Editor, der Stiftungs-Import und die
+   Baukasten-Flaeche standen unbemerkt ohne ihr CSS da. */
+@source "../../../packages/td-ui/src/**/*.tsx";
+
 @custom-variant dark (&:is(.dark *));
 
 @layer base {

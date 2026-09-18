@@ -31,7 +31,7 @@ if "--modul" in sys.argv:
         MODUL = sys.argv[i + 1]
 
 # Ein Budget beschreibt ein Ziel, keinen Schaden. Darum warnt es, statt zu
-# blockieren (siehe td-tools/prüfen.py).
+# blockieren (siehe td-tools/pruefen.py).
 BUDGET_KB = 1200
 
 

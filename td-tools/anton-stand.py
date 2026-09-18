@@ -25,6 +25,15 @@ from datetime import date
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
+
+# Der Bericht trägt Umlaute und Sonderzeichen aus fremden Commit-Meldungen.
+# Windows bricht sonst mitten in der Ausgabe ab, nachdem die Arbeit schon
+# getan ist.
+for strom in (sys.stdout, sys.stderr):
+    try:
+        strom.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 BERICHTE = REPO / "td-tools" / "berichte"
 UNSER_BRANCH = "trustdonation"
 SEIN_BRANCH = "origin/master"
@@ -52,6 +61,9 @@ RAUSCHEN = re.compile(
     r"(^|/)(CHANGELOG\.md|package\.json|pnpm-lock\.yaml|version\.properties)$"
     r"|^\.release-please-manifest\.json$"
     r"|^\.github/workflows/"
+    # Beim Bauen geschrieben, nicht von Menschen. Sie als Naht zu melden
+    # faerbt das Tor rot, sobald jemand baut, und das ist immer.
+    r"|\.tsbuildinfo$"
 )
 
 
@@ -96,8 +108,16 @@ def seine_dateien(von):
 
 
 def unsere_naehte(von):
-    """Dateien, die schon bei ihm existierten und die wir geändert haben."""
-    geaendert = set(zeilen(git("diff", "--name-only", von + "..HEAD")))
+    """Dateien, die schon bei ihm existierten und die wir geändert haben.
+
+    Gemessen wird gegen den **Arbeitsbaum**, nicht gegen HEAD. Der Unterschied
+    ist kein Feinschliff: Wer eine Naht setzt und noch nicht committet hat,
+    bekam vorher ein grünes Tor. Genau in dem Moment, in dem die Prüfung
+    zählt, sah sie weg.
+
+    Am 18.09.2026 aufgefallen, mit drei ungespeicherten Nähten im Baum.
+    """
+    geaendert = set(zeilen(git("diff", "--name-only", von)))
     naehte = {}
     for d in sorted(geaendert):
         if RAUSCHEN.search(d):
@@ -106,7 +126,7 @@ def unsere_naehte(von):
         if git("cat-file", "-e", von + ":" + d, leise=True) == "" and subprocess.run(
             ["git", "-C", str(REPO), "cat-file", "-e", von + ":" + d],
             capture_output=True).returncode == 0:
-            zahlen = git("diff", "--numstat", von + "..HEAD", "--", d)
+            zahlen = git("diff", "--numstat", von, "--", d)
             plus, minus = 0, 0
             if zahlen:
                 t = zahlen.split("\t")
@@ -254,7 +274,7 @@ def bericht(von, commits, seine, naehte, tags, vor, nach, haken, haken_dateien, 
         A("")
         A("Unsere Naehte stehen bei **" + str(len(naehte)) + " Dateien**. Solange er nichts aendert, kosten sie nichts.")
         A("")
-        # Gerade in der Ruhe lohnt der Abgleich: Aufraeumen kostet hier nichts
+        # Gerade in der Ruhe lohnt der Abgleich: Aufräumen kostet hier nichts
         # und spart beim nächsten Sprung die Ueberraschung.
         eingetragen = eingetragene_naehte()
         if eingetragen is not None:
@@ -439,7 +459,7 @@ def bericht(von, commits, seine, naehte, tags, vor, nach, haken, haken_dateien, 
     if prs:
         beruehrt = [p for p in prs if p.get("unsere")]
         if beruehrt:
-            A("- Offene PRs an unseren Themen ansehen: " + ", ".join("#" + str(p["number"]) for p in berührt) + ".")
+            A("- Offene PRs an unseren Themen ansehen: " + ", ".join("#" + str(p["number"]) for p in beruehrt) + ".")
     A("- Nach dem Einspielen `docs/NAEHTE.md` neu messen und `memory/stand_trustdonation.md` nachziehen.")
 
     return "\n".join(z), len(commits)
@@ -486,7 +506,7 @@ def main():
     if prs is not None:
         beruehrt = [p for p in prs if p.get("unsere")]
         print("Offene PRs   " + str(len(prs)) + ", davon " + str(len(beruehrt)) + " an unseren Themen"
-              + (": " + ", ".join("#" + str(p["number"]) for p in berührt) if berührt else ""))
+              + (": " + ", ".join("#" + str(p["number"]) for p in beruehrt) if beruehrt else ""))
     print()
     print("Bericht: " + str(ziel.relative_to(REPO)))
     return 0

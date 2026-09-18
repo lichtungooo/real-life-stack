@@ -36,7 +36,7 @@ Diese Datei ist die ehrliche Liste. Sie wird nicht schoengeschrieben, und sie wi
 | **Entscheidungen** | `ENTSCHEIDUNGEN.md`, neun Einträge nachgetragen, jeder mit verworfenen Alternativen und einer Verfallsbedingung |
 | **Einstieg für Dritte** | `EINSTIEG.md`: in einer halben Stunde vom leeren Ordner zum laufenden Prototyp |
 | **Release-Notizen** | `AUSLIEFERUNGEN.md`, proto-1 bis proto-6 nachgetragen |
-| **Zugang** | `td-tools/zugang.py` lässt axe-core über die laufende App laufen. Erster Lauf: drei Verstöße, zwei schwer (Umschalter ohne Namen, Zoomen abgeschaltet, keine Ueberschrift). Alle behoben, lokal null Funde |
+| **Zugang** | `td-tools/zugang.py` lässt axe-core über die laufende App laufen. Erster Lauf: drei Verstöße, zwei schwer (Umschalter ohne Namen, Zoomen abgeschaltet, keine Überschrift). Alle behoben, lokal null Funde |
 | **Startlast** | `td-tools/startlast.py` misst im Browser, was beim ersten Aufruf wirklich geholt wird. Von **1596 KB auf 864 KB**: das größte Einzelstück war kein Code, sondern ein Avatar mit 733 KB. Jetzt 3 KB. Die Karte wird nachgeladen statt mitgeliefert |
 | **Eigene Pakete** | `packages/td-core` (UI-frei) und `packages/td-ui`. Musterdaten, Space-Ordnung und Arten-Regeln liegen dort, mit 19 Tests. Sieben Datennähte aufgelöst |
 | **Antons offene Arbeit** | `anton-stand.py` liest jetzt auch seine offenen Pull Requests und markiert die an unseren Themen. Erster Lauf: 18 offen, 9 an unseren Themen, darunter #279 mit generischen Input-Widgets, die nah an unserem Feld-Register liegen |

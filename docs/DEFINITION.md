@@ -186,7 +186,7 @@ Was **nicht** fehlt und was wir darum nicht neu bauen: Items, Relations, Tags, V
 
 **Frage, die dieser Abschnitt beantwortet:** Was folgt daraus, dass ein Space als Stiftung geführt wird?
 
-Heute folgt daraus eine Ueberschrift im Umschalter. Künftig folgt daraus auch, **welche Angaben der Space trägt**: eine Stiftung hat Förderschwerpunkte, einen Förderrahmen und einen Antragsweg; ein Projekt hat ein Vorhaben und Bedarfe.
+Heute folgt daraus eine Überschrift im Umschalter. Künftig folgt daraus auch, **welche Angaben der Space trägt**: eine Stiftung hat Förderschwerpunkte, einen Förderrahmen und einen Antragsweg; ein Projekt hat ein Vorhaben und Bedarfe.
 
 Die Lösung folgt Muster 2 und Muster 4: Eine Art **bindet Vokabulare**, sonst nichts.
 
@@ -366,6 +366,34 @@ Später und mit eigenen Regeln. Was jetzt schon feststeht:
 2. Es wird **signiert**, und die Signatur hängt an einer Identität im Web of Trust. Wer ein Modul in seine Instanz nimmt, sieht, von wem es kommt.
 3. Es wird beim **Bau der Instanz** eingebunden. Nachladen zur Laufzeit ist kein Ziel.
 4. Bis dahin ist der Weg für ein Codemodul derselbe wie heute: ein Pull Request.
+
+### Der Baukasten als Fläche
+
+**Frage:** Wo sieht und wählt ein Mensch, woraus sein Space gebaut wird?
+
+Timo am 18.09.2026: *"Ich finde, der Baukasten gehört in die Einstellungen vom Netzwerk. Allerdings ist er da eigenständig wie ein Dashboard, was über den ganzen Bildschirm geht, mit verschiedenen Kategorien, wo man die Module anwählen kann."*
+
+**Die eine Quelle:** `baukasten/` im Instanz-Repo. Dort wird gepflegt, weil es fachlich ist und weil jemand ohne Bauwerkzeug es ändern können soll. `td-tools/baukasten-holen.py` führt die acht Schichten zu `packages/td-core/daten/baukasten.json` zusammen, auf das, was eine Fläche zeigt.
+
+**Welche Schicht was hält:**
+
+| Schicht | Was |
+|---|---|
+| `baukasten/` (Instanz-Repo) | die Wahrheit: acht Schichten als JSON, mit Herkunft und Belegen |
+| `packages/td-core` | die verkleinerte Fassung für die App, erzeugt |
+| `packages/td-ui` | die Darstellung: `BaukastenFlaeche`, ohne Connector und ohne Hooks |
+| `apps/reference/src/views` | die Bindung: welcher Space, wer darf, wie wird geschrieben |
+| Antons Modul-Register | der Eintrag `baukasten`, über unsere eigene Schicht |
+
+**Was bei Unbekanntem passiert:** Ein Modul, das die Instanz nicht kennt, bleibt in `Group.data.modules` stehen und wird nicht gezeigt (Muster 5). Ein Space verliert sein Modul nicht, weil er gerade in einer anderen App geöffnet wird.
+
+**Die Grenze, die gilt:** Spec 01, Regel 4 sagt, das Modul-Register steht vor dem ersten Render fest. Ein Space wählt aus dem Katalog, er trägt nichts bei. **Die Fläche wählt darum aus, sie lädt nichts nach.** Was sie ändert, ist `Group.data.modules`, und das ist Antons vorgesehener Weg.
+
+**Was heute wirklich etwas ändert:** die Module. Alles andere zeigt, was es gibt. Arten, Bauteile, Muster, Vorlagen und Texte sind Bausteine, die noch niemand zur Laufzeit in einen Space nimmt. Das steht auf der Fläche, statt eine Möglichkeit vorzutäuschen.
+
+**Die Naht dafür:** `resolveAdminView` wird aus dem Toolkit exportiert. Die Fläche stellt dieselbe Frage wie der Space-Dialog (darf dieser Mensch die Module wählen?) und soll dieselbe Antwort bekommen. Siehe `NAEHTE.md` Abschnitt H.
+
+---
 
 ### Was der Baukasten nicht ist
 

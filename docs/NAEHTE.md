@@ -15,7 +15,7 @@ Diese Datei ist vollständig. Wer Antons Code ändert, trägt hier ein.
 | Geänderte Zeilen in seinen Dateien | rund 800 | rund 790 | unter 60 |
 | Nähte mit offenem Wunsch an Anton | 0 | 8 | alle |
 
-Die sieben Datennähte sind vollständig weg. Die beiden großen (A1, A2) stehen noch: Sie sind genau die Arbeit, die als **PR #379** bei Anton liegt. Sie jetzt umzubauen wäre Arbeit, die bei seiner Uebernahme wegfällt.
+Die sieben Datennähte sind vollständig weg. Die beiden großen (A1, A2) stehen noch: Sie sind genau die Arbeit, die als **PR #379** bei Anton liegt. Sie jetzt umzubauen wäre Arbeit, die bei seiner Übernahme wegfällt.
 
 Gemessen wird nicht von Hand: `python td-tools/anton-stand.py`.
 
@@ -92,6 +92,7 @@ Stellen, die nur deshalb Nähte sind, weil wir in Antons Referenz-App gearbeitet
 | `apps/reference/src/App.tsx` | +87 / -13 | Komposition, Connector-Wahl, Musterdaten, Beispieldaten-Hinweis, Stiftungs-Import | unsere Datei |
 | `apps/reference/src/hooks/use-workspace-routing.ts` | +78 / -11 | Ordnung der Spaces, Netzwerk-Felder | unsere Datei |
 | `apps/reference/public/config.json` | neu | Testkonfiguration | unsere Datei |
+| `apps/reference/src/index.css` | +6 | `@source` für `packages/td-ui`: Ohne die Zeile erzeugt Tailwind unsere Klassen nicht, und jede Fläche aus `td-ui` steht ohne Gestaltung da | unsere Datei |
 | `packages/toolkit/src/components/layout/workspace-switcher.stories.tsx` | +37 | Beispiele für die Gliederung | zieht mit A2 |
 | `packages/toolkit/docs/UI-REQUIREMENTS.md` | +6 | Notiz zu den Bereichen | zieht nach `td-ui` |
 
@@ -119,8 +120,10 @@ Drei echte Fehler, gefunden am 17.09.2026 von `td-tools/zugang.py` und `td-tools
 | Datei | Umfang | Was wir tun | Wunsch an Anton |
 |---|---|---|---|
 | `apps/reference/index.html` | 1 Zeile | `user-scalable=no` und `maximum-scale=1` entfernt | Als PR anbieten. Zoomen abzuschalten trifft jeden, der vergrößern muss, um zu lesen (WCAG 1.4.4). |
-| `apps/reference/src/App.tsx` | 8 Zeilen | Der Hell-Dunkel-Umschalter hat einen Namen bekommen; eine Ueberschrift erster Ordnung steht in der Leiste | Als PR anbieten. Ein Screenreader las vorher nur "Schaltfläche", und die Seite hatte keinen Anfang zum Anspringen. |
-| `apps/reference/src/module-register.tsx` | 12 Zeilen | Die Karte wird nachgeladen statt mitgeliefert | Als PR anbieten. Die Kartenbibliothek wiegt ein Megabyte. |
+| `apps/reference/src/App.tsx` | 8 Zeilen | Der Hell-Dunkel-Umschalter hat einen Namen bekommen; eine Überschrift erster Ordnung steht in der Leiste | Als PR anbieten. Ein Screenreader las vorher nur "Schaltfläche", und die Seite hatte keinen Anfang zum Anspringen. |
+| `apps/reference/src/module-register.tsx` | 24 Zeilen | Die Karte wird nachgeladen statt mitgeliefert. Dazu unsere Schicht `trustdonation` mit dem Modul `baukasten` | Die Karte als PR anbieten (die Kartenbibliothek wiegt ein Megabyte). Die eigene Schicht bleibt: Sie ist genau der Erweiterungspunkt, den Anton vorgesehen hat. |
+
+| `packages/toolkit/src/index.ts` | 1 Zeile plus Notiz | `resolveAdminView` wird exportiert | **Als PR anbieten.** Die Baukasten-Fläche stellt dieselbe Frage wie der Space-Dialog (darf dieser Mensch die Module wählen?) und soll dieselbe Antwort bekommen. Ohne den Export müssten wir die Regel doppeln, und zwei Antworten auf eine Frage laufen auseinander. Die Funktion kennt einen Sonderfall, den niemand zweimal richtig baut: Liefert ein Connector keine Admin-Angabe, gilt das erste Mitglied. |
 
 **Messbar geworden:** Zugang von drei Verstößen (zwei schwer) auf null. Startlast von 1596 KB auf 864 KB, vor allem weil ein Avatar mit 733 KB in den Musterdaten steckte; er ist jetzt 3 KB und liegt in unserem Paket.
 

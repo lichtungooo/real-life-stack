@@ -4,7 +4,7 @@
 Lädt die Seite in Chrome ohne Fenster und lässt axe-core darüber laufen.
 axe findet nicht alles, was ein Mensch findet, aber es findet zuverlässig,
 was Maschinen finden können: fehlende Beschriftungen, zu schwache Kontraste,
-Bilder ohne Text, eine kaputte Ueberschriften-Ordnung.
+Bilder ohne Text, eine kaputte Überschriften-Ordnung.
 
     python td-tools/zugang.py                          # gegen die Vorschau
     python td-tools/zugang.py https://trustdonation.org/

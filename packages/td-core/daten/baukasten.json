@@ -1,0 +1,762 @@
+{
+ "$erzeugt": "td-tools/baukasten-holen.py aus lichtungooo/trustdonation",
+ "anzahl": 103,
+ "schichten": [
+  {
+   "id": "module",
+   "titel": "Module",
+   "zweck": "Die Flächen dieses Space. Ein Klick nimmt eine dazu oder weg.",
+   "stuecke": [
+    {
+     "id": "feed",
+     "name": "Feed",
+     "zweck": "",
+     "herkunft": "Anton"
+    },
+    {
+     "id": "kanban",
+     "name": "Kanban",
+     "zweck": "",
+     "herkunft": "Anton"
+    },
+    {
+     "id": "calendar",
+     "name": "Kalender",
+     "zweck": "",
+     "herkunft": "Anton"
+    },
+    {
+     "id": "map",
+     "name": "Karte",
+     "zweck": "",
+     "herkunft": "Anton"
+    },
+    {
+     "id": "resonance",
+     "name": "Resonanz",
+     "zweck": "",
+     "herkunft": "Anton"
+    },
+    {
+     "id": "collection",
+     "name": "Liste",
+     "zweck": "",
+     "herkunft": "Anton"
+    },
+    {
+     "id": "graph",
+     "name": "Graph",
+     "zweck": "",
+     "herkunft": "Anton"
+    },
+    {
+     "id": "companion",
+     "name": "Companion",
+     "zweck": "Ein Mensch bringt seine eigene AI mit und gibt ihr Werkzeuge in die Hand. Jede Tat trägt das Siegel des Menschen.",
+     "herkunft": "Timo und Eli"
+    }
+   ],
+   "fehlt": []
+  },
+  {
+   "id": "arten",
+   "titel": "Arten",
+   "zweck": "Was ein Eintrag sein kann. Eine Art bindet Felder und gibt die Farbe.",
+   "stuecke": [
+    {
+     "id": "stiftung",
+     "name": "Stiftung",
+     "zweck": "Eine Einrichtung, die fördert. Der häufigste Förderer, darum eine eigene Art.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "projekt",
+     "name": "Projekt",
+     "zweck": "Ein Vorhaben, das Förderung sucht. Trägt Beduerfnis, Bedarfe und Wirkung.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "gruppe",
+     "name": "Gruppe",
+     "zweck": "Menschen, die zusammen etwas tun, ohne ein einzelnes Vorhaben zu sein.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "ort",
+     "name": "Ort",
+     "zweck": "Ein Platz, an dem etwas stattfindet.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "marker",
+     "name": "Marker",
+     "zweck": "Ein Eintrag auf der Karte im Netzwerk Marker & Maps.",
+     "herkunft": "Timo"
+    }
+   ],
+   "fehlt": [
+    {
+     "id": "verein",
+     "name": "verein",
+     "warum": "Die meisten Projekte hängen an einem Verein. Er trägt eigene Angaben: Gemeinnuetzigkeit, Register, Satzungszweck."
+    },
+    {
+     "id": "unternehmen",
+     "name": "unternehmen",
+     "warum": "Mittelstand und Familienunternehmen sind als Förderer gewollt, tragen aber andere Felder als eine Stiftung."
+    },
+    {
+     "id": "mensch",
+     "name": "mensch",
+     "warum": "Spec 12 im Stack definiert das Profil eines Menschen. Wie es sich zu unseren Arten verhält, ist offen."
+    }
+   ]
+  },
+  {
+   "id": "vorlagen",
+   "titel": "Vorlagen",
+   "zweck": "Ganze Auftritte, aus den Schichten darunter zusammengesetzt.",
+   "stuecke": [
+    {
+     "id": "fragebogen-stiftung",
+     "name": "Einen Stiftungseintrag anlegen",
+     "zweck": "13 W-Fragen, Recherche und Übernahme. Jede Frage gehört zu genau einem Feld.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "fragebogen-projekt",
+     "name": "Ein Projekt anlegen",
+     "zweck": "14 W-Fragen in drei Runden.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "fragebogen-stiftungsgespraech",
+     "name": "Der erste Termin mit einer Stiftung",
+     "zweck": "Sieben Fragen und ein Protokollbogen. Für den Tisch, nicht für die App.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "space-stiftung",
+     "name": "Space für eine Stiftung",
+     "zweck": "Ein fertig eingerichteter Space: vier Module, die Art `stiftung`, die Farbe ihrer Art.",
+     "herkunft": "Timo und Eli"
+    },
+    {
+     "id": "space-projekt",
+     "name": "Space für ein Projekt",
+     "zweck": "Dasselbe für ein Vorhaben, das Förderung sucht. Kann zugleich ein eigenes Netzwerk sein.",
+     "herkunft": "Timo und Eli"
+    },
+    {
+     "id": "space-netzwerk",
+     "name": "Space für ein Netzwerk",
+     "zweck": "Der Schalter `isNetwork` macht alles auf: Arten-Editor, Landingpage-Bereich, erster Platz im Umschalter.",
+     "herkunft": "Timo und Eli"
+    },
+    {
+     "id": "landingpage-stiftung",
+     "name": "Landingpage einer Stiftung",
+     "zweck": "Eine fertige Seite. Alles darauf kommt aus den Feldern; wer eine eigene braucht, tauscht die Werte, nicht den Aufbau.",
+     "regel": "Ein Projekt sucht zuerst eine Antwort: Passe ich ueberhaupt? Darum stehen die fünf Zahlen vor jedem Text.",
+     "herkunft": "Timo und Eli"
+    }
+   ],
+   "fehlt": [
+    {
+     "id": "landingpage-projekt",
+     "name": "landingpage-projekt",
+     "warum": "Ein Projekt braucht dieselbe Seite mit anderen Zahlen: Beduerfnis, Bedarf, Lücke, Wirkung."
+    },
+    {
+     "id": "space-verein",
+     "name": "space-verein",
+     "warum": "Die meisten Projekte hängen an einem Verein. Er trägt eigene Angaben."
+    }
+   ]
+  },
+  {
+   "id": "muster",
+   "titel": "Muster",
+   "zweck": "Zusammengesetzte Bauteile mit einer Absicht.",
+   "stuecke": [
+    {
+     "id": "hero",
+     "name": "Hero",
+     "zweck": "Der erste Blick auf eine Seite.",
+     "regel": "In drei Sekunden sagen, worum es geht. Wer hier mehr unterbringt, verliert den Besucher.",
+     "herkunft": "Sebastian"
+    },
+    {
+     "id": "einladung",
+     "name": "Einladung",
+     "zweck": "Der Abschnitt, der zum Mitmachen ruft.",
+     "regel": "Eine Handlung anbieten, nicht zwei. Zwei gleichwertige Knöpfe halbieren beide.",
+     "herkunft": "Sebastian"
+    },
+    {
+     "id": "profilkopf",
+     "name": "Profilkopf",
+     "zweck": "Steht über jedem Eintrag: auf der Landingpage, im Space, in der Suche.",
+     "regel": "Die dritte Angabe der Unterzeile ist die wichtigste: bei einer Stiftung die Reichweite, bei einem Projekt die offene Lücke. Höchstens zwei Etiketten, denn fünf Themen heißt kein Thema.",
+     "herkunft": "Timo und Eli"
+    },
+    {
+     "id": "projektvorstellung",
+     "name": "Projektvorstellung",
+     "zweck": "Der Kern des Pitches an eine Stiftung.",
+     "regel": "Das Bedürfnis beschreibt eine Lücke, kein Projekt. Der Balken zeigt, wie weit es ist, bevor die Zahl kommt: Eine Stiftung fördert lieber das, was schon steht. Wirkung nennt Nachprüfbares, zwei bis drei je Liste.",
+     "herkunft": "Timo und Eli"
+    },
+    {
+     "id": "kontaktblock",
+     "name": "Kontaktblock",
+     "zweck": "Sagt zwei Dinge, die fast überall fehlen: wer antwortet, und wie lange es dauert.",
+     "regel": "Eine Funktion statt eines Namens, solange kein Profil übernommen ist: Wer aus einem Impressum abschreibt, veröffentlicht die Daten eines Menschen, der nie gefragt wurde. Kein Formular mit acht Feldern.",
+     "herkunft": "Timo und Eli"
+    },
+    {
+     "id": "foerderaufruf",
+     "name": "Förderaufruf",
+     "zweck": "Was ein Projekt braucht, in einer Form, die eine Stiftung lesen kann.",
+     "regel": "Die Zahl ist die offene Lücke, nicht die Gesamtsumme: Wer 20.000 € fordert, klingt weit weg. Ein Knopf, keine Auswahl, denn wer zwischen drei Handlungen wählen muss, tut keine davon.",
+     "herkunft": "Timo und Eli"
+    }
+   ],
+   "fehlt": [
+    {
+     "id": "wirkungsbericht",
+     "name": "Wirkungsbericht",
+     "warum": "Was aus einer Förderung wurde. Der Bericht entscheidet über die nächste, und heute schreibt ihn jeder anders."
+    },
+    {
+     "id": "spendenaufruf",
+     "name": "Spendenaufruf",
+     "warum": "Der Förderaufruf richtet sich an Stiftungen. An Menschen richtet man sich anders: kleinere Beträge, kürzere Wege, andere Sprache."
+    }
+   ]
+  },
+  {
+   "id": "bauteile",
+   "titel": "Bauteile",
+   "zweck": "Die einzelnen Stücke. Je Welt eine Ausprägung, ein Aussehen.",
+   "stuecke": [
+    {
+     "id": "band",
+     "name": "Dunkles Band",
+     "zweck": "Ein Abschnitt, der sich vom Rest abhebt. Trägt in jedem Schema dunkle Farben, auch im hellen.",
+     "herkunft": "Sebastian"
+    },
+    {
+     "id": "knoepfe",
+     "name": "Knöpfe und Auszeichnungen",
+     "zweck": "Aktionen und Etiketten. Pillen mit 999px Rundung.",
+     "herkunft": "Sebastian"
+    },
+    {
+     "id": "karten",
+     "name": "Karten, Zeilen, Kacheln",
+     "zweck": "Die Flächen, auf denen Inhalt steht. Drei Dichten für drei Zwecke.",
+     "herkunft": "Sebastian"
+    },
+    {
+     "id": "feld",
+     "name": "Eingabefeld",
+     "zweck": "Der Ort, an dem sich entscheidet, ob jemand dranbleibt. Vier Formen plus der Fall, dass etwas fehlt.",
+     "regel": "Die Beschriftung steht über dem Feld, nicht darin: Ein Platzhalter verschwindet beim Tippen. Der Fehler sagt, was dadurch nicht geht, statt 'Pflichtfeld'.",
+     "herkunft": "Timo und Eli"
+    },
+    {
+     "id": "avatar",
+     "name": "Avatar",
+     "zweck": "Menschen und Einrichtungen bekommen ein Gesicht. Wo keins da ist, stehen Anfangsbuchstaben.",
+     "regel": "Rund für Menschen, gerundet für Einrichtungen. Ein Punkt statt eines Hakens: Ein Haken sieht aus wie eine Note, und wir vergeben keine.",
+     "herkunft": "Timo und Eli"
+    },
+    {
+     "id": "kartennadel",
+     "name": "Kartennadel",
+     "zweck": "234 Stiftungen stehen auf der Karte. Die Nadel entscheidet, ob jemand findet, was er sucht.",
+     "regel": "Ein Tropfen, kein Kreis: Ein Kreis sitzt auf seinem Mittelpunkt, ein Tropfen zeigt auf seine Spitze. Die Farbe kommt von der Art, nicht vom Thema.",
+     "herkunft": "Timo und Eli"
+    },
+    {
+     "id": "vertrauens-anzeiger",
+     "name": "Vertrauens-Anzeiger",
+     "zweck": "Der Kern des Web of Trust, sichtbar gemacht. Er nennt Menschen, keine Punkte.",
+     "regel": "Niemals eine Zahl, die man erhoehen kann. Sobald Vertrauen eine Zahl ist, arbeiten Menschen an der Zahl statt an der Beziehung, und wer zahlt, kauft sich hoch (Grundsatz 1).",
+     "herkunft": "Timo und Eli"
+    }
+   ],
+   "fehlt": [
+    {
+     "id": "tabelle",
+     "name": "Tabelle",
+     "warum": "234 Stiftungen als Liste zu lesen ist heute muehsam. Antons Liste kennt unsere Felder nicht."
+    },
+    {
+     "id": "etikett",
+     "name": "Etikett",
+     "warum": "Foerderbereiche, Reichweite und Zielgruppen sind Tags. Sie haben kein gemeinsames Aussehen."
+    }
+   ]
+  },
+  {
+   "id": "felder",
+   "titel": "Felder",
+   "zweck": "Die kleinste Einheit, die ein Mensch ausfüllt.",
+   "stuecke": [
+    {
+     "id": "ansprache",
+     "name": "ansprache",
+     "zweck": "Funktion statt Name, solange kein Profil übernommen ist",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "anstifter",
+     "name": "anstifter",
+     "zweck": "Wer es angestossen hat, als Relation auf einen Menschen.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "antragsportal",
+     "name": "antragsportal",
+     "zweck": "Wo ein Antrag eingereicht wird, falls es ein eigenes Portal gibt.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "antragstellung",
+     "name": "antragstellung",
+     "zweck": "ja, nein, offen",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "antragsweg",
+     "name": "antragsweg",
+     "zweck": "offen, Wettbewerb, Anfrage, eingeladen, operativ, Kooperation, Träger-Partnerschaft, Boden",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "art",
+     "name": "art",
+     "zweck": "fördernd, operativ, beides",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "bedarfGesamt",
+     "name": "bedarfGesamt",
+     "zweck": "Die Summe aller Bedarfe in Euro.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "bedarfe",
+     "name": "bedarfe",
+     "zweck": "Was gebraucht wird, je Eintrag mit Art: Haende, Wissen, Sachen, Raum.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "beduerfnis",
+     "name": "beduerfnis",
+     "zweck": "Was hier fehlt, wenn es dieses Projekt nicht gibt.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "bisherGefoerdert",
+     "name": "bisherGefoerdert",
+     "zweck": "Themen, keine kopierten Projektbeschreibungen",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "eigenmittel",
+     "name": "eigenmittel",
+     "zweck": "ja, nein, teilweise",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "foerderbereiche",
+     "name": "foerderbereiche",
+     "zweck": "aus dem gemeinsamen Vokabular",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "foerderer",
+     "name": "foerderer",
+     "zweck": "Wer schon fördert, als Relation.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "foerdererart",
+     "name": "foerdererart",
+     "zweck": "Stiftung, Kommune, Land, Bund, EU, Lotterie, Kirche, Wohlfahrt, Verband, Kammer, Unternehmen",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "fortschritt",
+     "name": "fortschritt",
+     "zweck": "Einträge mit Datum",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "fristen",
+     "name": "fristen",
+     "zweck": "laufend, Stichtag, Fenster",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "gruppe",
+     "name": "gruppe",
+     "zweck": "Die Menschen dahinter, als Relation.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "hinweis",
+     "name": "hinweis",
+     "zweck": "„Woran erkennt ein Projekt, dass es zu uns passt“, in ihren Worten",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "kurz",
+     "name": "kurz",
+     "zweck": "Ein Satz, der das Vorhaben fasst. Für Karten und Listen.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "luecke",
+     "name": "luecke",
+     "zweck": "Was zwischen Bedarf und Eigenmitteln offen bleibt. Die Zahl, um die es geht.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "mail",
+     "name": "mail",
+     "zweck": "allgemeine Adresse",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "name",
+     "name": "name",
+     "zweck": "Wie die Einrichtung oder das Vorhaben heißt.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "position",
+     "name": "position",
+     "zweck": "für die Karte",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "region",
+     "name": "region",
+     "zweck": "Wo es wirkt, als Tags. Neben der Position auf der Karte.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "reichweite",
+     "name": "reichweite",
+     "zweck": "lokal, regional, national, international",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "schritte",
+     "name": "schritte",
+     "zweck": "Wie es vorangeht, in Etappen.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "sitz",
+     "name": "sitz",
+     "zweck": "Stadt, Bundesland, Land",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "spende",
+     "name": "spende",
+     "zweck": "Ob Spenden angenommen werden.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "summeBis",
+     "name": "summeBis",
+     "zweck": "Die größte Förderung, die vergeben wird.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "summeVon",
+     "name": "summeVon",
+     "zweck": "Die kleinste Förderung, die vergeben wird.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "termine",
+     "name": "termine",
+     "zweck": "Zeitraum, Daten",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "themen",
+     "name": "themen",
+     "zweck": "Tags, drei bis sechs",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "treuhand",
+     "name": "treuhand",
+     "zweck": "Ob treuhaenderische Stiftungen möglich sind.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "unterlagen",
+     "name": "unterlagen",
+     "zweck": "Was einem Antrag beiliegen muss.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "volumenJahr",
+     "name": "volumenJahr",
+     "zweck": "wenn öffentlich bekannt",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "vorhandenes",
+     "name": "vorhandenes",
+     "zweck": "Was schon da ist: Zusagen, Genehmigungen, Material, Raeume.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "website",
+     "name": "website",
+     "zweck": "Die eigene Adresse im Netz.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "wirkung",
+     "name": "wirkung",
+     "zweck": "Zwei bis drei nachpruefbare Dinge, die sich ändern.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "zeitraum",
+     "name": "zeitraum",
+     "zweck": "Zeitraum, Daten",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "zielgruppen",
+     "name": "zielgruppen",
+     "zweck": "Für wen es da ist.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "zustifter",
+     "name": "zustifter",
+     "zweck": "Wer zugestiftet hat, als Relation.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "zustiftung",
+     "name": "zustiftung",
+     "zweck": "Ob Zustiftungen angenommen werden.",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "zweck",
+     "name": "zweck",
+     "zweck": "eigene Zusammenfassung, kein Zitat",
+     "herkunft": "Timo"
+    }
+   ],
+   "fehlt": []
+  },
+  {
+   "id": "rohstoffe",
+   "titel": "Rohstoffe",
+   "zweck": "Farbe, Schrift, Maß. Was in allen drei Welten gleich ist.",
+   "stuecke": [
+    {
+     "id": "gruen",
+     "name": "gruen",
+     "zweck": "Die Hauptfarbe. Schrift, Knöpfe, Logo.",
+     "wert": "#1B5E40"
+    },
+    {
+     "id": "weiss",
+     "name": "weiss",
+     "zweck": "Fläche und Schrift auf Grün.",
+     "wert": "#FFFFFF"
+    },
+    {
+     "id": "gold",
+     "name": "gold",
+     "zweck": "Der Akzent. Hinweise, Fokus, Warnung.",
+     "wert": "#EA580C"
+    },
+    {
+     "id": "papier",
+     "name": "papier",
+     "zweck": "Die weiche Fläche hinter Abschnitten.",
+     "wert": "#FFF8F1"
+    },
+    {
+     "id": "linie",
+     "name": "linie",
+     "zweck": "Ränder, Trenner, Eingabefelder.",
+     "wert": "#EFE0D2"
+    },
+    {
+     "id": "fliesstext",
+     "name": "fliesstext",
+     "zweck": "Laufender Text, ruhiger als die Hauptfarbe.",
+     "wert": "#3C5F4E"
+    },
+    {
+     "id": "gedaempft",
+     "name": "gedaempft",
+     "zweck": "Nebensächliches: Bildunterschriften, Hinweise.",
+     "wert": "#6B8578"
+    },
+    {
+     "id": "blass",
+     "name": "blass",
+     "zweck": "Das Leiseste, was noch lesbar ist.",
+     "wert": "#9AB0A5"
+    },
+    {
+     "id": "rotbraun",
+     "name": "rotbraun",
+     "zweck": "Der dunkle Akzent für Links und Hervorhebungen im Text.",
+     "wert": "#B5390A"
+    },
+    {
+     "id": "sanft-1",
+     "name": "sanft-1",
+     "zweck": "Die hellste Stufe der Orangeleiter.",
+     "wert": "#FFEEDF"
+    },
+    {
+     "id": "sanft-2",
+     "name": "sanft-2",
+     "zweck": "Die zweite Stufe der Orangeleiter.",
+     "wert": "#FFE4CC"
+    },
+    {
+     "id": "sanft-3",
+     "name": "sanft-3",
+     "zweck": "Die dritte Stufe der Orangeleiter.",
+     "wert": "#FFD9B8"
+    },
+    {
+     "id": "band-linie",
+     "name": "band-linie",
+     "zweck": "Trenner im dunklen Band.",
+     "wert": "#F3D9C0"
+    },
+    {
+     "id": "hanken",
+     "name": "hanken",
+     "zweck": "Die eine Schrift der Seite. Überschriften und Fließtext."
+    },
+    {
+     "id": "system-monospace",
+     "name": "system-monospace",
+     "zweck": "Code und Kennungen. Kommt vom Gerät, kostet nichts."
+    },
+    {
+     "id": "seitenbreite",
+     "name": "seitenbreite",
+     "zweck": "Die größte Breite des Inhalts. Darüber bleibt Rand.",
+     "wert": "1160px"
+    },
+    {
+     "id": "rundung",
+     "name": "rundung",
+     "zweck": "Die Standard-Rundung für Karten und Flächen.",
+     "wert": "14px"
+    },
+    {
+     "id": "schatten",
+     "name": "schatten",
+     "zweck": "Der einzige Schatten. Zwei Lagen, beide im Grün der Marke statt in Schwarz.",
+     "wert": "0 1px 2px rgba(27,94,64,.06), 0 12px 40px rgba(27,94,64,.12)"
+    }
+   ],
+   "fehlt": []
+  },
+  {
+   "id": "sprache",
+   "titel": "Sprache",
+   "zweck": "Die Worte. Regeln, Werkzeuge und Textbausteine.",
+   "stuecke": [
+    {
+     "id": "klare-sprache",
+     "name": "Klare Sprache",
+     "zweck": "Der Standard für Konzepte, Dokumente, Mails und Pitches. Klar wie Schiller, positiv wie Goethe.",
+     "herkunft": "Timo und Eli"
+    },
+    {
+     "id": "konzept-schreiben",
+     "name": "Konzept schreiben",
+     "zweck": "Wie ein Konzept aufgebaut wird, bevor es Code wird.",
+     "herkunft": "Timo und Eli"
+    },
+    {
+     "id": "gendern",
+     "name": "Gendern",
+     "zweck": "Wie wir über Menschen schreiben.",
+     "herkunft": "Timo und Eli"
+    },
+    {
+     "id": "sprach-stile",
+     "name": "Sprach-Stile",
+     "zweck": "Neun Stimmen für neun Lagen: macher, kraftvoll, herzens, kindgerecht, marktschreier, groessenwahn, tiefstapelei, schamanisch, soziologen-sprech.",
+     "herkunft": "Timo und Eli"
+    },
+    {
+     "id": "erstansprache",
+     "name": "Die erste Mail an eine Stiftung",
+     "zweck": "Persoenlich, mit konkretem Anlass, ohne Anhang. Kein Serienbrief (§ 7 UWG).",
+     "herkunft": "Timo"
+    },
+    {
+     "id": "nachfassen",
+     "name": "Nachfassen",
+     "zweck": "Erinnern, ohne zu draengen. Wer nicht geantwortet hat, hatte meist keine Zeit, nicht kein Interesse.",
+     "herkunft": "Timo und Eli"
+    },
+    {
+     "id": "einladung",
+     "name": "Einladung in einen Space",
+     "zweck": "Klar machen, wohin, wofür und was der erste Schritt ist.",
+     "herkunft": "Timo und Eli"
+    },
+    {
+     "id": "absage",
+     "name": "Absage",
+     "zweck": "Die Beziehung erhalten. Der Grund zeigt auf ein Kriterium, nicht auf Qualität.",
+     "herkunft": "Timo und Eli"
+    },
+    {
+     "id": "dankeschoen",
+     "name": "Dankeschoen",
+     "zweck": "Den Anfang markieren. Eine Förderung ist kein Abschluss, sondern der Beginn einer Verabredung.",
+     "herkunft": "Timo und Eli"
+    }
+   ],
+   "fehlt": [
+    {
+     "id": "zwischenbericht",
+     "name": "zwischenbericht",
+     "warum": "Zwischen Zusage und Abschlussbericht liegt oft ein Jahr. Was in der Zeit geschrieben wird, entscheidet über die nächste Förderung."
+    },
+    {
+     "id": "abschlussbericht",
+     "name": "abschlussbericht",
+     "warum": "Der Bericht, der zählt. Er gehört zum Modul Wirkungsbericht, sobald es das gibt."
+    },
+    {
+     "id": "profiluebernahme",
+     "name": "profiluebernahme",
+     "warum": "Die Mail, mit der eine Stiftung ihren recherchierten Eintrag übernimmt. Sie berührt docs/04-recht.md."
+    }
+   ]
+  }
+ ]
+}

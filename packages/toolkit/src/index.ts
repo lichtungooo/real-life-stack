@@ -29,6 +29,11 @@ export {
   type BrandingTheme,
 } from "./lib/runtime-config"
 export { parseSpaceKinds, kindIdFromLabel, type SpaceKind } from "./lib/space-kinds"
+// NAHT trustdonation: Die Baukasten-Flaeche stellt dieselbe Frage wie der
+// Space-Dialog (darf dieser Mensch die Module waehlen?) und soll dieselbe
+// Antwort bekommen. Ohne den Export muessten wir die Regel doppeln, und
+// zwei Antworten auf eine Frage laufen auseinander.
+export { resolveAdminView } from "./lib/group-admin-view"
 export {
   deriveColorScale,
   grayFor,

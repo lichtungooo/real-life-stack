@@ -17,3 +17,4 @@ export {
   stiftungenSchreiben,
   type ImportStand,
 } from "./stiftungen-import.js"
+export { BaukastenFlaeche, type BaukastenFlaecheProps } from "./baukasten-flaeche.js"

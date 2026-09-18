@@ -105,7 +105,7 @@ test.describe("C. Die Gliederung im Netzwerk", () => {
     expect(text, "Abschnitt Projekte fehlt").toContain("Projekte")
     expect(text, "Abschnitt Stiftungen fehlt").toContain("Stiftungen")
 
-    // Die Stiftung steht unter ihrer Ueberschrift, nicht davor.
+    // Die Stiftung steht unter ihrer Überschrift, nicht davor.
     expect(text.indexOf("Stiftungen")).toBeLessThan(text.indexOf("Löwenherz"))
   })
 

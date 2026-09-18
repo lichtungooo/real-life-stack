@@ -45,7 +45,7 @@ npx playwright test --config playwright.trustdonation.config.ts
 npx playwright test --config playwright.trustdonation.config.ts --headed   # zum Zusehen
 ```
 
-Zwölf Erwartungen: Ankommen ohne Anmeldung, Ueberschrift, Zoomen, die fünf Spaces, Netzwerke oben, eigene Bilder, Gliederung nach Arten, ein Space in zwei Abschnitten, die sechs Dialog-Bereiche, Landingpage nur für Netzwerke, die Modul-Reiter, die Karte.
+Zwölf Erwartungen: Ankommen ohne Anmeldung, Überschrift, Zoomen, die fünf Spaces, Netzwerke oben, eigene Bilder, Gliederung nach Arten, ein Space in zwei Abschnitten, die sechs Dialog-Bereiche, Landingpage nur für Netzwerke, die Modul-Reiter, die Karte.
 
 Sie sind auch das sechste Tor in `td-tools/pruefen.py`; das siebte ist das Gedächtnis.
 

@@ -4,8 +4,8 @@
 Ein Befehl statt sechs, und nichts wird vergessen. Jedes Tor kommt aus
 docs/ARCHITEKTUR.md Teil 7.
 
-    python td-tools/prüfen.py            # alles
-    python td-tools/prüfen.py --schnell  # ohne Bau und Tests (Sekunden)
+    python td-tools/pruefen.py            # alles
+    python td-tools/pruefen.py --schnell  # ohne Bau und Tests (Sekunden)
 
 Rückgabe 0, wenn alles grün ist. Sonst 1: so lässt es sich in eine CI
 hängen, ohne dass jemand den Text lesen muss.

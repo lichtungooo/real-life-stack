@@ -51,7 +51,7 @@ Heute arbeiten wir in Antons Referenz-App und schreiben in seine Pakete. Danach 
 
 **Bewusst nicht gemacht:** `apps/trustdonation` als eigene App. Die Messung sprach dagegen: `apps/reference` hat 4020 Zeilen, unsere Nähte darin 134. Eine eigene App täuschte 134 Zeilen Naht gegen 4000 Zeilen Duplikat ein und nähme uns seine Verbesserungen an der Referenz-App.
 
-**Offen und aus gutem Grund:** Die beiden großen Nähte (`group-dialog` 387, `workspace-switcher` 219) sind genau die Arbeit, die als **PR #379** bei Anton liegt. Sie jetzt umzubauen wäre Arbeit, die bei seiner Uebernahme wegfällt.
+**Offen und aus gutem Grund:** Die beiden großen Nähte (`group-dialog` 387, `workspace-switcher` 219) sind genau die Arbeit, die als **PR #379** bei Anton liegt. Sie jetzt umzubauen wäre Arbeit, die bei seiner Übernahme wegfällt.
 
 ### Fertig, wenn
 

@@ -19,9 +19,9 @@ Was dieses Werkzeug **nicht** anfasst:
 In Code-Dateien werden nur **Kommentare** bearbeitet. In JSON nur **Werte**.
 In Markdown alles außer Code-Blöcken.
 
-    python td-tools/umlaute.py --prüfen        # nur zeigen
+    python td-tools/umlaute.py --pruefen        # nur zeigen
     python td-tools/umlaute.py --richten        # ersetzen
-    python td-tools/umlaute.py --prüfen <pfad> # einen Ordner
+    python td-tools/umlaute.py --pruefen <pfad> # einen Ordner
 """
 import json
 import re
@@ -275,9 +275,24 @@ def ist_ersetzbar(wort):
     return wort in WOERTER and WOERTER[wort] != wort
 
 
+# Ein Dateiname im Fließtext ist ein Aufruf, kein Wort, und ein Schalter auch
+# nicht. `pruefen.py` zu `prüfen.py` zu machen bricht jeden Befehl, der ihn
+# nennt. Das ist zweimal passiert, bevor diese Zeile hier stand.
+PFAD = re.compile(r"[\w./-]*\.(?:py|json|css|md|html|ts|tsx|js|mjs|sh|yml|woff2)\b|--[a-z-]+")
+
+
 def ersetze_in_text(text):
-    """Ersetzt bekannte Wörter, an Wortgrenzen, mit Zählung."""
+    """Ersetzt bekannte Wörter, an Wortgrenzen, mit Zählung.
+
+    Pfade und Schalter werden vorher herausgeschnitten und danach
+    zurückgelegt: Sie sehen aus wie Text und sind Befehle.
+    """
     zahl = 0
+    schutz = {}
+    for nr, treffer in enumerate(PFAD.findall(text)):
+        marke = "\x00" + str(nr) + "\x00"
+        schutz[marke] = treffer
+        text = text.replace(treffer, marke, 1)
 
     def tausch(m):
         nonlocal zahl
@@ -292,7 +307,36 @@ def ersetze_in_text(text):
             return WOERTER[w]
         return w
 
-    return re.sub(r"\b[A-Za-zÄÖÜäöüß]+\b", tausch, text), zahl
+    ergebnis = re.sub(r"\b[A-Za-zÄÖÜäöüß]+\b", tausch, text)
+    for marke, echt in schutz.items():
+        ergebnis = ergebnis.replace(marke, echt)
+    return ergebnis, zahl
+
+
+def kommentar_beginn(zeile, zeichen):
+    """Wo der Kommentar anfängt, außerhalb jeder Zeichenkette.
+
+    Ein `#` in einem String ist kein Kommentar. Am 18.09.2026 hat genau das
+    den Bezeichner `berührt` in `anton-stand.py` zerstört: Die Zeile enthielt
+    `"#" + str(nummer)`, alles dahinter galt als Kommentar, und der Bezeichner
+    bekam ein ü.
+    """
+    offen = None
+    i = 0
+    while i < len(zeile):
+        c = zeile[i]
+        if offen:
+            if c == "\\":
+                i += 2
+                continue
+            if c == offen:
+                offen = None
+        elif c == '"' or c == "'":
+            offen = c
+        elif zeile.startswith(zeichen, i):
+            return i
+        i += 1
+    return -1
 
 
 def markdown(inhalt):
@@ -322,7 +366,7 @@ def code(inhalt, zeilenkommentar):
                 if dreifach % 2:
                     in_docstring = not in_docstring
                 continue
-        pos = z.find(zeilenkommentar)
+        pos = kommentar_beginn(z, zeilenkommentar)
         if pos >= 0:
             kopf, rest = z[:pos], z[pos:]
             rest, n = ersetze_in_text(rest)
