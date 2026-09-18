@@ -6,7 +6,8 @@ Das Image liegt auf dem Server als `trustdonation-app:proto-N`. Zurückgedreht w
 
 | Stand | Commit | Datum | Was drin ist |
 |---|---|---|---|
-| **proto-12** | `160e319d` | 17.09.2026 | **Die Stiftungen lassen sich teilen.** Wer angemeldet ist, holt die 234 recherchierten Stiftungen über `?import=stiftungen` in seinen eigenen Space. Danach laufen sie über das Relay und jedes Mitglied sieht sie. Davor eine Rückfrage mit dem Namen des Space, denn zurücknehmen lässt sich das nicht mit einem Klick. Dazu: **die Lücke „ohne Anmeldung lesen" benannt** und als Frage an Anton gestellt. Seed-Version 9. |
+| **proto-13** | `9977ef58` | 18.09.2026 | **Der Baukasten als Fläche.** Ein Reiter neben der Karte, über die volle Breite: acht Kategorien links, Kacheln rechts, 103 Bausteine. Ein Klick auf ein Modul nimmt es dazu oder weg und schreibt `Group.data.modules`. Die übrigen sieben Schichten zeigen, was es gibt, samt der 14 Lücken mit ihrem Grund. Dabei drei stille Mängel behoben: Das Naht-Tor maß allein Committetes, Tailwind kannte `packages/td-ui` nicht (alle unsere Klassen fehlten im CSS), und das Umlaut-Werkzeug zerstörte einen Bezeichner. SEED_VERSION 10. |
+| proto-12 | `160e319d` | 17.09.2026 | **Die Stiftungen lassen sich teilen.** Wer angemeldet ist, holt die 234 recherchierten Stiftungen über `?import=stiftungen` in seinen eigenen Space. Danach laufen sie über das Relay und jedes Mitglied sieht sie. Davor eine Rückfrage mit dem Namen des Space, denn zurücknehmen lässt sich das nicht mit einem Klick. Dazu: **die Lücke „ohne Anmeldung lesen" benannt** und als Frage an Anton gestellt. Seed-Version 9. |
 | proto-11 | `9c7996a6` | 17.09.2026 | **Beispieldaten sind als solche erkennbar.** Timo hat die App geöffnet, sein Profilbild nicht wiedererkannt und seine Kontakte vermisst. Nichts war kaputt: Die App startet mit dem local-Connector. Der Fehler war unserer, die App sagte nicht, was sie zeigt. In der Leiste steht jetzt „Beispieldaten · Mein Konto" und führt nach `?connector=wot`. 15 Erwartungen im Durchgang. |
 | proto-10 | `97fcdb56` | 17.09.2026 | **Echte Umlaute und erkennbare Pins.** 1767 Stellen mit ASCII-Ersatz berichtigt, in Dokumenten, Kommentaren, Anzeigetexten und Musterdaten. Die Stiftungs-Pins tragen jetzt alle die Farbe ihrer Art statt der ihres ersten Themas, und wer sich einen Ort teilt, bekommt einen festen kleinen Versatz: In Berlin lagen 28 auf einer Koordinate. |
 | proto-9 | `1989b69a` | 17.09.2026 | **234 recherchierte Stiftungen auf der Karte**, als place-Items im Netzwerk trustdonation. 70 davon ausgearbeitet (Schwerpunkte, Förderrahmen, Antragsweg), 164 mit Name, Sitz und Schwerpunkten. Jeder Eintrag nennt seine Quelle. Die Karte bündelt von selbst und steht nach 3,4 Sekunden; die Startlast steigt um 22 KB. |
@@ -21,4 +22,4 @@ Das Image liegt auf dem Server als `trustdonation-app:proto-N`. Zurückgedreht w
 
 ## Was noch nicht ausgeliefert ist
 
-Nichts. Der Stand auf `trustdonation.org/app` ist `160e319d`.
+Nichts. Der Stand auf `trustdonation.org/app` ist `9977ef58`.
