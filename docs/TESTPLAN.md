@@ -55,7 +55,7 @@ Sie sind auch das sechste Tor in `td-tools/pruefen.py`; das siebte ist das Gedä
 
 ```bash
 cd /d/Workspace/20-repos/rls-uebersicht
-python td-tools/pruefen.py                             # sieben Tore, voll
+python td-tools/pruefen.py                             # acht Tore, voll
 python td-tools/anton-stand.py                         # steht Anton still?
 pnpm --filter reference exec vite preview --port 4173 &
 python td-tools/zugang.py                              # null Funde erwartet

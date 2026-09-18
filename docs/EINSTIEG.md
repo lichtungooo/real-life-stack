@@ -93,7 +93,7 @@ Antons Vertrag liegt in [spec/](spec/). **Bei Widerspruch gewinnt die Spec.**
 
 ```bash
 python td-tools/anton-stand.py     # was hat Anton getan, was trifft uns, was hat er vor
-python td-tools/pruefen.py         # sechs Tore, --schnell laesst Bau und Tests aus
+python td-tools/pruefen.py         # acht Tore, --schnell laesst Bau und Tests aus
 python td-tools/startlast.py       # was beim ersten Aufruf wirklich geladen wird
 python td-tools/zugang.py          # axe-core ueber die laufende App
 ```

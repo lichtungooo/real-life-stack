@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Fährt alle Tore und zeigt eine Ampel.
 
-Ein Befehl statt sechs, und nichts wird vergessen. Jedes Tor kommt aus
+Ein Befehl statt acht, und nichts wird vergessen. Jedes Tor kommt aus
 docs/ARCHITEKTUR.md Teil 7.
 
     python td-tools/pruefen.py            # alles
@@ -133,7 +133,20 @@ elif treffer:
 else:
     tor("Grenze", True, "keine Protokoll-Aufrufe in " + ", ".join(vorhanden))
 
-# --- Tor 5: Budget -----------------------------------------------------------
+# --- Tor 5: Pfade ------------------------------------------------------------
+#
+# Ein Windows-Pfad in einem Python-String ohne r-Praefix zerlegt sich still:
+# `\t` wird Tabulator, `\f` Seitenvorschub, `\20` eine Oktalzahl. Der Schaden
+# ist unsichtbar und traf fuenfmal Dateien, die jede Sitzung liest.
+r = subprocess.run([sys.executable, str(REPO / "td-tools" / "pfade.py")],
+                   capture_output=True, text=True, encoding="utf-8", errors="replace")
+if r.returncode == 0:
+    tor("Pfade", True, (r.stdout or "").strip().split("\n")[-1])
+else:
+    erste = [z for z in (r.stdout or "").split("\n") if z.strip()][:6]
+    tor("Pfade", False, "zerbrochene Pfade in Text", "\n".join(erste))
+
+# --- Tor 6: Budget -----------------------------------------------------------
 dist = REPO / "apps" / "reference" / "dist" / "assets"
 stuecke = sorted(dist.glob("*.js"), key=lambda p: p.stat().st_size, reverse=True) if dist.exists() else []
 if not stuecke:
@@ -148,7 +161,7 @@ else:
     gesamt = sum(p.stat().st_size for p in dist.parent.rglob("*") if p.is_file()) / 1024 / 1024
     ergebnisse[-1]["text"] += ", dist gesamt " + str(round(gesamt, 1)) + " MB"
 
-# --- Tor 6: Durchgang --------------------------------------------------------
+# --- Tor 7: Durchgang --------------------------------------------------------
 # Die prüfbaren Zeilen aus docs/TESTPLAN.md, mit Playwright gefahren. Sie
 # brauchen einen Bau und starten sich ihre Vorschau selbst, darum laufen sie
 # nur im vollen Lauf.
@@ -166,7 +179,7 @@ else:
         fehl = [z.strip() for z in text.splitlines() if z.strip().startswith(("✘", "1)", "2)"))][:3]
         tor("Durchgang", False, "Durchgang scheitert", "\n".join(fehl) or text[-300:])
 
-# --- Tor 7: Gedächtnis ------------------------------------------------------
+# --- Tor 8: Gedächtnis ------------------------------------------------------
 # Das Gedächtnis liegt im Arbeitsbereich, nicht im Repo. Auf einem fremden
 # Rechner oder in der CI gibt es das nicht, und das ist kein Fehler: Dort
 # bleibt das Tor offen, statt einen Bau abzubrechen, der sonst grün wäre.
