@@ -61,4 +61,4 @@ export const musterdaten = {
  * Solange `SEED_VERSION` im local-Connector die Wahrheit ist (Naht A5), muss
  * dort dieselbe Zahl stehen. Faellt die Naht, zaehlt allein diese hier.
  */
-export const MUSTERDATEN_VERSION = 10
+export const MUSTERDATEN_VERSION = 11

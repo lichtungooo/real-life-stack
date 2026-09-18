@@ -32,3 +32,14 @@ export {
   type BaukastenStueck,
   type BaukastenLuecke,
 } from "./baukasten.js"
+
+export {
+  profilAbschnitte,
+  profilStand,
+  feldTraegt,
+  BAUPLAN_FOERDERER,
+  BAUPLAN_PROJEKT,
+  type ProfilAbschnitt,
+  type ProfilFeld,
+  type FeldForm,
+} from "./profil.js"

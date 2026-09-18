@@ -18,3 +18,4 @@ export {
   type ImportStand,
 } from "./stiftungen-import.js"
 export { BaukastenFlaeche, type BaukastenFlaecheProps } from "./baukasten-flaeche.js"
+export { ProfilFlaeche, type ProfilFlaecheProps } from "./profil-flaeche.js"

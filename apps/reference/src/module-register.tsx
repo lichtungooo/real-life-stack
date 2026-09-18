@@ -8,7 +8,7 @@
 // Einmal importieren, vor dem ersten Render (main.tsx).
 
 import { Suspense, lazy } from "react"
-import { Blocks } from "lucide-react"
+import { Blocks, IdCard } from "lucide-react"
 import type { Group } from "@real-life-stack/data-interface"
 import {
   CORE_MODULE_LAYER,
@@ -24,6 +24,7 @@ import { CollectionView } from "./views/collection-view"
 import { ResonanceView } from "./views/resonance-view"
 import { GraphViewWrapper } from "./views/graph-view"
 import { BaukastenView } from "./views/baukasten-view"
+import { ProfilView } from "./views/profil-view"
 
 // Die Views haben historisch leicht unterschiedliche Signaturen; hier werden
 // sie auf den gemeinsamen Vertrag gebracht, damit der Dispatch nichts ueber
@@ -32,6 +33,7 @@ const Feed = ({ groupId }: ModuleViewProps) => <FeedView groupId={groupId} />
 const Calendar = ({ groupId }: ModuleViewProps) => <CalendarViewWrapper groupId={groupId} />
 const Resonance = ({ groupId }: ModuleViewProps) => <ResonanceView groupId={groupId} />
 const Baukasten = ({ groupId }: ModuleViewProps) => <BaukastenView groupId={groupId} />
+const Profil = ({ groupId }: ModuleViewProps) => <ProfilView groupId={groupId} />
 // Die Karte wird nachgeladen statt mitgeliefert. Sie bringt die
 // Kartenbibliothek mit (rund ein Megabyte) und ist damit das groesste
 // Einzelstueck der App. Wer nie auf die Karte geht, soll sie nicht laden:
@@ -69,9 +71,11 @@ export const MODULE_REGISTRY = composeModules([
   // ein Netzwerk ihn in `Group.data.modules` aufnimmt: Eine Stiftung, die
   // ihren Eintrag ansieht, braucht ihn nicht.
   { name: "trustdonation", definitions: [
+    { id: "profil", label: "Profil", icon: IdCard, maxWidth: "max-w-3xl" },
     { id: "baukasten", label: "Baukasten", icon: Blocks, fill: "bleed" },
   ] },
   { name: "app", extensions: [
+    { id: "profil", view: Profil },
     { id: "baukasten", view: Baukasten },
     { id: "feed", view: Feed },
     { id: "kanban", view: Kanban },
