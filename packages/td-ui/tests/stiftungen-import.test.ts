@@ -10,15 +10,15 @@ import { stiftungenSchreiben, type ImportStand } from "../src/stiftungen-import.
 
 /** Ein Connector, der mitschreibt, was er bekommt. */
 function attrappe(vorhandeneTitel: string[] = [], scheiternBei?: string) {
-  const geschrieben: { title: string }[] = []
+  const geschrieben: { title: string; eingang: Record<string, unknown> }[] = []
   return {
     geschrieben,
     connector: {
       getItems: vi.fn(async () => vorhandeneTitel.map((t) => ({ data: { title: t } }))),
-      createItem: vi.fn(async (i: { data: { title?: string } }) => {
+      createItem: vi.fn(async (i: { data: { title?: string } } & Record<string, unknown>) => {
         const titel = String(i.data?.title ?? "")
         if (scheiternBei && titel === scheiternBei) throw new Error("abgelehnt")
-        geschrieben.push({ title: titel })
+        geschrieben.push({ title: titel, eingang: i })
         return i
       }),
     } as never,
@@ -42,6 +42,22 @@ describe("Stiftungen schreiben", () => {
     // Die Musterdaten tragen auch Spaces und Projekte. Der Import fasst sie
     // nicht an: Wer 234 Stiftungen holt, bekommt keine fremden Gruppen dazu.
     expect(geschrieben.every((g) => g.title.length > 0)).toBe(true)
+  })
+
+  it("gibt die Vokabular-Bindung mit, statt sie fallen zu lassen", async () => {
+    // FND-0026: Die Musterdaten tragen `@context` (base/v1 + place/v1).
+    // Ohne sie ist ein Item nicht mehr an das Vokabular gebunden, und was
+    // daran hängt, greift nicht mehr.
+    const { connector, geschrieben } = attrappe()
+    await laufen(connector)
+
+    expect(geschrieben.length).toBeGreaterThan(0)
+    for (const g of geschrieben) {
+      expect(g.eingang["@context"]).toEqual([
+        "https://real-life-stack.org/vocab/base/v1",
+        "https://real-life-stack.org/vocab/place/v1",
+      ])
+    }
   })
 
   it("verdoppelt beim zweiten Lauf nichts", async () => {

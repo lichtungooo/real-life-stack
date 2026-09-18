@@ -68,11 +68,12 @@ export async function stiftungenSchreiben(
       continue
     }
     try {
-      await connector.createItem({
-        type: item.type,
-        data: item.data as Record<string, unknown>,
-        tags: item.tags,
-      } as CreateItemInput)
+      // Das ganze Item durchreichen, nur was der Connector selbst setzt
+      // abziehen. Wer einzelne Felder auswählt, wirft unbemerkt weg, was
+      // dazukommt — die Musterdaten tragen `@context`, und ohne Vokabular-
+      // Bindung greift nichts mehr, was daran hängt (Spec 06).
+      const { id: _id, createdAt, updatedAt, updatedBy, ...rest } = item
+      await connector.createItem(rest)
       geschrieben++
     } catch {
       uebersprungen++
