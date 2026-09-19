@@ -807,7 +807,29 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
           )}
         </NavbarStart>
         <NavbarCenter>
+          {/* Die Reiterleiste bleibt in ihrem Kasten.
+
+              Ein Flex-Kind hat `min-width: auto` und weigert sich darum zu
+              schrumpfen: Die Leiste behält ihre volle Breite und quillt, weil
+              `NavbarCenter` mittig ausrichtet, nach beiden Seiten heraus. Sie
+              liegt dann über dem Space-Umschalter links und über dem
+              Hell-Dunkel-Schalter rechts und verschluckt deren Klicks.
+
+              Gemessen bei 1280 px: Der Umschalter reicht bis x=236, die
+              Leiste begann bei x=110. Bei neun Reitern begann sie bei x=199
+              und traf seine Mitte knapp nicht; der zehnte Reiter (die
+              Begleitung) hat es sichtbar gemacht. Der Durchgang fiel daran
+              aus, und ein Mensch unter 1600 px erreicht den Umschalter nicht.
+
+              `min-w-0` erlaubt das Schrumpfen, `overflow-x-auto` gibt den
+              Reitern dahinter einen Weg. Der Balken bleibt unsichtbar, sonst
+              frisst er von den 56 px Kopfhöhe.
+
+              Über den Haken `className`, ohne Eingriff in Antons Komponente.
+              Der Wunsch an ihn: dieselben Klassen in `module-tabs.tsx`, dann
+              trifft es keine App mehr. */}
           <ModuleTabs
+            className="min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             modules={modules}
             activeModule={activeModule}
             onModuleChange={handleModuleChange}

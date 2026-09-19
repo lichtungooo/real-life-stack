@@ -1,6 +1,6 @@
 # Nähte
 
-**Stand:** 17.09.2026, gemessen gegen Antons `f9c56fff`
+**Stand:** 19.09.2026, gemessen gegen Antons `f9c56fff`
 **Regeln:** [ARCHITEKTUR.md, Teil 4](ARCHITEKTUR.md)
 
 Eine **Naht** ist eine Stelle, an der wir Antons Code ändern, weil kein Haken dafür da ist. Nähte sind erlaubt. Unbenannte Nähte sind es nicht.
@@ -9,11 +9,11 @@ Diese Datei ist vollständig. Wer Antons Code ändert, trägt hier ein.
 
 ## Zahlen
 
-| | 17.09. morgens | 17.09. abends | Ziel |
-|---|---:|---:|---:|
-| Dateien von Anton, die wir ändern | 27 | 21 | 5 |
-| Geänderte Zeilen in seinen Dateien | rund 800 | rund 790 | unter 60 |
-| Nähte mit offenem Wunsch an Anton | 0 | 8 | alle |
+| | 17.09. morgens | 17.09. abends | 19.09. | Ziel |
+|---|---:|---:|---:|---:|
+| Dateien von Anton, die wir ändern | 27 | 21 | 24 | 5 |
+| Geänderte Zeilen in seinen Dateien | rund 800 | rund 790 | 997 | unter 60 |
+| Nähte mit offenem Wunsch an Anton | 0 | 8 | 9 | alle |
 
 Die sieben Datennähte sind vollständig weg. Die beiden großen (A1, A2) stehen noch: Sie sind genau die Arbeit, die als **PR #379** bei Anton liegt. Sie jetzt umzubauen wäre Arbeit, die bei seiner Übernahme wegfällt.
 
@@ -89,7 +89,9 @@ Stellen, die nur deshalb Nähte sind, weil wir in Antons Referenz-App gearbeitet
 
 | Datei | Umfang | Was wir tun | Danach |
 |---|---|---|---|
-| `apps/reference/src/App.tsx` | +87 / -13 | Komposition, Connector-Wahl, Musterdaten, Beispieldaten-Hinweis, Stiftungs-Import | unsere Datei |
+| `apps/reference/src/App.tsx` | +110 / -13 | Komposition, Connector-Wahl, Musterdaten, Beispieldaten-Hinweis, Stiftungs-Import, Klassen für die Reiterleiste (siehe H) | unsere Datei |
+| `apps/reference/src/module-register-td.test.ts` | neu | Unsere Schicht im Register, in unserer Datei statt in seiner | unsere Datei |
+| `apps/reference/src/views/companion-view.tsx` | neu | Die Begleitung an das Register gehängt; die Fläche liegt in `td-ui` | unsere Datei |
 | `apps/reference/src/hooks/use-workspace-routing.ts` | +78 / -11 | Ordnung der Spaces, Netzwerk-Felder | unsere Datei |
 | `apps/reference/public/config.json` | neu | Testkonfiguration | unsere Datei |
 | `apps/reference/src/index.css` | +6 | `@source` für `packages/td-ui`: Ohne die Zeile erzeugt Tailwind unsere Klassen nicht, und jede Fläche aus `td-ui` steht ohne Gestaltung da | unsere Datei |
@@ -121,11 +123,29 @@ Drei echte Fehler, gefunden am 17.09.2026 von `td-tools/zugang.py` und `td-tools
 |---|---|---|---|
 | `apps/reference/index.html` | 1 Zeile | `user-scalable=no` und `maximum-scale=1` entfernt | Als PR anbieten. Zoomen abzuschalten trifft jeden, der vergrößern muss, um zu lesen (WCAG 1.4.4). |
 | `apps/reference/src/App.tsx` | 8 Zeilen | Der Hell-Dunkel-Umschalter hat einen Namen bekommen; eine Überschrift erster Ordnung steht in der Leiste | Als PR anbieten. Ein Screenreader las vorher nur "Schaltfläche", und die Seite hatte keinen Anfang zum Anspringen. |
-| `apps/reference/src/module-register.tsx` | 24 Zeilen | Die Karte wird nachgeladen statt mitgeliefert. Dazu unsere Schicht `trustdonation` mit dem Modul `baukasten` | Die Karte als PR anbieten (die Kartenbibliothek wiegt ein Megabyte). Die eigene Schicht bleibt: Sie ist genau der Erweiterungspunkt, den Anton vorgesehen hat. |
+| `apps/reference/src/module-register.tsx` | 24 Zeilen | Die Karte wird nachgeladen statt mitgeliefert. Dazu unsere Schicht `trustdonation` mit den Modulen `profil`, `baukasten` und `companion` | Die Karte als PR anbieten (die Kartenbibliothek wiegt ein Megabyte). Die eigene Schicht bleibt: Sie ist genau der Erweiterungspunkt, den Anton vorgesehen hat. |
+| `apps/reference/src/App.tsx` | 1 Zeile plus Notiz | Die Reiterleiste bekommt `min-w-0 overflow-x-auto` und einen unsichtbaren Balken, damit sie in ihrem Kasten bleibt | **Als PR anbieten.** Dieselben Klassen gehören in `packages/toolkit/src/components/layout/module-tabs.tsx`, dann trifft es keine App mehr. Siehe unten. |
 
 | `packages/toolkit/src/index.ts` | 1 Zeile plus Notiz | `resolveAdminView` wird exportiert | **Als PR anbieten.** Die Baukasten-Fläche stellt dieselbe Frage wie der Space-Dialog (darf dieser Mensch die Module wählen?) und soll dieselbe Antwort bekommen. Ohne den Export müssten wir die Regel doppeln, und zwei Antworten auf eine Frage laufen auseinander. Die Funktion kennt einen Sonderfall, den niemand zweimal richtig baut: Liefert ein Connector keine Admin-Angabe, gilt das erste Mitglied. |
 
 **Messbar geworden:** Zugang von drei Verstößen (zwei schwer) auf null. Startlast von 1596 KB auf 864 KB, vor allem weil ein Avatar mit 733 KB in den Musterdaten steckte; er ist jetzt 3 KB und liegt in unserem Paket.
+
+### H4. Die Reiterleiste quillt über den Space-Umschalter
+
+Gefunden am 19.09.2026, als die Begleitung als zehnter Reiter dazukam und drei Prüfungen im Durchgang ausfielen.
+
+`ModuleTabs` rendert ein `<nav class="hidden md:flex ...">` in `NavbarCenter`. Ein Flex-Kind hat `min-width: auto` und schrumpft darum nicht: Die Leiste behält ihre volle Breite, und weil `NavbarCenter` mittig ausrichtet, steht sie nach beiden Seiten über ihren Kasten hinaus.
+
+Gemessen bei 1280 px, zehn Reiter: Der Kasten reicht von 236 bis 965, die Leiste lag von 110 bis 1090. Sie deckte damit den Space-Umschalter links (16 bis 236) und den Hell-Dunkel-Schalter rechts ab und verschluckte deren Klicks. Bei neun Reitern begann sie bei 199 und traf die Mitte des Umschalters (x=126) knapp nicht; der Fehler lag also schon vorher da und war nur unsichtbar.
+
+| | |
+|---|---|
+| **Datei** | `apps/reference/src/App.tsx` (1 Zeile plus Notiz) |
+| **Was wir tun** | Über den vorhandenen Haken `className` bekommt die Leiste `min-w-0 overflow-x-auto` und einen unsichtbaren Rollbalken (`[scrollbar-width:none]`, `[&::-webkit-scrollbar]:hidden`). Der Balken bleibt unsichtbar, weil er von den 56 px Kopfhöhe fräße. |
+| **Warum keine Naht im Toolkit** | Es gibt den Haken. `ModuleTabs` nimmt ein `className`, und `App.tsx` steht ohnehin schon im Register. |
+| **Risiko bei Update** | **keins.** Eine Zeile in einer Datei, die uns gehört, sobald `apps/trustdonation` steht. |
+| **Wunsch an Anton** | **Als PR anbieten.** Die Klassen gehören in seine `module-tabs.tsx`: Jede App, die zehn Module führt, trifft diesen Fehler, und der Space-Umschalter ist die Stelle, an der ein Mensch sich bewegt. Der Anwendungsfall für den PR: eine Instanz mit eigener Modul-Schicht kommt über neun Reiter, und unter 1600 px Fensterbreite ist der Umschalter dann nicht mehr erreichbar. |
+| **Offen** | Der aktive Reiter rollt sich noch nicht selbst ins Bild. Wer über die URL auf ein hinteres Modul kommt, sieht seinen Reiter erst nach dem Rollen. Das gehört in denselben PR. |
 
 ---
 

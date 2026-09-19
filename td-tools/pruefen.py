@@ -31,8 +31,20 @@ SCHNELL = "--schnell" in sys.argv
 # Was in unseren Paketen nie stehen darf: Protokoll-Aufrufe binden uns an eine
 # Version des Web of Trust, und Antons nächster Fortschritt wäre unser
 # Problem (ARCHITEKTUR Teil 6).
-VERBOTEN = re.compile(r"did:key|Y\.Doc|applyUpdate|@web_of_trust")
-UNSERE_PFADE = ["packages/td-core", "packages/td-ui", "apps/trustdonation"]
+VERBOTEN = re.compile(
+    r"did:key|\bdid:|@web_of_trust|@real-life/wot-|@real-life/adapter-yjs"
+    r"|from\s+['\"]yjs['\"]|\bY\.[A-Z]|applyUpdate|encodeStateAsUpdate"
+    r"|IndexeddbPersistence|WebsocketProvider"
+    r"|\bJWS\b|\bjose\b|compactSign|flattenedSign"
+)
+UNSERE_PFADE = [
+    "packages/td-core",
+    "packages/td-ui",
+    "apps/reference/src/module-register.tsx",
+    "apps/reference/src/views/baukasten-view.tsx",
+    "apps/reference/src/views/profil-view.tsx",
+    "apps/reference/src/views/companion-view.tsx"
+]
 
 # Budget aus ARCHITEKTUR Teil 7 und dem Skill td-performance.
 #
@@ -118,8 +130,13 @@ else:
 treffer = []
 vorhanden = [p for p in UNSERE_PFADE if (REPO / p).exists()]
 for p in vorhanden:
-    for datei in (REPO / p).rglob("*"):
-        if not datei.is_file() or datei.suffix not in (".ts", ".tsx", ".js", ".mjs"):
+    pfad_obj = REPO / p
+    if pfad_obj.is_file():
+        dateien = [pfad_obj]
+    else:
+        dateien = list(pfad_obj.rglob("*"))
+    for datei in dateien:
+        if not datei.is_file() or (datei.suffix not in (".ts", ".tsx", ".js", ".mjs") and datei.name != "package.json"):
             continue
         if "node_modules" in str(datei) or "/dist/" in datei.as_posix():
             continue

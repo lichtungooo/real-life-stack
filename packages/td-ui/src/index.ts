@@ -19,3 +19,14 @@ export {
 } from "./stiftungen-import.js"
 export { BaukastenFlaeche, type BaukastenFlaecheProps } from "./baukasten-flaeche.js"
 export { ProfilFlaeche, type ProfilFlaecheProps } from "./profil-flaeche.js"
+
+// Die Begleitung (DEFINITION Teil 13). `presents` bleibt leer: Sie ist keine
+// Sicht auf Items, sie liest sie.
+export {
+  CompanionFlaeche,
+  COMPANION_WERKZEUGE,
+  ueberblickAus,
+  sichtbareWerkzeuge,
+  type CompanionWerkzeug,
+  type SpaceUeberblick,
+} from "./companion-flaeche.js"

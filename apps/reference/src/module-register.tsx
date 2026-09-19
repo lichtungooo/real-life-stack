@@ -8,7 +8,7 @@
 // Einmal importieren, vor dem ersten Render (main.tsx).
 
 import { Suspense, lazy } from "react"
-import { Blocks, IdCard } from "lucide-react"
+import { Blocks, IdCard, Sparkles } from "lucide-react"
 import type { Group } from "@real-life-stack/data-interface"
 import {
   CORE_MODULE_LAYER,
@@ -25,6 +25,7 @@ import { ResonanceView } from "./views/resonance-view"
 import { GraphViewWrapper } from "./views/graph-view"
 import { BaukastenView } from "./views/baukasten-view"
 import { ProfilView } from "./views/profil-view"
+import { CompanionView } from "./views/companion-view"
 
 // Die Views haben historisch leicht unterschiedliche Signaturen; hier werden
 // sie auf den gemeinsamen Vertrag gebracht, damit der Dispatch nichts ueber
@@ -73,10 +74,16 @@ export const MODULE_REGISTRY = composeModules([
   { name: "trustdonation", definitions: [
     { id: "profil", label: "Profil", icon: IdCard, maxWidth: "max-w-3xl" },
     { id: "baukasten", label: "Baukasten", icon: Blocks, fill: "bleed" },
+    // Die Begleitung (DEFINITION Teil 13). `presents` fehlt mit Absicht: Sie
+    // ist keine Sicht auf ein Item-Feld, sie liest die Items. Wer sie in die
+    // Feld-Praesenz haengt, macht sie zur Karte fuer ein Feld, das es nicht
+    // gibt.
+    { id: "companion", label: "Begleitung", icon: Sparkles, maxWidth: "max-w-3xl" },
   ] },
   { name: "app", extensions: [
     { id: "profil", view: Profil },
     { id: "baukasten", view: Baukasten },
+    { id: "companion", view: CompanionView },
     { id: "feed", view: Feed },
     { id: "kanban", view: Kanban },
     { id: "calendar", view: Calendar },

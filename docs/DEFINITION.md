@@ -549,3 +549,68 @@ Das trägt weiter als Weg 2: lesbar ohne jeden Client, von Suchmaschinen auffind
 Was unabhängig von allen drei Wegen gilt und heute schon gebaut werden kann:
 
 **Anmelden gehört ans Ende, nicht an den Anfang.** Wer die Karte öffnet, sieht die Karte. Der Knopf zum Anmelden steht dort, wo er gebraucht wird: an der Stelle, an der jemand etwas beitragen will.
+
+---
+
+## Teil 13: Der Companion
+
+**Frage:** Wie bekommt ein Mensch im Space eine Begleitung, die seine Sachen kennt, ohne dass die Instanz eine Rechnung dafür aufmacht?
+
+Der Companion ist das erste Modul einer Familie. Er hängt eine AI an den Menschen im Space und stellt ihr Werkzeuge in die Hand. Vorlage ist das Modul in `lichtungooo/rln`, `src/modules/companion/` (1622 Zeilen); hier entsteht es neu im Sprachgebrauch des Stacks.
+
+### 13.1 Was ihn vom Vorbild unterscheidet
+
+| | RLN-Vorbild | Hier |
+|---|---|---|
+| Daten | Wissensfeld des Spaces | `useItems()` aus dem Toolkit |
+| Einbringung | HumHub-Modul | Registerschicht `trustdonation`, Fläche in `td-ui` |
+| Schlüssel | `localStorage` je Space | ebenso, **und ausdrücklich befristet**, siehe 13.4 |
+
+### 13.2 Der Registereintrag
+
+Eine Zeile in der vorhandenen Schicht `trustdonation` in `apps/reference/src/module-register.tsx`. Die Naht dort steht schon im Register (`NAEHTE.md`, Zeile 124) und ist als Erweiterungspunkt gedacht.
+
+| Feld | Wert | Grund |
+|---|---|---|
+| `id` | `companion` | ASCII, zugleich URL-Segment |
+| `label` | Begleitung | Anzeigename |
+| `icon` | `Sparkles` | |
+| `enabledByDefault` | `false` | Ein neuer Space bekommt ihn nicht ungefragt |
+| `maxWidth` | `max-w-3xl` | Ein Gespräch liest sich schmal besser |
+| `presents` | **leer** | Der Companion stellt **kein** Item-Feld dar |
+
+`presents` leer zu lassen ist eine Aussage, keine Auslassung: Der Companion ist keine Sicht auf Items. Er liest sie, er zeigt sie nicht. Wer ihn in die Feld-Präsenz hängt, macht ihn zur Karte für ein Feld, das es nicht gibt.
+
+### 13.3 Was er liest, und was nicht
+
+Er liest über `useItems()` die Items des aktiven Space. Er verzweigt **nie** über `type` (Muster 4): Ein Werkzeug fragt nach Feldern, nicht nach Art.
+
+**Lesend im ersten Schritt.** Kein Werkzeug schreibt. Der Grund steht in Teil 11 und in der Erfahrung des 18.09.2026: Ein Agent, der keinen Weg hat, denkt sich einen aus. Ein schreibendes Werkzeug bekommt erst dann einen Platz, wenn die Freigabe etwas verlangt, das der Agent nicht hat.
+
+### 13.4 ⚠ Woher das Modell kommt, ist offen
+
+Heute ruft das Vorbild `api.anthropic.com` unmittelbar aus dem Browser, mit dem Schlüssel des Nutzers im `localStorage`. Das trägt für einen Prototypen und **nicht für eine Instanz**:
+
+1. Ein Schlüssel im `localStorage` ist ein Schlüssel in fremder Hand. Jedes Skript auf der Seite liest ihn.
+2. Jeder Nutzer bräuchte einen eigenen Schlüssel und eine eigene Rechnung.
+3. Timos Bedingung vom 18.09.2026 gilt für alles, was wir betreiben: *"Es soll gar nichts Geld kosten. Keine API."*
+
+**Darum steht die Fläche zuerst ohne Modell.** Sie zeigt, was der Companion weiß und welche Werkzeuge er hat, und sie sagt offen, dass die Anbindung fehlt. Das ist ehrlicher als ein Eingabefeld für einen Schlüssel, den niemand dort ablegen sollte.
+
+Drei Wege stehen offen, und die Wahl gehört Timo und Anton:
+
+| Weg | Was er kostet | Was er verlangt |
+|---|---|---|
+| Schlüssel je Nutzer im Browser | nichts für die Instanz | jeder Nutzer einen eigenen Schlüssel; der Schlüssel liegt unsicher |
+| Ein Dienst der Instanz | je Aufruf | ein Schlüssel der Instanz, eine Grenze je Nutzer |
+| MCP-Server je Space | nichts, wenn der Nutzer seinen eigenen Agenten mitbringt | einen Weg, einen MCP-Server im Space zu nennen |
+
+Der dritte ist der, der zum Rest passt: Der Werkzeug-Vertrag steht schon als Register, und ein Space, der einen MCP-Server nennen kann, bringt jede App ihre Werkzeuge selbst mit. Dasselbe Muster wie `presents` bei den Modulen.
+
+### 13.5 Regeln
+
+1. Der Companion ist **eine** Fläche und trägt **eine** Werkzeug-Liste. Eine zweite Aufzählung von Werkzeugen ist ein Fehler (Muster 1).
+2. Ein Werkzeug ohne Beschreibung erscheint nicht. Was ein Mensch nicht lesen kann, gibt er nicht frei.
+3. Eine fehlende Anbindung **degradiert sichtbar**: Die Fläche steht, das Gespräch fehlt, und sie sagt warum. Nie eine leere Fläche, nie ein Fehler.
+4. Der Schlüssel, wenn einer kommt, steht **nicht** im Quelltext und **nicht** in den Musterdaten.
+5. Kein `did:key`, kein JWS, kein Yjs. Die Grenze gilt hier wie überall.
