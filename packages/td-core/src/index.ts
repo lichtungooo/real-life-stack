@@ -44,3 +44,9 @@ export {
   type ProfilFeld,
   type FeldForm,
 } from "./profil.js"
+
+export {
+  zerlegeEintrag,
+  sitzAusAnschrift,
+  type ZerlegterEintrag,
+} from "./eintrag-zerlegen.js"
