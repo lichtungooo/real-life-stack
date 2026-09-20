@@ -18,7 +18,7 @@
     "scope": "group",
     "access": "open",
     "roles": ["admin", "member"],
-    "modules": ["profil", "feed", "kanban", "calendar", "map"],
+    "modules": ["feed", "kanban", "calendar", "map"],
     "network": "30455be1-a5f9-465d-8d19-a72dd8da2d83",
     "kind": "stiftung",
     "primaryColor": "#194294",

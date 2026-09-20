@@ -11,6 +11,7 @@
 // **Die sechs Abschnitte antworten auf sechs Fragen.** Ein Abschnitt ohne
 // Frage ist eine Überschrift; mit Frage ist er eine Antwort, und das ist der
 // Unterschied. Die Fragen stehen leise über den Titeln.
+import type { CSSProperties } from "react"
 import type { ProfilAbschnitt, ProfilFeld } from "@trustdonation/core"
 
 /**
@@ -22,21 +23,41 @@ import type { ProfilAbschnitt, ProfilFeld } from "@trustdonation/core"
  * ruhig.
  *
  * `/60` durchgehend, damit ein Verlauf dahinter durchscheint.
+ *
+ * **Jede Fläche trägt beide Ansichten.** Bei dunkler Ansicht steht heller
+ * Text auf der Fläche; eine helle Fläche verschluckt ihn dann. Darum dieselbe
+ * Farbe tief und zurückhaltend (`-950/40`), statt einer hellen Fläche, auf
+ * der niemand mehr die Beschriftungen liest. Gesehen am 20.09.2026 im Panel.
  */
 const FLAECHEN: Record<string, string> = {
   // Förderer
-  wer: "bg-amber-50/60",
-  was: "bg-green-50/60",
-  wieviel: "bg-orange-50/60",
-  antrag: "bg-blue-50/60",
-  kontakt: "bg-violet-50/60",
-  geben: "bg-emerald-50/60",
+  wer: "bg-amber-50/60 dark:bg-amber-950/40",
+  was: "bg-green-50/60 dark:bg-green-950/40",
+  wieviel: "bg-orange-50/60 dark:bg-orange-950/40",
+  antrag: "bg-blue-50/60 dark:bg-blue-950/40",
+  kontakt: "bg-violet-50/60 dark:bg-violet-950/40",
+  geben: "bg-emerald-50/60 dark:bg-emerald-950/40",
   // Projekt: dieselben Fragen, dieselben Farben, wo sie sich treffen
-  warum: "bg-green-50/60",
-  kosten: "bg-orange-50/60",
-  steht: "bg-blue-50/60",
-  wann: "bg-violet-50/60",
-  wirkung: "bg-emerald-50/60",
+  warum: "bg-green-50/60 dark:bg-green-950/40",
+  kosten: "bg-orange-50/60 dark:bg-orange-950/40",
+  steht: "bg-blue-50/60 dark:bg-blue-950/40",
+  wann: "bg-violet-50/60 dark:bg-violet-950/40",
+  wirkung: "bg-emerald-50/60 dark:bg-emerald-950/40",
+}
+
+/**
+ * Text in der Hausfarbe, der in beiden Ansichten lesbar bleibt.
+ *
+ * Eine Hausfarbe ist fuer weissen Grund gewaehlt: Das Blau der Software
+ * AG-Stiftung (#194294) verschwindet auf einer dunklen Flaeche. Ein Inline-Stil
+ * laesst sich von CSS nicht zuruecknehmen, darum reist die Farbe als Variable
+ * und die dunkle Ansicht greift auf den Vordergrund zurueck.
+ */
+const HAUSFARBE = "text-[color:var(--td-hausfarbe)] dark:text-foreground"
+
+/** Die Hausfarbe an die Variable binden. */
+function hausfarbe(farbe: string): CSSProperties {
+  return { "--td-hausfarbe": farbe } as CSSProperties
 }
 
 export interface ProfilFlaecheProps {
@@ -71,7 +92,7 @@ export function ProfilFlaeche({
     return (
       <div className="mx-auto max-w-3xl p-6">
         <Kopf name={name} art={art} bild={bild} farbe={eigen} />
-        <p className="mt-6 rounded-2xl bg-amber-50/60 px-5 py-6 text-center text-sm text-muted-foreground">
+        <p className="mt-6 rounded-2xl bg-amber-50/60 dark:bg-amber-950/40 px-5 py-6 text-center text-sm text-muted-foreground">
           Dieses Profil trägt noch keine Angaben.
           <br />
           Wer den Space verwaltet, füllt sie im Bereich <strong>Netzwerk</strong> aus.
@@ -98,7 +119,7 @@ export function ProfilFlaeche({
         {abschnitte.map((a) => (
           <section
             key={a.id}
-            className={"overflow-hidden rounded-2xl p-5 " + (FLAECHEN[a.id] ?? "bg-slate-50/60")}
+            className={"@container overflow-hidden rounded-2xl p-5 " + (FLAECHEN[a.id] ?? "bg-slate-50/60 dark:bg-slate-900/40")}
           >
             <div className="mb-4">
               <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -116,7 +137,7 @@ export function ProfilFlaeche({
       </div>
 
       {quelle && (
-        <p className="mt-6 rounded-2xl bg-slate-50/60 px-5 py-4 text-xs text-muted-foreground">
+        <p className="mt-6 rounded-2xl bg-slate-50/60 dark:bg-slate-900/40 px-5 py-4 text-xs text-muted-foreground">
           Diese Angaben stammen aus öffentlichen Quellen: {quelle}. Die Einrichtung kann den
           Eintrag übernehmen und selbst pflegen.
         </p>
@@ -162,7 +183,7 @@ function Kopf({
       <div className="min-w-0 flex-1">
         <h1 className="text-2xl font-bold leading-tight tracking-tight">{name}</h1>
         {art && (
-          <p className="mt-0.5 text-sm font-semibold" style={{ color: farbe }}>
+          <p className={"mt-0.5 text-sm font-semibold " + HAUSFARBE} style={hausfarbe(farbe)}>
             {art}
           </p>
         )}
@@ -193,14 +214,14 @@ function Feld({ feld, farbe }: { feld: ProfilFeld; farbe: string }) {
   if (form === "tags") {
     const liste = Array.isArray(wert) ? wert : [wert]
     return (
-      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1.5">
-        <dt className="w-44 shrink-0 text-xs font-semibold text-muted-foreground">{label}</dt>
+      <div className="flex flex-col gap-y-1.5 @md:flex-row @md:flex-wrap @md:items-baseline @md:gap-x-3">
+        <dt className="text-xs font-semibold text-muted-foreground @md:w-44 @md:shrink-0">{label}</dt>
         <dd className="flex flex-1 flex-wrap gap-1.5">
           {liste.map((t, i) => (
             <span
               key={i}
-              className="rounded-full bg-white/70 px-2.5 py-0.5 text-sm"
-              style={{ color: farbe }}
+              className={"rounded-full bg-white dark:bg-white/10 px-2.5 py-0.5 text-sm " + HAUSFARBE}
+              style={hausfarbe(farbe)}
             >
               {String(t)}
             </span>
@@ -213,8 +234,8 @@ function Feld({ feld, farbe }: { feld: ProfilFeld; farbe: string }) {
   if (form === "list") {
     const liste = Array.isArray(wert) ? wert : [wert]
     return (
-      <div className="flex flex-wrap items-baseline gap-x-3">
-        <dt className="w-44 shrink-0 text-xs font-semibold text-muted-foreground">{label}</dt>
+      <div className="flex flex-col gap-y-1 @md:flex-row @md:flex-wrap @md:items-baseline @md:gap-x-3">
+        <dt className="text-xs font-semibold text-muted-foreground @md:w-44 @md:shrink-0">{label}</dt>
         <dd className="flex-1">
           <ul className="space-y-0.5">
             {liste.map((t, i) => (
@@ -227,8 +248,8 @@ function Feld({ feld, farbe }: { feld: ProfilFeld; farbe: string }) {
   }
 
   return (
-    <div className="flex flex-wrap items-baseline gap-x-3">
-      <dt className="w-44 shrink-0 text-xs font-semibold text-muted-foreground">{label}</dt>
+    <div className="flex flex-col gap-y-1 @md:flex-row @md:flex-wrap @md:items-baseline @md:gap-x-3">
+      <dt className="text-xs font-semibold text-muted-foreground @md:w-44 @md:shrink-0">{label}</dt>
       <dd className="flex-1">{anzeige(form, wert, farbe)}</dd>
     </div>
   )
@@ -279,15 +300,15 @@ function anzeige(form: string, wert: unknown, farbe: string) {
       return <span>{wert}</span>
     }
     return (
-      <a href={href} target="_blank" rel="noreferrer" style={{ color: farbe }}
-         className="underline underline-offset-2">
+      <a href={href} target="_blank" rel="noreferrer" style={hausfarbe(farbe)}
+         className={"underline underline-offset-2 " + HAUSFARBE}>
         {wert.replace(/^https?:\/\//, "")}
       </a>
     )
   }
   if (form === "email" && typeof wert === "string") {
     return (
-      <a href={`mailto:${wert}`} style={{ color: farbe }} className="underline underline-offset-2">
+      <a href={`mailto:${wert}`} style={hausfarbe(farbe)} className={"underline underline-offset-2 " + HAUSFARBE}>
         {wert}
       </a>
     )

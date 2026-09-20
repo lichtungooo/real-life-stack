@@ -32,10 +32,27 @@ describe("Die Schicht trustdonation", () => {
     expect(begleitung?.presents ?? []).toEqual([])
   })
 
-  it("bringt Profil, Baukasten und Begleitung mit", () => {
+  it("bringt Baukasten und Begleitung mit", () => {
     const ids = getModules().map((m) => m.id)
-    for (const id of ["profil", "baukasten", "companion"]) {
+    for (const id of ["baukasten", "companion"]) {
       expect(ids, `${id} fehlt im Register`).toContain(id)
     }
+  })
+
+  /**
+   * ⚠ Das Profil ist eine Komponente, kein Modul.
+   *
+   * Timo am 20.09.2026: *"Es sollte nicht oben in diesem Header-Bereich
+   * auftauchen als Profil, sondern rechts."* Ein Reiter ist eine
+   * Arbeitsflaeche; ein Profil ist die Identitaetskarte dessen, mit dem man
+   * es zu tun hat. Es erscheint im Panel (`views/profil-panel.tsx`), auf der
+   * Karte, auf einer Landingpage und in einer Liste (docs/13-profil.md).
+   *
+   * Steht als Test, weil ein Eintrag im Register zwei Zeilen kostet und die
+   * Einordnung still umdreht.
+   */
+  it("⚠ fuehrt das Profil nicht als Modul", () => {
+    const ids = getModules().map((m) => m.id)
+    expect(ids, "das Profil gehoert ins Panel, nicht in die Reiterleiste").not.toContain("profil")
   })
 })

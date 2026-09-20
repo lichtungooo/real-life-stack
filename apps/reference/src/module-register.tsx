@@ -8,7 +8,7 @@
 // Einmal importieren, vor dem ersten Render (main.tsx).
 
 import { Suspense, lazy } from "react"
-import { Blocks, IdCard, Sparkles } from "lucide-react"
+import { Blocks, Sparkles } from "lucide-react"
 import type { Group } from "@real-life-stack/data-interface"
 import {
   CORE_MODULE_LAYER,
@@ -24,7 +24,6 @@ import { CollectionView } from "./views/collection-view"
 import { ResonanceView } from "./views/resonance-view"
 import { GraphViewWrapper } from "./views/graph-view"
 import { BaukastenView } from "./views/baukasten-view"
-import { ProfilView } from "./views/profil-view"
 import { CompanionView } from "./views/companion-view"
 
 // Die Views haben historisch leicht unterschiedliche Signaturen; hier werden
@@ -34,7 +33,6 @@ const Feed = ({ groupId }: ModuleViewProps) => <FeedView groupId={groupId} />
 const Calendar = ({ groupId }: ModuleViewProps) => <CalendarViewWrapper groupId={groupId} />
 const Resonance = ({ groupId }: ModuleViewProps) => <ResonanceView groupId={groupId} />
 const Baukasten = ({ groupId }: ModuleViewProps) => <BaukastenView groupId={groupId} />
-const Profil = ({ groupId }: ModuleViewProps) => <ProfilView groupId={groupId} />
 // Die Karte wird nachgeladen statt mitgeliefert. Sie bringt die
 // Kartenbibliothek mit (rund ein Megabyte) und ist damit das groesste
 // Einzelstueck der App. Wer nie auf die Karte geht, soll sie nicht laden:
@@ -71,8 +69,12 @@ export const MODULE_REGISTRY = composeModules([
   // `enabledByDefault` fehlt mit Absicht. Der Baukasten erscheint erst, wenn
   // ein Netzwerk ihn in `Group.data.modules` aufnimmt: Eine Stiftung, die
   // ihren Eintrag ansieht, braucht ihn nicht.
+  //
+  // Das Profil steht hier mit Absicht NICHT. Ein Reiter ist eine
+  // Arbeitsflaeche; ein Profil ist die Identitaetskarte dessen, mit dem man
+  // es zu tun hat. Es erscheint als Komponente im Panel rechts, neben dem
+  // Profil eines Menschen (views/profil-panel.tsx, docs/13-profil.md).
   { name: "trustdonation", definitions: [
-    { id: "profil", label: "Profil", icon: IdCard, maxWidth: "max-w-3xl" },
     { id: "baukasten", label: "Baukasten", icon: Blocks, fill: "bleed" },
     // Die Begleitung (DEFINITION Teil 13). `presents` fehlt mit Absicht: Sie
     // ist keine Sicht auf ein Item-Feld, sie liest die Items. Wer sie in die
@@ -81,7 +83,6 @@ export const MODULE_REGISTRY = composeModules([
     { id: "companion", label: "Begleitung", icon: Sparkles, maxWidth: "max-w-3xl" },
   ] },
   { name: "app", extensions: [
-    { id: "profil", view: Profil },
     { id: "baukasten", view: Baukasten },
     { id: "companion", view: CompanionView },
     { id: "feed", view: Feed },

@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense, type ReactNode } from "react"
 import { Routes, Route, useNavigate, useSearchParams, useLocation } from "react-router-dom"
 import {
+  IdCard,
   Plus,
   Sun,
   Moon,
@@ -87,6 +88,7 @@ import { StiftungenImport } from "@trustdonation/ui"
 import { MockConnector } from "@real-life-stack/mock-connector"
 import { LocalConnector } from "@real-life-stack/local-connector"
 import { ModuleOutlet } from "./views/module-outlet"
+import { SpaceProfilPanel } from "./views/profil-panel"
 import { useWorkspaceRouting, STORAGE_KEY_GROUP } from "./hooks/use-workspace-routing"
 import { buildNotificationRoute, moduleCanDisplay } from "./notification-navigation"
 import { ItemFocusProvider } from "./hooks/use-item-focus"
@@ -618,6 +620,34 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
     }
   }, [location.state, navigate, searchParams, setSearchParams])
 
+  // Das Profil eines Space liegt auf derselben Ebene wie das eines Menschen:
+  // rechts im Panel, ueber `?profil={spaceId}` in der URL, mit demselben
+  // Push-und-Pop wie der Dialog-Stack. Timo am 20.09.2026: *"Es ist nicht
+  // einfach ein Modul, sondern eine Komponente. Dann ist es aber auch rechts
+  // angeordnet."* Ein Reiter ist eine Arbeitsflaeche; ein Profil ist die
+  // Identitaetskarte dessen, mit dem man es zu tun hat (docs/13-profil.md).
+  //
+  // Zwei Schreibweisen, ein Buchstabe Unterschied: `profile` traegt eine
+  // Nutzer-Id, `profil` eine Space-Id. Das ist Absicht und steht hier, damit
+  // niemand sie fuer einen Tippfehler haelt.
+  const profilGroupId = searchParams.get("profil")
+  const openSpaceProfil = useCallback((groupId: string) => {
+    const params = new URLSearchParams(searchParams)
+    params.set("profil", groupId)
+    const prev = (typeof location.state === "object" && location.state) || {}
+    setSearchParams(params, { state: { ...prev, rlsDialogPush: true } })
+  }, [searchParams, setSearchParams, location.state])
+  const closeSpaceProfil = useCallback(() => {
+    const pushed = (location.state as { rlsDialogPush?: boolean } | null)?.rlsDialogPush
+    if (pushed) {
+      navigate(-1)
+    } else {
+      const params = new URLSearchParams(searchParams)
+      params.delete("profil")
+      setSearchParams(params, { replace: true })
+    }
+  }, [location.state, navigate, searchParams, setSearchParams])
+
   const handleSaveProfile = useCallback(async (updates: { name: string; bio: string; avatar?: string }) => {
     if (hasProfile(connector)) {
       await connector.updateMyProfile(updates)
@@ -855,6 +885,25 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
           )}
           {supportsMessaging && <RelayStatusBadgeWrapper />}
           {notifications.supported ? <NotificationBell open={activityOpen} count={notifications.badgeCount} onOpenChange={setActivityOpen} /> : activity.supported && <ActivityBell open={activityOpen} onOpenChange={setActivityOpen} />}
+          {/* Das Profil des offenen Space, rechts neben dem des Menschen.
+              Es erscheint, sobald ein Space offen ist: Wer eine Stiftung
+              ansieht, schlaegt hier ihre Karte auf.
+
+              Die Uebersicht bleibt aussen vor. "Mein Netzwerk" ist die Summe
+              aller Spaces (`scope: "overview"`), keine Einrichtung, und hat
+              darum kein Profil. */}
+          {activeWorkspace && activeWorkspace.scope !== "overview" && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => openSpaceProfil(activeWorkspace.id)}
+              aria-label={`Profil von ${activeWorkspace.name} ansehen`}
+              title={`Profil von ${activeWorkspace.name}`}
+              className="h-9 w-9"
+            >
+              <IdCard className="h-4 w-4" />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -988,6 +1037,10 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
           onClose={() => setThemeCardOpen(false)}
         />
       )}
+
+      {/* Ein Panel je Art von Profil, dieselbe Flaeche rechts: ein Mensch
+          (Antons Spec 12) und eine Einrichtung (docs/13-profil.md). */}
+      <SpaceProfilPanel groupId={profilGroupId} onClose={closeSpaceProfil} />
 
       <ProfilePanelHost
         userId={profileUserId}

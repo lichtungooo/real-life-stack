@@ -1,6 +1,6 @@
 # Nähte
 
-**Stand:** 19.09.2026, gemessen gegen Antons `f9c56fff`
+**Stand:** 20.09.2026, gemessen gegen Antons `f9c56fff`
 **Regeln:** [ARCHITEKTUR.md, Teil 4](ARCHITEKTUR.md)
 
 Eine **Naht** ist eine Stelle, an der wir Antons Code ändern, weil kein Haken dafür da ist. Nähte sind erlaubt. Unbenannte Nähte sind es nicht.
@@ -89,9 +89,10 @@ Stellen, die nur deshalb Nähte sind, weil wir in Antons Referenz-App gearbeitet
 
 | Datei | Umfang | Was wir tun | Danach |
 |---|---|---|---|
-| `apps/reference/src/App.tsx` | +110 / -13 | Komposition, Connector-Wahl, Musterdaten, Beispieldaten-Hinweis, Stiftungs-Import, Klassen für die Reiterleiste (siehe H) | unsere Datei |
+| `apps/reference/src/App.tsx` | +163 / -13 | Komposition, Connector-Wahl, Musterdaten, Beispieldaten-Hinweis, Stiftungs-Import, Klassen für die Reiterleiste (siehe H), das Profil-Panel einer Einrichtung (`?profil=`) | unsere Datei |
 | `apps/reference/src/module-register-td.test.ts` | neu | Unsere Schicht im Register, in unserer Datei statt in seiner | unsere Datei |
 | `apps/reference/src/views/companion-view.tsx` | neu | Die Begleitung an das Register gehängt; die Fläche liegt in `td-ui` | unsere Datei |
+| `apps/reference/src/views/profil-panel.tsx` | neu | Das Profil einer Einrichtung im Panel rechts; die Fläche liegt in `td-ui` | unsere Datei |
 | `apps/reference/src/hooks/use-workspace-routing.ts` | +78 / -11 | Ordnung der Spaces, Netzwerk-Felder | unsere Datei |
 | `apps/reference/public/config.json` | neu | Testkonfiguration | unsere Datei |
 | `apps/reference/src/index.css` | +6 | `@source` für `packages/td-ui`: Ohne die Zeile erzeugt Tailwind unsere Klassen nicht, und jede Fläche aus `td-ui` steht ohne Gestaltung da | unsere Datei |
@@ -123,7 +124,7 @@ Drei echte Fehler, gefunden am 17.09.2026 von `td-tools/zugang.py` und `td-tools
 |---|---|---|---|
 | `apps/reference/index.html` | 1 Zeile | `user-scalable=no` und `maximum-scale=1` entfernt | Als PR anbieten. Zoomen abzuschalten trifft jeden, der vergrößern muss, um zu lesen (WCAG 1.4.4). |
 | `apps/reference/src/App.tsx` | 8 Zeilen | Der Hell-Dunkel-Umschalter hat einen Namen bekommen; eine Überschrift erster Ordnung steht in der Leiste | Als PR anbieten. Ein Screenreader las vorher nur "Schaltfläche", und die Seite hatte keinen Anfang zum Anspringen. |
-| `apps/reference/src/module-register.tsx` | 24 Zeilen | Die Karte wird nachgeladen statt mitgeliefert. Dazu unsere Schicht `trustdonation` mit den Modulen `profil`, `baukasten` und `companion` | Die Karte als PR anbieten (die Kartenbibliothek wiegt ein Megabyte). Die eigene Schicht bleibt: Sie ist genau der Erweiterungspunkt, den Anton vorgesehen hat. |
+| `apps/reference/src/module-register.tsx` | 24 Zeilen | Die Karte wird nachgeladen statt mitgeliefert. Dazu unsere Schicht `trustdonation` mit den Modulen `baukasten` und `companion` | Die Karte als PR anbieten (die Kartenbibliothek wiegt ein Megabyte). Die eigene Schicht bleibt: Sie ist genau der Erweiterungspunkt, den Anton vorgesehen hat. |
 | `apps/reference/src/App.tsx` | 1 Zeile plus Notiz | Die Reiterleiste bekommt `min-w-0 overflow-x-auto` und einen unsichtbaren Balken, damit sie in ihrem Kasten bleibt | **Als PR anbieten.** Dieselben Klassen gehören in `packages/toolkit/src/components/layout/module-tabs.tsx`, dann trifft es keine App mehr. Siehe unten. |
 
 | `packages/toolkit/src/index.ts` | 1 Zeile plus Notiz | `resolveAdminView` wird exportiert | **Als PR anbieten.** Die Baukasten-Fläche stellt dieselbe Frage wie der Space-Dialog (darf dieser Mensch die Module wählen?) und soll dieselbe Antwort bekommen. Ohne den Export müssten wir die Regel doppeln, und zwei Antworten auf eine Frage laufen auseinander. Die Funktion kennt einen Sonderfall, den niemand zweimal richtig baut: Liefert ein Connector keine Admin-Angabe, gilt das erste Mitglied. |
