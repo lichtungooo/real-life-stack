@@ -112,14 +112,16 @@ function Kopf({
     .map((w) => w[0].toUpperCase())
     .join("")
 
+  const sicheresBild = bild ? urlAlsBildSrc(bild) : null
+
   return (
     <div className="flex items-start gap-4">
       <div
         className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-xl font-bold text-white"
         style={{ background: farbe }}
       >
-        {bild ? (
-          <img src={bild} alt="" className="h-full w-full object-cover" />
+        {sicheresBild ? (
+          <img src={sicheresBild} alt="" className="h-full w-full object-cover" />
         ) : (
           kuerzel || "?"
         )}
@@ -199,6 +201,38 @@ function Feld({ feld, farbe }: { feld: ProfilFeld; farbe: string }) {
   )
 }
 
+/**
+ * Ein Wert wird erst dann ein Link, wenn er eine http(s)-URL trägt.
+ *
+ * Der Wert kommt aus `Group.data` und damit von einem Menschen (Regel 4).
+ * `javascript:` und `data:` werden von React im href nicht zuverlässig
+ * abgefangen — die Entwicklungswarnung ist kein Riegel, und das Attribut wird
+ * trotzdem gesetzt. Wer kein http(s) trägt, fällt auf Text zurück (Muster 5):
+ * sichtbar, aber ohne Ausführung.
+ */
+export function urlAlsHref(wert: string): string | null {
+  const getrimmt = wert.trim()
+  return /^https?:\/\//i.test(getrimmt) ? getrimmt : null
+}
+
+/**
+ * Ein Bild-Pfad wird erst dann verwendet, wenn er ein sicheres Schema trägt.
+ *
+ * FND-0027: `javascript:` oder `vbscript:` im `src` eines `img`-Tags können
+ * in manchen Browsern ausgeführt werden. Erlaubt sind http(s)-URLs, relative
+ * Pfade und sichere `data:image/...` URIs.
+ */
+export function urlAlsBildSrc(wert: string): string | null {
+  const getrimmt = wert.trim()
+  if (/^(javascript|vbscript):/i.test(getrimmt)) {
+    return null
+  }
+  if (/^https?:\/\//i.test(getrimmt) || getrimmt.startsWith("/") || /^data:image\//i.test(getrimmt)) {
+    return getrimmt
+  }
+  return null
+}
+
 function anzeige(form: string, wert: unknown, farbe: string) {
   if (form === "bool") {
     return <span>{wert === true ? "ja" : "nein"}</span>
@@ -207,8 +241,12 @@ function anzeige(form: string, wert: unknown, farbe: string) {
     return <span className="tabular-nums">{wert.toLocaleString("de-DE")} €</span>
   }
   if (form === "url" && typeof wert === "string") {
+    const href = urlAlsHref(wert)
+    if (!href) {
+      return <span>{wert}</span>
+    }
     return (
-      <a href={wert} target="_blank" rel="noreferrer" style={{ color: farbe }}
+      <a href={href} target="_blank" rel="noreferrer" style={{ color: farbe }}
          className="underline underline-offset-2">
         {wert.replace(/^https?:\/\//, "")}
       </a>

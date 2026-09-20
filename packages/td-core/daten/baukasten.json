@@ -50,9 +50,9 @@
      "herkunft": "Anton"
     },
     {
-     "id": "companion",
-     "name": "Companion",
-     "zweck": "Ein Mensch bringt seine eigene AI mit und gibt ihr Werkzeuge in die Hand. Jede Tat trägt das Siegel des Menschen.",
+     "id": "baukasten",
+     "name": "Baukasten",
+     "zweck": "Die Steuerzentrale für dieses Netzwerk. Hier wählst du, welche Bausteine aktiv sind und gestaltest deinen eigenen Space.",
      "herkunft": "Timo und Eli"
     }
    ],

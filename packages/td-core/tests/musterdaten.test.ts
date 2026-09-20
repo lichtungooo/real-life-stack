@@ -2,8 +2,13 @@
 // geprüft wird, ist keine Fuelle, sondern die Form: Ein Netzwerk, das seine
 // Arten verloren hat, oder ein Space, der auf ein Netzwerk zeigt, das es nicht
 // gibt, macht den Umschalter still kaputt.
+import { readFileSync } from "node:fs"
+import { fileURLToPath } from "node:url"
+import { dirname, join } from "node:path"
 import { describe, it, expect } from "vitest"
 import { musterdaten, MUSTERDATEN_VERSION } from "../src/musterdaten.js"
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 describe("Musterdaten", () => {
   const { groups, users, groupMembers, groupItems, items } = musterdaten
@@ -107,5 +112,14 @@ describe("Musterdaten", () => {
 
   it("traegt eine Version, die mit den Daten hochgeht", () => {
     expect(MUSTERDATEN_VERSION).toBeGreaterThan(0)
+  })
+
+  it("bindet MUSTERDATEN_VERSION an SEED_VERSION", () => {
+    const connectorPath = join(__dirname, "../../local-connector/src/local-connector.ts")
+    const quelle = readFileSync(connectorPath, "utf8")
+    const treffer = /export const SEED_VERSION = (\d+)/.exec(quelle)
+    expect(treffer).not.toBeNull()
+    const seedVersion = Number(treffer?.[1])
+    expect(seedVersion).toBe(MUSTERDATEN_VERSION)
   })
 })
