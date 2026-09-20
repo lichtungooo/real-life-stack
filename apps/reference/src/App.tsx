@@ -84,6 +84,7 @@ import {
 // Prototyp trustdonation: Die Musterdaten kommen als Seed aus unserem Paket,
 // nicht aus Antons Demodaten. Beide Connectoren nehmen einen Seed als
 // Parameter, darum bleiben seine Dateien unberuehrt (NAEHTE Abschnitt C).
+import { traegtProfil } from "@trustdonation/core"
 import { StiftungenImport } from "@trustdonation/ui"
 import { MockConnector } from "@real-life-stack/mock-connector"
 import { LocalConnector } from "@real-life-stack/local-connector"
@@ -630,6 +631,19 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
   // Zwei Schreibweisen, ein Buchstabe Unterschied: `profile` traegt eine
   // Nutzer-Id, `profil` eine Space-Id. Das ist Absicht und steht hier, damit
   // niemand sie fuer einen Tippfehler haelt.
+  // Traegt der offene Space ueberhaupt ein Profil? Die Regel steht in
+  // `@trustdonation/core`: ein Bauplan greift UND mindestens ein Feld hat
+  // eine Angabe. Ein Netzwerk hat weder das eine noch das andere.
+  const spaceTraegtProfil = useMemo(
+    () =>
+      activeWorkspace != null &&
+      activeWorkspace.scope !== "overview" &&
+      traegtProfil(
+        (groups.find((g) => g.id === activeWorkspace.id)?.data ?? {}) as Record<string, unknown>,
+      ),
+    [activeWorkspace, groups],
+  )
+
   const profilGroupId = searchParams.get("profil")
   const openSpaceProfil = useCallback((groupId: string) => {
     const params = new URLSearchParams(searchParams)
@@ -889,10 +903,10 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
               Es erscheint, sobald ein Space offen ist: Wer eine Stiftung
               ansieht, schlaegt hier ihre Karte auf.
 
-              Die Uebersicht bleibt aussen vor. "Mein Netzwerk" ist die Summe
-              aller Spaces (`scope: "overview"`), keine Einrichtung, und hat
-              darum kein Profil. */}
-          {activeWorkspace && activeWorkspace.scope !== "overview" && (
+              Die Uebersicht bleibt aussen vor, und ein Netzwerk auch: Beide
+              sind keine Einrichtung, und `traegtProfil` sagt das. Eine Taste,
+              die auf "traegt noch keine Angaben" fuehrt, wirkt kaputt. */}
+          {activeWorkspace && spaceTraegtProfil && (
             <Button
               variant="ghost"
               size="icon"

@@ -272,3 +272,56 @@ export function profilStand(
   }
   return { gefuellt, gesamt }
 }
+
+/**
+ * Welcher Bauplan gilt für diese Angaben?
+ *
+ * Die Frage entscheidet mehr als die Darstellung: **Wer keinen Bauplan hat,
+ * hat kein Profil.** Ein Netzwerk ist weder Förderer noch Projekt. Timo am
+ * 20.09.2026, nach dem ersten Blick auf die Runde: *"manche profile zeigt er
+ * garnicht an"* — vier von sechs Spaces zeigten "trägt noch keine Angaben",
+ * weil ein Förderer-Bauplan auf ein Netzwerk gelegt wurde. Eine leere Karte
+ * ist schlechter als keine.
+ *
+ * Erkannt wird an drei Stellen, in dieser Reihenfolge:
+ *
+ * 1. `kind` — die Art, die ein Netzwerk seinen Spaces gibt
+ * 2. `foerdererart` — das Feld, das jede recherchierte Stiftung trägt
+ * 3. `beduerfnis` — das Feld, ohne das ein Projektprofil unfertig bleibt
+ *
+ * Damit gilt dieselbe Regel für einen Space und für ein recherchiertes Item:
+ * Beide werden von denselben Feldern getragen, und keiner braucht eine
+ * eigene Verzweigung (Antons Muster 4, Feld-Präsenz statt Typ-Verzweigung).
+ */
+export function bauplanFuer(
+  daten: Record<string, unknown> | null | undefined,
+): readonly Bauplan[] | null {
+  const d = daten ?? {}
+
+  const art = typeof d.kind === "string" ? d.kind.toLowerCase() : ""
+  if (art === "projekt") return BAUPLAN_PROJEKT
+  if (art === "stiftung" || art === "foerderer") return BAUPLAN_FOERDERER
+
+  // Ein recherchierter Eintrag trägt keine Art, wohl aber seine Felder.
+  if (typeof d.foerdererart === "string" && d.foerdererart.trim().length > 0) {
+    return BAUPLAN_FOERDERER
+  }
+  if (typeof d.beduerfnis === "string" && d.beduerfnis.trim().length > 0) {
+    return BAUPLAN_PROJEKT
+  }
+
+  return null
+}
+
+/**
+ * Trägt dieses Ding ein Profil, das sich zu öffnen lohnt?
+ *
+ * Zwei Bedingungen zusammen: Ein Bauplan greift, **und** mindestens ein Feld
+ * daraus hat eine Angabe. Eine Stiftung, deren Eintrag nur aus ihrem Namen
+ * besteht, bekommt damit keine Taste, die auf eine leere Fläche führt.
+ */
+export function traegtProfil(daten: Record<string, unknown> | null | undefined): boolean {
+  const bauplan = bauplanFuer(daten)
+  if (!bauplan) return false
+  return profilStand(daten, bauplan).gefuellt > 0
+}

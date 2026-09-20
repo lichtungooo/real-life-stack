@@ -93,6 +93,7 @@ Stellen, die nur deshalb Nähte sind, weil wir in Antons Referenz-App gearbeitet
 | `apps/reference/src/module-register-td.test.ts` | neu | Unsere Schicht im Register, in unserer Datei statt in seiner | unsere Datei |
 | `apps/reference/src/views/companion-view.tsx` | neu | Die Begleitung an das Register gehängt; die Fläche liegt in `td-ui` | unsere Datei |
 | `apps/reference/src/views/profil-panel.tsx` | neu | Das Profil einer Einrichtung im Panel rechts; die Fläche liegt in `td-ui` | unsere Datei |
+| `apps/reference/src/detail-host.tsx` | +24 | Wer ein Profil trägt, zeigt es statt der Meta-Box seines Typs. Die 234 recherchierten Stiftungen sind `place`-Items: Ohne diese Stelle stehen ihre Förderbereiche, ihr Förderrahmen und ihr Antragsweg nirgends. Entschieden über Feld-Präsenz, nicht über den Typ | unsere Datei |
 | `apps/reference/src/hooks/use-workspace-routing.ts` | +78 / -11 | Ordnung der Spaces, Netzwerk-Felder | unsere Datei |
 | `apps/reference/public/config.json` | neu | Testkonfiguration | unsere Datei |
 | `apps/reference/src/index.css` | +6 | `@source` für `packages/td-ui`: Ohne die Zeile erzeugt Tailwind unsere Klassen nicht, und jede Fläche aus `td-ui` steht ohne Gestaltung da | unsere Datei |

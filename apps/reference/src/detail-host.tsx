@@ -24,6 +24,8 @@ import {
 } from "@real-life-stack/toolkit"
 import type { Item, User } from "@real-life-stack/data-interface"
 import { moduleIds } from "@real-life-stack/toolkit"
+import { traegtProfil, bauplanFuer, profilAbschnitte, profilStand } from "@trustdonation/core"
+import { ProfilFlaeche } from "@trustdonation/ui"
 import { useItemFocus } from "./hooks/use-item-focus"
 
 /**
@@ -213,6 +215,19 @@ export function ItemDetailRead({
   // same resolution path the list and grid lenses use.
   const presentation = resolveTypePresentation(item.type)
 
+  // Traegt dieses Item ein Profil, steht es an der Stelle der Meta-Box.
+  //
+  // Die 234 recherchierten Stiftungen sind place-Items. Wer auf eine Nadel
+  // klickt, sah bis zum 20.09.2026 Anschrift und Karte; ihre Foerderbereiche,
+  // ihr Foerderrahmen und ihr Antragsweg standen nirgends. Timo dazu:
+  // *"manche profile zeigt er garnicht an"*.
+  //
+  // Entschieden wird ueber die Felder, nicht ueber den Typ (Muster 4): Ein
+  // echter Ort behaelt seine Meta-Box, eine Stiftung bekommt ihre Karte.
+  // Ohne `name` bleibt der Kopf weg — den Titel traegt die Detailansicht.
+  const profilDaten = (item.data ?? {}) as Record<string, unknown>
+  const profilBauplan = traegtProfil(profilDaten) ? bauplanFuer(profilDaten) : null
+
   return (
     <ItemDetailBody
       item={item}
@@ -227,7 +242,18 @@ export function ItemDetailRead({
       // Was in der Meta-Box steht, sagt der TYP (spec 06) - derselbe Slot,
       // aus dem auch die Vorschau ihre Zeile zieht. Die Detailansicht gibt
       // ihm nur die Flaeche.
-      meta={<presentation.detail item={item} />}
+      meta={
+        profilBauplan ? (
+          <ProfilFlaeche
+            abschnitte={profilAbschnitte(profilDaten, profilBauplan)}
+            stand={profilStand(profilDaten, profilBauplan)}
+            farbe={typeof profilDaten.color === "string" ? profilDaten.color : undefined}
+            quelle={typeof profilDaten.quelle === "string" ? profilDaten.quelle : undefined}
+          />
+        ) : (
+          <presentation.detail item={item} />
+        )
+      }
       footer={
         // Volle Spalte: eine Typ-Fusszeile (Stimmverteilung) braucht unter
         // Umstaenden die ganze Breite; Reaktionen fliessen darunter.

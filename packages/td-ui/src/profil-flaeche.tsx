@@ -61,8 +61,13 @@ function hausfarbe(farbe: string): CSSProperties {
 }
 
 export interface ProfilFlaecheProps {
-  /** Der Name der Einrichtung. Er steht über allem. */
-  name: string
+  /**
+   * Der Name der Einrichtung. Er steht über allem.
+   *
+   * Leer gelassen, erscheint kein Kopf. So steht die Fläche im Item-Detail
+   * unter dem Titel, den jene Ansicht schon trägt.
+   */
+  name?: string
   /** Die Art, wie sie im Netzwerk heißt: "Stiftung", "Projekt". */
   art?: string
   /** Das Bild, falls es eines gibt. */
@@ -88,25 +93,17 @@ export function ProfilFlaeche({
 }: ProfilFlaecheProps) {
   const eigen = farbe || "#194294"
 
-  if (abschnitte.length === 0) {
-    return (
-      <div className="mx-auto max-w-3xl p-6">
-        <Kopf name={name} art={art} bild={bild} farbe={eigen} />
-        <p className="mt-6 rounded-2xl bg-amber-50/60 dark:bg-amber-950/40 px-5 py-6 text-center text-sm text-muted-foreground">
-          Dieses Profil trägt noch keine Angaben.
-          <br />
-          Wer den Space verwaltet, füllt sie im Bereich <strong>Netzwerk</strong> aus.
-        </p>
-      </div>
-    )
-  }
+  // Ohne Abschnitte gibt es nichts zu zeigen. Wer kein Profil trägt, bekommt
+  // gar keins zu sehen: Die Regel dafür steht in `traegtProfil`, und eine
+  // Fläche, die "hier steht nichts" sagt, wirkt kaputt.
+  if (abschnitte.length === 0) return null
 
   return (
-    <div className="mx-auto max-w-3xl p-6">
-      <Kopf name={name} art={art} bild={bild} farbe={eigen} />
+    <div className={"mx-auto max-w-3xl " + (name ? "p-6" : "")}>
+      {name && <Kopf name={name} art={art} bild={bild} farbe={eigen} />}
 
       {stand && stand.gefuellt < stand.gesamt && (
-        <p className="mt-4 text-xs text-muted-foreground">
+        <p className={(name ? "mt-4 " : "") + "text-xs text-muted-foreground"}>
           {stand.gefuellt} von {stand.gesamt} Angaben gefüllt
         </p>
       )}
@@ -115,7 +112,7 @@ export function ProfilFlaeche({
           Trennstriche (Design-Doktrin seit 12.05.2026). Die Farben folgen den
           Fragen: wer (warm), was (grün, Wachstum), wie viel (bernstein, Wert),
           Antrag (blau, Struktur), Kontakt (violett), Geben (smaragd). */}
-      <div className="mt-7 space-y-4">
+      <div className={(name ? "mt-7 " : "mt-3 ") + "space-y-4"}>
         {abschnitte.map((a) => (
           <section
             key={a.id}

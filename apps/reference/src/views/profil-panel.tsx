@@ -9,51 +9,80 @@
 // tun hat. Sie gehört dorthin, wo man sie aufschlägt und wieder zuklappt,
 // neben das Profil eines Menschen (siehe `docs/13-profil.md`).
 //
-// **Die Schichten:** Die Regel (welche Abschnitte, welche Felder) liegt in
-// `@trustdonation/core`, die Darstellung in `@trustdonation/ui`. Hier wird
-// beides mit dem verbunden, was die App weiß: welcher Space gemeint ist.
+// **Zwei Träger, eine Fläche.** Ein Space trägt sein Profil in `Group.data`,
+// ein recherchierter Eintrag in `Item.data`. Beide werden von denselben
+// Feldern getragen, darum nimmt `groupId` beides an und sucht erst den Space,
+// dann das Item. Timo am 20.09.2026: *"manche profile zeigt er garnicht an"* —
+// die 234 recherchierten Stiftungen sind Items, keine Spaces.
+//
+// **Die Schichten:** Die Regel (welcher Bauplan, welche Abschnitte, welche
+// Felder) liegt in `@trustdonation/core`, die Darstellung in
+// `@trustdonation/ui`. Hier wird beides mit dem verbunden, was die App weiß.
 import { useMemo } from "react"
-import { AdaptivePanel, useGroups } from "@real-life-stack/toolkit"
-import {
-  profilAbschnitte,
-  profilStand,
-  BAUPLAN_FOERDERER,
-  BAUPLAN_PROJEKT,
-} from "@trustdonation/core"
+import { AdaptivePanel, useGroups, useItems } from "@real-life-stack/toolkit"
+import { profilAbschnitte, profilStand, bauplanFuer } from "@trustdonation/core"
 import { ProfilFlaeche } from "@trustdonation/ui"
 
 export function SpaceProfilPanel({
   groupId,
   onClose,
 }: {
-  /** Der Space, dessen Profil offen steht. `null` hält das Panel zu. */
+  /** Der Space oder das Item, dessen Profil offen steht. `null` hält zu. */
   groupId: string | null
   onClose: () => void
 }) {
   const { data: groups } = useGroups()
+  const { data: items } = useItems()
 
-  const group = useMemo(
-    () => (groups ?? []).find((g) => g.id === groupId) ?? null,
-    [groups, groupId],
+  /**
+   * Wer gemeint ist: erst unter den Spaces, dann unter den Items.
+   *
+   * Ein Space gewinnt bei gleicher Kennung, denn er ist der gepflegte
+   * Eintrag; ein Item ist die Recherche, die auf seine Übernahme wartet.
+   */
+  const traeger = useMemo(() => {
+    if (groupId === null) return null
+    const space = (groups ?? []).find((g) => g.id === groupId)
+    if (space) {
+      return {
+        name: space.name ?? "",
+        daten: (space.data ?? {}) as Record<string, unknown>,
+      }
+    }
+    const item = (items ?? []).find((i) => i.id === groupId)
+    if (item) {
+      const daten = (item.data ?? {}) as Record<string, unknown>
+      return {
+        name: typeof daten.title === "string" ? daten.title : item.id,
+        daten,
+      }
+    }
+    return null
+  }, [groupId, groups, items])
+
+  const daten = traeger?.daten ?? {}
+
+  // Welcher Bauplan gilt, entscheidet die Regel in `@trustdonation/core`.
+  // Ohne Bauplan bleibt die Fläche leer: Ein Netzwerk ist weder Förderer
+  // noch Projekt, und eine leere Karte wirkt kaputt.
+  const bauplan = useMemo(() => bauplanFuer(daten), [daten])
+
+  const abschnitte = useMemo(
+    () => (bauplan ? profilAbschnitte(daten, bauplan) : []),
+    [daten, bauplan],
+  )
+  const stand = useMemo(
+    () => (bauplan ? profilStand(daten, bauplan) : undefined),
+    [daten, bauplan],
   )
 
-  const daten = useMemo(
-    () => (group?.data ?? {}) as Record<string, unknown>,
-    [group],
-  )
-
-  // Welcher Bauplan gilt, entscheidet die Art des Space. Ein Projekt stellt
-  // dieselben sechs Fragen mit anderen Feldern (siehe docs/13-profil.md).
-  const bauplan = String(daten.kind ?? "") === "projekt" ? BAUPLAN_PROJEKT : BAUPLAN_FOERDERER
-
-  const abschnitte = useMemo(() => profilAbschnitte(daten, bauplan), [daten, bauplan])
-  const stand = useMemo(() => profilStand(daten, bauplan), [daten, bauplan])
-
-  // Die Art, wie sie im Netzwerk heißt. Sie steht in den `spaceKinds` des
-  // Netzwerks; hier genügt die Kennung, solange die Zuordnung fehlt.
-  const artLabel = typeof daten.kind === "string"
-    ? daten.kind.charAt(0).toUpperCase() + daten.kind.slice(1)
-    : undefined
+  // Die Art, wie sie im Netzwerk heißt. Ein recherchierter Eintrag trägt sie
+  // in `foerdererart` ("Stiftung", "Verein"), ein Space in `kind`.
+  const artLabel =
+    (typeof daten.foerdererart === "string" && daten.foerdererart) ||
+    (typeof daten.kind === "string"
+      ? daten.kind.charAt(0).toUpperCase() + daten.kind.slice(1)
+      : undefined)
 
   return (
     <AdaptivePanel
@@ -67,15 +96,17 @@ export function SpaceProfilPanel({
       modalClassName="sm:max-w-xl max-h-[85dvh]"
     >
       {/* Das Panel bringt Schliessen und Scrollen selbst mit; hier steht
-          allein der Inhalt. Die Kopfzeile bekommt rechts Platz, damit der
-          Name nicht unter den Knopf laeuft. */}
-      {group && (
+          allein der Inhalt. */}
+      {traeger && (
         <ProfilFlaeche
-          key={group.id}
-          name={group.name ?? ""}
+          key={groupId ?? ""}
+          name={traeger.name}
           art={artLabel}
           bild={typeof daten.image === "string" ? daten.image : undefined}
-          farbe={typeof daten.primaryColor === "string" ? daten.primaryColor : undefined}
+          farbe={
+            (typeof daten.primaryColor === "string" && daten.primaryColor) ||
+            (typeof daten.color === "string" ? daten.color : undefined)
+          }
           abschnitte={abschnitte}
           stand={stand}
           quelle={typeof daten.quelle === "string" ? daten.quelle : undefined}

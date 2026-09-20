@@ -37,6 +37,8 @@ export {
 export {
   profilAbschnitte,
   profilStand,
+  bauplanFuer,
+  traegtProfil,
   feldTraegt,
   BAUPLAN_FOERDERER,
   BAUPLAN_PROJEKT,

@@ -7,6 +7,8 @@ import { describe, it, expect } from "vitest"
 import {
   profilAbschnitte,
   profilStand,
+  bauplanFuer,
+  traegtProfil,
   feldTraegt,
   BAUPLAN_FOERDERER,
   BAUPLAN_PROJEKT,
@@ -172,5 +174,51 @@ describe("Der Bauplan fuer ein Projekt", () => {
     const projektFelder = BAUPLAN_PROJEKT.flatMap((a) => a.felder.map((f) => f.id))
     expect(projektFelder).not.toContain("antragsweg")
     expect(projektFelder).not.toContain("foerdererart")
+  })
+})
+
+describe("Wer traegt ein Profil", () => {
+  it("nimmt die Art, die ein Netzwerk seinen Spaces gibt", () => {
+    expect(bauplanFuer({ kind: "stiftung" })).toBe(BAUPLAN_FOERDERER)
+    expect(bauplanFuer({ kind: "projekt" })).toBe(BAUPLAN_PROJEKT)
+    // Gross und klein geschrieben zaehlt gleich: Die Art kommt aus einem
+    // Eingabefeld, und dort schreibt jemand auch "Stiftung".
+    expect(bauplanFuer({ kind: "Stiftung" })).toBe(BAUPLAN_FOERDERER)
+  })
+
+  it("erkennt einen recherchierten Eintrag an seinen Feldern", () => {
+    // Die 234 Stiftungen sind place-Items ohne `kind`. Sie tragen aber
+    // `foerdererart`, und das genuegt (Muster 4: Feld-Praesenz).
+    expect(bauplanFuer({ foerdererart: "Stiftung", sitz: "Essen" })).toBe(BAUPLAN_FOERDERER)
+    expect(bauplanFuer({ beduerfnis: "Vierzig Baeche bleiben unbetreut" })).toBe(BAUPLAN_PROJEKT)
+  })
+
+  /**
+   * ⚠ Ein Netzwerk hat kein Foerderer-Profil.
+   *
+   * Timo am 20.09.2026: *"manche profile zeigt er garnicht an"*. Vier von
+   * sechs Spaces zeigten "traegt noch keine Angaben", weil der
+   * Foerderer-Bauplan auf ein Netzwerk gelegt wurde. Eine leere Karte wirkt
+   * kaputt; keine Karte ist ehrlich.
+   */
+  it("⚠ gibt einem Netzwerk keinen Bauplan", () => {
+    expect(bauplanFuer({ isNetwork: true, name: "trustdonation" })).toBeNull()
+    expect(bauplanFuer({})).toBeNull()
+    expect(bauplanFuer(null)).toBeNull()
+    expect(bauplanFuer({ kind: "netzwerk" })).toBeNull()
+  })
+
+  it("verlangt fuer die Taste mindestens eine Angabe", () => {
+    // Ein Bauplan allein genuegt nicht: Eine Taste, die auf eine leere
+    // Flaeche fuehrt, ist ein gebrochenes Versprechen.
+    expect(traegtProfil({ kind: "stiftung" })).toBe(false)
+    expect(traegtProfil({ kind: "stiftung", sitz: "Darmstadt" })).toBe(true)
+    expect(traegtProfil({ isNetwork: true })).toBe(false)
+  })
+
+  it("laesst ein Ja-Nein-Feld allein das Profil tragen", () => {
+    // "Treuhandstiftung: nein" ist eine Antwort, die jemandem eine Anfrage
+    // erspart (Regel 3 in docs/13-profil.md).
+    expect(traegtProfil({ foerdererart: "Stiftung", treuhand: false })).toBe(true)
   })
 })
