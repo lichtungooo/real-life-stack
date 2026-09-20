@@ -18,7 +18,6 @@
 //     trustdonation.org/app/<space-id>/feed?connector=wot&import=stiftungen
 import { useEffect, useState } from "react"
 import type { DataInterface, CreateItemInput } from "@real-life-stack/data-interface"
-import { musterItems } from "@trustdonation/core"
 
 export type ImportStand =
   | { art: "ruht" }
@@ -27,8 +26,14 @@ export type ImportStand =
   | { art: "fertig"; geschrieben: number; uebersprungen: number }
   | { art: "fehler"; text: string }
 
-/** Nur die Stiftungen, nicht die übrigen Musterdaten. */
-function stiftungen() {
+/** Nur die Stiftungen, nicht die übrigen Musterdaten.
+ *
+ * Nachgeladen statt mitgeliefert: Die Musterdaten wiegen 308 KB, und dieser
+ * Vorgang läuft selten (er wird über die Adresse ausgelöst). Wer ihn nie
+ * benutzt, lädt sie nie.
+ */
+async function stiftungen() {
+  const { musterItems } = await import("@trustdonation/core/musterdaten")
   return musterItems.filter((i) => String(i.id).startsWith("stiftung-"))
 }
 
@@ -48,7 +53,7 @@ export async function stiftungenSchreiben(
     return
   }
 
-  const liste = stiftungen()
+  const liste = await stiftungen()
   let vorhanden = new Set<string>()
   try {
     const da = await connector.getItems({ type: "place" })
@@ -113,7 +118,7 @@ export function StiftungenImport({
         })
         return
       }
-      setStand({ art: "fragt", anzahl: stiftungen().length })
+      void stiftungen().then((liste) => setStand({ art: "fragt", anzahl: liste.length }))
     }
   }, [aktiv, beispielwelt, stand.art])
 

@@ -3,15 +3,16 @@
 // Dieses Paket kennt Antons `data-interface`, nie sein Toolkit und nie React.
 // Ein Connector oder ein Prüfwerkzeug soll es lesen können, ohne eine
 // Oberfläche zu laden (ARCHITEKTUR Teil 3, Regel 2).
-export {
-  musterdaten,
-  musterGroups,
-  musterUsers,
-  musterItems,
-  musterGroupMembers,
-  musterGroupItems,
-  MUSTERDATEN_VERSION,
-} from "./musterdaten.js"
+// Die Musterdaten stehen mit Absicht NICHT hier.
+//
+// Sie sind 308 KB Daten. Ein Index, den jede Ansicht anfasst, zieht sie
+// sonst ins Haupt-Stück: Am 20.09.2026 lagen 626 Stiftungs-Kennungen darin,
+// und ein `await import()` in der App half nichts, weil ein
+// `import { ordneSpaces }` denselben Index las.
+//
+// Wer sie braucht, holt sie beim Namen:
+//
+//     import { musterdaten } from "@trustdonation/core/musterdaten"
 
 export {
   ordneSpaces,

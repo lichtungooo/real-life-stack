@@ -83,7 +83,6 @@ import {
 // Prototyp trustdonation: Die Musterdaten kommen als Seed aus unserem Paket,
 // nicht aus Antons Demodaten. Beide Connectoren nehmen einen Seed als
 // Parameter, darum bleiben seine Dateien unberuehrt (NAEHTE Abschnitt C).
-import { musterdaten } from "@trustdonation/core/musterdaten"
 import { StiftungenImport } from "@trustdonation/ui"
 import { MockConnector } from "@real-life-stack/mock-connector"
 import { LocalConnector } from "@real-life-stack/local-connector"
@@ -1093,6 +1092,11 @@ async function createConnector(type: string): Promise<DataInterface> {
     return connector
   }
   if (type === "local") {
+    // Die Musterdaten werden nachgeladen statt mitgeliefert. Gemessen am
+    // 20.09.2026 lagen 308 KB davon im groessten Stueck, und jeder lud sie:
+    // auch wer sich anmeldet und die Beispielwelt nie sieht. Derselbe Weg,
+    // den die Karte schon geht.
+    const { musterdaten } = await import("@trustdonation/core/musterdaten")
     const c = new LocalConnector(musterdaten)
     await c.init()
     return c
@@ -1110,6 +1114,7 @@ async function createConnector(type: string): Promise<DataInterface> {
     // existing login survives reloads and skips the gate.
     return connector
   }
+  const { musterdaten } = await import("@trustdonation/core/musterdaten")
   const c = new MockConnector(musterdaten)
   await c.init()
   return c

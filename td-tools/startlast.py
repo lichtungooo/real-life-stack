@@ -173,6 +173,16 @@ def main():
 
     kb = round(gesamt / 1024)
     print()
+
+    # Null Dateien heisst: nichts gemessen. Am 20.09.2026 meldete dieses
+    # Werkzeug "Startlast 0 KB. Gruen", weil die Vorschau nicht lief. Ein
+    # Werkzeug, das schweigt, wo es melden sollte, wiegt schwerer als keins.
+    if not dateien:
+        print("Nichts gemessen: unter " + ZIEL + " antwortet niemand.")
+        print("Erst die Vorschau starten:")
+        print("  cd apps/reference && npx vite preview --port 4173")
+        return 1
+
     if kb <= BUDGET_KB:
         print("Startlast " + str(kb) + " KB, Budget " + str(BUDGET_KB) + " KB. Gruen.")
     else:
