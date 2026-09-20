@@ -1,8 +1,8 @@
 // Die Regeln des Profils aus `docs/13-profil.md`, jede mit einem Test.
 //
-// Die Definition nennt neun Regeln. Acht davon lassen sich hier prüfen, ohne
-// einen Browser zu starten; die neunte ("kein Feld wird erfunden") prüft der
-// Mensch beim Lesen.
+// Die Anatomie stammt von echten Profilen (Instagram, LinkedIn, GitHub): Cover,
+// Identität, Bio, Aktionen, Zahlen, Themen, Reiter, Werk. Was sich davon ohne
+// Browser prüfen lässt, steht hier.
 import { describe, it, expect } from "vitest"
 import {
   profilAufbauen,
@@ -32,13 +32,14 @@ const VOLL = {
   zielgruppen: ["Jugend", "Vereine"],
   reichweite: ["national"],
   hinweis: "Ihr Vorhaben verbessert ein Gewässer und bindet Menschen ein.",
-  bisherGefoerdert: ["Elbe-Auen", "Schulteiche"],
+  bisherGefoerdert: ["Elbe-Auen", "Schulteiche", "Bachpaten Weser"],
   summeVon: 5000,
   summeBis: 50000,
   volumenJahr: 900000,
   eigenmittel: "teilweise",
   antragstellung: "ja",
   antragsweg: "offen",
+  antragsportal: "https://beispiel.de/antrag",
   fristen: "laufend",
   unterlagen: ["Skizze", "Finanzplan"],
   ansprache: "Förderberatung",
@@ -48,109 +49,166 @@ const VOLL = {
   treuhand: false,
 }
 
-describe("Der Kopf", () => {
-  it("traegt die kurzen Angaben, mit denen man jemanden einordnet", () => {
-    const { kopf } = profilAufbauen(VOLL)
-    expect(kopf.map((f) => f.id)).toEqual(["foerdererart", "art", "sitz", "reichweite"])
-    expect(kopf.map((f) => f.wert)).toEqual([
+describe("Die Einordnung", () => {
+  it("steht als eine Zeile, in fester Reihenfolge", () => {
+    // Vier Zeilen Beschriftung und Wert untereinander sagen dasselbe und
+    // brauchen viermal so viel Platz.
+    expect(profilAufbauen(VOLL).einordnung).toEqual([
       "Stiftung",
       "fördernd",
       "Hamburg",
-      ["national"],
+      "national",
     ])
   })
 
   it("laesst weg, was fehlt", () => {
-    // KNAPP hat kein `art`. Ein leeres Feld erscheint nicht (Regel 1).
-    expect(profilAufbauen(KNAPP).kopf.map((f) => f.id)).toEqual(["foerdererart", "sitz"])
-  })
-
-  it("reicht Website und Mail als eigene Aktionen heraus", () => {
-    const profil = profilAufbauen(VOLL)
-    expect(profil.website).toBe("https://beispiel.de")
-    expect(profil.mail).toBe("foerderung@beispiel.de")
-    // Ohne Angabe keine Aktion.
-    expect(profilAufbauen(KNAPP).website).toBeUndefined()
-    expect(profilAufbauen(KNAPP).mail).toBeUndefined()
+    // KNAPP hat weder `art` noch `reichweite` (Regel 1).
+    expect(profilAufbauen(KNAPP).einordnung).toEqual(["Stiftung", "Hamburg"])
   })
 })
 
-describe("Die Kennzahlen", () => {
-  it("fasst eine Spanne zu einer Zahl zusammen", () => {
-    // "5.000 bis 50.000" ist eine Aussage, keine zwei. Zwei Kennzahlen
-    // nebeneinander sagten dasselbe doppelt.
-    const [foerderung] = profilAufbauen(VOLL).kennzahlen
-    expect(foerderung.id).toBe("summeVon")
-    expect(foerderung.wert).toBe(5000)
-    expect(foerderung.bis).toBe(50000)
-  })
-
-  it("traegt eine Obergrenze auch ohne Untergrenze", () => {
-    // Sechs der 234 Stiftungen nennen "bis 5.000 Euro" ohne Untergrenze.
-    const { kennzahlen } = profilAufbauen({ foerdererart: "Stiftung", summeBis: 5000 })
-    expect(kennzahlen).toHaveLength(1)
-    expect(kennzahlen[0].wert).toBeUndefined()
-    expect(kennzahlen[0].bis).toBe(5000)
-  })
-
-  it("laesst eine Kennzahl ohne Angabe weg", () => {
-    // KNAPP nennt keine einzige Zahl.
-    expect(profilAufbauen(KNAPP).kennzahlen).toEqual([])
-  })
-
-  /**
-   * ⚠ Eine Kennzahl ist eine Zahl.
-   *
-   * Die Reichweite ordnet ein, sie misst nicht. Neben zwei Geldbeträgen
-   * stünde sie da wie eine Zahl, die keine ist, und sie stand am 20.09.2026
-   * als einzige Kennzahl einer Stiftung da, die bewusst keine Summen nennt.
-   * Sie gehört in die Einordnungszeile des Kopfes.
-   */
-  it("⚠ fuehrt allein Geldbetraege als Kennzahl", () => {
-    for (const k of BAUPLAN_FOERDERER.kennzahlen) {
-      expect(k.form, `${k.id} ist keine Zahl`).toBe("money")
-    }
-  })
-
-  it("bleibt bei hoechstens drei", () => {
-    // Vier große Zahlen nebeneinander sind keine Kennzahlen mehr, sondern
-    // eine Tabelle.
-    expect(BAUPLAN_FOERDERER.kennzahlen.length).toBeLessThanOrEqual(3)
-    expect(BAUPLAN_PROJEKT.kennzahlen.length).toBeLessThanOrEqual(3)
-  })
-})
-
-describe("Der Inhalt", () => {
-  it("gibt den Zweck als Aussage heraus, ohne Beschriftung", () => {
+describe("Die Bio", () => {
+  it("traegt die Stimme, ohne Beschriftung", () => {
     // Ein Zweck mit dem Etikett "Zweck" davor ist ein Formularfeld; ohne
     // Etikett ist er die Stimme der Einrichtung.
-    expect(profilAufbauen(VOLL).zweck).toBe("Wir fördern Vorhaben, die Gewässer schützen.")
-    expect(profilAufbauen(KNAPP).zweck).toBeUndefined()
+    expect(profilAufbauen(VOLL).bio).toBe("Wir fördern Vorhaben, die Gewässer schützen.")
+    expect(profilAufbauen(KNAPP).bio).toBeUndefined()
   })
 
-  it("hebt den Hinweis heraus, mit seiner eigenen Ueberschrift", () => {
-    const { hinweis } = profilAufbauen(VOLL)
-    expect(hinweis?.label).toBe("Woran Sie erkennen, dass Sie passen")
-    expect(hinweis?.text).toContain("Gewässer")
+  it("hebt den Satz heraus, an dem jemand erkennt, ob es passt", () => {
+    const { hervorhebung } = profilAufbauen(VOLL)
+    expect(hervorhebung?.label).toBe("Woran Sie erkennen, dass Sie passen")
+    expect(hervorhebung?.text).toContain("Gewässer")
   })
 
   it("nimmt beim Projekt das Beduerfnis an dieselbe Stelle", () => {
     const projekt = { kind: "projekt", beduerfnis: "Vierzig Bäche bleiben unbetreut." }
-    const { hinweis } = profilAufbauen(projekt, BAUPLAN_PROJEKT)
-    expect(hinweis?.label).toBe("Was ohne dieses Vorhaben fehlt")
-    expect(hinweis?.text).toBe("Vierzig Bäche bleiben unbetreut.")
+    const { hervorhebung } = profilAufbauen(projekt, BAUPLAN_PROJEKT)
+    expect(hervorhebung?.label).toBe("Was ohne dieses Vorhaben fehlt")
+    expect(hervorhebung?.text).toBe("Vierzig Bäche bleiben unbetreut.")
+  })
+})
+
+describe("Die Aktionen", () => {
+  it("bringt, was tatsaechlich hinterlegt ist", () => {
+    const ids = profilAufbauen(VOLL).aktionen.map((a) => a.id)
+    expect(ids).toEqual(["website", "antrag", "mail"])
+  })
+
+  it("laesst weg, wofuer kein Ziel dasteht", () => {
+    expect(profilAufbauen(KNAPP).aktionen).toEqual([])
+  })
+
+  /**
+   * ⚠ Eine Aktion steht immer hervorgehoben.
+   *
+   * Instagram hebt "Folgen" hervor, GitHub "Sponsor". Ein Profil, dessen
+   * Aktionen alle gleich aussehen, sagt nicht, was man als Nächstes tut.
+   * Fehlt die vorgesehene starke Aktion, rückt die erste vorhandene nach.
+   */
+  it("⚠ hebt immer eine Aktion hervor", () => {
+    const ohneWebsite = { ...VOLL, website: undefined }
+    const aktionen = profilAufbauen(ohneWebsite).aktionen
+    expect(aktionen.length).toBeGreaterThan(0)
+    expect(aktionen.filter((a) => a.stark)).toHaveLength(1)
+    expect(aktionen[0].stark).toBe(true)
+  })
+})
+
+describe("Die Zahlen", () => {
+  it("zaehlt, was sich zaehlen laesst", () => {
+    // "1.234 Beiträge" bei Instagram ist gezählt, nicht eingegeben. Eine
+    // gezählte Zahl ist immer wahr und immer aktuell.
+    const zahlen = profilAufbauen(VOLL).zahlen
+    const bereiche = zahlen.find((z) => z.id === "bereiche")
+    expect(bereiche?.wert).toBe(2)
+    const gefoerdert = zahlen.find((z) => z.id === "gefoerdert")
+    expect(gefoerdert?.wert).toBe(3)
+  })
+
+  it("fasst eine Spanne zu einer Zahl zusammen", () => {
+    const foerderung = profilAufbauen(VOLL).zahlen.find((z) => z.id === "foerderung")
+    expect(foerderung?.wert).toBe(5000)
+    expect(foerderung?.bis).toBe(50000)
+  })
+
+  it("traegt eine Obergrenze auch ohne Untergrenze", () => {
+    // Sechs der 234 Stiftungen nennen "bis 5.000 Euro" ohne Untergrenze.
+    const zahlen = profilAufbauen({ foerdererart: "Stiftung", summeBis: 5000 }).zahlen
+    expect(zahlen).toHaveLength(1)
+    expect(zahlen[0].bis).toBe(5000)
+  })
+
+  it("nennt die Einzahl, wo genau eines gezaehlt wurde", () => {
+    const zahlen = profilAufbauen({ foerdererart: "Stiftung", foerderbereiche: ["Bildung"] }).zahlen
+    expect(zahlen.find((z) => z.id === "bereiche")?.label).toBe("Förderbereich")
+  })
+
+  it("laesst eine Zahl ohne Angabe weg", () => {
+    expect(profilAufbauen({ foerdererart: "Stiftung", sitz: "Essen" }).zahlen).toEqual([])
+  })
+
+  it("bleibt bei hoechstens drei", () => {
+    // Vier Zahlen nebeneinander sind keine Signale mehr, sondern eine
+    // Tabelle.
+    expect(BAUPLAN_FOERDERER.zahlen.length).toBeLessThanOrEqual(3)
+    expect(BAUPLAN_PROJEKT.zahlen.length).toBeLessThanOrEqual(3)
+  })
+})
+
+describe("Die Themen", () => {
+  it("werden zu runden Kacheln", () => {
+    expect(profilAufbauen(VOLL).themen).toEqual(["Gewässerschutz", "Umweltbildung"])
+  })
+
+  it("fehlen, wo keine dastehen", () => {
+    expect(profilAufbauen({ foerdererart: "Stiftung", sitz: "Essen" }).themen).toEqual([])
+  })
+})
+
+describe("Das Werk", () => {
+  /**
+   * ⚠ Das Werk ist das Herz eines Profils.
+   *
+   * Ein GitHub-Profil ohne Repositories wäre sinnlos, ein Instagram-Profil
+   * ohne Raster auch. Die ersten zwei Fassungen zeigten ein Formular und
+   * versteckten das Werk als Stichwort-Chips. Timo dazu am 20.09.2026:
+   * *"Diese Profile sind der letzte Wobs."*
+   */
+  it("⚠ steht als Karten im ersten Reiter", () => {
+    const erster = profilAufbauen(VOLL).reiter[0]
+    expect(erster.id).toBe("gefoerdert")
+    expect(erster.karten?.map((k) => k.titel)).toEqual([
+      "Elbe-Auen",
+      "Schulteiche",
+      "Bachpaten Weser",
+    ])
+  })
+
+  it("laesst den Reiter erscheinen, auch wenn er sonst nichts traegt", () => {
+    // Ein Werk allein füllt seinen Reiter. Ohne diese Regel verschwände das
+    // Wichtigste, weil daneben kein Feld steht.
+    const nurWerk = { foerdererart: "Stiftung", bisherGefoerdert: ["Elbe-Auen"] }
+    const reiter = profilAufbauen(nurWerk).reiter
+    expect(reiter).toHaveLength(1)
+    expect(reiter[0].karten).toHaveLength(1)
+    expect(reiter[0].felder).toEqual([])
+  })
+
+  it("fehlt, wo nichts getan wurde", () => {
+    expect(profilAufbauen(KNAPP).reiter.some((r) => r.karten)).toBe(false)
   })
 })
 
 describe("Die Reiter", () => {
-  it("laesst einen Reiter ohne gefuellte Felder weg", () => {
-    // KNAPP trägt allein Förderbereiche: ein Reiter, nicht drei (Regel 2).
-    expect(profilAufbauen(KNAPP).reiter.map((r) => r.id)).toEqual(["ueberblick"])
+  it("laesst einen Reiter ohne Inhalt weg", () => {
+    // KNAPP trägt weder Werk noch Zielgruppen noch Antragsangaben.
+    expect(profilAufbauen(KNAPP).reiter).toEqual([])
   })
 
   it("bringt alle drei, wenn alle etwas tragen", () => {
     expect(profilAufbauen(VOLL).reiter.map((r) => r.id)).toEqual([
-      "ueberblick",
+      "gefoerdert",
       "antrag",
       "geben",
     ])
@@ -180,13 +238,13 @@ describe("Die Reiter", () => {
   /**
    * ⚠ Keine Frage steht auf dem Bildschirm.
    *
-   * Timo am 20.09.2026 zur ersten Fassung: *"Das ist ja jetzt wirklich dumm
-   * Design ... nicht da die Fragen reinzustellen."* Die Fragen stehen im
-   * Bauplan als Raster; was herauskommt, trägt allein Titel.
+   * Timo am 20.09.2026: *"mit sauberen Reitern, nicht da die Fragen
+   * reinzustellen."* Die Fragen stehen im Bauplan als Raster; was
+   * herauskommt, trägt allein Titel.
    */
   it("⚠ reicht keine Frage an die Oberflaeche", () => {
     for (const r of profilAufbauen(VOLL).reiter) {
-      expect(Object.keys(r).sort()).toEqual(["felder", "id", "titel"])
+      expect(Object.keys(r).sort().join(",")).toMatch(/^(felder,id,karten,titel|felder,id,titel)$/)
     }
   })
 
@@ -195,11 +253,12 @@ describe("Die Reiter", () => {
       kind: "projekt",
       beduerfnis: "Vierzig Bäche bleiben unbetreut.",
       themen: ["Gewässer"],
+      wirkung: ["Vierzig Bäche haben Paten"],
       bedarfe: ["Messgeräte"],
     }
     expect(profilAufbauen(projekt, BAUPLAN_PROJEKT).reiter.map((r) => r.id)).toEqual([
-      "ueberblick",
       "vorhaben",
+      "mittel",
     ])
   })
 })
@@ -207,11 +266,13 @@ describe("Die Reiter", () => {
 describe("Ein leeres Profil", () => {
   it("gibt nichts zurueck statt einer leeren Huelle", () => {
     const leer = profilAufbauen({})
-    expect(leer.kopf).toEqual([])
-    expect(leer.kennzahlen).toEqual([])
+    expect(leer.einordnung).toEqual([])
+    expect(leer.zahlen).toEqual([])
+    expect(leer.themen).toEqual([])
     expect(leer.reiter).toEqual([])
-    expect(leer.zweck).toBeUndefined()
-    expect(leer.hinweis).toBeUndefined()
+    expect(leer.aktionen).toEqual([])
+    expect(leer.bio).toBeUndefined()
+    expect(leer.hervorhebung).toBeUndefined()
   })
 
   it("kommt mit null und undefined zurecht", () => {
@@ -224,9 +285,9 @@ describe("Der Bauplan selbst", () => {
   /**
    * ⚠ Ein Feld steht an genau einer Stelle.
    *
-   * Ein Wert, der im Kopf steht, steht nicht noch einmal in einem Reiter:
-   * Doppelt gesagt ist halb geglaubt. Die Gefahr ist echt, weil ein Feld beim
-   * Umsortieren leicht an zwei Orten landet.
+   * Ein Wert, der in der Einordnung steht, steht nicht noch einmal in einem
+   * Reiter: Doppelt gesagt ist halb geglaubt. Die Gefahr ist echt, weil ein
+   * Feld beim Umsortieren leicht an zwei Orten landet.
    */
   it("⚠ fuehrt kein Feld doppelt", () => {
     for (const [name, bauplan] of [
@@ -257,6 +318,13 @@ describe("Der Bauplan selbst", () => {
       expect(bauplan.reiter.length).toBeLessThanOrEqual(4)
     }
   })
+
+  it("legt das Werk in einen Reiter, den es gibt", () => {
+    for (const bauplan of [BAUPLAN_FOERDERER, BAUPLAN_PROJEKT]) {
+      if (!bauplan.werk) continue
+      expect(bauplan.reiter.map((r) => r.id)).toContain(bauplan.werk.reiter)
+    }
+  })
 })
 
 describe("Der Stand", () => {
@@ -273,8 +341,7 @@ describe("Der Stand", () => {
   })
 
   it("reicht den Stand mit dem Profil heraus", () => {
-    const profil = profilAufbauen(VOLL)
-    expect(profil.stand.gefuellt).toBe(profilStand(VOLL).gefuellt)
+    expect(profilAufbauen(VOLL).stand.gefuellt).toBe(profilStand(VOLL).gefuellt)
   })
 })
 
@@ -340,7 +407,7 @@ describe("Wer traegt ein Profil", () => {
 
   it("laesst ein Ja-Nein-Feld allein das Profil tragen", () => {
     // "Treuhandstiftung: nein" ist eine Antwort, die jemandem eine Anfrage
-    // erspart (Regel 4 in docs/13-profil.md).
+    // erspart.
     expect(traegtProfil({ foerdererart: "Stiftung", treuhand: false })).toBe(true)
   })
 })

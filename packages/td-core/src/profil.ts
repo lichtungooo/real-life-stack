@@ -1,24 +1,32 @@
 // Das Profil einer Einrichtung.
 //
-// Die Anatomie steht in `docs/13-profil.md` des Instanz-Repos: **Kopf,
-// Kennzahlen, Reiter, Inhalt.** Sie folgt dem, was ein Mensch in den ersten
-// zehn Sekunden sucht, und sie folgt dem Vorbild, das die Software
-// AG-Stiftung auf ihrer eigenen Seite gibt (fünf Reiter, keine Frage).
+// Timo am 20.09.2026, nach zwei Fehlversuchen: *"Guck dir mal richtig gute
+// Profile an, wie die sein müssen ... es geht ja nicht darum, eine Stiftung
+// darzustellen und dann ein spezielles Profil daraus zu bauen, sondern wie
+// allgemein Profile sind, wie sie sich erklären."*
 //
-// **Die Fragen sind das Raster, nicht die Oberfläche.** Jeder Reiter trägt
-// hier seine `frage`, damit klar bleibt, welche Felder hineingehören. Auf den
-// Bildschirm kommt sie nie: Wer sie anzeigt, macht aus einem Profil einen
-// Fragebogen. Das war die erste Fassung, und Timo dazu am 20.09.2026: *"Das
-// ist ja jetzt wirklich dumm Design."*
+// **Nachgesehen bei Instagram, LinkedIn, GitHub und Facebook.** Die Anatomie
+// ist überall dieselbe, und sie hat acht Teile:
 //
-// **Diese Datei kennt keine Oberfläche.** Sie beantwortet allein: Was steht im
-// Kopf, welche Kennzahlen trägt dieses Profil, welche Reiter hat es, und
-// welche Felder stehen darin? Die Darstellung liegt in `td-ui`, die Bindung in
-// der App. So lässt sich die Regel prüfen, ohne einen Browser zu starten
-// (ARCHITEKTUR Teil 3, Regel 2).
+//     Cover       ein Band, das Stimmung setzt
+//     Identität   Bild, Name, eine Einordnungszeile
+//     Bio         kurz, in eigener Stimme
+//     Aktionen    was man als Nächstes tut
+//     Zahlen      drei Signale, teils gezählt
+//     Themen      runde Kacheln (Instagram nennt sie Highlights)
+//     Reiter      wenige, klar benannt
+//     Das Werk    ein Raster von Karten
 //
-// **Die wichtigste Regel:** Ein leeres Feld erscheint nicht, ein leerer Reiter
-// auch nicht. Das ist Antons Muster 4, Feld-Präsenz statt Typ-Verzweigung.
+// **Das Werk ist das Herz.** Ein GitHub-Profil ohne Repositories wäre
+// sinnlos, ein Instagram-Profil ohne Raster auch. Die ersten zwei Fassungen
+// zeigten ein Formular und versteckten das Werk als Stichwort-Chips. Bei
+// einer Stiftung ist das Werk das, was sie gefördert hat.
+//
+// **Die Fragen sind das Raster beim Bauen, nicht die Oberfläche.** Jeder
+// Reiter trägt hier seine `frage`; auf den Bildschirm kommt sie nie.
+//
+// **Diese Datei kennt keine Oberfläche.** Sie rechnet aus, was ein Profil
+// trägt. Die Darstellung liegt in `td-ui` (ARCHITEKTUR Teil 3, Regel 2).
 
 /** Die Form eines Feldes, so wie das Feld-Register sie führt. */
 export type FeldForm =
@@ -46,42 +54,68 @@ export interface ProfilFeld {
 }
 
 /**
- * Eine Zahl, die über dem Inhalt steht.
+ * Was man als Nächstes tut.
  *
- * Sie beantwortet die Frage, die ein Projekt zuerst hat: Lohnt sich das
- * Weiterlesen? Darum steht sie groß und vor den Reitern.
+ * Instagram hat "Folgen" und "Nachricht", GitHub "Follow" und "Sponsor",
+ * LinkedIn "Folgen" und "Website". Immer wenige, immer sichtbar, immer in
+ * Daumenreichweite.
  */
-export interface Kennzahl {
+export interface Aktion {
   id: string
   label: string
-  form: FeldForm
-  wert: unknown
+  art: "url" | "email"
+  ziel: string
+  /** Die wichtigste steht hervorgehoben, die anderen daneben. */
+  stark?: boolean
+}
+
+/**
+ * Eine Zahl als Signal.
+ *
+ * "1.234 Beiträge · 45,6 Tsd. Follower" bei Instagram, "87,1k followers" bei
+ * GitHub. Manche Zahlen stehen in den Daten, andere werden **gezählt**: Wie
+ * viele Förderbereiche, wie viele geförderte Vorhaben. Eine gezählte Zahl ist
+ * immer wahr und immer aktuell.
+ */
+export interface Zahl {
+  id: string
+  label: string
+  wert: number | string
   /** Die Obergrenze einer Spanne, etwa bei einem Förderrahmen. */
-  bis?: unknown
+  bis?: number
+  form: "anzahl" | "geld" | "text"
+}
+
+/** Eine Karte im Werk: was diese Einrichtung getan hat. */
+export interface WerkStueck {
+  titel: string
 }
 
 /** Ein Reiter im Profil. */
 export interface ProfilReiter {
   id: string
   titel: string
+  /** Das Werk als Karten. Steht im ersten Reiter, wo es hingehört. */
+  karten?: WerkStueck[]
+  /** Die übrigen Angaben dieses Reiters. */
   felder: ProfilFeld[]
 }
 
 /** Ein fertiges Profil, bereit zum Anzeigen. */
 export interface Profil {
-  /** Die Meta-Zeile unter dem Namen: Art · fördernd · Sitz. */
-  kopf: ProfilFeld[]
-  /** Die Netzadresse, als eigene Aktion neben dem Namen. */
-  website?: string
-  /** Die Mailadresse, als eigene Aktion neben dem Namen. */
-  mail?: string
-  /** Höchstens drei Zahlen, groß gesetzt. */
-  kennzahlen: Kennzahl[]
-  /** Der Zweck, als Aussage ohne Beschriftung. */
-  zweck?: string
-  /** Woran ein Projekt erkennt, dass es passt. Der wertvollste Satz. */
-  hinweis?: { label: string; text: string }
-  /** Die Reiter. Ein leerer Reiter fehlt. */
+  /** Die Zeile unter dem Namen: Stiftung · fördernd · Darmstadt. */
+  einordnung: string[]
+  /** Die Bio: die Stimme der Einrichtung, kurz. */
+  bio?: string
+  /** Der Satz, der zieht. Abgesetzt, mit eigener Überschrift. */
+  hervorhebung?: { label: string; text: string }
+  /** Was man als Nächstes tut. Höchstens drei. */
+  aktionen: Aktion[]
+  /** Die Signale. Höchstens drei. */
+  zahlen: Zahl[]
+  /** Themen als runde Kacheln. */
+  themen: string[]
+  /** Die Reiter. Ein leerer fehlt. */
   reiter: ProfilReiter[]
   /** Wie viele der vorgesehenen Felder eine Angabe tragen. */
   stand: { gefuellt: number; gesamt: number }
@@ -94,70 +128,99 @@ interface BauFeld {
   form: FeldForm
 }
 
-/**
- * Was ein Profil dieser Art trägt.
- *
- * Ein Feld steht an genau einer Stelle. Ein Wert, der im Kopf steht, steht
- * nicht noch einmal in einem Reiter: Doppelt gesagt ist halb geglaubt.
- */
+/** Was ein Profil dieser Art trägt. Jedes Feld steht an genau einer Stelle. */
 export interface Bauplan {
-  /** Die Meta-Zeile unter dem Namen. Kurze Angaben, keine Sätze. */
-  kopf: BauFeld[]
-  /** Das Feld mit der Netzadresse, falls es eines gibt. */
-  websiteFeld?: string
-  /** Das Feld mit der Mailadresse, falls es eines gibt. */
-  mailFeld?: string
-  /** Die Zahlen über dem Inhalt. Höchstens drei. */
-  kennzahlen: (BauFeld & { bisFeld?: string })[]
-  /** Das Feld, das die Stimme trägt. Steht als Aussage, ohne Beschriftung. */
-  zweckFeld?: string
-  /** Das Feld, an dem ein Projekt erkennt, ob es passt. */
-  hinweisFeld?: BauFeld
-  /** Die Reiter, jeder mit seiner Frage als Raster und seinen Feldern. */
+  /** Die Felder der Einordnungszeile, in dieser Reihenfolge. */
+  einordnung: BauFeld[]
+  /** Das Feld, das die Stimme trägt. */
+  bioFeld?: string
+  /** Das Feld, an dem jemand erkennt, ob es passt. */
+  hervorhebungFeld?: BauFeld
+  /** Die Aktionen, jede an ein Feld gebunden. */
+  aktionen: { id: string; label: string; feld: string; art: "url" | "email"; stark?: boolean }[]
+  /**
+   * Die Zahlen. Eine mit `feld` steht in den Daten, eine mit `zaehle` wird
+   * aus der Länge einer Liste gezählt.
+   */
+  zahlen: {
+    id: string
+    label: string
+    /** Bei einer angegebenen Zahl: das Feld. */
+    feld?: string
+    /** Bei einer Spanne: das Feld der Obergrenze. */
+    bisFeld?: string
+    /** Bei einer gezählten Zahl: das Listenfeld. */
+    zaehle?: string
+    /** Die Einzahl des Labels, wenn genau eines gezählt wurde. */
+    einzahl?: string
+    form: "anzahl" | "geld" | "text"
+  }[]
+  /** Das Listenfeld, aus dem die runden Kacheln werden. */
+  themenFeld?: string
+  /** Das Werk: welcher Reiter es trägt und aus welchem Feld es kommt. */
+  werk?: { reiter: string; feld: string }
+  /** Die Reiter, jeder mit seiner Frage als Raster. */
   reiter: { id: string; titel: string; frage: string; felder: BauFeld[] }[]
 }
 
 /**
  * Der Bauplan für einen Förderer.
  *
- * Drei Felder im Kopf, zwei Aktionen, drei Kennzahlen, drei Reiter. Jedes
- * Feld steht genau einmal.
+ * Die Zahlen sind bewusst gemischt: zwei gezählte und eine angegebene. Eine
+ * gezählte Zahl ist immer wahr, und sie füllt die Leiste auch bei einem
+ * Eintrag, der sonst wenig trägt.
  */
 export const BAUPLAN_FOERDERER: Bauplan = Object.freeze<Bauplan>({
-  kopf: [
+  einordnung: [
     { id: "foerdererart", label: "Art", form: "select" },
     { id: "art", label: "Fördernd oder operativ", form: "select" },
     { id: "sitz", label: "Sitz", form: "text" },
-    // Die Reichweite ordnet ein, sie misst nicht. Als Kennzahl neben zwei
-    // Geldbeträgen stünde sie da wie eine Zahl, die keine ist.
     { id: "reichweite", label: "Reichweite", form: "tags" },
   ],
-  websiteFeld: "website",
-  mailFeld: "mail",
-  kennzahlen: [
-    // Eine Spanne in einer Zahl: "20.000 bis 500.000". Zwei Kennzahlen
-    // nebeneinander wären zwei Aussagen für eine Sache.
-    { id: "summeVon", label: "Förderung", form: "money", bisFeld: "summeBis" },
-    { id: "volumenJahr", label: "Im Jahr", form: "money" },
-  ],
-  zweckFeld: "zweck",
+  bioFeld: "zweck",
   // Das wertvollste Feld der ganzen Karte: Es steht nirgends sonst und
   // beantwortet die Frage, die jedes Projekt wirklich hat.
-  hinweisFeld: {
+  hervorhebungFeld: {
     id: "hinweis",
     label: "Woran Sie erkennen, dass Sie passen",
     form: "longtext",
   },
+  aktionen: [
+    { id: "website", label: "Website", feld: "website", art: "url", stark: true },
+    { id: "antrag", label: "Antrag stellen", feld: "antragsportal", art: "url" },
+    { id: "mail", label: "Schreiben", feld: "mail", art: "email" },
+  ],
+  zahlen: [
+    {
+      id: "foerderung",
+      label: "Förderung",
+      feld: "summeVon",
+      bisFeld: "summeBis",
+      form: "geld",
+    },
+    {
+      id: "bereiche",
+      label: "Förderbereiche",
+      zaehle: "foerderbereiche",
+      einzahl: "Förderbereich",
+      form: "anzahl",
+    },
+    {
+      id: "gefoerdert",
+      label: "Vorhaben gefördert",
+      zaehle: "bisherGefoerdert",
+      einzahl: "Vorhaben gefördert",
+      form: "anzahl",
+    },
+  ],
+  themenFeld: "foerderbereiche",
+  werk: { reiter: "gefoerdert", feld: "bisherGefoerdert" },
   reiter: [
     {
-      id: "ueberblick",
-      titel: "Überblick",
-      frage: "Passt mein Vorhaben dazu?",
-      felder: [
-        { id: "foerderbereiche", label: "Förderbereiche", form: "tags" },
-        { id: "zielgruppen", label: "Zielgruppen", form: "tags" },
-        { id: "bisherGefoerdert", label: "Bisher gefördert", form: "tags" },
-      ],
+      id: "gefoerdert",
+      titel: "Gefördert",
+      frage: "Was habt ihr bisher getan?",
+      felder: [{ id: "zielgruppen", label: "Für wen", form: "tags" }],
     },
     {
       id: "antrag",
@@ -169,7 +232,6 @@ export const BAUPLAN_FOERDERER: Bauplan = Object.freeze<Bauplan>({
         { id: "fristen", label: "Fristen", form: "text" },
         { id: "unterlagen", label: "Unterlagen", form: "list" },
         { id: "eigenmittel", label: "Eigenmittel", form: "text" },
-        { id: "antragsportal", label: "Antragsportal", form: "url" },
         { id: "ansprache", label: "Ansprache", form: "text" },
       ],
     },
@@ -181,6 +243,7 @@ export const BAUPLAN_FOERDERER: Bauplan = Object.freeze<Bauplan>({
         { id: "zustiftung", label: "Zustiftung", form: "bool" },
         { id: "spende", label: "Spende", form: "bool" },
         { id: "treuhand", label: "Treuhandstiftung", form: "bool" },
+        { id: "volumenJahr", label: "Im Jahr insgesamt", form: "money" },
       ],
     },
   ],
@@ -188,44 +251,46 @@ export const BAUPLAN_FOERDERER: Bauplan = Object.freeze<Bauplan>({
 
 /** Der Bauplan für ein Projekt. Dieselbe Anatomie, andere Felder. */
 export const BAUPLAN_PROJEKT: Bauplan = Object.freeze<Bauplan>({
-  kopf: [
+  einordnung: [
     { id: "kurz", label: "In einem Satz", form: "text" },
     { id: "region", label: "Wo es wirkt", form: "tags" },
-  ],
-  kennzahlen: [
-    { id: "bedarfGesamt", label: "Bedarf", form: "money" },
-    { id: "luecke", label: "Noch offen", form: "money" },
-    { id: "zeitraum", label: "Zeitraum", form: "daterange" },
   ],
   // Beim Projekt trägt das Bedürfnis die Stimme. Es beschreibt eine Lücke,
   // kein Projekt: "Vierzig Bäche bleiben unbetreut" zieht, "wir sind ein
   // Verein für Umweltbildung" nicht.
-  hinweisFeld: {
+  hervorhebungFeld: {
     id: "beduerfnis",
     label: "Was ohne dieses Vorhaben fehlt",
     form: "longtext",
   },
+  aktionen: [],
+  zahlen: [
+    { id: "bedarf", label: "Bedarf", feld: "bedarfGesamt", form: "geld" },
+    { id: "offen", label: "Noch offen", feld: "luecke", form: "geld" },
+    { id: "schritte", label: "Schritte", zaehle: "schritte", einzahl: "Schritt", form: "anzahl" },
+  ],
+  themenFeld: "themen",
+  werk: { reiter: "vorhaben", feld: "wirkung" },
   reiter: [
-    {
-      id: "ueberblick",
-      titel: "Überblick",
-      frage: "Worum geht es, und für wen?",
-      felder: [
-        { id: "themen", label: "Themen", form: "tags" },
-        { id: "zielgruppen", label: "Für wen", form: "tags" },
-        { id: "wirkung", label: "Was sich ändert", form: "list" },
-      ],
-    },
     {
       id: "vorhaben",
       titel: "Vorhaben",
+      frage: "Was soll geschehen, und was ändert sich dadurch?",
+      felder: [
+        { id: "zielgruppen", label: "Für wen", form: "tags" },
+        { id: "schritte", label: "Schritte", form: "list" },
+        { id: "termine", label: "Termine", form: "date" },
+        { id: "zeitraum", label: "Zeitraum", form: "daterange" },
+      ],
+    },
+    {
+      id: "mittel",
+      titel: "Mittel",
       frage: "Wie weit ist es, und was fehlt?",
       felder: [
         { id: "bedarfe", label: "Bedarfe", form: "list" },
         { id: "eigenmittel", label: "Eigenmittel", form: "money" },
         { id: "vorhandenes", label: "Vorhanden", form: "list" },
-        { id: "schritte", label: "Schritte", form: "list" },
-        { id: "termine", label: "Termine", form: "date" },
       ],
     },
     {
@@ -252,8 +317,7 @@ export const BAUPLAN_PROJEKT: Bauplan = Object.freeze<Bauplan>({
  */
 export function feldTraegt(wert: unknown, form: FeldForm): boolean {
   if (wert === undefined || wert === null) return false
-  // Ein Ja-Nein-Wert trägt allein dort, wo ein Ja-Nein-Feld steht. Ein `false`
-  // in einem Textfeld ist ein Fehler in den Daten, keine Angabe.
+  // Ein Ja-Nein-Wert trägt allein dort, wo ein Ja-Nein-Feld steht.
   if (typeof wert === "boolean") return form === "bool"
   if (typeof wert === "string") return wert.trim().length > 0
   if (Array.isArray(wert)) return wert.length > 0
@@ -262,19 +326,28 @@ export function feldTraegt(wert: unknown, form: FeldForm): boolean {
   return true
 }
 
+/** Eine Liste aus einem Feld, oder nichts. */
+function liste(wert: unknown): string[] {
+  if (Array.isArray(wert)) return wert.map((w) => String(w)).filter((w) => w.trim().length > 0)
+  if (typeof wert === "string" && wert.trim().length > 0) return [wert.trim()]
+  return []
+}
+
+/** Ein Text aus einem Feld, oder nichts. */
+function text(wert: unknown): string | undefined {
+  if (typeof wert === "string" && wert.trim().length > 0) return wert.trim()
+  return undefined
+}
+
 /**
- * Ein Profil aufbauen: Kopf, Kennzahlen, Reiter, Inhalt.
+ * Ein Profil aufbauen.
  *
- * Die eine Funktion, die aus Rohdaten eine fertige Darstellung macht. Sie
- * lässt weg, was leer ist, auf jeder Ebene:
+ * Die eine Funktion, die aus Rohdaten einen fertigen Auftritt macht. Sie
+ * lässt weg, was leer ist, auf jeder Ebene: ein Feld ohne Angabe, eine Zahl
+ * ohne Angabe, ein Reiter ohne Inhalt.
  *
- * - ein Feld ohne Angabe fehlt
- * - eine Kennzahl ohne Angabe fehlt
- * - ein Reiter ohne gefüllte Felder fehlt
- *
- * Der `stand` zählt über den **ganzen** Bauplan, auch über das, was
- * weggelassen wurde. Er ist eine ehrliche Zahl für den, der pflegt: "20 von
- * 24" sagt, dass vier Angaben offen sind.
+ * Der `stand` zählt über den **ganzen** Bauplan, auch über das Weggelassene.
+ * Er ist eine ehrliche Zahl für den, der pflegt.
  */
 export function profilAufbauen(
   daten: Record<string, unknown> | null | undefined,
@@ -285,58 +358,89 @@ export function profilAufbauen(
   const nehmen = (f: BauFeld): ProfilFeld | null =>
     feldTraegt(d[f.id], f.form) ? { ...f, wert: d[f.id] } : null
 
-  const kopf = bauplan.kopf.map(nehmen).filter((f): f is ProfilFeld => f !== null)
+  // --- Die Einordnungszeile
+  const einordnung: string[] = []
+  for (const f of bauplan.einordnung) {
+    if (!feldTraegt(d[f.id], f.form)) continue
+    const w = d[f.id]
+    einordnung.push(Array.isArray(w) ? w.join(", ") : String(w))
+  }
 
-  const kennzahlen: Kennzahl[] = []
-  for (const k of bauplan.kennzahlen) {
-    const hatWert = feldTraegt(d[k.id], k.form)
-    const bis = k.bisFeld ? d[k.bisFeld] : undefined
-    const hatBis = k.bisFeld ? feldTraegt(bis, k.form) : false
+  // --- Die Bio
+  const bio = bauplan.bioFeld ? text(d[bauplan.bioFeld]) : undefined
+
+  // --- Der Satz, der zieht
+  const hf = bauplan.hervorhebungFeld
+  const hText = hf ? text(d[hf.id]) : undefined
+  const hervorhebung = hf && hText ? { label: hf.label, text: hText } : undefined
+
+  // --- Die Aktionen
+  const aktionen: Aktion[] = []
+  for (const a of bauplan.aktionen) {
+    const ziel = text(d[a.feld])
+    if (ziel) aktionen.push({ id: a.id, label: a.label, art: a.art, ziel, stark: a.stark })
+  }
+  // Steht die starke Aktion nicht zur Verfügung, wird die erste vorhandene
+  // stark: Ein Profil ohne hervorgehobene Aktion wirkt tot.
+  if (aktionen.length > 0 && !aktionen.some((a) => a.stark)) aktionen[0].stark = true
+
+  // --- Die Zahlen
+  const zahlen: Zahl[] = []
+  for (const z of bauplan.zahlen) {
+    if (z.zaehle) {
+      const anzahl = liste(d[z.zaehle]).length
+      if (anzahl > 0) {
+        zahlen.push({
+          id: z.id,
+          label: anzahl === 1 && z.einzahl ? z.einzahl : z.label,
+          wert: anzahl,
+          form: "anzahl",
+        })
+      }
+      continue
+    }
+    if (!z.feld) continue
+    const wert = d[z.feld]
+    const bis = z.bisFeld ? d[z.bisFeld] : undefined
+    const hatWert = typeof wert === "number" && Number.isFinite(wert)
+    const hatBis = typeof bis === "number" && Number.isFinite(bis)
     // Eine Spanne trägt auch, wenn allein die Obergrenze dasteht: Sechs der
     // 234 Stiftungen nennen "bis 5.000 Euro" ohne Untergrenze.
     if (hatWert || hatBis) {
-      kennzahlen.push({
-        id: k.id,
-        label: k.label,
-        form: k.form,
-        wert: hatWert ? d[k.id] : undefined,
-        ...(hatBis ? { bis } : {}),
+      zahlen.push({
+        id: z.id,
+        label: z.label,
+        wert: hatWert ? (wert as number) : "",
+        ...(hatBis ? { bis: bis as number } : {}),
+        form: z.form,
       })
     }
   }
 
-  const zweckWert = bauplan.zweckFeld ? d[bauplan.zweckFeld] : undefined
-  const zweck =
-    typeof zweckWert === "string" && zweckWert.trim().length > 0
-      ? zweckWert.trim()
-      : undefined
+  // --- Die Themen als runde Kacheln
+  const themen = bauplan.themenFeld ? liste(d[bauplan.themenFeld]) : []
 
-  const hinweisFeld = bauplan.hinweisFeld
-  const hinweisWert = hinweisFeld ? d[hinweisFeld.id] : undefined
-  const hinweis =
-    hinweisFeld && typeof hinweisWert === "string" && hinweisWert.trim().length > 0
-      ? { label: hinweisFeld.label, text: hinweisWert.trim() }
-      : undefined
-
+  // --- Die Reiter, der erste mit dem Werk
+  const werkStuecke = bauplan.werk ? liste(d[bauplan.werk.feld]) : []
   const reiter: ProfilReiter[] = []
   for (const r of bauplan.reiter) {
     const felder = r.felder.map(nehmen).filter((f): f is ProfilFeld => f !== null)
-    if (felder.length > 0) {
-      reiter.push({ id: r.id, titel: r.titel, felder })
+    const karten =
+      bauplan.werk?.reiter === r.id && werkStuecke.length > 0
+        ? werkStuecke.map((titel) => ({ titel }))
+        : undefined
+    if (felder.length > 0 || karten) {
+      reiter.push({ id: r.id, titel: r.titel, ...(karten ? { karten } : {}), felder })
     }
   }
 
   return {
-    kopf,
-    ...(bauplan.websiteFeld && typeof d[bauplan.websiteFeld] === "string"
-      ? { website: d[bauplan.websiteFeld] as string }
-      : {}),
-    ...(bauplan.mailFeld && typeof d[bauplan.mailFeld] === "string"
-      ? { mail: d[bauplan.mailFeld] as string }
-      : {}),
-    kennzahlen,
-    ...(zweck ? { zweck } : {}),
-    ...(hinweis ? { hinweis } : {}),
+    einordnung,
+    ...(bio ? { bio } : {}),
+    ...(hervorhebung ? { hervorhebung } : {}),
+    aktionen,
+    zahlen,
+    themen,
     reiter,
     stand: profilStand(d, bauplan),
   }
@@ -349,21 +453,21 @@ export function profilAufbauen(
  * stehen, und diese Liste zeigt jede doppelte Kennung.
  */
 export function alleFelder(bauplan: Bauplan): BauFeld[] {
-  const felder: BauFeld[] = [...bauplan.kopf]
-  for (const k of bauplan.kennzahlen) {
-    felder.push({ id: k.id, label: k.label, form: k.form })
-    if (k.bisFeld) felder.push({ id: k.bisFeld, label: k.label, form: k.form })
+  const felder: BauFeld[] = [...bauplan.einordnung]
+  if (bauplan.bioFeld) felder.push({ id: bauplan.bioFeld, label: "Zweck", form: "longtext" })
+  if (bauplan.hervorhebungFeld) felder.push(bauplan.hervorhebungFeld)
+  for (const a of bauplan.aktionen) {
+    felder.push({ id: a.feld, label: a.label, form: a.art === "email" ? "email" : "url" })
   }
-  if (bauplan.websiteFeld) {
-    felder.push({ id: bauplan.websiteFeld, label: "Im Netz", form: "url" })
+  for (const z of bauplan.zahlen) {
+    // Eine gezählte Zahl bringt kein eigenes Feld mit: Sie zählt ein Feld,
+    // das schon woanders steht (Themen oder Werk).
+    if (z.zaehle) continue
+    if (z.feld) felder.push({ id: z.feld, label: z.label, form: "money" })
+    if (z.bisFeld) felder.push({ id: z.bisFeld, label: z.label, form: "money" })
   }
-  if (bauplan.mailFeld) {
-    felder.push({ id: bauplan.mailFeld, label: "Mail", form: "email" })
-  }
-  if (bauplan.zweckFeld) {
-    felder.push({ id: bauplan.zweckFeld, label: "Zweck", form: "longtext" })
-  }
-  if (bauplan.hinweisFeld) felder.push(bauplan.hinweisFeld)
+  if (bauplan.themenFeld) felder.push({ id: bauplan.themenFeld, label: "Themen", form: "tags" })
+  if (bauplan.werk) felder.push({ id: bauplan.werk.feld, label: "Werk", form: "tags" })
   for (const r of bauplan.reiter) felder.push(...r.felder)
   return felder
 }
@@ -395,20 +499,15 @@ export function profilStand(
  *
  * Die Frage entscheidet mehr als die Darstellung: **Wer keinen Bauplan hat,
  * hat kein Profil.** Ein Netzwerk ist weder Förderer noch Projekt. Timo am
- * 20.09.2026, nach dem ersten Blick auf die Runde: *"manche profile zeigt er
- * garnicht an"* — vier von sechs Spaces zeigten "trägt noch keine Angaben",
- * weil ein Förderer-Bauplan auf ein Netzwerk gelegt wurde. Eine leere Karte
- * ist schlechter als keine.
+ * 20.09.2026: *"manche profile zeigt er garnicht an"* — vier von sechs Spaces
+ * zeigten "trägt noch keine Angaben", weil ein Förderer-Bauplan auf ein
+ * Netzwerk gelegt wurde. Eine leere Karte ist schlechter als keine.
  *
  * Erkannt wird an drei Stellen, in dieser Reihenfolge:
  *
  * 1. `kind` — die Art, die ein Netzwerk seinen Spaces gibt
  * 2. `foerdererart` — das Feld, das jede recherchierte Stiftung trägt
  * 3. `beduerfnis` — das Feld, ohne das ein Projektprofil unfertig bleibt
- *
- * Damit gilt dieselbe Regel für einen Space und für ein recherchiertes Item:
- * Beide werden von denselben Feldern getragen, und keiner braucht eine
- * eigene Verzweigung (Antons Muster 4, Feld-Präsenz statt Typ-Verzweigung).
  */
 export function bauplanFuer(
   daten: Record<string, unknown> | null | undefined,

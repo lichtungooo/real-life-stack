@@ -46,7 +46,9 @@ export {
   type Profil,
   type ProfilReiter,
   type ProfilFeld,
-  type Kennzahl,
+  type Aktion,
+  type Zahl,
+  type WerkStueck,
   type Bauplan,
   type FeldForm,
 } from "./profil.js"
