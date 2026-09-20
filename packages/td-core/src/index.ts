@@ -35,15 +35,19 @@ export {
 } from "./baukasten.js"
 
 export {
-  profilAbschnitte,
+  profilAufbauen,
   profilStand,
+  alleFelder,
   bauplanFuer,
   traegtProfil,
   feldTraegt,
   BAUPLAN_FOERDERER,
   BAUPLAN_PROJEKT,
-  type ProfilAbschnitt,
+  type Profil,
+  type ProfilReiter,
   type ProfilFeld,
+  type Kennzahl,
+  type Bauplan,
   type FeldForm,
 } from "./profil.js"
 

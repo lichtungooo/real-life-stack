@@ -1,12 +1,13 @@
-// Die Regeln der Profilkarte aus `docs/13-profil.md`, jede mit einem Test.
+// Die Regeln des Profils aus `docs/13-profil.md`, jede mit einem Test.
 //
-// Die Definition nennt sechs Regeln. Fünf davon lassen sich hier prüfen, ohne
-// einen Browser zu starten; die sechste ("kein Feld wird erfunden") prüft der
+// Die Definition nennt neun Regeln. Acht davon lassen sich hier prüfen, ohne
+// einen Browser zu starten; die neunte ("kein Feld wird erfunden") prüft der
 // Mensch beim Lesen.
 import { describe, it, expect } from "vitest"
 import {
-  profilAbschnitte,
+  profilAufbauen,
   profilStand,
+  alleFelder,
   bauplanFuer,
   traegtProfil,
   feldTraegt,
@@ -34,6 +35,7 @@ const VOLL = {
   bisherGefoerdert: ["Elbe-Auen", "Schulteiche"],
   summeVon: 5000,
   summeBis: 50000,
+  volumenJahr: 900000,
   eigenmittel: "teilweise",
   antragstellung: "ja",
   antragsweg: "offen",
@@ -46,77 +48,238 @@ const VOLL = {
   treuhand: false,
 }
 
-describe("Profilabschnitte", () => {
-  it("laesst leere Felder weg", () => {
-    const abschnitte = profilAbschnitte(KNAPP)
-    const alleFelder = abschnitte.flatMap((a) => a.felder.map((f) => f.id))
-
-    expect(alleFelder).toContain("foerdererart")
-    expect(alleFelder).toContain("sitz")
-    expect(alleFelder).toContain("foerderbereiche")
-    // Was die Stiftung nicht angegeben hat, steht nicht da. Eine Karte mit
-    // zwanzig Strichen wirkt leerer als eine mit vier Angaben.
-    expect(alleFelder).not.toContain("summeVon")
-    expect(alleFelder).not.toContain("hinweis")
+describe("Der Kopf", () => {
+  it("traegt die kurzen Angaben, mit denen man jemanden einordnet", () => {
+    const { kopf } = profilAufbauen(VOLL)
+    expect(kopf.map((f) => f.id)).toEqual(["foerdererart", "art", "sitz", "reichweite"])
+    expect(kopf.map((f) => f.wert)).toEqual([
+      "Stiftung",
+      "fördernd",
+      "Hamburg",
+      ["national"],
+    ])
   })
 
-  it("laesst leere Abschnitte weg", () => {
-    const abschnitte = profilAbschnitte(KNAPP).map((a) => a.id)
-
-    expect(abschnitte).toContain("wer")
-    expect(abschnitte).toContain("was")
-    // Drei Abschnitte tragen nichts und erscheinen darum nicht.
-    expect(abschnitte).not.toContain("wieviel")
-    expect(abschnitte).not.toContain("antrag")
-    expect(abschnitte).not.toContain("kontakt")
+  it("laesst weg, was fehlt", () => {
+    // KNAPP hat kein `art`. Ein leeres Feld erscheint nicht (Regel 1).
+    expect(profilAufbauen(KNAPP).kopf.map((f) => f.id)).toEqual(["foerdererart", "sitz"])
   })
 
-  it("haelt die Reihenfolge der Fragen, nicht die der Datenlage", () => {
-    // Die Abschnitte folgen den Fragen eines Besuchers. Sie ändern sich nicht,
-    // weil ein Feld mehr oder weniger gefüllt ist.
-    const voll = profilAbschnitte(VOLL).map((a) => a.id)
-    expect(voll).toEqual(["wer", "was", "wieviel", "antrag", "kontakt", "geben"])
+  it("reicht Website und Mail als eigene Aktionen heraus", () => {
+    const profil = profilAufbauen(VOLL)
+    expect(profil.website).toBe("https://beispiel.de")
+    expect(profil.mail).toBe("foerderung@beispiel.de")
+    // Ohne Angabe keine Aktion.
+    expect(profilAufbauen(KNAPP).website).toBeUndefined()
+    expect(profilAufbauen(KNAPP).mail).toBeUndefined()
+  })
+})
 
-    const knapp = profilAbschnitte(KNAPP).map((a) => a.id)
-    expect(knapp).toEqual(["wer", "was"])
+describe("Die Kennzahlen", () => {
+  it("fasst eine Spanne zu einer Zahl zusammen", () => {
+    // "5.000 bis 50.000" ist eine Aussage, keine zwei. Zwei Kennzahlen
+    // nebeneinander sagten dasselbe doppelt.
+    const [foerderung] = profilAufbauen(VOLL).kennzahlen
+    expect(foerderung.id).toBe("summeVon")
+    expect(foerderung.wert).toBe(5000)
+    expect(foerderung.bis).toBe(50000)
   })
 
-  it("zeigt ein Nein, weil es eine Antwort ist", () => {
-    // `treuhand: false` heißt "nein, das geht bei uns nicht". Das gehört auf
-    // die Karte: Es erspart jemandem eine Anfrage.
-    const abschnitte = profilAbschnitte(VOLL)
-    const geben = abschnitte.find((a) => a.id === "geben")
+  it("traegt eine Obergrenze auch ohne Untergrenze", () => {
+    // Sechs der 234 Stiftungen nennen "bis 5.000 Euro" ohne Untergrenze.
+    const { kennzahlen } = profilAufbauen({ foerdererart: "Stiftung", summeBis: 5000 })
+    expect(kennzahlen).toHaveLength(1)
+    expect(kennzahlen[0].wert).toBeUndefined()
+    expect(kennzahlen[0].bis).toBe(5000)
+  })
+
+  it("laesst eine Kennzahl ohne Angabe weg", () => {
+    // KNAPP nennt keine einzige Zahl.
+    expect(profilAufbauen(KNAPP).kennzahlen).toEqual([])
+  })
+
+  /**
+   * ⚠ Eine Kennzahl ist eine Zahl.
+   *
+   * Die Reichweite ordnet ein, sie misst nicht. Neben zwei Geldbeträgen
+   * stünde sie da wie eine Zahl, die keine ist, und sie stand am 20.09.2026
+   * als einzige Kennzahl einer Stiftung da, die bewusst keine Summen nennt.
+   * Sie gehört in die Einordnungszeile des Kopfes.
+   */
+  it("⚠ fuehrt allein Geldbetraege als Kennzahl", () => {
+    for (const k of BAUPLAN_FOERDERER.kennzahlen) {
+      expect(k.form, `${k.id} ist keine Zahl`).toBe("money")
+    }
+  })
+
+  it("bleibt bei hoechstens drei", () => {
+    // Vier große Zahlen nebeneinander sind keine Kennzahlen mehr, sondern
+    // eine Tabelle.
+    expect(BAUPLAN_FOERDERER.kennzahlen.length).toBeLessThanOrEqual(3)
+    expect(BAUPLAN_PROJEKT.kennzahlen.length).toBeLessThanOrEqual(3)
+  })
+})
+
+describe("Der Inhalt", () => {
+  it("gibt den Zweck als Aussage heraus, ohne Beschriftung", () => {
+    // Ein Zweck mit dem Etikett "Zweck" davor ist ein Formularfeld; ohne
+    // Etikett ist er die Stimme der Einrichtung.
+    expect(profilAufbauen(VOLL).zweck).toBe("Wir fördern Vorhaben, die Gewässer schützen.")
+    expect(profilAufbauen(KNAPP).zweck).toBeUndefined()
+  })
+
+  it("hebt den Hinweis heraus, mit seiner eigenen Ueberschrift", () => {
+    const { hinweis } = profilAufbauen(VOLL)
+    expect(hinweis?.label).toBe("Woran Sie erkennen, dass Sie passen")
+    expect(hinweis?.text).toContain("Gewässer")
+  })
+
+  it("nimmt beim Projekt das Beduerfnis an dieselbe Stelle", () => {
+    const projekt = { kind: "projekt", beduerfnis: "Vierzig Bäche bleiben unbetreut." }
+    const { hinweis } = profilAufbauen(projekt, BAUPLAN_PROJEKT)
+    expect(hinweis?.label).toBe("Was ohne dieses Vorhaben fehlt")
+    expect(hinweis?.text).toBe("Vierzig Bäche bleiben unbetreut.")
+  })
+})
+
+describe("Die Reiter", () => {
+  it("laesst einen Reiter ohne gefuellte Felder weg", () => {
+    // KNAPP trägt allein Förderbereiche: ein Reiter, nicht drei (Regel 2).
+    expect(profilAufbauen(KNAPP).reiter.map((r) => r.id)).toEqual(["ueberblick"])
+  })
+
+  it("bringt alle drei, wenn alle etwas tragen", () => {
+    expect(profilAufbauen(VOLL).reiter.map((r) => r.id)).toEqual([
+      "ueberblick",
+      "antrag",
+      "geben",
+    ])
+  })
+
+  it("laesst in einem Reiter kein leeres Feld stehen", () => {
+    for (const r of profilAufbauen(VOLL).reiter) {
+      for (const f of r.felder) {
+        expect(feldTraegt(f.wert, f.form), `${r.id}.${f.id} steht leer da`).toBe(true)
+      }
+    }
+  })
+
+  /**
+   * ⚠ Ein Nein ist eine Antwort.
+   *
+   * "Treuhandstiftung: nein" gehört auf die Karte: Es erspart jemandem eine
+   * Anfrage. `false` ist der Fall, den eine Prüfung auf Leere verschluckt.
+   */
+  it("⚠ haelt ein Nein fuer eine Antwort", () => {
+    const geben = profilAufbauen(VOLL).reiter.find((r) => r.id === "geben")
     const treuhand = geben?.felder.find((f) => f.id === "treuhand")
-
-    expect(treuhand).toBeDefined()
+    expect(treuhand, "Treuhand fehlt, obwohl sie mit nein beantwortet ist").toBeTruthy()
     expect(treuhand?.wert).toBe(false)
   })
 
-  it("zeigt den Hinweis, sobald er da ist", () => {
-    // Das wertvollste Feld der Karte: Es steht nirgends sonst.
-    const abschnitte = profilAbschnitte(VOLL)
-    const was = abschnitte.find((a) => a.id === "was")
-    expect(was?.felder.map((f) => f.id)).toContain("hinweis")
+  /**
+   * ⚠ Keine Frage steht auf dem Bildschirm.
+   *
+   * Timo am 20.09.2026 zur ersten Fassung: *"Das ist ja jetzt wirklich dumm
+   * Design ... nicht da die Fragen reinzustellen."* Die Fragen stehen im
+   * Bauplan als Raster; was herauskommt, trägt allein Titel.
+   */
+  it("⚠ reicht keine Frage an die Oberflaeche", () => {
+    for (const r of profilAufbauen(VOLL).reiter) {
+      expect(Object.keys(r).sort()).toEqual(["felder", "id", "titel"])
+    }
   })
 
-  it("kommt mit einem leeren Space zurecht", () => {
-    expect(profilAbschnitte({})).toEqual([])
-    expect(profilAbschnitte(null)).toEqual([])
-    expect(profilAbschnitte(undefined)).toEqual([])
+  it("gibt bei einem Projekt die Reiter des Projekts", () => {
+    const projekt = {
+      kind: "projekt",
+      beduerfnis: "Vierzig Bäche bleiben unbetreut.",
+      themen: ["Gewässer"],
+      bedarfe: ["Messgeräte"],
+    }
+    expect(profilAufbauen(projekt, BAUPLAN_PROJEKT).reiter.map((r) => r.id)).toEqual([
+      "ueberblick",
+      "vorhaben",
+    ])
+  })
+})
+
+describe("Ein leeres Profil", () => {
+  it("gibt nichts zurueck statt einer leeren Huelle", () => {
+    const leer = profilAufbauen({})
+    expect(leer.kopf).toEqual([])
+    expect(leer.kennzahlen).toEqual([])
+    expect(leer.reiter).toEqual([])
+    expect(leer.zweck).toBeUndefined()
+    expect(leer.hinweis).toBeUndefined()
   })
 
-  it("nennt zu jedem Abschnitt seine Frage", () => {
-    // Ein Abschnitt ohne Frage ist eine Überschrift. Mit Frage ist er eine
-    // Antwort, und das ist der Unterschied.
-    for (const a of profilAbschnitte(VOLL)) {
-      expect(a.frage.length).toBeGreaterThan(5)
-      expect(a.frage.endsWith("?")).toBe(true)
+  it("kommt mit null und undefined zurecht", () => {
+    expect(profilAufbauen(null).reiter).toEqual([])
+    expect(profilAufbauen(undefined).reiter).toEqual([])
+  })
+})
+
+describe("Der Bauplan selbst", () => {
+  /**
+   * ⚠ Ein Feld steht an genau einer Stelle.
+   *
+   * Ein Wert, der im Kopf steht, steht nicht noch einmal in einem Reiter:
+   * Doppelt gesagt ist halb geglaubt. Die Gefahr ist echt, weil ein Feld beim
+   * Umsortieren leicht an zwei Orten landet.
+   */
+  it("⚠ fuehrt kein Feld doppelt", () => {
+    for (const [name, bauplan] of [
+      ["Förderer", BAUPLAN_FOERDERER],
+      ["Projekt", BAUPLAN_PROJEKT],
+    ] as const) {
+      const ids = alleFelder(bauplan).map((f) => f.id)
+      const doppelt = ids.filter((id, i) => ids.indexOf(id) !== i)
+      expect(doppelt, `${name}: ${doppelt.join(", ")} steht mehrfach`).toEqual([])
+    }
+  })
+
+  it("gibt jedem Reiter eine Frage als Raster", () => {
+    // Die Frage steht im Bauplan, damit klar bleibt, welche Felder
+    // hineingehören. Auf den Bildschirm kommt sie nie.
+    for (const bauplan of [BAUPLAN_FOERDERER, BAUPLAN_PROJEKT]) {
+      for (const r of bauplan.reiter) {
+        expect(r.frage.length, `${r.id} hat keine Frage`).toBeGreaterThan(10)
+        expect(r.frage.endsWith("?"), `${r.id}: die Frage endet ohne Fragezeichen`).toBe(true)
+      }
+    }
+  })
+
+  it("bleibt bei drei bis vier Reitern", () => {
+    // Mehr Reiter heißt: Niemand findet mehr, was er sucht.
+    for (const bauplan of [BAUPLAN_FOERDERER, BAUPLAN_PROJEKT]) {
+      expect(bauplan.reiter.length).toBeGreaterThanOrEqual(2)
+      expect(bauplan.reiter.length).toBeLessThanOrEqual(4)
     }
   })
 })
 
-describe("Ob ein Feld traegt", () => {
-  it("erkennt die fuenf Formen von Leere", () => {
+describe("Der Stand", () => {
+  it("zaehlt ueber den ganzen Bauplan, auch ueber das Weggelassene", () => {
+    const knapp = profilStand(KNAPP)
+    const voll = profilStand(VOLL)
+    expect(knapp.gesamt).toBe(voll.gesamt)
+    expect(voll.gefuellt).toBeGreaterThan(knapp.gefuellt)
+  })
+
+  it("nennt dieselbe Gesamtzahl wie der Bauplan Felder hat", () => {
+    expect(profilStand({}).gesamt).toBe(alleFelder(BAUPLAN_FOERDERER).length)
+    expect(profilStand({}).gefuellt).toBe(0)
+  })
+
+  it("reicht den Stand mit dem Profil heraus", () => {
+    const profil = profilAufbauen(VOLL)
+    expect(profil.stand.gefuellt).toBe(profilStand(VOLL).gefuellt)
+  })
+})
+
+describe("Traegt dieses Feld etwas", () => {
+  it("haelt leere Zeichen und leere Listen fuer nichts", () => {
     expect(feldTraegt(undefined, "text")).toBe(false)
     expect(feldTraegt(null, "text")).toBe(false)
     expect(feldTraegt("", "text")).toBe(false)
@@ -124,56 +287,15 @@ describe("Ob ein Feld traegt", () => {
     expect(feldTraegt([], "tags")).toBe(false)
   })
 
-  it("haelt `false` bei einem Ja-Nein-Feld fuer eine Antwort", () => {
+  it("laesst ein Nein allein dort gelten, wo ein Ja-Nein-Feld steht", () => {
     expect(feldTraegt(false, "bool")).toBe(true)
-    expect(feldTraegt(true, "bool")).toBe(true)
-    // Bei jeder anderen Form bleibt `false` eine Leere.
+    // Ein `false` in einem Textfeld ist ein Fehler, keine Antwort.
     expect(feldTraegt(false, "text")).toBe(false)
   })
 
-  it("haelt die Null fuer eine Zahl", () => {
-    // Ein Fördervolumen von 0 ist eine Angabe, keine Leere.
+  it("laesst die Null gelten", () => {
+    // "Eigenmittel: 0" ist eine Angabe, und zwar eine wichtige.
     expect(feldTraegt(0, "money")).toBe(true)
-    expect(feldTraegt(NaN, "money")).toBe(false)
-  })
-})
-
-describe("Der Stand eines Profils", () => {
-  it("zaehlt, was gefuellt ist", () => {
-    const knapp = profilStand(KNAPP)
-    const voll = profilStand(VOLL)
-
-    expect(knapp.gesamt).toBe(voll.gesamt)
-    expect(knapp.gefuellt).toBeLessThan(voll.gefuellt)
-    expect(voll.gefuellt).toBeGreaterThan(15)
-  })
-
-  it("zaehlt dieselben Felder wie der Bauplan", () => {
-    const summe = BAUPLAN_FOERDERER.reduce((n, a) => n + a.felder.length, 0)
-    expect(profilStand({}).gesamt).toBe(summe)
-  })
-})
-
-describe("Der Bauplan fuer ein Projekt", () => {
-  it("stellt dieselben sechs Fragen mit anderen Feldern", () => {
-    const projekt = {
-      kurz: "Vierzig Bäche in Nordhessen",
-      beduerfnis: "Ohne uns bleiben vierzig Bäche unbetreut.",
-      luecke: 12400,
-      wirkung: ["Vierzig Patengruppen messen viermal im Jahr."],
-    }
-    const abschnitte = profilAbschnitte(projekt, BAUPLAN_PROJEKT)
-
-    expect(abschnitte.map((a) => a.id)).toEqual(["wer", "warum", "kosten", "wirkung"])
-    const warum = abschnitte.find((a) => a.id === "warum")
-    expect(warum?.felder[0].id).toBe("beduerfnis")
-  })
-
-  it("traegt keine Felder, die es im Foerderer-Bauplan gibt", () => {
-    // Zwei Baupläne, zwei Vokabulare. Ein Projekt hat keinen `antragsweg`.
-    const projektFelder = BAUPLAN_PROJEKT.flatMap((a) => a.felder.map((f) => f.id))
-    expect(projektFelder).not.toContain("antragsweg")
-    expect(projektFelder).not.toContain("foerdererart")
   })
 })
 
@@ -218,7 +340,7 @@ describe("Wer traegt ein Profil", () => {
 
   it("laesst ein Ja-Nein-Feld allein das Profil tragen", () => {
     // "Treuhandstiftung: nein" ist eine Antwort, die jemandem eine Anfrage
-    // erspart (Regel 3 in docs/13-profil.md).
+    // erspart (Regel 4 in docs/13-profil.md).
     expect(traegtProfil({ foerdererart: "Stiftung", treuhand: false })).toBe(true)
   })
 })

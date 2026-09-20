@@ -24,7 +24,7 @@ import {
 } from "@real-life-stack/toolkit"
 import type { Item, User } from "@real-life-stack/data-interface"
 import { moduleIds } from "@real-life-stack/toolkit"
-import { traegtProfil, bauplanFuer, profilAbschnitte, profilStand } from "@trustdonation/core"
+import { traegtProfil, bauplanFuer, profilAufbauen } from "@trustdonation/core"
 import { ProfilFlaeche } from "@trustdonation/ui"
 import { useItemFocus } from "./hooks/use-item-focus"
 
@@ -227,6 +227,7 @@ export function ItemDetailRead({
   // Ohne `name` bleibt der Kopf weg — den Titel traegt die Detailansicht.
   const profilDaten = (item.data ?? {}) as Record<string, unknown>
   const profilBauplan = traegtProfil(profilDaten) ? bauplanFuer(profilDaten) : null
+  const profil = profilBauplan ? profilAufbauen(profilDaten, profilBauplan) : null
 
   return (
     <ItemDetailBody
@@ -243,10 +244,9 @@ export function ItemDetailRead({
       // aus dem auch die Vorschau ihre Zeile zieht. Die Detailansicht gibt
       // ihm nur die Flaeche.
       meta={
-        profilBauplan ? (
+        profil ? (
           <ProfilFlaeche
-            abschnitte={profilAbschnitte(profilDaten, profilBauplan)}
-            stand={profilStand(profilDaten, profilBauplan)}
+            profil={profil}
             farbe={typeof profilDaten.color === "string" ? profilDaten.color : undefined}
             quelle={typeof profilDaten.quelle === "string" ? profilDaten.quelle : undefined}
           />

@@ -1,57 +1,38 @@
 // Das Profil einer Einrichtung, als Fläche.
 //
 // Timo am 18.09.2026: *"Ich will so eine Karte haben, wo alles draufsteht, was
-// eine Stiftung macht. Wo ein Projekt sich komplett vorstellen kann."*
+// eine Stiftung macht."* Und am 20.09.2026, nach der ersten Fassung: *"Das ist
+// ja jetzt wirklich dumm Design. Es geht darum, professionelle Profile zu
+// bauen ... mit sauberen Reitern, nicht da die Fragen reinzustellen."*
 //
-// **Was hier steht und was nicht:** Die Regel, welche Abschnitte ein Profil
-// hat und welche Felder darin stehen, liegt in `@trustdonation/core`. Sie ist
-// dort geprüft, ohne Browser. Diese Datei zeigt allein an, was sie ausrechnet
-// (ARCHITEKTUR Teil 3: zwei Schichten entlang der Paketgrenze).
+// **Die Anatomie** (docs/13-profil.md, zweite Fassung):
 //
-// **Die sechs Abschnitte antworten auf sechs Fragen.** Ein Abschnitt ohne
-// Frage ist eine Überschrift; mit Frage ist er eine Antwort, und das ist der
-// Unterschied. Die Fragen stehen leise über den Titeln.
-import type { CSSProperties } from "react"
-import type { ProfilAbschnitt, ProfilFeld } from "@trustdonation/core"
-
-/**
- * Welche Farbfläche welcher Abschnitt trägt.
- *
- * Die Design-Doktrin vom 12.05.2026: **Farbflächen statt weißer Karten mit
- * Rahmen.** Timos Satz dazu: *"Dann wirkt es nicht so künstlich, sondern viel
- * ansprechender."* Rahmen und Trennstriche wirken steril, eine Fläche wirkt
- * ruhig.
- *
- * `/60` durchgehend, damit ein Verlauf dahinter durchscheint.
- *
- * **Jede Fläche trägt beide Ansichten.** Bei dunkler Ansicht steht heller
- * Text auf der Fläche; eine helle Fläche verschluckt ihn dann. Darum dieselbe
- * Farbe tief und zurückhaltend (`-950/40`), statt einer hellen Fläche, auf
- * der niemand mehr die Beschriftungen liest. Gesehen am 20.09.2026 im Panel.
- */
-const FLAECHEN: Record<string, string> = {
-  // Förderer
-  wer: "bg-amber-50/60 dark:bg-amber-950/40",
-  was: "bg-green-50/60 dark:bg-green-950/40",
-  wieviel: "bg-orange-50/60 dark:bg-orange-950/40",
-  antrag: "bg-blue-50/60 dark:bg-blue-950/40",
-  kontakt: "bg-violet-50/60 dark:bg-violet-950/40",
-  geben: "bg-emerald-50/60 dark:bg-emerald-950/40",
-  // Projekt: dieselben Fragen, dieselben Farben, wo sie sich treffen
-  warum: "bg-green-50/60 dark:bg-green-950/40",
-  kosten: "bg-orange-50/60 dark:bg-orange-950/40",
-  steht: "bg-blue-50/60 dark:bg-blue-950/40",
-  wann: "bg-violet-50/60 dark:bg-violet-950/40",
-  wirkung: "bg-emerald-50/60 dark:bg-emerald-950/40",
-}
+//     Hero       Farbband, Logo, Name, eine Meta-Zeile, zwei Aktionen
+//     Kennzahlen drei Zahlen, groß gesetzt
+//     Reiter     Überblick · Antrag · Geben
+//     Inhalt     Zweck als Aussage, Hinweis abgesetzt, Rest als Liste
+//
+// **Keine Frage steht auf dem Bildschirm.** Die Fragen stehen im Bauplan und
+// in der Definition; sie sagen, welche Felder hineingehören. Wer sie anzeigt,
+// macht aus einem Profil einen Fragebogen.
+//
+// **Was hier steht und was nicht:** Welche Reiter ein Profil hat und welche
+// Felder darin stehen, rechnet `@trustdonation/core` aus, ohne Browser und
+// geprüft. Diese Datei zeigt allein an (ARCHITEKTUR Teil 3).
+//
+// **Die Design-Doktrin gilt** (memory/feedback_design_doktrin.md, 12.05.2026):
+// Farbflächen statt weißer Karten mit Rahmen, Atemraum statt Trennstriche,
+// `rounded-2xl`, keine schwarzen Umrandungen.
+import { useState, type CSSProperties } from "react"
+import type { Profil, ProfilFeld, Kennzahl } from "@trustdonation/core"
 
 /**
  * Text in der Hausfarbe, der in beiden Ansichten lesbar bleibt.
  *
- * Eine Hausfarbe ist fuer weissen Grund gewaehlt: Das Blau der Software
- * AG-Stiftung (#194294) verschwindet auf einer dunklen Flaeche. Ein Inline-Stil
- * laesst sich von CSS nicht zuruecknehmen, darum reist die Farbe als Variable
- * und die dunkle Ansicht greift auf den Vordergrund zurueck.
+ * Eine Hausfarbe ist für weißen Grund gewählt: Das Blau der Software
+ * AG-Stiftung (#194294) verschwindet auf einer dunklen Fläche. Ein Inline-Stil
+ * lässt sich von CSS nicht zurücknehmen, darum reist die Farbe als Variable
+ * und die dunkle Ansicht greift auf den Vordergrund zurück.
  */
 const HAUSFARBE = "text-[color:var(--td-hausfarbe)] dark:text-foreground"
 
@@ -64,98 +45,154 @@ export interface ProfilFlaecheProps {
   /**
    * Der Name der Einrichtung. Er steht über allem.
    *
-   * Leer gelassen, erscheint kein Kopf. So steht die Fläche im Item-Detail
+   * Leer gelassen, erscheint kein Hero. So steht die Fläche im Item-Detail
    * unter dem Titel, den jene Ansicht schon trägt.
    */
   name?: string
-  /** Die Art, wie sie im Netzwerk heißt: "Stiftung", "Projekt". */
-  art?: string
   /** Das Bild, falls es eines gibt. */
   bild?: string
-  /** Die Hausfarbe. Sonst die Farbe ihrer Art. */
+  /** Die Hausfarbe. Sonst das Blau der Stiftungsart. */
   farbe?: string
-  /** Die Abschnitte, ausgerechnet von `profilAbschnitte`. */
-  abschnitte: ProfilAbschnitt[]
-  /** Wie viele Felder gefüllt sind, für den, der pflegt. */
-  stand?: { gefuellt: number; gesamt: number }
+  /** Das fertige Profil, ausgerechnet von `profilAufbauen`. */
+  profil: Profil
   /** Woher die Angaben stammen, solange niemand den Eintrag übernommen hat. */
   quelle?: string
 }
 
-export function ProfilFlaeche({
-  name,
-  art,
-  bild,
-  farbe,
-  abschnitte,
-  stand,
-  quelle,
-}: ProfilFlaecheProps) {
+export function ProfilFlaeche({ name, bild, farbe, profil, quelle }: ProfilFlaecheProps) {
   const eigen = farbe || "#194294"
+  const [offen, setOffen] = useState(profil.reiter[0]?.id ?? "")
 
-  // Ohne Abschnitte gibt es nichts zu zeigen. Wer kein Profil trägt, bekommt
-  // gar keins zu sehen: Die Regel dafür steht in `traegtProfil`, und eine
-  // Fläche, die "hier steht nichts" sagt, wirkt kaputt.
-  if (abschnitte.length === 0) return null
+  // Nichts zu zeigen heißt: nichts zeigen. Eine Fläche, die "hier steht
+  // nichts" sagt, wirkt kaputt (`traegtProfil` hält sie vorher zurück).
+  const leer =
+    profil.kopf.length === 0 &&
+    profil.kennzahlen.length === 0 &&
+    profil.reiter.length === 0 &&
+    !profil.zweck &&
+    !profil.hinweis
+  if (leer) return null
+
+  const aktiv = profil.reiter.find((r) => r.id === offen) ?? profil.reiter[0]
 
   return (
-    <div className={"mx-auto max-w-3xl " + (name ? "p-6" : "")}>
-      {name && <Kopf name={name} art={art} bild={bild} farbe={eigen} />}
+    <div className="@container mx-auto w-full max-w-3xl">
+      {name && <Hero name={name} bild={bild} farbe={eigen} profil={profil} />}
 
-      {stand && stand.gefuellt < stand.gesamt && (
-        <p className={(name ? "mt-4 " : "") + "text-xs text-muted-foreground"}>
-          {stand.gefuellt} von {stand.gesamt} Angaben gefüllt
-        </p>
-      )}
+      <div className={name ? "px-5 pb-6 @md:px-7" : "pb-2"}>
+        {/* Ohne Hero steht die Einordnungszeile hier: "Stiftung · fördernd ·
+            Essen" ist auch dann eine Angabe, wenn den Namen eine andere
+            Ansicht trägt (Item-Detail). */}
+        {!name && profil.kopf.length > 0 && <Einordnung felder={profil.kopf} />}
 
-      {/* Jeder Abschnitt trägt seine eigene Farbfläche, keine Rahmen und keine
-          Trennstriche (Design-Doktrin seit 12.05.2026). Die Farben folgen den
-          Fragen: wer (warm), was (grün, Wachstum), wie viel (bernstein, Wert),
-          Antrag (blau, Struktur), Kontakt (violett), Geben (smaragd). */}
-      <div className={(name ? "mt-7 " : "mt-3 ") + "space-y-4"}>
-        {abschnitte.map((a) => (
-          <section
-            key={a.id}
-            className={"@container overflow-hidden rounded-2xl p-5 " + (FLAECHEN[a.id] ?? "bg-slate-50/60 dark:bg-slate-900/40")}
-          >
-            <div className="mb-4">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                {a.titel}
-              </h2>
-              <p className="mt-0.5 text-xs text-muted-foreground/70">{a.frage}</p>
-            </div>
-            <dl className="space-y-3">
-              {a.felder.map((f) => (
-                <Feld key={f.id} feld={f} farbe={eigen} />
-              ))}
-            </dl>
-          </section>
-        ))}
+        {profil.kennzahlen.length > 0 && (
+          <Kennzahlen zahlen={profil.kennzahlen} farbe={eigen} ohneHero={!name} />
+        )}
+
+        {/* Der Zweck spricht in der Stimme der Einrichtung: groß gesetzt,
+            ohne Beschriftung. Ein Zweck mit dem Etikett "Zweck" davor ist ein
+            Formularfeld; ohne Etikett ist er eine Aussage. */}
+        {profil.zweck && (
+          <p className="mt-6 text-[15px] leading-relaxed text-foreground/90 @md:text-base">
+            {profil.zweck}
+          </p>
+        )}
+
+        {/* Der wertvollste Satz der ganzen Karte bekommt seinen eigenen Platz:
+            eine Farbfläche mit einem Balken in der Hausfarbe links. Kein
+            Rahmen, kein Trennstrich (Design-Doktrin). */}
+        {profil.hinweis && (
+          <div className="relative mt-5 overflow-hidden rounded-2xl bg-amber-50/70 px-5 py-4 dark:bg-amber-950/40">
+            <span
+              aria-hidden
+              className="absolute inset-y-0 left-0 w-1"
+              style={{ background: eigen }}
+            />
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              {profil.hinweis.label}
+            </p>
+            <p className="mt-1.5 text-sm leading-relaxed">{profil.hinweis.text}</p>
+          </div>
+        )}
+
+        {/* Eine Reiterleiste mit einem Reiter ist Zierrat: Bei nur einem
+            Reiter stehen seine Felder ohne Leiste da. */}
+        {profil.reiter.length > 1 && (
+          <div className="mt-7 flex gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {profil.reiter.map((r) => {
+              const istOffen = r.id === aktiv?.id
+              return (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => setOffen(r.id)}
+                  aria-current={istOffen ? "true" : undefined}
+                  className={
+                    "shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-colors " +
+                    (istOffen
+                      ? "bg-foreground text-background"
+                      : "text-muted-foreground hover:bg-muted/60")
+                  }
+                >
+                  {r.titel}
+                </button>
+              )
+            })}
+          </div>
+        )}
+
+        {aktiv && (
+          <dl className={(profil.reiter.length > 1 ? "mt-5" : "mt-7") + " space-y-4"}>
+            {aktiv.felder.map((f) => (
+              <Feld key={f.id} feld={f} farbe={eigen} />
+            ))}
+          </dl>
+        )}
+
+        {/* Am Fuß, leise: woher die Angaben stammen und was noch fehlt.
+            Der Stand ist eine ehrliche Zahl für den, der pflegt, keine Note
+            für den, der liest. Darum steht er hier und nicht oben. */}
+        {(quelle || profil.stand.gefuellt < profil.stand.gesamt) && (
+          <div className="mt-8 space-y-1 text-[11px] leading-relaxed text-muted-foreground/80">
+            {quelle && (
+              <p>
+                Diese Angaben stammen aus öffentlicher Recherche ({quelle}). Die
+                Einrichtung pflegt sie selbst, sobald sie ihren Eintrag übernimmt.
+              </p>
+            )}
+            {profil.stand.gefuellt < profil.stand.gesamt && (
+              <p>
+                {profil.stand.gefuellt} von {profil.stand.gesamt} möglichen Angaben
+                ausgefüllt.
+              </p>
+            )}
+          </div>
+        )}
       </div>
-
-      {quelle && (
-        <p className="mt-6 rounded-2xl bg-slate-50/60 dark:bg-slate-900/40 px-5 py-4 text-xs text-muted-foreground">
-          Diese Angaben stammen aus öffentlichen Quellen: {quelle}. Die Einrichtung kann den
-          Eintrag übernehmen und selbst pflegen.
-        </p>
-      )}
     </div>
   )
 }
 
-function Kopf({
+/**
+ * Der Kopf: Farbband, Logo, Name, eine Meta-Zeile, zwei Aktionen.
+ *
+ * Das Band trägt die Hausfarbe als Verlauf und bleibt flach: Ein Muster darin
+ * zöge Aufmerksamkeit von dem ab, was darunter steht. Das Logo überlappt es,
+ * wie es jedes Profil tut, das man kennt.
+ */
+function Hero({
   name,
-  art,
   bild,
   farbe,
+  profil,
 }: {
   name: string
-  art?: string
   bild?: string
   farbe: string
+  profil: Profil
 }) {
-  // Zwei Buchstaben statt eines Platzhalterbildes: Ein graues Symbol sagt
-  // "hier fehlt etwas", zwei Buchstaben sagen, wer gemeint ist.
+  // Ein Kürzel statt eines leeren Kastens. Wo ein Bild fehlt, soll nicht
+  // "hier fehlt etwas" stehen; zwei Buchstaben sagen, wer gemeint ist.
   const kuerzel = name
     .split(/\s+/)
     .filter((w) => /[A-Za-zÄÖÜäöü]/.test(w[0] ?? ""))
@@ -164,37 +201,156 @@ function Kopf({
     .join("")
 
   const sicheresBild = bild ? urlAlsBildSrc(bild) : null
+  const netz = profil.website ? urlAlsHref(profil.website) : null
 
   return (
-    <div className="flex items-start gap-4">
+    <div className="relative">
       <div
-        className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-xl font-bold text-white"
-        style={{ background: farbe }}
-      >
-        {sicheresBild ? (
-          <img src={sicheresBild} alt="" className="h-full w-full object-cover" />
-        ) : (
-          kuerzel || "?"
-        )}
-      </div>
-      <div className="min-w-0 flex-1">
-        <h1 className="text-2xl font-bold leading-tight tracking-tight">{name}</h1>
-        {art && (
-          <p className={"mt-0.5 text-sm font-semibold " + HAUSFARBE} style={hausfarbe(farbe)}>
-            {art}
-          </p>
-        )}
+        className="h-24 w-full @md:h-28"
+        style={{ background: `linear-gradient(135deg, ${farbe} 0%, ${farbe}b0 100%)` }}
+      />
+
+      <div className="px-5 @md:px-7">
+        <div
+          className="-mt-10 flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl text-2xl font-bold text-white shadow-sm @md:-mt-12 @md:h-24 @md:w-24"
+          style={{ background: farbe }}
+        >
+          {sicheresBild ? (
+            <img src={sicheresBild} alt="" className="h-full w-full object-cover" />
+          ) : (
+            kuerzel || "?"
+          )}
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+          <div className="min-w-0 flex-1 basis-full @lg:basis-0">
+            <h1 className="text-xl font-bold leading-tight tracking-tight @md:text-2xl">
+              {name}
+            </h1>
+
+            {profil.kopf.length > 0 && <Einordnung felder={profil.kopf} />}
+          </div>
+
+          {/* Was ein Mensch als Nächstes tut, steht dort, wo er hinsieht. */}
+          {(netz || profil.mail) && (
+            <div className="flex w-full shrink-0 flex-wrap gap-2 @lg:w-auto">
+              {netz && (
+                <a
+                  href={netz}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full px-3.5 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+                  style={{ background: farbe }}
+                >
+                  Website
+                </a>
+              )}
+              {profil.mail && (
+                <a
+                  href={`mailto:${profil.mail}`}
+                  className={"rounded-full bg-muted/70 px-3.5 py-1.5 text-sm font-medium transition-colors hover:bg-muted " + HAUSFARBE}
+                  style={hausfarbe(farbe)}
+                >
+                  Schreiben
+                </a>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
 }
 
 /**
+ * Die Einordnungszeile: Art · fördernd · Sitz · Reichweite.
+ *
+ * Eine Zeile mit Punkten getrennt. Vier Zeilen Beschriftung und Wert
+ * untereinander sagen dasselbe und brauchen viermal so viel Platz.
+ */
+function Einordnung({ felder }: { felder: ProfilFeld[] }) {
+  return (
+    <p className="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground">
+      {felder.map((f, i) => (
+        <span key={f.id} className="flex items-center gap-2">
+          {i > 0 && <span aria-hidden className="text-muted-foreground/40">·</span>}
+          {alsText(f)}
+        </span>
+      ))}
+    </p>
+  )
+}
+
+/**
+ * Die Kennzahlen: was ein Projekt zuerst wissen will.
+ *
+ * Drei Zahlen nebeneinander, jede auf ihrer eigenen Farbfläche. Sie
+ * beantworten die Frage, ob sich das Weiterlesen lohnt, und stehen darum vor
+ * den Reitern.
+ */
+function Kennzahlen({
+  zahlen,
+  farbe,
+  ohneHero,
+}: {
+  zahlen: Kennzahl[]
+  farbe: string
+  ohneHero: boolean
+}) {
+  return (
+    <div className={(ohneHero ? "" : "mt-6 ") + "grid grid-cols-2 gap-2"}>
+      {zahlen.map((k, i) => (
+        <div
+          key={k.id}
+          className={
+            "overflow-hidden rounded-2xl px-4 py-3 " +
+            // Die drei Flächen folgen der Farb-Konvention der Doktrin:
+            // Wert (smaragd), Umfang (bernstein), Reichweite (blau).
+            ["bg-emerald-50/60 dark:bg-emerald-950/40",
+             "bg-amber-50/60 dark:bg-amber-950/40",
+             "bg-blue-50/60 dark:bg-blue-950/40"][i % 3] +
+            // Eine ungerade letzte Zahl füllt die Zeile, statt halb zu stehen.
+            (zahlen.length % 2 === 1 && i === zahlen.length - 1 ? " col-span-2" : "")
+          }
+        >
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            {k.label}
+          </p>
+          <p
+            className={"mt-0.5 text-lg font-bold leading-tight tabular-nums " + HAUSFARBE}
+            style={hausfarbe(farbe)}
+          >
+            {kennzahlText(k)}
+          </p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/** Eine Kennzahl als Text: eine Zahl, eine Spanne oder eine Aufzählung. */
+function kennzahlText(k: Kennzahl): string {
+  const zahl = (w: unknown) =>
+    typeof w === "number" ? w.toLocaleString("de-DE") : String(w ?? "")
+
+  if (k.form === "money") {
+    if (k.wert !== undefined && k.bis !== undefined) {
+      return `${zahl(k.wert)} bis ${zahl(k.bis)} €`
+    }
+    if (k.bis !== undefined) return `bis ${zahl(k.bis)} €`
+    return `ab ${zahl(k.wert)} €`
+  }
+  if (Array.isArray(k.wert)) return k.wert.join(", ")
+  if (k.form === "daterange" && k.wert && k.bis) return `${zahl(k.wert)} bis ${zahl(k.bis)}`
+  return zahl(k.wert)
+}
+
+/**
  * Ein Feld, in der Form, die zu ihm passt.
  *
- * Ein langer Text braucht die volle Breite, eine Zahl nicht. Tags stehen als
- * Etiketten, ein Ja-Nein-Feld als Wort: "ja" und "nein" liest sich schneller
- * als ein Haken und ein Kreuz, die man erst deuten muss.
+ * Die Beschriftung steht klein und leise, der Wert daneben. Eng gemessen
+ * (Container-Anfrage, nicht Fensterbreite) rutscht sie darüber: Dieselbe
+ * Fläche steht in einem Panel von 480 Pixeln und auf einer Seite von 768.
  */
 function Feld({ feld, farbe }: { feld: ProfilFeld; farbe: string }) {
   const { label, form, wert } = feld
@@ -202,8 +358,10 @@ function Feld({ feld, farbe }: { feld: ProfilFeld; farbe: string }) {
   if (form === "longtext") {
     return (
       <div>
-        <dt className="text-xs font-semibold text-muted-foreground">{label}</dt>
-        <dd className="mt-1 max-w-[46em] leading-relaxed">{String(wert)}</dd>
+        <dt className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          {label}
+        </dt>
+        <dd className="mt-1 max-w-[46em] text-sm leading-relaxed">{String(wert)}</dd>
       </div>
     )
   }
@@ -211,13 +369,15 @@ function Feld({ feld, farbe }: { feld: ProfilFeld; farbe: string }) {
   if (form === "tags") {
     const liste = Array.isArray(wert) ? wert : [wert]
     return (
-      <div className="flex flex-col gap-y-1.5 @md:flex-row @md:flex-wrap @md:items-baseline @md:gap-x-3">
-        <dt className="text-xs font-semibold text-muted-foreground @md:w-44 @md:shrink-0">{label}</dt>
+      <div className="flex flex-col gap-y-1.5 @lg:flex-row @lg:flex-wrap @lg:items-baseline @lg:gap-x-4">
+        <dt className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground @lg:w-40 @lg:shrink-0 @lg:pt-1">
+          {label}
+        </dt>
         <dd className="flex flex-1 flex-wrap gap-1.5">
           {liste.map((t, i) => (
             <span
               key={i}
-              className={"rounded-full bg-white dark:bg-white/10 px-2.5 py-0.5 text-sm " + HAUSFARBE}
+              className={"rounded-full bg-muted/70 px-2.5 py-0.5 text-[13px] " + HAUSFARBE}
               style={hausfarbe(farbe)}
             >
               {String(t)}
@@ -231,12 +391,17 @@ function Feld({ feld, farbe }: { feld: ProfilFeld; farbe: string }) {
   if (form === "list") {
     const liste = Array.isArray(wert) ? wert : [wert]
     return (
-      <div className="flex flex-col gap-y-1 @md:flex-row @md:flex-wrap @md:items-baseline @md:gap-x-3">
-        <dt className="text-xs font-semibold text-muted-foreground @md:w-44 @md:shrink-0">{label}</dt>
+      <div className="flex flex-col gap-y-1 @lg:flex-row @lg:flex-wrap @lg:items-baseline @lg:gap-x-4">
+        <dt className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground @lg:w-40 @lg:shrink-0">
+          {label}
+        </dt>
         <dd className="flex-1">
-          <ul className="space-y-0.5">
+          <ul className="space-y-1">
             {liste.map((t, i) => (
-              <li key={i}>{typeof t === "object" ? JSON.stringify(t) : String(t)}</li>
+              <li key={i} className="flex gap-2 text-sm leading-relaxed">
+                <span aria-hidden className="mt-2 h-1 w-1 shrink-0 rounded-full bg-muted-foreground/50" />
+                <span>{String(t)}</span>
+              </li>
             ))}
           </ul>
         </dd>
@@ -245,39 +410,41 @@ function Feld({ feld, farbe }: { feld: ProfilFeld; farbe: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-y-1 @md:flex-row @md:flex-wrap @md:items-baseline @md:gap-x-3">
-      <dt className="text-xs font-semibold text-muted-foreground @md:w-44 @md:shrink-0">{label}</dt>
-      <dd className="flex-1">{anzeige(form, wert, farbe)}</dd>
+    <div className="flex flex-col gap-y-1 @lg:flex-row @lg:flex-wrap @lg:items-baseline @lg:gap-x-4">
+      <dt className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground @lg:w-40 @lg:shrink-0">
+        {label}
+      </dt>
+      <dd className="flex-1 text-sm leading-relaxed">{anzeige(form, wert, farbe)}</dd>
     </div>
   )
 }
 
-/**
- * Ein Wert wird erst dann ein Link, wenn er eine http(s)-URL trägt.
- *
- * Der Wert kommt aus `Group.data` und damit von einem Menschen (Regel 4).
- * `javascript:` und `data:` werden von React im href nicht zuverlässig
- * abgefangen — die Entwicklungswarnung ist kein Riegel, und das Attribut wird
- * trotzdem gesetzt. Wer kein http(s) trägt, fällt auf Text zurück (Muster 5):
- * sichtbar, aber ohne Ausführung.
- */
-export function urlAlsHref(wert: string): string | null {
-  const getrimmt = wert.trim()
-  return /^https?:\/\//i.test(getrimmt) ? getrimmt : null
+/** Ein Feld des Kopfes als schlichter Text. */
+function alsText(f: ProfilFeld): string {
+  if (Array.isArray(f.wert)) return f.wert.join(", ")
+  if (typeof f.wert === "boolean") return f.wert ? f.label : `kein ${f.label}`
+  return String(f.wert ?? "")
 }
 
 /**
- * Ein Bild-Pfad wird erst dann verwendet, wenn er ein sicheres Schema trägt.
+ * Nur das, was ein Browser gefahrlos öffnet.
  *
- * FND-0027: `javascript:` oder `vbscript:` im `src` eines `img`-Tags können
- * in manchen Browsern ausgeführt werden. Erlaubt sind http(s)-URLs, relative
- * Pfade und sichere `data:image/...` URIs.
+ * Die Angaben stammen aus Recherche und später aus fremder Pflege. Ein
+ * `javascript:`-Ziel in einem Profilfeld führt Code aus, sobald jemand darauf
+ * klickt (Prüfkreis, FND-0027).
  */
-export function urlAlsBildSrc(wert: string): string | null {
-  const getrimmt = wert.trim()
-  if (/^(javascript|vbscript):/i.test(getrimmt)) {
-    return null
-  }
+export function urlAlsHref(roh: string): string | null {
+  const getrimmt = roh.trim()
+  // Allein http und https. Ein schemaloses "beispiel.de" zu ergänzen wäre
+  // bequem und öffnete eine Tür: Was hier durchkommt, landet in einem href.
+  if (/^https?:\/\//i.test(getrimmt)) return getrimmt
+  return null
+}
+
+/** Dasselbe für ein Bild, wo zusätzlich `data:image/` erlaubt ist. */
+export function urlAlsBildSrc(roh: string): string | null {
+  const getrimmt = roh.trim()
+  if (/^(javascript|vbscript):/i.test(getrimmt)) return null
   if (/^https?:\/\//i.test(getrimmt) || getrimmt.startsWith("/") || /^data:image\//i.test(getrimmt)) {
     return getrimmt
   }
@@ -293,19 +460,26 @@ function anzeige(form: string, wert: unknown, farbe: string) {
   }
   if (form === "url" && typeof wert === "string") {
     const href = urlAlsHref(wert)
-    if (!href) {
-      return <span>{wert}</span>
-    }
+    if (!href) return <span>{wert}</span>
     return (
-      <a href={href} target="_blank" rel="noreferrer" style={hausfarbe(farbe)}
-         className={"underline underline-offset-2 " + HAUSFARBE}>
+      <a
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+        style={hausfarbe(farbe)}
+        className={"underline underline-offset-2 " + HAUSFARBE}
+      >
         {wert.replace(/^https?:\/\//, "")}
       </a>
     )
   }
   if (form === "email" && typeof wert === "string") {
     return (
-      <a href={`mailto:${wert}`} style={hausfarbe(farbe)} className={"underline underline-offset-2 " + HAUSFARBE}>
+      <a
+        href={`mailto:${wert}`}
+        style={hausfarbe(farbe)}
+        className={"underline underline-offset-2 " + HAUSFARBE}
+      >
         {wert}
       </a>
     )
@@ -313,5 +487,5 @@ function anzeige(form: string, wert: unknown, farbe: string) {
   if (typeof wert === "number") {
     return <span className="tabular-nums">{wert.toLocaleString("de-DE")}</span>
   }
-  return <span>{String(wert)}</span>
+  return <span>{String(wert ?? "")}</span>
 }
