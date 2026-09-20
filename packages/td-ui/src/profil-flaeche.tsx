@@ -13,6 +13,32 @@
 // Unterschied. Die Fragen stehen leise über den Titeln.
 import type { ProfilAbschnitt, ProfilFeld } from "@trustdonation/core"
 
+/**
+ * Welche Farbfläche welcher Abschnitt trägt.
+ *
+ * Die Design-Doktrin vom 12.05.2026: **Farbflächen statt weißer Karten mit
+ * Rahmen.** Timos Satz dazu: *"Dann wirkt es nicht so künstlich, sondern viel
+ * ansprechender."* Rahmen und Trennstriche wirken steril, eine Fläche wirkt
+ * ruhig.
+ *
+ * `/60` durchgehend, damit ein Verlauf dahinter durchscheint.
+ */
+const FLAECHEN: Record<string, string> = {
+  // Förderer
+  wer: "bg-amber-50/60",
+  was: "bg-green-50/60",
+  wieviel: "bg-orange-50/60",
+  antrag: "bg-blue-50/60",
+  kontakt: "bg-violet-50/60",
+  geben: "bg-emerald-50/60",
+  // Projekt: dieselben Fragen, dieselben Farben, wo sie sich treffen
+  warum: "bg-green-50/60",
+  kosten: "bg-orange-50/60",
+  steht: "bg-blue-50/60",
+  wann: "bg-violet-50/60",
+  wirkung: "bg-emerald-50/60",
+}
+
 export interface ProfilFlaecheProps {
   /** Der Name der Einrichtung. Er steht über allem. */
   name: string
@@ -45,7 +71,7 @@ export function ProfilFlaeche({
     return (
       <div className="mx-auto max-w-3xl p-6">
         <Kopf name={name} art={art} bild={bild} farbe={eigen} />
-        <p className="mt-6 rounded-xl border bg-muted/30 px-4 py-6 text-center text-sm text-muted-foreground">
+        <p className="mt-6 rounded-2xl bg-amber-50/60 px-5 py-6 text-center text-sm text-muted-foreground">
           Dieses Profil trägt noch keine Angaben.
           <br />
           Wer den Space verwaltet, füllt sie im Bereich <strong>Netzwerk</strong> aus.
@@ -64,10 +90,17 @@ export function ProfilFlaeche({
         </p>
       )}
 
-      <div className="mt-7 space-y-7">
+      {/* Jeder Abschnitt trägt seine eigene Farbfläche, keine Rahmen und keine
+          Trennstriche (Design-Doktrin seit 12.05.2026). Die Farben folgen den
+          Fragen: wer (warm), was (grün, Wachstum), wie viel (bernstein, Wert),
+          Antrag (blau, Struktur), Kontakt (violett), Geben (smaragd). */}
+      <div className="mt-7 space-y-4">
         {abschnitte.map((a) => (
-          <section key={a.id}>
-            <div className="mb-3 border-b pb-2">
+          <section
+            key={a.id}
+            className={"overflow-hidden rounded-2xl p-5 " + (FLAECHEN[a.id] ?? "bg-slate-50/60")}
+          >
+            <div className="mb-4">
               <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 {a.titel}
               </h2>
@@ -83,7 +116,7 @@ export function ProfilFlaeche({
       </div>
 
       {quelle && (
-        <p className="mt-8 border-t pt-4 text-xs text-muted-foreground">
+        <p className="mt-6 rounded-2xl bg-slate-50/60 px-5 py-4 text-xs text-muted-foreground">
           Diese Angaben stammen aus öffentlichen Quellen: {quelle}. Die Einrichtung kann den
           Eintrag übernehmen und selbst pflegen.
         </p>
@@ -166,8 +199,8 @@ function Feld({ feld, farbe }: { feld: ProfilFeld; farbe: string }) {
           {liste.map((t, i) => (
             <span
               key={i}
-              className="rounded-full border px-2.5 py-0.5 text-sm"
-              style={{ borderColor: farbe + "33" }}
+              className="rounded-full bg-white/70 px-2.5 py-0.5 text-sm"
+              style={{ color: farbe }}
             >
               {String(t)}
             </span>
