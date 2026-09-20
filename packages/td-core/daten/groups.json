@@ -220,5 +220,83 @@
       "treuhand": false,
       "quelle": "Beispielangaben für den Prototyp"
     }
+  },
+  {
+    "id": "5a6c3f10-2b8e-4d71-9c04-7e1f83a5d2b6",
+    "name": "Software AG-Stiftung",
+    "data": {
+      "scope": "group",
+      "access": "open",
+      "roles": [
+        "admin",
+        "member"
+      ],
+      "modules": [
+        "profil",
+        "feed",
+        "kanban",
+        "calendar",
+        "map"
+      ],
+      "network": "30455be1-a5f9-465d-8d19-a72dd8da2d83",
+      "kind": "stiftung",
+      "primaryColor": "#194294",
+      "foerdererart": "Stiftung",
+      "art": "fördernd",
+      "sitz": "Darmstadt, Hessen",
+      "position": {
+        "type": "Point",
+        "coordinates": [
+          8.646229,
+          49.894767
+        ]
+      },
+      "website": "https://www.sagst.de",
+      "zweck": "Wir suchen und finden Menschen, die gemeinnützige Ziele verfolgen, und arbeiten mit ihnen auf Augenhöhe. Unsere Strategie ist das Gespräch.",
+      "foerderbereiche": [
+        "Bildung",
+        "Kinder und Jugend",
+        "Alten- und Behindertenhilfe",
+        "Anthroposophische Medizin",
+        "Natur und Landwirtschaft"
+      ],
+      "zielgruppen": [
+        "Kinder und Jugendliche",
+        "Menschen mit Behinderung",
+        "Ältere Menschen",
+        "Studierende",
+        "Ärztinnen und Ärzte"
+      ],
+      "reichweite": [
+        "national",
+        "international"
+      ],
+      "hinweis": "Ihr Vorhaben bewegt sich jenseits des Mainstreams und arbeitet an der Weiterentwicklung der Gesellschaft. Wir kommen ins Gespräch, bevor wir entscheiden: Der persönliche Kontakt zu Antragstellenden ist für uns ausschlaggebend.",
+      "bisherGefoerdert": [
+        "Anthroposophische Medizin",
+        "Alanus Hochschule Alfter",
+        "Dorfgemeinschaft Juchowo, Polen",
+        "Waldorfschulgründungen"
+      ],
+      "eigenmittel": "teilweise",
+      "antragstellung": "ja",
+      "antragsweg": "offen",
+      "fristen": "laufend. Für eine Schulgründung die Unterlagen im Jahr vor der geplanten Gründung einreichen.",
+      "unterlagen": [
+        "Leitfaden zur Antragstellung, ausgefüllt und unterschrieben",
+        "Einwilligung zur Datenverarbeitung",
+        "Nachweis der Gemeinnützigkeit",
+        "Projektbeschreibung",
+        "Kostenplan",
+        "Finanzierungsplan",
+        "Zeitplan"
+      ],
+      "ansprache": "Koordination Projektleitung",
+      "mail": "anfragen@sagst.de",
+      "zustiftung": false,
+      "spende": false,
+      "treuhand": false,
+      "quelle": "sagst.de, geprüft am 20.09.2026"
+    }
   }
 ]

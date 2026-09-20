@@ -14,13 +14,26 @@ describe("Musterdaten", () => {
   const { groups, users, groupMembers, groupItems, items } = musterdaten
 
   it("bringt die fuenf Spaces aus Timos Umschalter", () => {
-    expect(groups.map((g) => g.name).sort()).toEqual([
-      "Lichtung",
-      "Löwenherz Stiftung",
-      "Marker & Maps",
-      "Real Life",
-      "trustdonation",
-    ])
+    // Timos eigene fünf, aus seinem Dev-Server ausgelesen. Sie sind die
+    // Wahrheit über seinen Umschalter und ändern sich nicht, weil wir
+    // etwas dazulegen.
+    const seine = ["Lichtung", "Löwenherz Stiftung", "Marker & Maps", "Real Life", "trustdonation"]
+    for (const name of seine) {
+      expect(groups.map((g) => g.name)).toContain(name)
+    }
+  })
+
+  it("legt das Muster-Profil daneben, ohne Timos Spaces anzufassen", () => {
+    // Die Software AG-Stiftung ist kein Space aus seinem Umschalter, sondern
+    // ein Maßstab: ein Profil, wie es aussieht, wenn eine Einrichtung ihren
+    // Eintrag übernommen und gepflegt hat. Jede Angabe darin ist belegt
+    // (daten/profil-sagst.json nennt die Quellen).
+    const muster = groups.find((g) => g.name === "Software AG-Stiftung")
+    expect(muster).toBeDefined()
+    expect((muster?.data as { kind?: string })?.kind).toBe("stiftung")
+    expect((muster?.data as { quelle?: string })?.quelle).toContain("sagst.de")
+    // Das Feld, ohne das ein Stiftungsprofil unfertig bleibt.
+    expect((muster?.data as { hinweis?: string })?.hinweis?.length ?? 0).toBeGreaterThan(40)
   })
 
   it("fuehrt trustdonation als Netzwerk mit den Arten Projekt und Stiftung", () => {

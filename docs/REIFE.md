@@ -78,6 +78,7 @@ Drei Punkte, alle benannt, keiner blockierend.
 | Mehrsprachigkeit der App | die Landing ist dreisprachig, die App folgt, wenn jemand sie braucht |
 | Mobile App als Paket | Antons Capacitor-Aufbau steht, wir brauchen ihn noch nicht |
 | Eigene Server-Dienste | solange der WoT-Connector trägt, brauchen wir kein Backend |
+| **Die Musterdaten liegen im Haupt-Stück** | Gemessen am 20.09.2026: 626 Stiftungs-Kennungen im größten Bündel, 308 KB Daten insgesamt. Jeder lädt sie, auch wer sich anmeldet und sie nie sieht. Das Budget ist damit erreicht (2001 von 2000 KB). Der Hebel: die Beispielwelt nachladen statt mitliefern, so wie die Karte. | offen |
 
 ---
 
