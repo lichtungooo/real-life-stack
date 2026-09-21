@@ -16,10 +16,17 @@
 //
 // **Die Schichten:** Welcher Bauplan gilt und was er ergibt, rechnet
 // `@trustdonation/core` aus; die Darstellung liegt in `@trustdonation/ui`.
-import { useMemo } from "react"
-import { AdaptivePanel, useGroups, useItems } from "@real-life-stack/toolkit"
+import { useCallback, useMemo, useRef } from "react"
+import {
+  AdaptivePanel,
+  useConnector,
+  useGroups,
+  useItems,
+  useUpdateGroup,
+} from "@real-life-stack/toolkit"
+import { isWritable } from "@real-life-stack/data-interface"
 import { profilAufbauen, bauplanFuer } from "@trustdonation/core"
-import { ProfilFlaeche } from "@trustdonation/ui"
+import { ProfilFlaeche, bildVerkleinern } from "@trustdonation/ui"
 
 export function SpaceProfilPanel({
   groupId,
@@ -43,6 +50,7 @@ export function SpaceProfilPanel({
     const space = (groups ?? []).find((g) => g.id === groupId)
     if (space) {
       return {
+        art: "space" as const,
         name: space.name ?? "",
         daten: (space.data ?? {}) as Record<string, unknown>,
       }
@@ -51,12 +59,43 @@ export function SpaceProfilPanel({
     if (item) {
       const daten = (item.data ?? {}) as Record<string, unknown>
       return {
+        art: "item" as const,
         name: typeof daten.title === "string" ? daten.title : item.id,
         daten,
       }
     }
     return null
   }, [groupId, groups, items])
+
+  // Ein Bild ergänzen (Janosch, 21.09.2026). Ein verstecktes Dateifeld, das
+  // der Knopf im Platzhalter öffnet; das Bild wird verkleinert und in
+  // `data.image` geschrieben, über Antons Schreibhaken. Der Knopf erscheint
+  // allein dort, wo der Connector schreiben kann.
+  const connector = useConnector()
+  const updateGroup = useUpdateGroup()
+  const dateifeld = useRef<HTMLInputElement>(null)
+  const kannSchreiben = isWritable(connector)
+
+  const bildGewaehlt = useCallback(
+    async (datei: File | undefined) => {
+      if (!datei || !traeger || groupId === null) return
+      try {
+        const image = await bildVerkleinern(datei)
+        const data = { ...traeger.daten, image }
+        if (traeger.art === "space") {
+          await updateGroup(groupId, { data })
+        } else if (isWritable(connector)) {
+          await connector.updateItem(groupId, { data })
+        }
+      } catch (fehler) {
+        console.error("[SpaceProfilPanel] Bild ließ sich nicht ergänzen", fehler)
+      } finally {
+        // Dieselbe Datei ein zweites Mal wählen löst sonst kein change aus.
+        if (dateifeld.current) dateifeld.current.value = ""
+      }
+    },
+    [traeger, groupId, updateGroup, connector],
+  )
 
   const daten = traeger?.daten ?? {}
 
@@ -80,17 +119,28 @@ export function SpaceProfilPanel({
       {/* Das Panel bringt Schliessen und Scrollen selbst mit. Der Hero laeuft
           bis an den Rand, darum steht hier kein eigenes Polster. */}
       {traeger && profil && (
-        <ProfilFlaeche
-          key={groupId ?? ""}
-          name={traeger.name}
-          farbe={
-            (typeof daten.primaryColor === "string" && daten.primaryColor) ||
-            (typeof daten.color === "string" ? daten.color : undefined)
-          }
-          profil={profil}
-          quelle={typeof daten.quelle === "string" ? daten.quelle : undefined}
-          ordnungsId={groupId ?? undefined}
-        />
+        <>
+          <input
+            ref={dateifeld}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            aria-label="Bild für das Profil wählen"
+            onChange={(e) => void bildGewaehlt(e.target.files?.[0])}
+          />
+          <ProfilFlaeche
+            key={groupId ?? ""}
+            name={traeger.name}
+            farbe={
+              (typeof daten.primaryColor === "string" && daten.primaryColor) ||
+              (typeof daten.color === "string" ? daten.color : undefined)
+            }
+            profil={profil}
+            quelle={typeof daten.quelle === "string" ? daten.quelle : undefined}
+            ordnungsId={groupId ?? undefined}
+            onBildAendern={kannSchreiben ? () => dateifeld.current?.click() : undefined}
+          />
+        </>
       )}
     </AdaptivePanel>
   )

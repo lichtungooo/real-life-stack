@@ -213,9 +213,10 @@ export function ProfilFlaeche({
 /**
  * Bild, Name, Einordnung.
  *
- * Das Band trägt die Hausfarbe als Verlauf, das Bild überlappt es. Fehlt ein
- * Bild, steht dort ein Platzhalter mit dem Kürzel und der Einladung, eines zu
- * ergänzen (Janosch).
+ * **Das Band ist die Bildfläche.** Trägt das Profil ein Bild, füllt es sie in
+ * voller Breite. Fehlt eines, steht dort ein sichtbarer Platzhalter mit dem
+ * Knopf "Bild ergänzen" (Janosch, 21.09.2026). Das Kürzel darunter bleibt die
+ * Marke, wie das Logo auf jedem Profil, das man kennt.
  */
 function Kopf({
   name,
@@ -231,7 +232,7 @@ function Kopf({
   onBildAendern?: () => void
 }) {
   // Ein Kürzel statt eines leeren Kastens. Zwei Buchstaben sagen, wer gemeint
-  // ist, wo ein Bild fehlt.
+  // ist.
   const kuerzel = name
     .split(/\s+/)
     .filter((w) => /[A-Za-zÄÖÜäöü]/.test(w[0] ?? ""))
@@ -240,45 +241,38 @@ function Kopf({
     .join("")
 
   const sicheresBild = bild ? urlAlsBildSrc(bild) : null
-  const InnenTag = onBildAendern ? "button" : "div"
 
   return (
     <div>
       <div
-        className="h-28 w-full @lg:h-36"
+        className="relative h-40 w-full overflow-hidden @lg:h-52"
         style={{ background: `linear-gradient(135deg, ${farbe} 0%, ${farbe}a0 100%)` }}
-      />
+      >
+        {sicheresBild ? (
+          <>
+            <img src={sicheresBild} alt="" className="h-full w-full object-cover" />
+            {onBildAendern && (
+              <button
+                type="button"
+                onClick={onBildAendern}
+                className="absolute bottom-3 right-3 rounded-full bg-black/45 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm transition-colors hover:bg-black/60"
+              >
+                Bild ändern
+              </button>
+            )}
+          </>
+        ) : (
+          <BildPlatzhalter onBildAendern={onBildAendern} />
+        )}
+      </div>
 
       <div className="px-5 @lg:px-7">
-        <InnenTag
-          {...(onBildAendern
-            ? {
-                type: "button" as const,
-                onClick: onBildAendern,
-                "aria-label": sicheresBild ? "Bild austauschen" : "Bild ergänzen",
-                title: sicheresBild ? "Bild austauschen" : "Bild ergänzen",
-              }
-            : {})}
-          className={
-            "group relative -mt-11 flex h-22 w-22 items-center justify-center overflow-hidden rounded-2xl text-2xl font-bold text-white shadow-md @lg:-mt-14 @lg:h-28 @lg:w-28 @lg:text-3xl " +
-            (onBildAendern ? "cursor-pointer" : "")
-          }
+        <div
+          className="-mt-11 flex h-22 w-22 items-center justify-center overflow-hidden rounded-2xl text-2xl font-bold text-white shadow-md @lg:-mt-14 @lg:h-28 @lg:w-28 @lg:text-3xl"
           style={{ background: farbe }}
         >
-          {sicheresBild ? (
-            <img src={sicheresBild} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <>
-              {kuerzel || "?"}
-              {/* Der Platzhalter lädt ein, statt nur leer zu sein. */}
-              {onBildAendern && (
-                <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-[11px] font-medium opacity-0 transition-opacity group-hover:opacity-100">
-                  Bild ergänzen
-                </span>
-              )}
-            </>
-          )}
-        </InnenTag>
+          {kuerzel || "?"}
+        </div>
 
         <h1 className="mt-3 text-xl font-bold leading-tight tracking-tight @lg:text-2xl">
           {name}
@@ -288,6 +282,90 @@ function Kopf({
       </div>
     </div>
   )
+}
+
+/**
+ * Der Platzhalter, wo ein Bild hingehört.
+ *
+ * Ein Bildsymbol und ein Knopf, beide sichtbar, ohne Darüberfahren: Wer das
+ * Profil pflegt, soll auf den ersten Blick sehen, dass hier etwas fehlt und
+ * wie er es ergänzt. Ohne Schreibrecht bleibt das Symbol allein stehen.
+ */
+function BildPlatzhalter({ onBildAendern }: { onBildAendern?: () => void }) {
+  return (
+    <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-white/85">
+      <svg
+        aria-hidden
+        viewBox="0 0 24 24"
+        className="h-10 w-10 opacity-80"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <rect x="3" y="4" width="18" height="16" rx="3" />
+        <circle cx="9" cy="10" r="2" />
+        <path d="M21 16l-5-5-8 8" />
+      </svg>
+      {onBildAendern ? (
+        <button
+          type="button"
+          onClick={onBildAendern}
+          className="rounded-full bg-white/20 px-3.5 py-1.5 text-sm font-medium backdrop-blur-sm transition-colors hover:bg-white/30"
+        >
+          Bild ergänzen
+        </button>
+      ) : (
+        <span className="text-xs">Noch kein Bild</span>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Ein Bild fürs Profil verkleinern, mit seinem Seitenverhältnis.
+ *
+ * Antons `resizeImage` schneidet quadratisch zu, das passt für ein Logo und
+ * nicht für eine Bildfläche. Hier bleibt das Verhältnis, die längere Seite
+ * wird auf `maxBreite` gebracht, und das Ergebnis ist WebP als Daten-URL.
+ * Ein Bild von drei Megabyte wird so zu rund hundert Kilobyte, und die App
+ * lädt beim Start kein Foto in voller Größe (Startlast, siehe td-performance).
+ *
+ * SVG bleibt, wie es ist: verlustfrei und ohnehin klein.
+ */
+export function bildVerkleinern(datei: File, maxBreite = 1200, qualitaet = 0.82): Promise<string> {
+  if (datei.type === "image/svg+xml") {
+    return new Promise((ok, nein) => {
+      const leser = new FileReader()
+      leser.onload = () => ok(leser.result as string)
+      leser.onerror = () => nein(new Error("SVG ließ sich nicht lesen"))
+      leser.readAsDataURL(datei)
+    })
+  }
+  return new Promise((ok, nein) => {
+    const bild = new Image()
+    const url = URL.createObjectURL(datei)
+    bild.onload = () => {
+      URL.revokeObjectURL(url)
+      const faktor = Math.min(1, maxBreite / Math.max(bild.width, bild.height))
+      const leinwand = document.createElement("canvas")
+      leinwand.width = Math.round(bild.width * faktor)
+      leinwand.height = Math.round(bild.height * faktor)
+      const ctx = leinwand.getContext("2d")
+      if (!ctx) {
+        nein(new Error("Kein Zeichenkontext"))
+        return
+      }
+      ctx.drawImage(bild, 0, 0, leinwand.width, leinwand.height)
+      ok(leinwand.toDataURL("image/webp", qualitaet))
+    }
+    bild.onerror = () => {
+      URL.revokeObjectURL(url)
+      nein(new Error("Bild ließ sich nicht lesen"))
+    }
+    bild.src = url
+  })
 }
 
 /**

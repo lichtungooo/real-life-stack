@@ -18,7 +18,7 @@ export {
   type ImportStand,
 } from "./stiftungen-import.js"
 export { BaukastenFlaeche, type BaukastenFlaecheProps } from "./baukasten-flaeche.js"
-export { ProfilFlaeche, type ProfilFlaecheProps } from "./profil-flaeche.js"
+export { ProfilFlaeche, bildVerkleinern, type ProfilFlaecheProps } from "./profil-flaeche.js"
 
 // Die Begleitung (DEFINITION Teil 13). `presents` bleibt leer: Sie ist keine
 // Sicht auf Items, sie liest sie.
