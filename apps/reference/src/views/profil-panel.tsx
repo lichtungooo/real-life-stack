@@ -83,13 +83,13 @@ export function SpaceProfilPanel({
         <ProfilFlaeche
           key={groupId ?? ""}
           name={traeger.name}
-          bild={typeof daten.image === "string" ? daten.image : undefined}
           farbe={
             (typeof daten.primaryColor === "string" && daten.primaryColor) ||
             (typeof daten.color === "string" ? daten.color : undefined)
           }
           profil={profil}
           quelle={typeof daten.quelle === "string" ? daten.quelle : undefined}
+          ordnungsId={groupId ?? undefined}
         />
       )}
     </AdaptivePanel>

@@ -75,6 +75,28 @@
     "spende": false,
     "treuhand": false,
 
+    "telefon": "+49 6151 9292-0",
+
+    "gegruendet": "1992",
+    "gruender": "Peter Schnell",
+    "meilensteine": [
+      "1992: Gegründet von Dr. h.c. Peter Schnell, Mitgründer der Software AG",
+      "1997: Erste Förderungen in Waldorfpädagogik und anthroposophischer Medizin",
+      "2004: Alanus Hochschule für Kunst und Gesellschaft nimmt den Betrieb auf",
+      "2012: Zwanzig Jahre, über 2.000 geförderte Vorhaben",
+      "2022: Stiftungskapital überschreitet eine Milliarde Euro"
+    ],
+    "mitwirkende": [
+      "Vorstand: Dr. h.c. Peter Schnell (Stifter)",
+      "Kuratorium führt die Aufsicht",
+      "Rund 40 Mitarbeitende in Darmstadt"
+    ],
+
+    "rechtsform": "Rechtsfähige Stiftung des bürgerlichen Rechts",
+    "register": "Stiftungsverzeichnis Regierungspräsidium Darmstadt",
+    "aufsicht": "Regierungspräsidium Darmstadt",
+    "gemeinnuetzig": true,
+
     "quelle": "sagst.de, geprüft am 20.09.2026"
   },
 
@@ -83,6 +105,9 @@
     "summeBis": "Die Stiftung nennt keine Obergrenze. Sie fördert 'den Teil der Gesamtkosten, der sinnvoll und angemessen getragen werden kann'.",
     "volumenJahr": "Steht im Förder- und Finanzbericht, hier ungeprüft.",
     "antragsportal": "Es gibt keines. Der Antrag geht formlos per Mail oder Post.",
-    "zustiftung/spende/treuhand": "Die Stiftung wirbt nicht dafür. Als `false` gesetzt, weil ein Nein eine Antwort ist und jemandem eine Anfrage erspart."
+    "zustiftung/spende/treuhand": "Die Stiftung wirbt nicht dafür. Als `false` gesetzt, weil ein Nein eine Antwort ist und jemandem eine Anfrage erspart.",
+    "image": "Die Stiftung hat ein Logo, wir haben keine Erlaubnis dafür. Der Platzhalter lädt ein, eines zu ergänzen (Janoschs Vorgabe vom 21.09.2026).",
+    "notiz": "Das Feld gehört dem, der den Eintrag pflegt. Wir lassen es leer.",
+    "hashtags": "Die Vorschläge aus Förderbereichen und Gründer genügen; von Hand ergänzt wurde nichts."
   }
 }

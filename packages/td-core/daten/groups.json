@@ -290,7 +290,27 @@
       "zustiftung": false,
       "spende": false,
       "treuhand": false,
-      "quelle": "sagst.de, geprüft am 20.09.2026"
+      "quelle": "sagst.de, geprüft am 20.09.2026",
+      "address": "Am Eichwäldchen 6, 64297 Darmstadt",
+      "telefon": "+49 6151 9292-0",
+      "gegruendet": "1992",
+      "gruender": "Peter Schnell",
+      "meilensteine": [
+        "1992: Gegründet von Dr. h.c. Peter Schnell, Mitgründer der Software AG",
+        "1997: Erste Förderungen in Waldorfpädagogik und anthroposophischer Medizin",
+        "2004: Alanus Hochschule für Kunst und Gesellschaft nimmt den Betrieb auf",
+        "2012: Zwanzig Jahre, über 2.000 geförderte Vorhaben",
+        "2022: Stiftungskapital überschreitet eine Milliarde Euro"
+      ],
+      "mitwirkende": [
+        "Vorstand: Dr. h.c. Peter Schnell (Stifter)",
+        "Kuratorium führt die Aufsicht",
+        "Rund 40 Mitarbeitende in Darmstadt"
+      ],
+      "rechtsform": "Rechtsfähige Stiftung des bürgerlichen Rechts",
+      "register": "Stiftungsverzeichnis Regierungspräsidium Darmstadt",
+      "aufsicht": "Regierungspräsidium Darmstadt",
+      "gemeinnuetzig": true
     }
   }
 ]

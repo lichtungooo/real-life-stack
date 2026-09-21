@@ -249,6 +249,7 @@ export function ItemDetailRead({
             profil={profil}
             farbe={typeof profilDaten.color === "string" ? profilDaten.color : undefined}
             quelle={typeof profilDaten.quelle === "string" ? profilDaten.quelle : undefined}
+            ordnungsId={item.id}
           />
         ) : (
           <presentation.detail item={item} />

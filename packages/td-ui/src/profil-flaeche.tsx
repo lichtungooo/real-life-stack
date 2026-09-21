@@ -1,35 +1,35 @@
-// Das Profil einer Einrichtung, als Fläche.
+// Das Profil einer Einrichtung, als Collage aus Kacheln.
 //
-// Timo am 20.09.2026, nach zwei Fehlversuchen: *"Guck dir mal richtig gute
-// Profile an ... es geht ja nicht darum, eine Stiftung darzustellen und dann
-// ein spezielles Profil daraus zu bauen, sondern wie allgemein Profile sind,
-// wie sie sich erklären."*
+// **Die Vorgabe stammt von Janosch** (UX im Kernteam), 21.09.2026: Bild mit
+// Platzhalter, Name, Mitwirkende, relevante Details, Hashtags, Gründung und
+// Meilensteine, Karte, Rechtliches, freies Textfeld, Kontakt. Wichtiges oben,
+// Details unten, als Collage, die sich per Drag and Drop umsortieren lässt.
 //
-// **Nachgesehen bei Instagram, LinkedIn, GitHub und Facebook.** Die Anatomie
-// ist überall dieselbe:
+// **Der Kopf bleibt oben.** Bild, Name und Einordnung sind die Identität; sie
+// stehen fest. Alles darunter verschiebt sich.
 //
-//     Cover       ein Band in der Hausfarbe
-//     Identität   Bild, Name, Einordnungszeile
-//     Bio         kurz, in eigener Stimme
-//     Aktionen    Website · Antrag · Schreiben
-//     Zahlen      drei Signale, teils gezählt
-//     Themen      runde Kacheln (Instagram nennt sie Highlights)
-//     Reiter      wenige, klar benannt
-//     Das Werk    ein Raster von Karten
+// **Was hier steht und was nicht:** Welche Kacheln ein Profil hat und was
+// darin steht, rechnet `@trustdonation/core` aus, ohne Browser und geprüft.
+// Diese Datei zeigt allein an (ARCHITEKTUR Teil 3).
 //
-// **Das Werk ist das Herz.** Ein GitHub-Profil ohne Repositories wäre
-// sinnlos. Die ersten zwei Fassungen zeigten ein Formular und versteckten das
-// Werk als Stichwort-Chips.
-//
-// **Was hier steht und was nicht:** Was ein Profil trägt, rechnet
-// `@trustdonation/core` aus, ohne Browser und geprüft. Diese Datei zeigt
-// allein an (ARCHITEKTUR Teil 3).
+// **Drag and Drop ohne Bibliothek.** Antons Kanban-Brett nutzt die
+// HTML5-Schnittstelle (`dataTransfer`); dem folgen wir. Eine Bibliothek für
+// diese eine Fläche wöge mehr als der Nutzen.
 //
 // **Die Design-Doktrin gilt** (memory/feedback_design_doktrin.md, 12.05.2026):
 // Farbflächen statt weißer Karten mit Rahmen, Atemraum statt Trennstriche,
 // `rounded-2xl`, keine schwarzen Umrandungen.
-import { useState, type CSSProperties } from "react"
-import type { Profil, ProfilFeld, Zahl, Aktion } from "@trustdonation/core"
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type DragEvent,
+} from "react"
+import type { Profil, Kachel, ProfilFeld, Meilenstein, Ort } from "@trustdonation/core"
+import { kachelnOrdnen, kartenAusschnitt } from "@trustdonation/core"
 
 /**
  * Text in der Hausfarbe, der in beiden Ansichten lesbar bleibt.
@@ -46,132 +46,151 @@ function hausfarbe(farbe: string): CSSProperties {
   return { "--td-hausfarbe": farbe } as CSSProperties
 }
 
+/** Welche Farbfläche welche Kachel trägt. */
+const FLAECHEN: Record<string, string> = {
+  hashtags: "bg-violet-50/60 dark:bg-violet-950/40",
+  details: "bg-amber-50/60 dark:bg-amber-950/40",
+  geschichte: "bg-blue-50/60 dark:bg-blue-950/40",
+  karte: "bg-emerald-50/60 dark:bg-emerald-950/40",
+  mitwirkende: "bg-orange-50/60 dark:bg-orange-950/40",
+  kontakt: "bg-green-50/60 dark:bg-green-950/40",
+  rechtliches: "bg-slate-50/60 dark:bg-slate-900/40",
+  notiz: "bg-yellow-50/60 dark:bg-yellow-950/40",
+}
+
 export interface ProfilFlaecheProps {
   /**
    * Der Name. Er steht über allem.
    *
-   * Leer gelassen, erscheinen Cover und Name nicht. So steht die Fläche im
+   * Leer gelassen, erscheinen Cover und Name nicht. So steht die Collage im
    * Item-Detail unter dem Titel, den jene Ansicht schon trägt.
    */
   name?: string
-  /** Das Bild, falls es eines gibt. */
-  bild?: string
   /** Die Hausfarbe. Sonst das Blau der Stiftungsart. */
   farbe?: string
   /** Das fertige Profil, ausgerechnet von `profilAufbauen`. */
   profil: Profil
   /** Woher die Angaben stammen, solange niemand den Eintrag übernommen hat. */
   quelle?: string
+  /**
+   * Die Kennung, unter der die eigene Reihenfolge der Kacheln liegt.
+   *
+   * Ohne sie bleibt die Collage bei der Rangfolge des Bauplans; ein Profil
+   * ohne feste Kennung soll keine fremde Reihenfolge erben.
+   */
+  ordnungsId?: string
+  /** Ein Bild ergänzen. Fehlt der Haken, bleibt der Platzhalter still. */
+  onBildAendern?: () => void
 }
 
-export function ProfilFlaeche({ name, bild, farbe, profil, quelle }: ProfilFlaecheProps) {
+/** Wo die eigene Reihenfolge liegt. */
+const ORDNUNG_SCHLUESSEL = (id: string) => `td-profil-ordnung-${id}`
+
+export function ProfilFlaeche({
+  name,
+  farbe,
+  profil,
+  quelle,
+  ordnungsId,
+  onBildAendern,
+}: ProfilFlaecheProps) {
   const eigen = farbe || "#194294"
-  const [offen, setOffen] = useState(profil.reiter[0]?.id ?? "")
+
+  // Die eigene Reihenfolge lebt im Browser dessen, der sie gewählt hat.
+  // Ein recherchierter Eintrag gehört niemandem, also darf niemand die
+  // Reihenfolge für alle anderen festlegen.
+  const [ordnung, setOrdnung] = useState<string[] | null>(null)
+  useEffect(() => {
+    if (!ordnungsId) {
+      setOrdnung(null)
+      return
+    }
+    try {
+      const roh = window.localStorage.getItem(ORDNUNG_SCHLUESSEL(ordnungsId))
+      setOrdnung(roh ? (JSON.parse(roh) as string[]) : null)
+    } catch {
+      // Ein Browser ohne Speicher ist kein Fehler, nur kein Gedächtnis.
+      setOrdnung(null)
+    }
+  }, [ordnungsId])
+
+  const kacheln = useMemo(
+    () => kachelnOrdnen(profil.kacheln, ordnung),
+    [profil.kacheln, ordnung],
+  )
+
+  const [gezogen, setGezogen] = useState<string | null>(null)
+  const [ueber, setUeber] = useState<string | null>(null)
+
+  const verschieben = useCallback(
+    (vonId: string, nachId: string) => {
+      if (vonId === nachId) return
+      const ids = kacheln.map((k) => k.id as string)
+      const von = ids.indexOf(vonId)
+      const nach = ids.indexOf(nachId)
+      if (von < 0 || nach < 0) return
+      ids.splice(nach, 0, ids.splice(von, 1)[0])
+      setOrdnung(ids)
+      if (ordnungsId) {
+        try {
+          window.localStorage.setItem(ORDNUNG_SCHLUESSEL(ordnungsId), JSON.stringify(ids))
+        } catch {
+          // Gespeichert oder nicht: Die Ansicht folgt trotzdem.
+        }
+      }
+    },
+    [kacheln, ordnungsId],
+  )
 
   // Nichts zu zeigen heißt: nichts zeigen (`traegtProfil` hält es vorher
   // zurück). Eine Fläche, die "hier steht nichts" sagt, wirkt kaputt.
-  const leer =
-    profil.einordnung.length === 0 &&
-    profil.zahlen.length === 0 &&
-    profil.reiter.length === 0 &&
-    profil.themen.length === 0 &&
-    !profil.bio &&
-    !profil.hervorhebung
-  if (leer) return null
-
-  const aktiv = profil.reiter.find((r) => r.id === offen) ?? profil.reiter[0]
+  if (profil.kacheln.length === 0 && profil.einordnung.length === 0) return null
 
   return (
     <div className="@container mx-auto w-full max-w-3xl">
-      {name && <Kopf name={name} bild={bild} farbe={eigen} profil={profil} />}
+      {name && (
+        <Kopf
+          name={name}
+          bild={profil.bild}
+          farbe={eigen}
+          einordnung={profil.einordnung}
+          onBildAendern={onBildAendern}
+        />
+      )}
 
       <div className={name ? "px-5 pb-6 @lg:px-7" : "pb-2"}>
-        {/* Ohne Kopf steht die Einordnungszeile hier: "Stiftung · fördernd ·
-            Essen" ist auch dann eine Angabe, wenn den Namen eine andere
-            Ansicht trägt. */}
-        {!name && profil.einordnung.length > 0 && (
-          <Einordnung teile={profil.einordnung} />
-        )}
+        {!name && profil.einordnung.length > 0 && <Einordnung teile={profil.einordnung} />}
 
-        {/* Die Bio: die Stimme, nicht ein Feld mit Etikett. */}
-        {profil.bio && (
-          <p className={(name ? "mt-4" : "mt-3") + " text-[15px] leading-relaxed text-foreground/90"}>
-            {profil.bio}
-          </p>
-        )}
-
-        {!name && profil.aktionen.length > 0 && (
-          <div className="mt-4">
-            <Aktionen aktionen={profil.aktionen} farbe={eigen} />
-          </div>
-        )}
-
-        {profil.zahlen.length > 0 && <Zahlen zahlen={profil.zahlen} farbe={eigen} />}
-
-        {profil.themen.length > 0 && <Themen themen={profil.themen} farbe={eigen} />}
-
-        {/* Der wertvollste Satz bekommt seine eigene Fläche, mit einem Balken
-            in der Hausfarbe links. Kein Rahmen, kein Trennstrich. */}
-        {profil.hervorhebung && (
-          <div className="relative mt-6 overflow-hidden rounded-2xl bg-amber-50/70 px-5 py-4 dark:bg-amber-950/40">
-            <span
-              aria-hidden
-              className="absolute inset-y-0 left-0 w-1"
-              style={{ background: eigen }}
+        {/* Die Collage. Jede Kachel lässt sich fassen und woanders ablegen;
+            die Reihenfolge bleibt im Browser dessen, der sie gewählt hat. */}
+        <div className={(name ? "mt-5" : "mt-4") + " grid grid-cols-2 gap-3"}>
+          {kacheln.map((k) => (
+            <KachelFlaeche
+              key={k.id}
+              kachel={k}
+              farbe={eigen}
+              wirdGezogen={gezogen === k.id}
+              istZiel={ueber === k.id && gezogen !== k.id}
+              onGreifen={() => setGezogen(k.id as string)}
+              onLoslassen={() => {
+                setGezogen(null)
+                setUeber(null)
+              }}
+              onDarueber={() => setUeber(k.id as string)}
+              onAblegen={(vonId) => {
+                if (vonId) verschieben(vonId, k.id as string)
+                setGezogen(null)
+                setUeber(null)
+              }}
             />
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              {profil.hervorhebung.label}
-            </p>
-            <p className="mt-1.5 text-sm leading-relaxed">{profil.hervorhebung.text}</p>
-          </div>
-        )}
-
-        {/* Eine Reiterleiste mit einem Reiter ist Zierrat. */}
-        {profil.reiter.length > 1 && (
-          <div className="mt-7 flex gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {profil.reiter.map((r) => {
-              const istOffen = r.id === aktiv?.id
-              return (
-                <button
-                  key={r.id}
-                  type="button"
-                  onClick={() => setOffen(r.id)}
-                  aria-current={istOffen ? "true" : undefined}
-                  className={
-                    "shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-colors " +
-                    (istOffen
-                      ? "bg-foreground text-background"
-                      : "text-muted-foreground hover:bg-muted/60")
-                  }
-                >
-                  {r.titel}
-                </button>
-              )
-            })}
-          </div>
-        )}
-
-        {aktiv && (
-          <div className={profil.reiter.length > 1 ? "mt-5" : "mt-7"}>
-            {/* Das Werk zuerst: Was diese Einrichtung getan hat, ist das,
-                wofür ein Profil da ist. */}
-            {aktiv.karten && <Werk stuecke={aktiv.karten} farbe={eigen} />}
-
-            {aktiv.felder.length > 0 && (
-              <dl className={(aktiv.karten ? "mt-6" : "") + " space-y-4"}>
-                {aktiv.felder.map((f) => (
-                  <Feld key={f.id} feld={f} farbe={eigen} />
-                ))}
-              </dl>
-            )}
-          </div>
-        )}
+          ))}
+        </div>
 
         {/* Am Fuß, leise: woher die Angaben stammen und was noch fehlt. Der
             Stand ist eine Zahl für den, der pflegt, keine Note für den, der
-            liest. Darum steht er hier und nicht oben. */}
+            liest. */}
         {(quelle || profil.stand.gefuellt < profil.stand.gesamt) && (
-          <div className="mt-8 space-y-1 text-[11px] leading-relaxed text-muted-foreground/80">
+          <div className="mt-7 space-y-1 text-[11px] leading-relaxed text-muted-foreground/80">
             {quelle && (
               <p>
                 Diese Angaben stammen aus öffentlicher Recherche ({quelle}). Die
@@ -181,7 +200,7 @@ export function ProfilFlaeche({ name, bild, farbe, profil, quelle }: ProfilFlaec
             {profil.stand.gefuellt < profil.stand.gesamt && (
               <p>
                 {profil.stand.gefuellt} von {profil.stand.gesamt} möglichen Angaben
-                ausgefüllt.
+                ausgefüllt. Kacheln lassen sich mit der Maus verschieben.
               </p>
             )}
           </div>
@@ -192,25 +211,27 @@ export function ProfilFlaeche({ name, bild, farbe, profil, quelle }: ProfilFlaec
 }
 
 /**
- * Cover, Bild, Name, Einordnung, Aktionen.
+ * Bild, Name, Einordnung.
  *
- * Das Cover trägt die Hausfarbe als Verlauf und bleibt flach: Ein Muster darin
- * zöge Aufmerksamkeit von dem ab, was darunter steht. Das Bild überlappt es,
- * wie es jedes Profil tut, das man kennt.
+ * Das Band trägt die Hausfarbe als Verlauf, das Bild überlappt es. Fehlt ein
+ * Bild, steht dort ein Platzhalter mit dem Kürzel und der Einladung, eines zu
+ * ergänzen (Janosch).
  */
 function Kopf({
   name,
   bild,
   farbe,
-  profil,
+  einordnung,
+  onBildAendern,
 }: {
   name: string
   bild?: string
   farbe: string
-  profil: Profil
+  einordnung: string[]
+  onBildAendern?: () => void
 }) {
-  // Ein Kürzel statt eines leeren Kastens. Wo ein Bild fehlt, soll nicht
-  // "hier fehlt etwas" stehen; zwei Buchstaben sagen, wer gemeint ist.
+  // Ein Kürzel statt eines leeren Kastens. Zwei Buchstaben sagen, wer gemeint
+  // ist, wo ein Bild fehlt.
   const kuerzel = name
     .split(/\s+/)
     .filter((w) => /[A-Za-zÄÖÜäöü]/.test(w[0] ?? ""))
@@ -219,6 +240,7 @@ function Kopf({
     .join("")
 
   const sicheresBild = bild ? urlAlsBildSrc(bild) : null
+  const InnenTag = onBildAendern ? "button" : "div"
 
   return (
     <div>
@@ -228,38 +250,51 @@ function Kopf({
       />
 
       <div className="px-5 @lg:px-7">
-        <div
-          className="-mt-11 flex h-22 w-22 items-center justify-center overflow-hidden rounded-2xl text-2xl font-bold text-white shadow-md @lg:-mt-14 @lg:h-28 @lg:w-28 @lg:text-3xl"
+        <InnenTag
+          {...(onBildAendern
+            ? {
+                type: "button" as const,
+                onClick: onBildAendern,
+                "aria-label": sicheresBild ? "Bild austauschen" : "Bild ergänzen",
+                title: sicheresBild ? "Bild austauschen" : "Bild ergänzen",
+              }
+            : {})}
+          className={
+            "group relative -mt-11 flex h-22 w-22 items-center justify-center overflow-hidden rounded-2xl text-2xl font-bold text-white shadow-md @lg:-mt-14 @lg:h-28 @lg:w-28 @lg:text-3xl " +
+            (onBildAendern ? "cursor-pointer" : "")
+          }
           style={{ background: farbe }}
         >
           {sicheresBild ? (
             <img src={sicheresBild} alt="" className="h-full w-full object-cover" />
           ) : (
-            kuerzel || "?"
+            <>
+              {kuerzel || "?"}
+              {/* Der Platzhalter lädt ein, statt nur leer zu sein. */}
+              {onBildAendern && (
+                <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-[11px] font-medium opacity-0 transition-opacity group-hover:opacity-100">
+                  Bild ergänzen
+                </span>
+              )}
+            </>
           )}
-        </div>
+        </InnenTag>
 
         <h1 className="mt-3 text-xl font-bold leading-tight tracking-tight @lg:text-2xl">
           {name}
         </h1>
 
-        {profil.einordnung.length > 0 && <Einordnung teile={profil.einordnung} />}
-
-        {profil.aktionen.length > 0 && (
-          <div className="mt-4">
-            <Aktionen aktionen={profil.aktionen} farbe={farbe} />
-          </div>
-        )}
+        {einordnung.length > 0 && <Einordnung teile={einordnung} />}
       </div>
     </div>
   )
 }
 
 /**
- * Die Einordnungszeile: Stiftung · fördernd · Darmstadt · national.
+ * Die Einordnungszeile: Stiftung · fördernd · Essen.
  *
- * Eine Zeile mit Punkten getrennt. Vier Zeilen Beschriftung und Wert
- * untereinander sagen dasselbe und brauchen viermal so viel Platz.
+ * Eine Zeile mit Punkten getrennt. Drei Zeilen Beschriftung und Wert
+ * untereinander sagen dasselbe und brauchen dreimal so viel Platz.
  */
 function Einordnung({ teile }: { teile: string[] }) {
   return (
@@ -275,146 +310,250 @@ function Einordnung({ teile }: { teile: string[] }) {
 }
 
 /**
- * Was man als Nächstes tut.
+ * Eine Kachel der Collage.
  *
- * Eine hervorgehoben, die anderen daneben. Instagram macht es so, GitHub
- * auch: Ein Profil ohne sichtbare nächste Handlung wirkt tot.
+ * Sie lässt sich greifen und woanders ablegen. Das Greifen läuft über die
+ * HTML5-Schnittstelle, wie bei Antons Kanban-Brett.
  */
-function Aktionen({ aktionen, farbe }: { aktionen: Aktion[]; farbe: string }) {
+function KachelFlaeche({
+  kachel,
+  farbe,
+  wirdGezogen,
+  istZiel,
+  onGreifen,
+  onLoslassen,
+  onDarueber,
+  onAblegen,
+}: {
+  kachel: Kachel
+  farbe: string
+  wirdGezogen: boolean
+  istZiel: boolean
+  onGreifen: () => void
+  onLoslassen: () => void
+  onDarueber: () => void
+  /** Bekommt die Kennung der gezogenen Kachel, wie der Browser sie mitträgt. */
+  onAblegen: (vonId: string) => void
+}) {
   return (
-    <div className="flex flex-wrap gap-2">
-      {aktionen.map((a) => {
-        const ziel = a.art === "email" ? `mailto:${a.ziel}` : urlAlsHref(a.ziel)
-        if (!ziel) return null
-        return (
-          <a
-            key={a.id}
-            href={ziel}
-            {...(a.art === "url" ? { target: "_blank", rel: "noreferrer" } : {})}
-            className={
-              a.stark
-                ? "rounded-full px-4 py-1.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                : "rounded-full bg-muted/70 px-4 py-1.5 text-sm font-medium transition-colors hover:bg-muted " +
-                  HAUSFARBE
-            }
-            style={a.stark ? { background: farbe } : hausfarbe(farbe)}
-          >
-            {a.label}
-          </a>
-        )
-      })}
-    </div>
+    <section
+      draggable
+      onDragStart={(e: DragEvent<HTMLElement>) => {
+        e.dataTransfer.setData("text/plain", kachel.id as string)
+        e.dataTransfer.effectAllowed = "move"
+        onGreifen()
+      }}
+      onDragEnd={onLoslassen}
+      onDragOver={(e: DragEvent<HTMLElement>) => {
+        e.preventDefault()
+        e.dataTransfer.dropEffect = "move"
+        onDarueber()
+      }}
+      onDrop={(e: DragEvent<HTMLElement>) => {
+        e.preventDefault()
+        // Die Kennung kommt vom Browser, nicht aus dem React-Zustand: Der
+        // kann zwischen dragstart und drop noch alt sein.
+        onAblegen(e.dataTransfer.getData("text/plain"))
+      }}
+      className={
+        "@container/kachel overflow-hidden rounded-2xl p-4 transition-all " +
+        (FLAECHEN[kachel.id] ?? "bg-slate-50/60 dark:bg-slate-900/40") +
+        // Eine schmale Kachel steht im engen Kasten trotzdem über die volle
+        // Breite: Zwei Spalten bei 200 Pixeln sind keine zwei Spalten.
+        (kachel.breite === "breit" ? " col-span-2" : " col-span-2 @md:col-span-1") +
+        (wirdGezogen ? " opacity-40" : "") +
+        (istZiel ? " ring-2 ring-offset-2 ring-offset-background" : "")
+      }
+      style={istZiel ? ({ "--tw-ring-color": farbe } as CSSProperties) : undefined}
+    >
+      <div className="mb-3 flex items-center gap-2">
+        <span
+          aria-hidden
+          className="h-1 w-5 shrink-0 rounded-full"
+          style={{ background: farbe }}
+        />
+        <h2 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          {kachel.titel}
+        </h2>
+      </div>
+
+      <Inhalt kachel={kachel} farbe={farbe} />
+    </section>
   )
 }
 
-/**
- * Die Signale: drei Zahlen nebeneinander.
- *
- * "1.234 Beiträge · 45,6 Tsd. Follower" bei Instagram, "87,1k followers" bei
- * GitHub. Zahl groß, Bezeichnung klein darunter. Keine Kästen: Eine Zahl
- * braucht Luft, keinen Rahmen.
- */
-function Zahlen({ zahlen, farbe }: { zahlen: Zahl[]; farbe: string }) {
-  return (
-    <div className="mt-6 flex flex-wrap gap-x-8 gap-y-4">
-      {zahlen.map((z) => (
-        <div key={z.id}>
-          <p
-            className={"text-xl font-bold leading-none tabular-nums @lg:text-2xl " + HAUSFARBE}
+/** Was in einer Kachel steht, je nach ihrer Art. */
+function Inhalt({ kachel, farbe }: { kachel: Kachel; farbe: string }) {
+  if (kachel.id === "hashtags" && kachel.hashtags) {
+    return (
+      <div className="flex flex-wrap gap-1.5">
+        {kachel.hashtags.map((t, i) => (
+          <span
+            key={i}
+            className={"rounded-full bg-white/70 px-2.5 py-0.5 text-[13px] dark:bg-white/10 " + HAUSFARBE}
             style={hausfarbe(farbe)}
           >
-            {zahlText(z)}
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">{z.label}</p>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-/** Eine Zahl als Text: gezählt, ein Betrag oder eine Spanne. */
-function zahlText(z: Zahl): string {
-  const n = (w: unknown) => (typeof w === "number" ? w.toLocaleString("de-DE") : String(w ?? ""))
-  if (z.form === "geld") {
-    if (typeof z.wert === "number" && z.bis !== undefined) {
-      return `${n(z.wert)}–${n(z.bis)} €`
-    }
-    if (z.bis !== undefined) return `bis ${n(z.bis)} €`
-    return `ab ${n(z.wert)} €`
-  }
-  return n(z.wert)
-}
-
-/**
- * Die Themen als runde Kacheln.
- *
- * Instagram nennt sie Story-Highlights und stellt sie direkt unter die Bio:
- * runde Kreise mit einem Wort darunter. Sie sagen in einer Zeile, worum es
- * geht, und sie sehen lebendig aus, wo eine Chip-Reihe nur Text ist.
- */
-function Themen({ themen, farbe }: { themen: string[]; farbe: string }) {
-  return (
-    <div className="mt-7 flex gap-4 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      {themen.map((t, i) => (
-        <div key={i} className="flex w-20 shrink-0 flex-col items-center gap-1.5">
-          <div
-            className="flex h-14 w-14 items-center justify-center rounded-full text-base font-bold text-white"
-            style={{
-              background: `linear-gradient(135deg, ${farbe} 0%, ${farbe}90 100%)`,
-            }}
-          >
-            {ersterBuchstabe(t)}
-          </div>
-          {/* Zwei Zeilen, dann Schluss. "Alten- und Behindertenhilfe" lief
-              sonst unter die Nachbarkacheln. */}
-          <span className="line-clamp-2 w-full text-center text-[11px] leading-tight text-muted-foreground">
-            {t}
+            #{t}
           </span>
-        </div>
+        ))}
+      </div>
+    )
+  }
+
+  if (kachel.id === "geschichte") {
+    return <Geschichte kachel={kachel} farbe={farbe} />
+  }
+
+  if (kachel.id === "karte" && kachel.ort) {
+    return <Karte ort={kachel.ort} farbe={farbe} />
+  }
+
+  if (kachel.id === "notiz" && kachel.text) {
+    return <p className="text-sm leading-relaxed">{kachel.text}</p>
+  }
+
+  if (kachel.felder.length === 0) return null
+
+  return (
+    <dl className="space-y-3">
+      {kachel.felder.map((f) => (
+        <Feld key={f.id} feld={f} farbe={farbe} />
       ))}
-    </div>
+    </dl>
   )
 }
 
-/** Der erste Buchstabe eines Themas, groß. */
-function ersterBuchstabe(wort: string): string {
-  const w = wort.trim()
-  return w.length > 0 ? w[0].toUpperCase() : "?"
-}
-
 /**
- * Das Werk: ein Raster von Karten.
+ * Gründung und Meilensteine als Zeitstrahl.
  *
- * Der Hauptteil jedes Profils. GitHub zeigt Repositories, Instagram Bilder,
- * LinkedIn Beiträge. Eine Stiftung zeigt, was sie gefördert hat, und ein
- * Projekt, was sich dadurch ändert.
+ * Eine senkrechte Linie mit Punkten daran: Das Jahr links, der Satz rechts.
+ * Eine Liste täte es auch und sagte nicht, dass Zeit vergeht.
  */
-function Werk({ stuecke, farbe }: { stuecke: { titel: string }[]; farbe: string }) {
+function Geschichte({ kachel, farbe }: { kachel: Kachel; farbe: string }) {
+  const gegruendet = kachel.felder.find((f) => f.id === "gegruendet")
+  const schritte: Meilenstein[] = kachel.meilensteine ?? []
+
   return (
-    <div className="grid grid-cols-1 gap-2 @sm:grid-cols-2">
-      {stuecke.map((s, i) => (
-        <div
-          key={i}
-          className={
-            "overflow-hidden rounded-2xl px-4 py-3.5 " +
-            // Die Flächen wechseln durch die Farb-Konvention der Doktrin,
-            // damit ein Raster lebendig wirkt statt gleichförmig.
-            [
-              "bg-emerald-50/60 dark:bg-emerald-950/40",
-              "bg-amber-50/60 dark:bg-amber-950/40",
-              "bg-blue-50/60 dark:bg-blue-950/40",
-              "bg-violet-50/60 dark:bg-violet-950/40",
-            ][i % 4]
-          }
-        >
+    <div>
+      {gegruendet && (
+        <p className="mb-3 text-sm">
+          <span className="text-muted-foreground">Gegründet </span>
+          <span className={"font-semibold tabular-nums " + HAUSFARBE} style={hausfarbe(farbe)}>
+            {String(gegruendet.wert)}
+          </span>
+        </p>
+      )}
+
+      {schritte.length > 0 && (
+        <ol className="relative space-y-3 pl-5">
+          {/* Die Linie liegt hinter den Punkten, nicht als Trenner zwischen
+              Zeilen: Ein Zeitstrahl ist eine Linie, kein Tabellengitter. */}
           <span
             aria-hidden
-            className="mb-2 block h-1 w-6 rounded-full"
-            style={{ background: farbe }}
+            className="absolute bottom-1 left-[3px] top-1 w-px"
+            style={{ background: farbe, opacity: 0.3 }}
           />
-          <p className="text-sm font-medium leading-snug">{s.titel}</p>
-        </div>
-      ))}
+          {schritte.map((m, i) => (
+            <li key={i} className="relative">
+              <span
+                aria-hidden
+                className="absolute -left-5 top-1.5 h-[7px] w-[7px] rounded-full"
+                style={{ background: farbe }}
+              />
+              <span
+                className={"mr-2 text-xs font-bold tabular-nums " + HAUSFARBE}
+                style={hausfarbe(farbe)}
+              >
+                {m.wann}
+              </span>
+              <span className="text-sm leading-relaxed">{m.was}</span>
+            </li>
+          ))}
+        </ol>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Wo die Einrichtung sitzt.
+ *
+ * Ein Mosaik aus Kartenkacheln, denselben, die Antons Leaflet-Adapter lädt.
+ * Kein fremder Rahmen: Die App läuft mit COEP, und das blockiert jedes
+ * iframe ohne passende Kopfzeilen (gemessen am 21.09.2026). Keine
+ * Kartenbibliothek: Die wiegt ein Megabyte, sechs Bilder tun dasselbe.
+ *
+ * Welche Kacheln und wo die Nadel steht, rechnet `kartenAusschnitt` in
+ * `td-core`, geprüft ohne Browser. Hier werden nur Bilder abgelegt.
+ */
+const KACHELQUELLE = "https://tile.openstreetmap.org"
+const KARTENHOEHE = 190
+
+function Karte({ ort, farbe }: { ort: Ort; farbe: string }) {
+  const kasten = useRef<HTMLDivElement>(null)
+  // Die Breite kommt vom Kasten, nicht vom Fenster: Dieselbe Kachel steht in
+  // einem 480er-Panel und auf einer breiten Seite.
+  const [breite, setBreite] = useState(440)
+  useEffect(() => {
+    const el = kasten.current
+    if (!el || typeof ResizeObserver === "undefined") return
+    const beobachter = new ResizeObserver((eintraege) => {
+      const b = Math.round(eintraege[0]?.contentRect.width ?? 0)
+      if (b > 0) setBreite(b)
+    })
+    beobachter.observe(el)
+    return () => beobachter.disconnect()
+  }, [])
+
+  const ausschnitt = useMemo(
+    () => kartenAusschnitt(ort, breite, KARTENHOEHE, 14),
+    [ort, breite],
+  )
+  const hin = `https://www.openstreetmap.org/?mlat=${ort.breite}&mlon=${ort.laenge}#map=15/${ort.breite}/${ort.laenge}`
+
+  return (
+    <div>
+      <div
+        ref={kasten}
+        className="relative w-full overflow-hidden rounded-xl bg-muted/40"
+        style={{ height: KARTENHOEHE }}
+        role="img"
+        aria-label={ort.anschrift ? `Karte: ${ort.anschrift}` : "Karte"}
+      >
+        {ausschnitt.kacheln.map((k) => (
+          <img
+            key={`${k.z}/${k.x}/${k.y}`}
+            src={`${KACHELQUELLE}/${k.z}/${k.x}/${k.y}.png`}
+            alt=""
+            loading="lazy"
+            draggable={false}
+            className="absolute h-64 w-64 max-w-none select-none"
+            style={{ left: k.links, top: k.oben }}
+          />
+        ))}
+        {/* Die Nadel: ein Punkt in der Hausfarbe mit hellem Rand, damit er
+            auf jeder Karte zu sehen ist. */}
+        <span
+          aria-hidden
+          className="absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full ring-[3px] ring-white shadow-md"
+          style={{ left: ausschnitt.nadel.links, top: ausschnitt.nadel.oben, background: farbe }}
+        />
+        <span className="absolute bottom-1 right-1.5 rounded bg-white/80 px-1 text-[9px] leading-tight text-black/70">
+          © OpenStreetMap-Mitwirkende
+        </span>
+      </div>
+      <div className="mt-2 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+        {ort.anschrift && <p className="text-sm">{ort.anschrift}</p>}
+        <a
+          href={hin}
+          target="_blank"
+          rel="noreferrer"
+          className={"text-xs underline underline-offset-2 " + HAUSFARBE}
+          style={hausfarbe(farbe)}
+        >
+          Größer ansehen
+        </a>
+      </div>
     </div>
   )
 }
@@ -422,36 +561,24 @@ function Werk({ stuecke, farbe }: { stuecke: { titel: string }[]; farbe: string 
 /**
  * Ein Feld, in der Form, die zu ihm passt.
  *
- * Die Beschriftung steht klein und leise, der Wert daneben. Eng gemessen
- * (Container-Anfrage, nicht Fensterbreite) rutscht sie darüber: Dieselbe
- * Fläche steht in einem Panel von 480 Pixeln und auf einer Seite von 768.
+ * Die Beschriftung steht klein und leise, der Wert darunter. In einer Kachel
+ * ist der Platz knapp, darum untereinander statt nebeneinander.
  */
 function Feld({ feld, farbe }: { feld: ProfilFeld; farbe: string }) {
   const { label, form, wert } = feld
 
-  if (form === "longtext") {
+  if (form === "tags") {
+    const werte = Array.isArray(wert) ? wert : [wert]
     return (
       <div>
         <dt className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
           {label}
         </dt>
-        <dd className="mt-1 max-w-[46em] text-sm leading-relaxed">{String(wert)}</dd>
-      </div>
-    )
-  }
-
-  if (form === "tags") {
-    const werte = Array.isArray(wert) ? wert : [wert]
-    return (
-      <div className="flex flex-col gap-y-1.5 @lg:flex-row @lg:flex-wrap @lg:items-baseline @lg:gap-x-4">
-        <dt className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground @lg:w-40 @lg:shrink-0 @lg:pt-1">
-          {label}
-        </dt>
-        <dd className="flex flex-1 flex-wrap gap-1.5">
+        <dd className="mt-1 flex flex-wrap gap-1.5">
           {werte.map((t, i) => (
             <span
               key={i}
-              className={"rounded-full bg-muted/70 px-2.5 py-0.5 text-[13px] " + HAUSFARBE}
+              className={"rounded-full bg-white/70 px-2.5 py-0.5 text-[13px] dark:bg-white/10 " + HAUSFARBE}
               style={hausfarbe(farbe)}
             >
               {String(t)}
@@ -465,11 +592,11 @@ function Feld({ feld, farbe }: { feld: ProfilFeld; farbe: string }) {
   if (form === "list") {
     const werte = Array.isArray(wert) ? wert : [wert]
     return (
-      <div className="flex flex-col gap-y-1 @lg:flex-row @lg:flex-wrap @lg:items-baseline @lg:gap-x-4">
-        <dt className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground @lg:w-40 @lg:shrink-0">
+      <div>
+        <dt className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
           {label}
         </dt>
-        <dd className="flex-1">
+        <dd className="mt-1">
           <ul className="space-y-1">
             {werte.map((t, i) => (
               <li key={i} className="flex gap-2 text-sm leading-relaxed">
@@ -487,11 +614,11 @@ function Feld({ feld, farbe }: { feld: ProfilFeld; farbe: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-y-1 @lg:flex-row @lg:flex-wrap @lg:items-baseline @lg:gap-x-4">
-      <dt className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground @lg:w-40 @lg:shrink-0">
+    <div>
+      <dt className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
         {label}
       </dt>
-      <dd className="flex-1 text-sm leading-relaxed">{anzeige(form, wert, farbe)}</dd>
+      <dd className="mt-0.5 text-sm leading-relaxed">{anzeige(form, wert, farbe)}</dd>
     </div>
   )
 }
@@ -540,7 +667,7 @@ function anzeige(form: string, wert: unknown, farbe: string) {
         target="_blank"
         rel="noreferrer"
         style={hausfarbe(farbe)}
-        className={"underline underline-offset-2 " + HAUSFARBE}
+        className={"break-all underline underline-offset-2 " + HAUSFARBE}
       >
         {wert.replace(/^https?:\/\//, "")}
       </a>
@@ -550,6 +677,19 @@ function anzeige(form: string, wert: unknown, farbe: string) {
     return (
       <a
         href={`mailto:${wert}`}
+        style={hausfarbe(farbe)}
+        className={"break-all underline underline-offset-2 " + HAUSFARBE}
+      >
+        {wert}
+      </a>
+    )
+  }
+  if (form === "tel" && typeof wert === "string") {
+    // Eine Telefonnummer wird zum Anruf, sobald jemand sie auf dem Telefon
+    // liest. Leerzeichen und Klammern gehören ins Ziel nicht hinein.
+    return (
+      <a
+        href={`tel:${wert.replace(/[^\d+]/g, "")}`}
         style={hausfarbe(farbe)}
         className={"underline underline-offset-2 " + HAUSFARBE}
       >
