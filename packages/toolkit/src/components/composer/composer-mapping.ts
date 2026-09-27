@@ -240,14 +240,42 @@ export function withFixedGroup(types: ContentTypeConfig[], groupId: string, reas
  */
 export const GROUP_FIXED_NO_MOVE = "Dieser Speicher kann Einträge nicht in einen anderen Space verschieben"
 
-export function withEditGroup(types: ContentTypeConfig[], canMove: boolean): ContentTypeConfig[] {
-  if (canMove) return types
+/**
+ * `lockedReason`: Das Item hat Beziehungen (shared-components → Space des
+ * Formulars, Regel 5) — der Space steht dann fest, auch wenn der Connector
+ * verschieben könnte, mit diesem Grund im Tooltip.
+ */
+export function withEditGroup(types: ContentTypeConfig[], canMove: boolean, lockedReason?: string): ContentTypeConfig[] {
+  if (canMove && !lockedReason) return types
   return types.flatMap((t) => {
     const known = t.defaultGroup && t.groupOptions?.some((o) => o.id === t.defaultGroup) ? t.defaultGroup : undefined
-    if (known) return withFixedGroup([t], known, GROUP_FIXED_NO_MOVE)
+    if (known) return withFixedGroup([t], known, canMove ? lockedReason : GROUP_FIXED_NO_MOVE)
     return [{ ...t, groupOptions: undefined, defaultWidgets: t.defaultWidgets.filter((w) => w !== "group") }]
   })
 }
+
+/**
+ * Der Space im Kopf des Erstellen-Formulars (shared-components → Space des
+ * Formulars, Regel 6): Mit `hasGroupScope()` legt der Connector in jedem
+ * angebotenen Space in einem Schritt an. Ohne die Zusage bietet das Formular
+ * nur den Space an, in dem der Connector ohne `group` anlegt — den
+ * geöffneten; in der Übersicht bestimmt der Connector ihn, das Formular
+ * zeigt dann keine Auswahl.
+ */
+export const GROUP_FIXED_NO_SCOPE = "Dieser Speicher legt nur im geöffneten Space an"
+
+export function withCreateGroup(types: ContentTypeConfig[], canScope: boolean, openSpace: string | undefined): ContentTypeConfig[] {
+  if (canScope) return types
+  return types.map((t) => {
+    if (!t.groupOptions) return t
+    if (openSpace && t.groupOptions.some((o) => o.id === openSpace)) return withFixedGroup([t], openSpace, GROUP_FIXED_NO_SCOPE)[0]!
+    // Spaces gibt es, aber keinen, in dem das Formular anlegen könnte: Anlegen
+    // gesperrt, statt den Connector still wählen zu lassen (Regel 8).
+    return { ...t, groupOptions: undefined, defaultGroup: undefined, groupUnavailableReason: GROUP_UNAVAILABLE_NO_SCOPE, defaultWidgets: t.defaultWidgets.filter((w) => w !== "group") }
+  })
+}
+
+export const GROUP_UNAVAILABLE_NO_SCOPE = "Dieser Speicher legt nur im geöffneten Space an – zum Erstellen einen Space öffnen"
 
 export function withGroupOptions(
   types: ContentTypeConfig[],
@@ -259,8 +287,8 @@ export function withGroupOptions(
   personalGroupId?: string | null,
 ): ContentTypeConfig[] {
   // Options = the user's personal/private space („Privat", the „share with
-  // nobody" target) + the shared groups. Only surface a picker when there's a
-  // real choice (≥2 options).
+  // nobody" target) + the shared groups. One option is shown fixed (the
+  // composer sets it); a picker only with a real choice (≥2 options).
   const options: GroupOption[] = []
   if (personalGroupId) options.push({ id: personalGroupId, name: "Privat", personal: true })
   options.push(
@@ -272,18 +300,33 @@ export function withGroupOptions(
       ...(Array.isArray(g.members) ? { memberCount: g.members.length } : {}),
     })),
   )
-  if (options.length < 2) return types
+  // Auch EIN Space steht im Kopf (fest) und wird gesetzt: sonst entfiele
+  // die Pflicht beim Anlegen (Space des Formulars, Regel 8; Codex R1/6).
+  if (options.length === 0) return types
 
   // Default to the current space; in the personal/overview view (no concrete
   // space) default to „Privat" so a new item stays private unless shared.
+  // Genau ein möglicher Space ist vorausgewählt (Space des Formulars, Regel 1).
   const defaultGroup =
     currentGroupId && options.some((o) => o.id === currentGroupId)
       ? currentGroupId
-      : personalGroupId ?? undefined
+      : personalGroupId ?? (options.length === 1 ? options[0]!.id : undefined)
   return types.map((t) => ({
     ...t,
     groupOptions: options,
     ...(defaultGroup ? { defaultGroup } : {}),
     ...(t.defaultWidgets.includes("group") ? {} : { defaultWidgets: [...t.defaultWidgets, "group"] }),
   }))
+}
+
+/**
+ * Solange die Spaces noch laden und keine Option bekannt ist, ist der
+ * Formular-Space ungeklärt: Anlegen gesperrt, mit Grund (Space des
+ * Formulars, Regel 8; Codex zu #538). Ein Connector ohne Spaces lädt nie.
+ */
+export const GROUPS_LOADING = "Spaces werden geladen – gleich lässt sich speichern"
+
+export function withSpacesPending(types: ContentTypeConfig[], pending: boolean): ContentTypeConfig[] {
+  if (!pending || types.every((t) => (t.groupOptions?.length ?? 0) > 0)) return types
+  return types.map((t) => ((t.groupOptions?.length ?? 0) > 0 ? t : { ...t, groupUnavailableReason: GROUPS_LOADING }))
 }

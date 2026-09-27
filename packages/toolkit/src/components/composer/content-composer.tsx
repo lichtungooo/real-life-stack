@@ -37,6 +37,8 @@ export type { PersonOption } from "./widgets/people-widget"
 import { peopleQualifierKey, peopleStatementKey, resolvePeopleFields, type PeopleRelationConfig } from "./people-relations"
 export type { PeopleRelationConfig } from "./people-relations"
 import { TagsWidget } from "./widgets/tags-widget"
+import { useFormSpaceSources } from "./use-form-space-sources"
+import { ITEM_BINDINGS_REASON } from "../../lib/item-bindings"
 import { StatusWidget } from "./widgets/status-widget"
 import { FixedItemRefField, ItemRelationWidget, type RequestItemPick } from "./widgets/item-relation-widget"
 import { itemRelationDataKey, itemRelationDataKeys, type ItemRefFieldConfig, type ItemRelationFieldConfig } from "./item-relations"
@@ -140,6 +142,12 @@ export interface ContentTypeConfig {
   groupRequired?: boolean
   /** Why the space cannot be changed (one fixed option) — tooltip in the form head. */
   groupFixedReason?: string
+  /**
+   * Der Connector hat Spaces, das Formular kann aber keinen bestimmen (etwa
+   * ohne GroupScopeCapable in der Übersicht): Anlegen ist gesperrt, der
+   * Grund steht im Formular (Space des Formulars, Regeln 6 und 8).
+   */
+  groupUnavailableReason?: string
   /** Where this type keeps its free text. Default: `content` for `post`, else `description`. */
   textField?: "content" | "description"
   /**
@@ -513,6 +521,8 @@ interface ComposerHeadProps {
     options: readonly GroupOption[]
     required: boolean
     fixedReason?: string
+    /** Das Formular hat Beziehungen: Der Space steht fest, mit diesem Grund (Space des Formulars, Regel 5). */
+    lockedReason?: string
     onChange: (id: string) => void
   }
 }
@@ -629,14 +639,19 @@ function SpaceLogo({ option, size = "sm" }: { option?: GroupOption; size?: "sm" 
   )
 }
 
-function SpacePill({ value, options, required, fixedReason, onChange }: NonNullable<ComposerHeadProps["space"]>) {
+function SpacePill({ value, options, required, fixedReason: fixedBy, lockedReason, onChange }: NonNullable<ComposerHeadProps["space"]>) {
   const selected = options.find((o) => o.id === value)
-  const choosable = options.length > 1
+  // Mit Beziehungen fest wie der feste Space einer Variante (Regel 5). Ohne
+  // gesetzten Space ist auch eine einzige Option zu wählen, statt als gesetzt
+  // zu erscheinen (Regeln 1 und 8).
+  const choosable = (options.length > 1 || (!selected && !fixedBy)) && !(lockedReason && selected)
+  const fixedReason = (selected && lockedReason) || fixedBy
   const missing = required && !value
   const [query, setQuery] = React.useState("")
   const searchRef = React.useRef<HTMLInputElement>(null)
   if (!choosable) {
-    const only = selected ?? options[0]
+    // Nur der tatsächliche Wert; ohne ihn „Space unbekannt“ (Codex R2/3).
+    const only = selected
     const fixed = (
       <span
         data-slot="composer-space"
@@ -645,8 +660,8 @@ function SpacePill({ value, options, required, fixedReason, onChange }: NonNulla
         tabIndex={fixedReason ? 0 : undefined}
         className="inline-flex h-7 min-w-0 items-center gap-1.5 rounded-full text-xs text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
       >
-        <SpaceLogo option={only} />
-        <span className="truncate">{only?.name}</span>
+        {only && <SpaceLogo option={only} />}
+        <span className="truncate">{only?.name ?? "Space unbekannt"}</span>
         {fixedReason && <span className="sr-only">{`: ${fixedReason}`}</span>}
       </span>
     )
@@ -897,10 +912,36 @@ export function ContentComposer({
   const [isPublic, setIsPublic] = React.useState(defaultPublic)
   // Genau ein möglicher Space: Er steht fest im Kopf und MUSS dann auch
   // gesetzt sein — eine Anzeige, die beim Speichern nicht gilt, täuscht.
-  const onlySpace = currentConfig?.groupOptions?.length === 1 ? currentConfig.groupOptions[0]!.id : undefined
+  // Genau ein möglicher Space ist beim Erstellen vorausgewählt (Space des
+  // Formulars, Regel 1): Er steht fest im Kopf und gilt dann auch. Beim
+  // Bearbeiten gibt allein der Space des Items vor, sonst verschöbe Speichern.
+  const onlySpace = !isEditMode && currentConfig?.groupOptions?.length === 1 ? currentConfig.groupOptions[0]!.id : undefined
   React.useEffect(() => {
     if (onlySpace && !data.group) setData((d) => (d.group ? d : { ...d, group: onlySpace }))
   }, [onlySpace, data.group])
+  // Der Formular-Space (shared-components → Space des Formulars): EINE
+  // Quelle, `data.group`. Suche, Vorschläge, Prüfung und Speichern lesen ihn
+  // von hier, nie den geöffneten Space der App.
+  const formSpace = typeof data.group === "string" && data.group !== "" ? data.group : undefined
+  const spaceSources = useFormSpaceSources(formSpace)
+  const effectivePeopleOptions = spaceSources?.people ?? peopleOptions
+  const effectivePeopleQuick = spaceSources?.people ? spaceSources.people.slice(0, 10) : peopleQuickSuggestions
+  const effectiveTagSuggestions = spaceSources?.tags ?? tagSuggestions
+  const effectiveTagQuick = spaceSources?.tags ? spaceSources.tags.slice(0, 10) : tagQuickSuggestions
+  // Space-Pflicht beim Anlegen (Space des Formulars, Regel 8), EIN Tor für
+  // jeden Weg, der `onSubmit` erreicht: Speichern, „Erneut“ und liveUpdate
+  // (#538). Beim Bearbeiten ist der Space nie Pflicht.
+  const spaceUnavailable = !isEditMode && !!currentConfig?.groupUnavailableReason
+  const spaceRequired = spaceUnavailable || (!isEditMode && (currentConfig?.groupOptions?.length ?? 0) > 0 && (currentConfig?.groupRequired ?? true))
+  const isSpaceMissing = (d: WidgetData) => spaceUnavailable || (spaceRequired && !d.group)
+  const submitGuarded = (submission: ContentComposerSubmitData): void | Promise<void> => {
+    if (isSpaceMissing(submission.data)) return
+    return onSubmit(submission)
+  }
+  // Ein verzögerter liveUpdate prüft beim Auslösen gegen den AKTUELLEN Stand
+  // (Konfiguration, Typ, Daten), nicht gegen den beim Planen (Codex zu #538).
+  const liveRef = React.useRef({ submitGuarded, selectedType, isPublic, data })
+  liveRef.current = { submitGuarded, selectedType, isPublic, data }
   // „+ Beschreibung" aufgeklappt? Nur UI-Zustand; mit Inhalt ist sie immer offen.
   const [textOpen, setTextOpen] = React.useState(false)
   const [isPreviewing, setIsPreviewing] = React.useState(false)
@@ -959,11 +1000,12 @@ export function ContentComposer({
         prev.media !== data.media
       if (isTextOnly && !hasNonTextChange) {
         const timer = setTimeout(() => {
-          void Promise.resolve(onSubmit({ contentType: selectedType, isPublic, data })).catch(() => {})
+          const now = liveRef.current
+          void Promise.resolve(now.submitGuarded({ contentType: now.selectedType, isPublic: now.isPublic, data: now.data })).catch(() => {})
         }, 300)
         return () => clearTimeout(timer)
       }
-      void Promise.resolve(onSubmit({ contentType: selectedType, isPublic, data })).catch(() => {})
+      void Promise.resolve(submitGuarded({ contentType: selectedType, isPublic, data })).catch(() => {})
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, liveUpdate])
@@ -1084,8 +1126,18 @@ export function ContentComposer({
     }
   }
 
+  // Beziehungen im Formular (Regel 5): eine gewählte Item-Kante oder ein
+  // bearbeitbarer Item-Verweis hält den Space fest.
+  const formHasItemBinding = relationKeys.some((key) => {
+    const value = (data as Record<string, unknown>)[key]
+    return Array.isArray(value) ? value.length > 0 : typeof value === "string" && value !== ""
+  })
+  // Pflicht nur beim Anlegen (Regel 8): ohne Space kein Speichern.
+  const spaceMissing = isSpaceMissing(data)
+
   // Submit
-  const canSubmit = !!(data.title?.trim() || data.text?.trim() || (data.media && data.media.length > 0))
+  const hasContent = !!(data.title?.trim() || data.text?.trim() || (data.media && data.media.length > 0))
+  const canSubmit = !spaceMissing && hasContent
 
   const [submitting, setSubmitting] = React.useState(false)
   // Fehler beim Speichern: Banner unter dem Kopf; `reason` ist der Grund des
@@ -1097,7 +1149,7 @@ export function ContentComposer({
     setSubmitting(true)
     setSubmitError(null)
     try {
-      await onSubmit({ contentType: selectedType, isPublic, data })
+      await submitGuarded({ contentType: selectedType, isPublic, data })
     } catch (err) {
       // Grund des Connectors: `reason` oder `cause` am Fehler (ohne es2022-Typen).
       const carrier = (err ?? {}) as { reason?: unknown; cause?: unknown }
@@ -1130,8 +1182,9 @@ export function ContentComposer({
             ? {
                 value: data.group || "",
                 options: currentConfig.groupOptions!,
-                required: currentConfig.groupRequired ?? true,
+                required: spaceRequired,
                 fixedReason: currentConfig.groupFixedReason,
+                ...(formHasItemBinding ? { lockedReason: ITEM_BINDINGS_REASON } : {}),
                 onChange: (v) => updateData("group", v),
               }
             : undefined
@@ -1139,6 +1192,12 @@ export function ContentComposer({
       />
 
       {submitError && <SaveErrorBanner reason={submitError.reason} onRetry={() => void handleSubmit()} busy={submitting} />}
+      {/* Ohne Space wird nichts angelegt — auch nicht per liveUpdate (#538). Sichtbar, sobald es etwas zu speichern gäbe. */}
+      {spaceMissing && hasContent && (
+        <p data-space-required role="status" className="text-xs text-destructive">
+          {currentConfig.groupUnavailableReason && !isEditMode ? currentConfig.groupUnavailableReason : "Erst einen Space wählen – vorher wird nichts gespeichert."}
+        </p>
+      )}
 
       {/* Preview or Edit mode */}
       {isPreviewing ? (
@@ -1297,9 +1356,9 @@ export function ContentComposer({
                           // die Einzahl-Kurzform schon eingesetzt; deklarierte
                           // `peopleRelations`-Labels gewinnen.
                           label={field.label}
-                          options={peopleOptions}
+                          options={effectivePeopleOptions}
                           suggestions={peopleSuggestions}
-                          quickSuggestions={peopleQuickSuggestions}
+                          quickSuggestions={effectivePeopleQuick}
                           placeholder={field.placeholder}
                           {...(field.record && field.predicate && peopleStates?.[field.predicate]
                             ? {
@@ -1370,8 +1429,9 @@ export function ContentComposer({
                       value={data.tags || []}
                       onChange={(v) => updateData("tags", v)}
                       label={widgetLabel}
-                      suggestions={tagSuggestions}
-                      quickSuggestions={tagQuickSuggestions}
+                      suggestions={effectiveTagSuggestions}
+                      quickSuggestions={effectiveTagQuick}
+                      {...(spaceSources?.tagsUnavailable ? { hint: "Keine Vorschläge: Dieser Speicher liest nur Tags des geöffneten Space" } : {})}
                     />
                   )}
                 </div>

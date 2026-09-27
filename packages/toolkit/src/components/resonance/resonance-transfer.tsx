@@ -3,7 +3,8 @@
 import { useRef, useState } from "react"
 import { Download, MoreHorizontal, Upload } from "lucide-react"
 import type { Item, RelationRecord } from "@real-life-stack/data-interface"
-import { deriveContext, hasItemGroups, isWritable } from "@real-life-stack/data-interface"
+import { deriveContext, hasGroupScope, hasItemGroups, isWritable } from "@real-life-stack/data-interface"
+import { createInSpace, createOptionsForSpace } from "../../lib/create-in-space"
 import { useConnector } from "@/hooks/connector-context"
 import { buildExport, importItemData, planImport, type ImportPlan } from "@/lib/resonance-transfer"
 import type { ResonancePopulation } from "@/lib/resonance-sort"
@@ -83,7 +84,10 @@ export function ResonanceTransferMenu({
   const [pickedTarget, setPickedTarget] = useState<string | null>(null)
   const [pickOpen, setPickOpen] = useState(false)
   const target = space ?? pickedTarget
-  const canPick = space === undefined && hasItemGroups(connector) && targetSpaces.length > 0
+  // Aus der Übersicht nur mit GroupScopeCapable: Ohne die Zusage legte der
+  // Connector im geöffneten Space an — dieselbe Anlegeprüfung wie im
+  // Formular (createOptionsForSpace, #538), kein anlegen-dann-verschieben.
+  const canPick = space === undefined && hasGroupScope(connector) && targetSpaces.length > 0
   const canImport = userId !== undefined && isWritable(connector) && (space !== undefined || canPick)
 
   // Idempotency and variantOf targets are about the TARGET space — all its
@@ -91,6 +95,9 @@ export function ResonanceTransferMenu({
   // observed snapshot may still be empty while the first load runs, and the
   // import would then create duplicates (#521).
   const loadStatementsOf = async (spaceId: string | null) => {
+    // Mit GroupScopeCapable genau dieser Space (02 → Lesen in einem
+    // bestimmten Space); sonst die sichtbaren, nach Space gefiltert.
+    if (spaceId !== null && hasGroupScope(connector)) return connector.getItems({ ...STATEMENTS, group: spaceId })
     const all = await connector.getItems(STATEMENTS)
     return spaceId !== null && hasItemGroups(connector)
       ? all.filter((item) => connector.getItemGroupId(item.id) === spaceId)
@@ -124,20 +131,17 @@ export function ResonanceTransferMenu({
         setImportState({ phase: "review", plan, fileName: review.fileName, raw: review.raw, target: review.target })
         return
       }
+      // Vor dem ersten Schreiben: kann der Connector im Ziel-Space anlegen?
+      const options = createOptionsForSpace(connector, review.target ?? undefined)
       for (const entry of plan.create) {
         const data = importItemData(entry)
-        const created = await connector.createItem({
+        await createInSpace(connector, {
           type: "statement",
           createdBy: userId!,
           "@context": deriveContext("statement", data),
           data,
           ...(entry.tags && entry.tags.length > 0 ? { tags: entry.tags } : {}),
-        })
-        // The space is a connector association, not item data (as in the
-        // composer): place the statement where the import was aimed.
-        if (review.target !== null && hasItemGroups(connector) && connector.getItemGroupId(created.id) !== review.target) {
-          await connector.moveItemToGroup(created.id, review.target)
-        }
+        }, options)
       }
       setImportState({ phase: "done", created: plan.create.length, skipped: plan.skipped.length })
     } catch (error) {

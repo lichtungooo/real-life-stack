@@ -146,6 +146,8 @@ describe("Reihenfolge: Titel → Beschreibung → Meta-Felder → Tags", () => {
 })
 
 describe("Codex Runde 4: der Space im Kopf", () => {
+  // Space des Formulars, Regel 1 (Anton, 27.09.): Gibt es genau einen
+  // möglichen Space, ist er vorausgewählt — keine überflüssigen Klicks.
   it("genau ein möglicher Space ohne Vorgabe wird gesetzt und gespeichert", async () => {
     const [task] = pickContentTypes("task")
     let submitted: Record<string, unknown> | undefined
@@ -155,8 +157,10 @@ describe("Codex Runde 4: der Space im Kopf", () => {
       initialData: { title: "T" },
       onSubmit: ({ data }) => { submitted = data },
     })
+    expect(spaceSelect()).toBeNull()
     expect(host.querySelector('[data-slot="composer-space"]')?.textContent).toContain("Garten")
     const speichern = [...host.querySelectorAll("button")].find((b) => b.textContent?.includes("Erstellen"))!
+    expect(speichern.disabled).toBe(false)
     await act(async () => speichern.click())
     expect(submitted?.group).toBe("a")
   })

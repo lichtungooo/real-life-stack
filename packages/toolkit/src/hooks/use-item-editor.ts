@@ -5,6 +5,7 @@ import { useCreateItem, useUpdateItem, useDeleteItem } from "./use-mutations"
 import { useConnector } from "./connector-context"
 import type { ContentComposerSubmitData } from "../components/composer/content-composer"
 import { writeOwnStatement, type OwnStatement } from "../lib/own-statement"
+import { createOptionsForSpace } from "../lib/create-in-space"
 
 /**
  * The shape a caller-supplied mapper returns. The hook handles the
@@ -98,6 +99,13 @@ export interface UseItemEditorResult {
        * on this item instead of creating a second one (#523).
        */
       onPersisted?: (item: Item) => void
+      /**
+       * Setzt ein Anlegen fort, dessen Folgeschritt scheiterte (#523): Hat
+       * sich am Item nichts geändert, wird es nicht noch einmal geschrieben,
+       * nur die Folgeschritte laufen. Das Item kann in einem anderen als dem
+       * geöffneten Space liegen (Space des Formulars, Regel 6).
+       */
+      resume?: boolean
     },
   ): Promise<Item | null>
 
@@ -167,12 +175,30 @@ export function buildUpdatePayload(
   }
 }
 
+/** Ändert `update` nichts an `stored`? (Leere Tags/Relationen gleich fehlenden.) */
+function sameAsStored(update: Partial<Item>, stored: Item): boolean {
+  const norm = (key: string, value: unknown) =>
+    JSON.stringify(value ?? (key === "tags" || key === "relations" ? [] : null))
+  return Object.entries(update).every(([key, value]) => norm(key, value) === norm(key, (stored as unknown as Record<string, unknown>)[key]))
+}
+
+/** Der Space des Formulars aus der Einreichung; leer = keiner. */
+function formGroupOf(submission: ContentComposerSubmitData): string | undefined {
+  const group = submission.data.group
+  return typeof group === "string" && group !== "" ? group : undefined
+}
+
 /**
- * Apply the composer's `group` selection as the item's group/space association.
- * The group is NOT item data — it's a connector association (`moveItemToGroup`),
- * so mappers omit `data.group` and we persist it here, for every module that
- * surfaces the group widget. No-ops when the connector has no groups, the
- * value is blank, or it already matches.
+ * Anlegen in einem Schritt (shared-components → Space des Formulars, Regel
+ * 6): die gemeinsame Anlegeprüfung {@link createOptionsForSpace}.
+ */
+const createOptionsFor = createOptionsForSpace
+
+/**
+ * Beim Bearbeiten: Wechselt der Space im Formular, verschiebt das Item
+ * (`moveItemToGroup`, Regel 6). Die Zuordnung ist keine Item-Eigenschaft;
+ * Mapper lassen `data.group` weg. No-op ohne Gruppen, ohne Wert oder wenn er
+ * schon stimmt.
  */
 async function applyItemGroup(
   connector: DataInterface,
@@ -228,7 +254,7 @@ export function useItemEditor(options: UseItemEditorOptions): UseItemEditorResul
   const submit = useCallback(
     async (
       submission: ContentComposerSubmitData,
-      submitOptions?: { existingItem?: Item; onError?: (error: Error) => void; onPersisted?: (item: Item) => void },
+      submitOptions?: { existingItem?: Item; onError?: (error: Error) => void; onPersisted?: (item: Item) => void; resume?: boolean },
     ): Promise<Item | null> => {
       const existingItem = submitOptions?.existingItem ?? currentItem
       const activeMode: "create" | "edit" = existingItem ? "edit" : "create"
@@ -245,16 +271,22 @@ export function useItemEditor(options: UseItemEditorOptions): UseItemEditorResul
       try {
         if (activeMode === "create") {
           const payload = buildCreatePayload(mapped, currentUserId)
-          const created = await createItem(payload)
+          const created = await createItem(payload, createOptionsFor(connector, formGroupOf(submission)))
           submitOptions?.onPersisted?.(created)
-          await applyItemGroup(connector, created.id, submission.data.group)
           await applyStatements(connector, created, mapped.statements)
           await onCreated?.(created)
           return created
         }
 
         const update = buildUpdatePayload(mapped, existingItem!)
-        const updated = await updateItem(existingItem!.id, update)
+        const unchanged = submitOptions?.resume && sameAsStored(update, existingItem!)
+        // Fortsetzen mit geänderten Feldern: Bearbeiten erreicht nur Items im
+        // geöffneten Space. Liegt das angelegte Item woanders, sagt das
+        // Formular es, statt zu scheitern oder etwas vorzutäuschen (Codex R2/1).
+        if (submitOptions?.resume && !unchanged && !(await connector.getItem(existingItem!.id))) {
+          throw new Error("Schon in einem anderen Space angelegt – Änderungen dort bearbeiten; ohne Änderung setzt „Erneut“ fort")
+        }
+        const updated = unchanged ? existingItem! : await updateItem(existingItem!.id, update)
         submitOptions?.onPersisted?.(updated)
         await applyItemGroup(connector, updated.id, submission.data.group)
         await applyStatements(connector, updated, mapped.statements)
