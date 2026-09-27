@@ -1,7 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { Item, User } from "@real-life-stack/data-interface"
 
+import { useEffect, type ReactNode } from "react"
+
 import { ItemDetailRead } from "../host/detail-host"
+import { registerTypePresentation } from "../preview/type-presentation"
+import { EXAMPLE_LEARNING_LAYER } from "../../story-support/example-learning-layer"
 import { useItem } from "../../hooks/use-items"
 import { STORY_EVENT, STORY_TASK, STORY_USERS, StoryWorld } from "../../story-support/story-world"
 
@@ -19,8 +23,13 @@ import { STORY_EVENT, STORY_TASK, STORY_USERS, StoryWorld } from "../../story-su
  *   Declining writes `declined` and keeps the record; the same pill again
  *   removes my statement.
  * - **Many:** above the threshold the row summarises per qualifier.
- * - **Task:** only „Übernehmen" in the core; can/learns stays a Karabirrdt
- *   function.
+ * - **Task:** „Übernehmen" when nobody is assigned, „Mitmachen" when others
+ *   are; then „✓ Übernommen" (alone) or „✓ Dabei" (with others) · „Erledigt".
+ *   Joining an open task sets it to „In Arbeit"; the last person leaving a
+ *   task in progress sets it back to open (spec 06, rule 19). A done task
+ *   shows only states. The core allows `role` on `assignedTo` but declares no
+ *   values; a module's register layer brings them with labels and its own
+ *   pills (rule 20) — see „Task with a module layer".
  * - **Statement:** the vote moved from the footer into the action slot — pills
  *   and bar. The card keeps its compact vote bar.
  *
@@ -108,9 +117,47 @@ export const Many: Story = {
   ),
 }
 
-/** Task: „Übernehmen" puts you into the assignment; then „✓ Übernommen · Erledigt", both toggles (see Links and lists). */
+/** Task with Lea assigned: „Mitmachen"; then „✓ Dabei · Erledigt". */
 export const Task: Story = {
   render: () => <Frame item={STORY_TASK} seed={[]} />,
+}
+
+/** Task nobody took yet: „Übernehmen" sets it to „In Arbeit"; „✓ Übernommen" again gives it back and reopens it. */
+export const TaskAlone: Story = {
+  render: () => <Frame item={{ ...STORY_TASK, id: "task-allein", relations: [] }} seed={[]} />,
+}
+
+const LEARNS_TASK: Item = {
+  ...STORY_TASK,
+  id: "task-lernt",
+  data: { ...STORY_TASK.data, status: "in-progress" },
+  relations: [{ predicate: "assignedTo", target: "global:lea", meta: { role: "learns" } }, { predicate: "assignedTo", target: "global:jonas" }],
+}
+
+/** Without a module layer the core knows no `role` values: the row reads „Lea“, the value is kept untouched. */
+export const TaskRoleWithoutLayer: Story = {
+  render: () => <Frame item={LEARNS_TASK} seed={[]} />,
+}
+
+/**
+ * Registers the example layer only while this story is shown. The register is
+ * module-global, so the story stays out of the docs page (its own iframe) and
+ * on unmount empties only its own layer, never others.
+ */
+function WithExampleLayer({ children }: { children: ReactNode }) {
+  registerTypePresentation("beispiel", { extensions: [EXAMPLE_LEARNING_LAYER] })
+  useEffect(() => () => registerTypePresentation("beispiel", {}), [])
+  return <>{children}</>
+}
+
+/** Task with a module layer (example): „Lea lernt“, pills „Kann ich · Will lernen“ instead of „Mitmachen“. */
+export const TaskWithModuleLayer: Story = {
+  tags: ["!autodocs"],
+  render: () => (
+    <WithExampleLayer>
+      <Frame item={LEARNS_TASK} seed={[]} />
+    </WithExampleLayer>
+  ),
 }
 
 const STATEMENT: Item = {

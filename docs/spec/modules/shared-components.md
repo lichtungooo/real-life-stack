@@ -306,7 +306,7 @@ interface ReactionBarProps {
 **Vertrag:**
 
 ```ts
-type ItemPreviewDensity = "comfortable" | "compact"
+type ItemPreviewDensity = "comfortable" | "compact" | "row"
 
 interface ItemPreviewProps {
   item: Item
@@ -331,6 +331,8 @@ interface ItemPreviewProps {
   density?: ItemPreviewDensity
   /** Hebt eine Karten-Linse als aktuell selektiert hervor. */
   active?: boolean
+  /** Erledigt: „✓ " vor dem Title (für Screenreader „Erledigt: "), Karte auf Opazität 0.55 gedimmt. */
+  completed?: boolean
   /** Optionaler `#rrggbb`-Override für den Active-Glow; Default ist neutral. */
   activeGlowColor?: string
   className?: string
@@ -341,6 +343,9 @@ interface ItemPreviewProps {
 
 - `comfortable` (Default) — Feed-Card-Form: Avatar 10×10, font-base Title, p-4 Spacing, Description wird angezeigt, Footer mit Border-Top.
 - `compact` — Kanban-/Liste-Form: Avatar 6×6, font-sm Title, p-3 Spacing, **Description wird ausgeblendet**, Footer ohne Border. Tauglich für dichte Board-Spalten, wo mehrere Cards zugleich sichtbar bleiben sollen.
+- `row` — **eine Zeile** für die Rückwärts-Listen im Detail ([Detail-Anatomie](#detail-anatomie), Regel 8): `headerAdornment` (Typ-Badge), der Title gekürzt auf eine Zeile (ohne Title der Name oder der Anfang des Inhalts, sonst „Ohne Titel"), rechts `footerAdornment` (Markierung, kleiner Zusatz). Sie lässt Description, `metaAdornment`, Tags, Author-Zeile und Kommentar-Hinweis weg. `active` markiert die angezeigte Zeile (`aria-current`) ohne Schatten.
+
+**Erledigt:** `completed` setzt ein „✓ " vor den Title (plus `sr-only`-Text „Erledigt: ") und dimmt die Karte auf Opazität 0.55, in jeder Dichte. Was „erledigt" heißt, entscheidet die Fläche (die Rückwärts-Listen: Status der Rolle `done`, [06, Regel 18](../06-schema-composition.md#feld--und-kantenregister)).
 
 **Default-Body:** Author-Row (Avatar + Name + `RelativeTime`), Title, Description (`data.content ?? data.description`, max 4 Zeilen), Tags (chips, top-level `item.tags`, Color via `getTagColor`). Tags und Urheber teilen eine Zeile, die nie umbricht: Es stehen so viele Tags, wie neben den Urheber passen, der Rest als „+N"; der Urheber behält seinen Platz rechts. Das gilt in beiden Dichten.
 
@@ -465,13 +470,15 @@ Zwei Render-Modi je nach `onClick`:
 **Zweck:** Overlapping Avatar-Stack mit kompakter Namens-Zusammenfassung. Belongs in `footerAdornment`. Rendert `null` bei leerer User-Liste.
 
 ```ts
+type ItemAssigneeUser = User & { qualifier?: string }
+
 interface ItemAssigneesProps {
-  users: readonly User[]
+  users: readonly ItemAssigneeUser[]
   className?: string
 }
 ```
 
-Caller löst die User-Objekte auf (typischerweise aus `assignedTo`-Relations + Member-Liste) und übergibt sie als resolved Array. Komponente ist rein präsentational. Namens-Summary: einzelner Name, „A, B" für zwei, „A + N weitere" ab drei; voller Kommaseparierter Liste im Hover-Tooltip.
+Caller löst die User-Objekte auf (typischerweise aus `assignedTo`-Relations + Member-Liste) und übergibt sie als resolved Array. Komponente ist rein präsentational. Namens-Summary: einzelner Name, „A, B" für zwei, „A + N weitere" ab drei; voller Kommaseparierter Liste im Hover-Tooltip. `qualifier` ist der Anzeigetext des Qualifiers an der Kante und steht klein hinter dem Namen („Timo lernt", wie [Detail-Anatomie](#detail-anatomie), Regel 5); ein fehlender Qualifier (`qualifier.default`) steht nicht da. Die Kanban-Karte zeigt so `assignedTo.role`.
 
 **Code:** `packages/toolkit/src/components/preview/item-{type-badge,meta-row,comment-count,assignees}.tsx`.
 
@@ -635,7 +642,7 @@ Regeln:
 4. Eine Item-Referenz erscheint als Chip in der Farbe ihres Typs. Ein Klick darauf öffnet das Ziel in derselben Panel-Instanz. Ein Wert erscheint als Text; führt er zu einer Sicht, gilt [01 → Ein Feld führt zu seiner Sicht](../01-app-composition.md#ein-feld-führt-zu-seiner-sicht).
 5. Menschen stehen in **einer Zeile je Personen-Kante**. Ist ein Qualifier-Wert gesetzt, steht er klein hinter dem Namen am Chip (etwa „Maria zugesagt" für `going`, „Timo lernt" für `learns`). Gespeichert wird die Id, das Wort kommt über die Intl-Schicht. Stammt die geltende Aussage nicht von der Person selbst, sagt der Chip, von wem: „Timo zugesagt · eingetragen von Anton" ([08 → Qualifier an Kanten](../08-relation-records.md#qualifier-an-kanten)). Ein Qualifier an einer Item-Kante (C3) steht ebenso klein hinter dem Chip. Ein Wert, den das Register nicht kennt, erscheint ohne Zustandstext und wird nie verworfen. Das Event führt Eingeladene (`invited`) und Zusagen (`attends`) in einer Zeile. Eine Person mit geltendem `declined` erscheint nicht in der Zeile und nicht in ihrer Zusammenfassung, nur in der vollständigen Liste („Alle").
 6. Position im Modul (Spalte, Stufe, Reihenfolge) steht nicht in der Meta-Box.
-7. Eine Selbstaktion ist eine Kante von mir zum Item. Sie steht als eigene Pill-Zeile direkt unter der Meta-Box: vor der Aktion neutral („Zusagen · Vielleicht · Absagen"), danach mit meinem Zustand („✓ Zugesagt" für `going`). Auch `declined` ist ein Zustand und bleibt als meiner sichtbar. Die Pill meines Zustands ist ein Umschalter; der zweite Klick nimmt ihn zurück. Deklariert die Kante eine Folgeaktion ([06 → Feld- und Kantenregister](../06-schema-composition.md#feld--und-kantenregister), Regel 9), steht sie nach meinem Zustand. Die Aufgabe: niemand zugewiesen „Übernehmen"; andere zugewiesen, ich nicht „Mitmachen"; ich allein „✓ Übernommen · Erledigt"; ich mit anderen „✓ Dabei · Erledigt"; erledigt „✓ Übernommen · ✓ Erledigt" oder „✓ Dabei · ✓ Erledigt". Klick auf „✓ Übernommen" oder „✓ Dabei" gibt ab. „✓ Erledigt" ist ein Zustand, kein Knopf, und für Screenreader als Status lesbar; zurück geht es nur über Bearbeiten oder das Kanban. Den Status beim Übernehmen, Mitmachen, Abgeben und Erledigen regelt [06, Regel 19](../06-schema-composition.md#feld--und-kantenregister): Übernehmen setzt eine offene Aufgabe auf „In Arbeit", und wer als letzte Person eine Aufgabe in Arbeit abgibt, setzt sie auf offen zurück. Der Umschalter meines Zustands trägt `aria-pressed`, gedrückt nennt die Beschriftung die Rücknahme („Übernahme zurückgeben", „Nicht mehr mitmachen"). „Erledigt" sieht nur eine Person an der Kante, und nur mit Schreibrecht am Item (Modi, Regel 1); alle anderen ändern den Status im Formular oder im Modul.
+7. Eine Selbstaktion ist eine Kante von mir zum Item. Sie steht als eigene Pill-Zeile direkt unter der Meta-Box: vor der Aktion neutral („Zusagen · Vielleicht · Absagen"), danach mit meinem Zustand („✓ Zugesagt" für `going`). Auch `declined` ist ein Zustand und bleibt als meiner sichtbar. Die Pill meines Zustands ist ein Umschalter; der zweite Klick nimmt ihn zurück. Deklariert die Kante eine Folgeaktion ([06 → Feld- und Kantenregister](../06-schema-composition.md#feld--und-kantenregister), Regel 9), steht sie nach meinem Zustand. Die Aufgabe: niemand zugewiesen „Übernehmen"; andere zugewiesen, ich nicht „Mitmachen"; ich allein „✓ Übernommen · Erledigt"; ich mit anderen „✓ Dabei · Erledigt"; erledigt nur Zustände, keine Aktionen: „✓ Übernommen · ✓ Erledigt" oder „✓ Dabei · ✓ Erledigt", wer nicht zugewiesen ist, nur „✓ Erledigt" — alle als Status lesbar, keiner ein Knopf ([06, Regel 19](../06-schema-composition.md#feld--und-kantenregister)). Klick auf „✓ Übernommen" oder „✓ Dabei" gibt ab, solange die Aufgabe nicht erledigt ist. Wieder öffnen geht nur über Bearbeiten oder das Kanban. Den Status beim Übernehmen, Mitmachen, Abgeben und Erledigen regelt [06, Regel 19](../06-schema-composition.md#feld--und-kantenregister): Übernehmen setzt eine offene Aufgabe auf „In Arbeit", und wer als letzte Person eine Aufgabe in Arbeit abgibt, setzt sie auf offen zurück. Der Umschalter meines Zustands trägt `aria-pressed`, gedrückt nennt die Beschriftung die Rücknahme („Übernahme zurückgeben", „Nicht mehr mitmachen"). „Erledigt" sieht nur eine Person an der Kante, und nur mit Schreibrecht am Item (Modi, Regel 1); alle anderen ändern den Status im Formular oder im Modul.
 8. Rückwärts-Listen deklariert der Typ des angezeigten Items (Register, `itemRole: "to"`, Slot `list`, oder eine benannte Abfrage in `lists`). Sie zeigen alle Einträge, jeden einmal, ohne Kappung, als kompakte `ItemPreview`s (Kartenflächen-MUSS, siehe [`ItemPreview`](#itempreview)). Trägt eine Liste eine Aktion, steht sie im Listenkopf; hat die Liste keinen Eintrag außer dem Item selbst, steht die Aktion allein an ihrer Stelle. Die Liste `family` eines Statements heißt „Fassungen N"; je Zeile stehen ein Badge („Ausgang" oder „Variante"), der Titel, „diese" bei der angezeigten Fassung und eine kleine Stimmleiste. Ihre Aktion ist „+ Variante" ([resonance.md → Varianten](resonance.md#varianten)).
 9. Die Karte (`ItemPreview`) zeigt aus demselben Register: Titel, erste Meta-Zeile, Avatar-Stack, Tags gekappt. Ein Feld mit Item-Verweis (B15) steht auf der Karte als Chip („Variante von …"). Im Detail entfällt seine Meta-Zeile, wenn eine Liste des Typs es abdeckt (`covers`); beim Statement zeigt die Liste `family` die Herkunft.
 10. Ob `bar` und `comments` erscheinen, sagt das Register des Typs. Für `person` entfallen beide.
@@ -680,7 +687,7 @@ Jedes Feld und jede Kante hat eine Lese- und eine Schreibform auf **einem** Date
 | # | Widget | Lesen | Schreiben |
 |---|---|---|---|
 | C1 | `people` | eine Zeile: Chips mit Avatar, Name und Qualifier; ab Schwelle Zusammenfassung je Qualifier | Chips mit Qualifier-Text, Antippen wechselt den Qualifier, „Einladen…" |
-| C2 | self-action | Pill-Zeile im Slot `actions`, neutral („Übernehmen", mit anderen an der Kante „Mitmachen") oder mein Zustand („✓ Übernommen", mit anderen „✓ Dabei"), danach die Folgeaktion (nur für mich); mein Zustand ist Umschalter, „✓ Erledigt" nur Zustand | entfällt (die Pill-Zeile schreibt selbst) |
+| C2 | self-action | Pill-Zeile im Slot `actions`, neutral („Übernehmen", mit anderen an der Kante „Mitmachen") oder mein Zustand („✓ Übernommen", mit anderen „✓ Dabei"), danach die Folgeaktion (nur für mich); mein Zustand ist Umschalter; erledigt nur Zustände, keine Aktionen | entfällt (die Pill-Zeile schreibt selbst) |
 | C3 | `item-relation` | eine Zeile je Prädikat mit Label und Chips in Typfarbe, gekappt „+N"; Ziele mit Status der Rolle `done` durchgestrichen | Chips und „@ … suchen oder im Modul klicken…" |
 | C4 | `vote` | Balken grün/gelb/rot, Prozent, „12 von 14", Namen je Stufe | Pills Dafür · Skeptisch · Dagegen (als C2) |
 | C7 | comment/reaction | Aktionsleiste (`bar`) und Thread (`comments`) | inline, nie im Formular |

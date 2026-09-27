@@ -86,7 +86,17 @@ function ausFeldliste(
       return {
         predicate: e.predicate,
         label: joined ? joined.label : e.label,
-        ...(e.qualifier ? { qualifier: { key: e.qualifier.key, values: e.qualifier.values.map((v) => ({ id: v.id, label: v.label })) } } : {}),
+        // Ohne deklarierte Werte kein Qualifier im Formular; vorhandene Werte
+        // bleiben beim Speichern erhalten (Regel 20).
+        ...(e.qualifier && e.qualifier.values.length > 0
+          ? {
+              qualifier: {
+                key: e.qualifier.key,
+                values: e.qualifier.values.map((v) => ({ id: v.id, label: v.label })),
+                ...(e.qualifier.default !== undefined ? { default: e.qualifier.default } : {}),
+              },
+            }
+          : {}),
         ...(e.add ? { placeholder: e.add } : {}),
         ...(joined && joined.qualifier
           ? {
@@ -100,8 +110,9 @@ function ausFeldliste(
           : {}),
       }
     })
-  // Item-Kanten (C3): je ausgehende eingebettete Kante ein Feld, die
+  // Item-Kanten (C3): je eingebettete Kante der Meta-Box ein Feld, die
   // Gegenstelle aus dem Manifest (06, Verhältnis zu Relations, Regel 2).
+  // Eingehend („Braucht") schreibt das Formular am anderen Item.
   const itemRelations = edges.filter(isFormItemEdge).map((e) => {
     const targetType = otherKindOf(typeId, e)
     return {
@@ -109,6 +120,7 @@ function ausFeldliste(
       label: e.label,
       ...(e.add ? { placeholder: e.add } : {}),
       ...(targetType && targetType !== "item" ? { targetType } : {}),
+      ...(e.itemRole === "to" ? { incoming: true as const } : {}),
     }
   })
   // Felder mit Item-Verweis (B15), die im Formular stehen.

@@ -55,6 +55,8 @@ import {
   assertFollowUps,
   assertJoins,
   assertRegisterLists,
+  assertSelfActionValues,
+  edgeKey,
   hasRegisterLists,
   readableFields,
   uniteRegisterLists,
@@ -63,7 +65,10 @@ import {
   type ListEntry,
   type MenuActionEntry,
   type RegisterLists,
+  type SelfActionEntry,
+  type FieldOption,
 } from "./field-register"
+import type { RelationRole } from "@real-life-stack/data-interface"
 import { RegisterMeta, RegisterPeopleStack } from "./register-meta"
 import { RegisterActions, actionEdges } from "./register-actions"
 import { ItemProfileMeta, ItemProjectMeta, ItemResourceMeta } from "./item-type-meta"
@@ -149,11 +154,40 @@ export interface TypeComposerPresentation {
   groupRequired?: boolean
 }
 
+/**
+ * Ersetzt die Selbstaktion einer Kante des Toolkit-Registers (Spec 06,
+ * Regel 20: Daten und Bedeutung gemeinsam, Bedienung je App). Prädikat,
+ * Speicherort und Qualifier bleiben die des Toolkits; die neue Selbstaktion
+ * schreibt nur Werte, die der Qualifier deklariert. Die einzige Ausnahme
+ * von „kein Override" (Erweiterung und Merge, Punkt 3).
+ */
+export interface SelfActionOverride {
+  predicate: string
+  itemRole: RelationRole
+  selfAction: SelfActionEntry
+}
+
+/**
+ * Qualifier-Werte einer Schicht für eine Kante des Toolkit-Registers, die
+ * einen Qualifier ohne (oder mit anderen) Werten erlaubt (Spec 06, Regel 20:
+ * das Modul bringt sein Vokabular mit). Vereinigt nach Wert-Id; derselbe Wert
+ * aus zwei Schichten ist ein Konflikt.
+ */
+export interface QualifierValuesEntry {
+  predicate: string
+  itemRole: RelationRole
+  values: readonly FieldOption[]
+}
+
 /** Additively fills fields an existing presentation left unset
  *  (spec: Erweiterungsfragment, Darstellungsseite). */
 export interface TypePresentationFragment extends RegisterLists {
   /** Must address an id already presented by an earlier layer. */
   id: string
+  /** Eigene Bedienung einer Toolkit-Kante (Regel 20), je Kante höchstens einmal über alle Schichten. */
+  selfActions?: readonly SelfActionOverride[]
+  /** Qualifier-Werte samt Anzeige für Toolkit-Kanten (Regel 20). */
+  qualifierValues?: readonly QualifierValuesEntry[]
   badge?: TypeBadgeStyle
   composerWidgets?: readonly string[]
   /** United by key; an existing key is a conflict. */
@@ -329,18 +363,19 @@ const CORE_PRESENTATION: readonly TypePresentationEntry[] = [
         // Statuswerte = die Spalten des Kanban (kanban-board.tsx, defaultColumns).
         // Hier ausgeschrieben statt importiert: Das Darstellungs-Register darf
         // kein Modul einziehen. Aendert sich eine Spalte, aendern sich beide.
+        // Die Rollen (Spec 06, Regel 18; task/v1): Übergänge, Folgeaktion und
+        // durchgestrichene Ziele lesen sie, nie die Id. `archived` (task/v1)
+        // steht nicht im Formular und hätte keine Rolle.
         options: [
-          { id: "open", label: "To Do" },
-          { id: "in-progress", label: "In Arbeit" },
-          // Der Erledigt-Wert: Folgeaktionen und durchgestrichene Ziele lesen ihn.
-          { id: "done", label: "Erledigt", done: true },
+          { id: "open", label: "To Do", role: "open" },
+          { id: "in-progress", label: "In Arbeit", role: "active" },
+          { id: "done", label: "Erledigt", role: "done" },
         ],
       },
       TAGS,
       // Position im Modul: nie im Formular, nie in der Meta-Box (Regel 4).
       { key: "order", widget: "number", pos: "module", edit: false },
     ],
-    // Selbstaktion nur „Übernehmen"; kann/lernt bleibt Karabirrdt (Entscheidung 17).
     edges: [
       {
         predicate: "assignedTo",
@@ -350,22 +385,31 @@ const CORE_PRESENTATION: readonly TypePresentationEntry[] = [
         pos: "meta",
         label: "Zugewiesen",
         add: "Zuweisen…",
-        // Folgeaktion „Erledigt" nur für die Person, die übernommen hat; beides Umschalter (Entscheidung 27).
+        // Das Modul bringt sein Vokabular mit (Spec 06, Regel 20): Der Kern
+        // erlaubt `role` an der Zuweisung, deklariert aber keine Werte und
+        // keine Knopftexte. Werte samt Anzeige und eigene Pills bringt die
+        // Register-Schicht eines Moduls (`qualifierValues`, `selfActions`);
+        // unbekannte Werte bleiben erhalten und stehen ohne Zustandstext da.
+        qualifier: { key: "role", values: [] },
+        // „Übernehmen", mit anderen an der Kante „Mitmachen"; danach
+        // „✓ Übernommen" (allein) oder „✓ Dabei" (mit anderen) · „Erledigt".
+        // Übergänge des Status nach Regel 19.
         selfAction: {
           label: "Übernehmen",
           mine: "Übernommen",
+          join: { label: "Mitmachen", mine: "Dabei", release: "Nicht mehr mitmachen" },
           followUps: {
             field: "status",
-            complete: { label: "Erledigt", undo: "Als offen markieren" },
+            complete: { label: "Erledigt" },
             release: "Übernahme zurückgeben",
           },
         },
       },
       // Item-Kanten (C3). `blocks` heißt von beiden Enden gleich: „Braucht"
       // (eingehend) und „Ermöglicht" (ausgehend) (Entscheidung 19). Beide
-      // eingebettet am blockierenden Item; geschrieben wird im Formular die
-      // ausgehende Kante, die das Item selbst trägt.
-      { predicate: "blocks", itemRole: "to", storage: "embedded", widget: "item-relation", pos: "meta", label: "Braucht" },
+      // eingebettet am blockierenden Item. „Braucht" schreibt das Formular
+      // am anderen Item, nur mit Schreibrecht dort (S3b).
+      { predicate: "blocks", itemRole: "to", storage: "embedded", widget: "item-relation", pos: "meta", label: "Braucht", add: "@ Aufgabe suchen…" },
       { predicate: "blocks", itemRole: "from", storage: "embedded", widget: "item-relation", pos: "meta", label: "Ermöglicht", add: "@ Aufgabe suchen…" },
       { predicate: "partOf", itemRole: "from", storage: "embedded", widget: "item-relation", pos: "meta", label: "Teil von", add: "@ Projekt suchen…" },
     ],
@@ -592,6 +636,10 @@ function composePresentation(): Map<string, TypePresentationEntry> {
       composed.set(def.id, { ...def, relationWidgets: { ...(def.relationWidgets ?? {}) } })
     }
   }
+  // Welche Selbstaktionen schon ersetzt sind, je Typ und Kante (Regel 20: einmal).
+  const overridden = new Map<string, string>()
+  // Welche Schicht welchen Qualifier-Wert deklariert, je Typ, Kante und Wert.
+  const valueOwners = new Map<string, string>()
   // Pass 2: extensions — additive only (spec: Erweiterungsfragment). Sorted
   // by layer name: the lists are ordered, and the composed view must not
   // depend on registration order (Spec 06, Erweiterung und Merge).
@@ -623,6 +671,16 @@ function composePresentation(): Map<string, TypePresentationEntry> {
         widgets[key] = widget
       }
       Object.assign(base, uniteRegisterLists(base, frag, frag.id, name))
+      if (frag.qualifierValues?.length) addQualifierValues(base, frag.qualifierValues, name, valueOwners)
+    }
+  }
+  // Pass 3: Selbstaktionen der Schichten (Regel 20) — erst nachdem alle
+  // Qualifier-Werte vereinigt sind, damit die Pills gegen das zusammengesetzte
+  // Vokabular geprüft werden, unabhängig von der Reihenfolge der Schichten.
+  for (const [name, layer] of [...layers].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
+    for (const frag of layer.extensions ?? []) {
+      const base = composed.get(frag.id)
+      if (base && frag.selfActions?.length) overrideSelfActions(base, frag.selfActions, name, overridden)
     }
   }
   // Was aus der Feldliste abgeleitet wird, darf nicht zusätzlich von Hand
@@ -630,10 +688,94 @@ function composePresentation(): Map<string, TypePresentationEntry> {
   for (const entry of composed.values()) {
     assertNoParallelComposerSource(entry)
     assertJoins(entry.id, entry.edges)
-    assertFollowUps(entry.id, entry.fields, entry.edges, entry.composer?.defaultStatus)
+    assertFollowUps(entry.id, entry.fields, entry.edges)
   }
   composedCache = composed
   return composed
+}
+
+/**
+ * Regel 20: Eine App ersetzt die Selbstaktion einer Kante, die das
+ * Toolkit-Register (Schicht `core`) mit Selbstaktion führt. Nur die
+ * Selbstaktion wechselt; ihre Pills schreiben nur deklarierte Werte. Je
+ * Kante eine Ersetzung über alle Schichten — zwei wären ein Konflikt.
+ */
+function overrideSelfActions(
+  base: TypePresentationEntry,
+  overrides: readonly SelfActionOverride[],
+  layerName: string,
+  overridden: Map<string, string>,
+): void {
+  const fail = (message: string): never => {
+    throw new Error(`Typ-Register [${layerName}]: ${message} an "${base.id}" (Spec 06, Feld- und Kantenregister, Regel 20).`)
+  }
+  const core = layers.get("core")?.definitions?.find((d) => d.id === base.id)
+  for (const override of overrides) {
+    const key = edgeKey(override)
+    const toolkitEdge = core?.edges?.find((e) => edgeKey(e) === key)
+    if (!toolkitEdge?.selfAction) fail(`Selbstaktion an (${override.predicate}, ${override.itemRole}) ersetzt keine Kante mit Selbstaktion im Toolkit-Register`)
+    const slot = `${base.id}|${key}`
+    const owner = overridden.get(slot)
+    if (owner) fail(`Selbstaktion an (${override.predicate}, ${override.itemRole}) ist bereits von Schicht "${owner}" ersetzt`)
+    overridden.set(slot, layerName)
+    // Das Modul bringt sein Vokabular mit: Die Pills einer Schicht schreiben
+    // nur Werte, die der Kern oder DIESELBE Schicht deklariert. So hängt das
+    // Ergebnis nicht davon ab, in welcher Reihenfolge Schichten registriert
+    // werden (Erweiterung und Merge; Codex R5/1).
+    const own = new Set([
+      ...(toolkitEdge!.qualifier?.values ?? []).map((v) => v.id),
+      ...(layers.get(layerName)?.extensions ?? [])
+        .filter((f) => f.id === base.id)
+        .flatMap((f) => f.qualifierValues ?? [])
+        .filter((q) => edgeKey(q) === key)
+        .flatMap((q) => q.values.map((v) => v.id)),
+    ])
+    const foreign = (override.selfAction.qualifiers ?? []).filter((q) => !own.has(q))
+    if (foreign.length > 0) {
+      fail(`Selbstaktion an (${override.predicate}, ${override.itemRole}) setzt ${foreign.join(", ")}, das weder der Kern noch dieselbe Schicht deklariert`)
+    }
+    const composedEdge = (base.edges ?? []).find((e) => edgeKey(e) === key) ?? toolkitEdge!
+    assertSelfActionValues(composedEdge, override.selfAction, fail)
+    base.edges = (base.edges ?? []).map((edge) => (edgeKey(edge) === key ? { ...edge, selfAction: override.selfAction } : edge))
+  }
+}
+
+/**
+ * Regel 20: Eine Schicht bringt Qualifier-Werte samt Anzeige für eine Kante
+ * des Toolkit-Registers mit, die einen Qualifier erlaubt. Schlüssel,
+ * Prädikat und Speicherort bleiben die des Kerns. Werte werden nach Id
+ * vereinigt; einen Wert, den der Kern oder eine andere Schicht schon
+ * deklariert, umzudefinieren ist ein Konflikt (Erweiterung und Merge, Punkt 2)
+ * — auch mit gleichem Label, damit die Anzeige nie von der Ladereihenfolge
+ * abhängt.
+ */
+function addQualifierValues(
+  base: TypePresentationEntry,
+  entries: readonly QualifierValuesEntry[],
+  layerName: string,
+  owners: Map<string, string>,
+): void {
+  const fail = (message: string): never => {
+    throw new Error(`Typ-Register [${layerName}]: ${message} an "${base.id}" (Spec 06, Feld- und Kantenregister, Regel 20).`)
+  }
+  const core = layers.get("core")?.definitions?.find((d) => d.id === base.id)
+  for (const entry of entries) {
+    const key = edgeKey(entry)
+    const toolkitEdge = core?.edges?.find((e) => edgeKey(e) === key)
+    if (!toolkitEdge?.qualifier) fail(`Qualifier-Werte an (${entry.predicate}, ${entry.itemRole}) nennen keine Kante mit Qualifier im Toolkit-Register`)
+    base.edges = (base.edges ?? []).map((edge) => {
+      if (edgeKey(edge) !== key || !edge.qualifier) return edge
+      const values = [...edge.qualifier.values]
+      for (const value of entry.values) {
+        const slot = `${base.id}|${key}|${value.id}`
+        const owner = values.some((v) => v.id === value.id) ? (owners.get(slot) ?? "core") : undefined
+        if (owner) fail(`Qualifier-Wert "${value.id}" an (${entry.predicate}, ${entry.itemRole}) ist bereits von Schicht "${owner}" deklariert`)
+        owners.set(slot, layerName)
+        values.push(value)
+      }
+      return { ...edge, qualifier: { ...edge.qualifier, values } }
+    })
+  }
 }
 
 function assertNoParallelComposerSource(entry: TypePresentationEntry): void {

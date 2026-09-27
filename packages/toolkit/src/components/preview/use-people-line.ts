@@ -16,6 +16,7 @@ import { onePerSubjectWinners } from "@real-life-stack/data-interface"
 import {
   hasAuthorization,
   hasClaimVerification,
+  hasGroups,
   hasItemGroups,
   hasRelationRecords,
   hasRelationRecordWriter,
@@ -28,7 +29,7 @@ import { useOptionalCurrentUser } from "../../hooks/use-auth"
 import { resolveCanCreate, resolveItemPermissions } from "../../hooks/use-item-permissions"
 import { writeOwnStatement } from "../../lib/own-statement"
 import { useVerifiedRelationRecords } from "../../hooks/use-votes"
-import { doneValue, reopenValue, type EdgeEntry, type FieldEntry } from "./field-register"
+import { firstOptionWithRole, statusRole, type EdgeEntry, type FieldEntry } from "./field-register"
 import { peopleLine, peopleLineGroups, recordPeopleEdges, type PeopleLineEntry } from "./people-line"
 
 const NO_RECORDS: RelationRecord[] = []
@@ -168,11 +169,14 @@ export interface SelfActionState {
   /** Die Selbstaktion ist hier möglich (Capability, Anmeldung, Schreibrecht). */
   available: boolean
   /**
-   * Mein Zustand: bei einer Kante mit Qualifier der Wert meiner eigenen,
-   * GELTENDEN Aussage, sonst `true`, wenn ich an der Kante stehe.
+   * Mein Zustand: bei Pills mit Qualifier der Wert meiner eigenen, GELTENDEN
+   * Aussage (fehlt er an einer eingebetteten Kante, gilt `qualifier.default`),
+   * sonst `true`, wenn ich an der Kante stehe — gleich welcher Qualifier.
    * `undefined`: neutral.
    */
   mine: string | true | undefined
+  /** Außer mir steht jemand an der Kante (Regel 9: „Mitmachen", „Dabei"). */
+  others: boolean
   /** Setzt meinen Zustand; derselbe Wert noch einmal nimmt die Aussage zurück. */
   act: (value?: string) => Promise<void>
   /** Nimmt meine Aussage zurück — idempotent („✓ Übernommen" zurückgeben). */
@@ -184,11 +188,70 @@ export interface SelfActionState {
 }
 
 /**
+ * Das Status-Feld, dessen Übergänge eine Selbstaktion mit Folgeaktion
+ * mitschreibt (Spec 06, Regel 19), und der Standard-Status des Typs, der
+ * gilt, solange ein Item keinen trägt.
+ */
+export interface StatusTransitions {
+  field: FieldEntry
+  defaultStatus?: string
+}
+
+const PERSON = "global:"
+
+/** Grund, wenn der geöffnete Space unter der Id des Items ein anderes (oder keins) liefert. */
+export const ITEM_ELSEWHERE = "Dieses Item liegt nicht im geöffneten Space – dort bearbeiten"
+
+/**
+ * Dasselbe Item? `updateItem` erreicht nur den geöffneten Space, und
+ * `item:<id>` ist space-lokal (04): Unter derselben Id kann dort ein anderes
+ * Item liegen. Geschrieben wird nur, wenn das frisch gelesene Item das
+ * angezeigte ist (Id, Urheber, Anlagezeitpunkt).
+ */
+function sameItem(fresh: Item, shown: Item): boolean {
+  return fresh.id === shown.id && fresh.createdBy === shown.createdBy && fresh.createdAt === shown.createdAt
+}
+
+/** Das angezeigte Item frisch aus dem geöffneten Space — oder ein Fehler mit Grund, nie ein anderes. */
+async function freshItem(connector: DataInterface, shown: Item): Promise<Item> {
+  if (!inOpenSpace(connector, shown)) throw new Error(ITEM_ELSEWHERE)
+  const fresh = await connector.getItem(shown.id)
+  if (!fresh || !sameItem(fresh, shown)) throw new Error(ITEM_ELSEWHERE)
+  return fresh
+}
+
+/**
+ * Herkunft, soweit der Connector sie kennt: Liegt das Item laut
+ * `getItemGroupId` in einem anderen als dem geöffneten Space, erreicht
+ * `updateItem` es nicht (Codex R2/1). Ohne geöffneten Space (Übersicht) oder
+ * ohne Auskunft entscheidet {@link sameItem}. Zwei Items mit derselben Id und
+ * denselben Metadaten in zwei Spaces unterscheidet kein Schreibpfad — das
+ * DataInterface adressiert `updateItem` nur über die Id (offen, Spec 02).
+ */
+function inOpenSpace(connector: DataInterface, shown: Item): boolean {
+  if (!hasGroups(connector) || !hasItemGroups(connector)) return true
+  const open = connector.getCurrentGroup()?.id ?? null
+  const home = connector.getItemGroupId(shown.id)
+  return !open || !home || home === open
+}
+
+/** Personen an einer eingebetteten Kante, außer `meId` (gleich welcher Qualifier). */
+function othersOnEmbeddedEdge(item: Item, edge: EdgeEntry, meId: string): boolean {
+  const self = `${PERSON}${meId}`
+  return (item.relations ?? []).some((r) => r.predicate === edge.predicate && r.target.startsWith(PERSON) && r.target !== self)
+}
+
+/**
  * Selbstaktion an einer Kante (C2). Record-Kanten schreiben den EIGENEN
  * Record über den RelationStore (Absagen schreibt `declined`, der Record
  * bleibt; dieselbe Pill noch einmal löscht ihn — keine Aussage mehr).
  * Eingebettete Kanten schreiben das Trägeritem (jedes Mitglied darf,
  * Entscheidung 14).
+ *
+ * Mit `transitions` (die Kante deklariert `followUps`) ändern Dazukommen und
+ * Abgeben auch den Status nach Spec 06, Regel 19 — an einer eingebetteten
+ * Kante in DEMSELBEN `updateItem`, entschieden gegen den frisch gelesenen
+ * Stand.
  *
  * Nicht verfügbar ohne die nötige Capability oder Berechtigung — die
  * Pill-Zeile täuscht nichts vor (Record: Lesen, Schreiben, Verifikation und
@@ -200,12 +263,14 @@ export interface SelfActionState {
  * Ein eigener Record ohne gültigen Claim wird über das Anlegen repariert,
  * nicht gelöscht.
  */
-export function useSelfAction(item: Item, edge: EdgeEntry): SelfActionState {
+export function useSelfAction(item: Item, edge: EdgeEntry, transitions?: StatusTransitions): SelfActionState {
   const connector = useConnector()
   const { data: me } = useOptionalCurrentUser()
   const meId = me?.id
   const isRecord = edge.storage === "record"
   const records = useItemRecords(item, isRecord ? [edge.predicate] : [])
+  // Pills mit Qualifier zeigen meinen Wert; sonst zählt nur, OB ich an der Kante stehe.
+  const withValues = !!edge.selfAction?.qualifiers?.length
 
   const available = useMemo(() => {
     if (!meId || !isWritable(connector) || !isAuthenticatable(connector)) return false
@@ -215,17 +280,26 @@ export function useSelfAction(item: Item, edge: EdgeEntry): SelfActionState {
 
   const persisted: string | true | undefined = useMemo(() => {
     if (!meId) return undefined
-    const self = `global:${meId}`
+    const self = `${PERSON}${meId}`
     if (isRecord) {
       const own = records.find((record) => record.createdBy === meId && record.from === self)
       const value = own?.fields?.[edge.qualifier?.key ?? ""]
-      return typeof value === "string" ? value : undefined
+      if (typeof value !== "string") return undefined
+      return withValues ? value : true
     }
     const relation = (item.relations ?? []).find((r) => r.predicate === edge.predicate && r.target === self)
     if (!relation) return undefined
+    if (!withValues) return true
     const value = edge.qualifier ? relation.meta?.[edge.qualifier.key] : undefined
-    return typeof value === "string" ? value : true
-  }, [edge, isRecord, item.relations, meId, records])
+    return typeof value === "string" ? value : (edge.qualifier?.default ?? true)
+  }, [edge, isRecord, item.relations, meId, records, withValues])
+
+  const others = useMemo(() => {
+    if (!meId) return false
+    if (!isRecord) return othersOnEmbeddedEdge(item, edge, meId)
+    const to = `item:${item.id}`
+    return records.some((record) => record.predicate === edge.predicate && record.to === to && record.from.startsWith(PERSON) && record.from !== `${PERSON}${meId}`)
+  }, [edge, isRecord, item, meId, records])
 
   // Optimistische Anzeige, gebunden an Item, Person und Connector. Sie endet,
   // sobald der geltende Zustand sie einholt, oder — nach Abschluss aller
@@ -274,11 +348,17 @@ export function useSelfAction(item: Item, edge: EdgeEntry): SelfActionState {
             if (isRecord) {
               // Die Bedingung gilt für das Trägeritem (etwa: noch offen); der
               // Record liegt daneben.
-              const carrier = guard ? await connector.getItem(item.id) : null
+              const carrier = guard || transitions ? await freshItem(connector, item) : null
               if (guard && (!carrier || !guard(carrier))) written = false
-              else await writeOwnStatement(connector, item, { predicate: edge.predicate, from: `global:${meId}`, key: edge.qualifier!.key, value: typeof next === "string" ? next : null })
+              else if (transitions && carrier && isDone(carrier, transitions)) written = false
+              else {
+                await writeOwnStatement(connector, item, { predicate: edge.predicate, from: `${PERSON}${meId}`, key: edge.qualifier!.key, value: typeof next === "string" ? next : null })
+                if (transitions && (current === undefined) !== (next === undefined)) {
+                  await applyRecordTransition(connector, item, edge, meId, next !== undefined, transitions)
+                }
+              }
             } else {
-              written = await writeEmbedded(connector, item, edge, meId, next, guard)
+              written = await writeEmbedded(connector, item, edge, meId, next, guard, transitions)
             }
             if (!written) {
               // Nichts geschrieben: die Zeile folgt wieder dem geltenden Stand.
@@ -303,27 +383,61 @@ export function useSelfAction(item: Item, edge: EdgeEntry): SelfActionState {
       chain.current = next.catch(() => undefined)
       return next
     },
-    [available, connector, context, edge, isRecord, item, meId],
+    [available, connector, context, edge, isRecord, item, meId, transitions],
   )
 
   const withdraw = useCallback((guard?: (current: Item) => boolean) => act(undefined, "withdraw", guard), [act])
-  return { available, mine, act: (value?: string) => act(value), withdraw, busy, error }
+  return { available, mine, others, act: (value?: string) => act(value), withdraw, busy, error }
 }
 
-/** Die eingebettete Kante: ich stehe daran (mit Wert) oder nicht (`undefined`). */
-async function writeEmbedded(connector: DataInterface, item: Item, edge: EdgeEntry, meId: string, next: string | true | undefined, guard?: (current: Item) => boolean): Promise<boolean> {
+/**
+ * Der Status nach Regel 19, aus dem FRISCHEN Stand: Dazukommen bei `open`
+ * → erste Option `active` (fehlt sie, bleibt er); Abgeben, wonach niemand
+ * mehr an der Kante steht, bei `active` → erste Option `open`. Sonst
+ * `undefined` (unverändert).
+ */
+function transitionStatus(current: Item, transitions: StatusTransitions, joining: boolean, nobodyLeft: boolean): string | undefined {
+  const { field, defaultStatus } = transitions
+  const role = statusRole(field, (current.data as Record<string, unknown> | undefined)?.[field.key], defaultStatus)
+  if (joining) return role === "open" ? firstOptionWithRole(field, "active") : undefined
+  return nobodyLeft && role === "active" ? firstOptionWithRole(field, "open") : undefined
+}
+
+/** Hat der Status des frisch gelesenen Items die Rolle `done`? */
+function isDone(current: Item, transitions: StatusTransitions): boolean {
+  return statusRole(transitions.field, (current.data as Record<string, unknown> | undefined)?.[transitions.field.key], transitions.defaultStatus) === "done"
+}
+
+/** Die eingebettete Kante: ich stehe daran (mit Wert) oder nicht (`undefined`); mit Übergang in DEMSELBEN updateItem. */
+async function writeEmbedded(
+  connector: DataInterface,
+  item: Item,
+  edge: EdgeEntry,
+  meId: string,
+  next: string | true | undefined,
+  guard?: (current: Item) => boolean,
+  transitions?: StatusTransitions,
+): Promise<boolean> {
   if (!isWritable(connector)) throw new Error("Dieser Speicher ist nur lesbar")
-  const current = (await connector.getItem(item.id)) ?? item
+  const current = await freshItem(connector, item)
   // Die Bedingung gegen DENSELBEN Stand, aus dem die neuen Relationen entstehen.
   if (guard && !guard(current)) return false
-  const target = `global:${meId}`
+  // Erledigt: keine Selbstaktion (nur Zustände, Anton zu #542).
+  if (transitions && isDone(current, transitions)) return false
+  const target = `${PERSON}${meId}`
   const relations = current.relations ?? []
   const key = edge.qualifier?.key
   const others = relations.filter((r) => !(r.predicate === edge.predicate && r.target === target))
+  const wasOn = others.length !== relations.length
+  const statusPatch = (joining: boolean): Partial<Item> => {
+    if (!transitions || joining === wasOn) return {}
+    const value = transitionStatus(current, transitions, joining, !othersOnEmbeddedEdge({ ...current, relations: others }, edge, meId))
+    return value === undefined ? {} : { data: { ...(current.data ?? {}), [transitions.field.key]: value } }
+  }
   if (next === undefined) {
     // Nichts zurückzunehmen: nicht schreiben (die Kante fehlt schon, #531).
-    if (others.length === relations.length) return false
-    await connector.updateItem(item.id, { relations: others })
+    if (!wasOn) return false
+    await connector.updateItem(item.id, { relations: others, ...statusPatch(false) })
     return true
   }
   const existing = relations.find((r) => r.predicate === edge.predicate && r.target === target)
@@ -331,8 +445,37 @@ async function writeEmbedded(connector: DataInterface, item: Item, edge: EdgeEnt
   const mine = { predicate: edge.predicate, target, ...(Object.keys(meta).length > 0 ? { meta } : {}) }
   // An ihrer Stelle, damit die Reihenfolge der Kanten bleibt.
   const nextRelations = existing ? relations.map((r) => (r === existing ? mine : r)) : [...relations, mine]
-  await connector.updateItem(item.id, { relations: nextRelations })
+  await connector.updateItem(item.id, { relations: nextRelations, ...statusPatch(true) })
   return true
+}
+
+/**
+ * Regel 19 an einer Record-Kante: Der Record liegt neben dem Item, der
+ * Status am Item — zwei Schreibvorgänge. Nur mit Schreibrecht am Item (die
+ * Selbstaussage selbst braucht es nicht, Modi Regel 1). Wer nach dem Abgeben
+ * noch an der Kante steht, entscheiden die geltenden Records (L1).
+ */
+async function applyRecordTransition(connector: DataInterface, item: Item, edge: EdgeEntry, meId: string, joining: boolean, transitions: StatusTransitions): Promise<void> {
+  if (!isWritable(connector) || !resolveItemPermissions(connector, item, meId).canEdit) return
+  if (!inOpenSpace(connector, item)) return
+  const current = await connector.getItem(item.id)
+  if (!current || !sameItem(current, item)) return
+  const nobodyLeft = joining ? false : !(await othersOnRecordEdge(connector, current, edge, meId))
+  const value = transitionStatus(current, transitions, joining, nobodyLeft)
+  if (value === undefined) return
+  await connector.updateItem(item.id, { data: { ...(current.data ?? {}), [transitions.field.key]: value } })
+}
+
+/** Steht außer mir jemand mit geltender Aussage an der Record-Kante? */
+async function othersOnRecordEdge(connector: DataInterface, current: Item, edge: EdgeEntry, meId: string): Promise<boolean> {
+  if (!hasRelationRecords(connector) || !hasClaimVerification(connector)) return false
+  const all = await connector.getRelationRecords({ predicate: edge.predicate, to: `item:${current.id}` })
+  for (const record of all) {
+    if (!record.from.startsWith(PERSON) || record.from === `${PERSON}${meId}`) continue
+    const verdict = await connector.verifyRecordClaim(record)
+    if (verdict === "valid" || verdict === "trusted") return true
+  }
+  return false
 }
 
 export interface FollowUpState {
@@ -340,15 +483,16 @@ export interface FollowUpState {
   available: boolean
   busy: boolean
   error: string | null
-  /** Schreibt den Erledigt-Wert (`complete`) oder den Standard-Status (`reopen`). */
-  run: (id: "complete" | "reopen") => Promise<void>
+  /** Schreibt die erste Option der Rolle `done` (`complete`); zurück geht es nur über Bearbeiten oder das Modul. */
+  run: (id: "complete") => Promise<void>
 }
 
 /**
- * Folgeaktionen einer Selbstaktion am Status-Feld (Entscheidung 27):
- * „Erledigt" schreibt den Wert, den das Register als erledigt markiert,
- * sein zweiter Klick den Standard-Status. Geschrieben wird das Trägeritem nach
- * dessen Rechten; das übrige `data` bleibt.
+ * Folgeaktionen einer Selbstaktion am Status-Feld (Spec 06, Regeln 9 und
+ * 19): „Erledigt" schreibt die erste Option der Rolle `done`, nur aus `open`
+ * oder `active`; zurückgenommen wird sie nicht (nur über Bearbeiten oder das
+ * Modul). Geschrieben wird das Trägeritem nach dessen Rechten; das übrige
+ * `data` bleibt.
  */
 export function useFollowUps(item: Item, statusField: FieldEntry | undefined, defaultStatus?: string, edge?: EdgeEntry): FollowUpState {
   const connector = useConnector()
@@ -361,24 +505,23 @@ export function useFollowUps(item: Item, statusField: FieldEntry | undefined, de
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const run = useCallback(
-    async (id: "complete" | "reopen") => {
+    async (id: "complete") => {
       if (!available || !statusField || !isWritable(connector)) return
-      const value = id === "complete" ? doneValue(statusField) : id === "reopen" ? reopenValue(statusField, defaultStatus) : undefined
+      const value = id === "complete" ? firstOptionWithRole(statusField, "done") : undefined
       if (value === undefined) return
       setBusy(true)
       setError(null)
       try {
         // #531: gegen den GELTENDEN Stand entscheiden, nicht gegen den Render.
-        // Bin ich nicht mehr an der Kante, oder passt der Status nicht mehr zur
-        // Aktion, wird nichts geschrieben; die Zeile folgt dem lebenden Item.
-        // Ein fremder Edit zwischen Lesen und Schreiben bleibt möglich (kein
-        // bedingtes Schreiben im DataInterface); das betrifft nur die Semantik
-        // der Folgeaktion, Mitglieder dürfen den Status ohnehin ändern.
-        const current = await connector.getItem(item.id)
-        if (!current || !meId) return
-        const status = (current.data as Record<string, unknown> | undefined)?.[statusField.key]
-        const isDone = status === doneValue(statusField)
-        if ((id === "complete" && isDone) || (id === "reopen" && !isDone)) return
+        // Bin ich nicht mehr an der Kante, oder hat der Status keine Rolle
+        // open/active mehr, wird nichts geschrieben; die Zeile folgt dem
+        // lebenden Item. Ein fremder Edit zwischen Lesen und Schreiben bleibt
+        // möglich (kein bedingtes Schreiben im DataInterface); Mitglieder
+        // dürfen den Status ohnehin ändern.
+        if (!meId) return
+        const current = await freshItem(connector, item)
+        const role = statusRole(statusField, (current.data as Record<string, unknown> | undefined)?.[statusField.key], defaultStatus)
+        if (role !== "open" && role !== "active") return
         if (edge && !(await stillMine(connector, current, edge, meId))) return
         await connector.updateItem(item.id, { data: { ...(current.data ?? {}), [statusField.key]: value } })
       } catch (err) {

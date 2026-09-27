@@ -188,10 +188,11 @@ describe("edgeTargets (rein)", () => {
 })
 
 describe("C3 schreiben: Formular der Aufgabe", () => {
-  it("Register → Formular: Ermöglicht und Teil von als Felder, Braucht nicht (liegt am anderen Item)", async () => {
+  it("Register → Formular: Braucht (eingehend, S3b), Ermöglicht und Teil von als Felder", async () => {
     const { contentTypeFromRegister } = await import("../src/components/composer/content-types")
     const config = contentTypeFromRegister("task")
     expect(config.itemRelations).toEqual([
+      { predicate: "blocks", label: "Braucht", placeholder: "@ Aufgabe suchen…", targetType: "task", incoming: true },
       { predicate: "blocks", label: "Ermöglicht", placeholder: "@ Aufgabe suchen…", targetType: "task" },
       { predicate: "partOf", label: "Teil von", placeholder: "@ Projekt suchen…", targetType: "project" },
     ])
@@ -328,7 +329,9 @@ describe("B15 item-ref und Rückwärts-Listen aus dem Register", () => {
     const list = host.querySelector('[data-reverse-list="partOf:to"]')
     expect(list?.textContent).toContain("Offene Aufgaben")
     expect([...host.querySelectorAll("[data-list-row]")].map((r) => r.getAttribute("data-list-row"))).toEqual(["t1"])
-    await act(async () => host.querySelector<HTMLButtonElement>('[data-list-row="t1"]')!.click())
+    // Die Zeile ist die einzeilige ItemPreview (Detail-Anatomie Regel 8, S3b).
+    expect(host.querySelector('[data-list-row="t1"] article')?.getAttribute("data-preview-density")).toBe("row")
+    await act(async () => host.querySelector<HTMLElement>('[data-list-row="t1"] [role="button"]')!.click())
     await settle()
     expect(focused).toBe("t1")
   })
