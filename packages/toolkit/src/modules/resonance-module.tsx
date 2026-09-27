@@ -5,6 +5,9 @@ import { ArrowUpDown, MessageSquareQuote } from "lucide-react"
 import { VOTE_PREDICATE } from "@real-life-stack/data-interface"
 
 import { useItemFocus } from "../hooks/use-item-focus"
+import { useModuleFilter } from "../hooks/use-module-filter"
+import { useOptionalSharedFilter } from "../components/filter/filter-store"
+import { ResonanceTransferMenu } from "../components/resonance/resonance-transfer"
 import { useRelationRecords } from "../hooks/use-relation-records"
 import { useVerifiedRelationRecords } from "../hooks/use-votes"
 import { useCountingContentHashes } from "../hooks/use-item-standing"
@@ -45,6 +48,8 @@ const SORT_LABELS: Record<ResonanceSortMode, string> = {
   activity: "Aktivität",
 }
 
+const NO_ONE: string[] = []
+
 const SORT_MODES: readonly ResonanceSortMode[] = ["newest", "votes", "approval", "concerns", "rejection", "participation", "activity"]
 
 /**
@@ -66,15 +71,17 @@ export function ResonanceModule({ items: statements = [], itemsLoading: isLoadin
   // Spec 08 L1: Zaehlen nur Records, fuer die der Connector buergt — fail
   // closed, auch fuer die Sortierung.
   const verifiedVoteRecords = useVerifiedRelationRecords(voteRecords)
-  const { resolveAuthor, resolveItemGroupColor, activeItemId, filterActive, registerItemElement, members, isOverview } = useModuleHost()
+  const { resolveAuthor, resolveItemGroupColor, activeItemId, filterActive, registerItemElement, members, isOverview, currentSpace, currentUser, groups, personalGroupId } = useModuleHost()
+  const sharedTags = useOptionalSharedFilter()?.value.tags ?? NO_ONE
   const { focusItem } = useItemFocus()
 
   const [sortMode, setSortMode] = useState<ResonanceSortMode>("newest")
   // Auswertung (resonance.md): Personenmenge und Personen-Filter. Nur lokal —
-  // nichts davon wird geschrieben oder geteilt.
-  const [chosenPeople, setChosenPeople] = useState<string[]>([])
-  const [votersOnly, setVotersOnly] = useState(false)
-  const [greenBy, setGreenBy] = useState<string[]>([])
+  // nichts davon wird geschrieben oder geteilt —, aber sie ueberdauern den
+  // Modulwechsel wie Tags und Suche (useModuleFilter, shared-components Regel 2).
+  const [chosenPeople, setChosenPeople] = useModuleFilter<string[]>("people", NO_ONE)
+  const [votersOnly, setVotersOnly] = useModuleFilter("votersOnly", false)
+  const [greenBy, setGreenBy] = useModuleFilter<string[]>("greenBy", NO_ONE)
 
   // Resonanz-Vote-Regel 5: eine Stimme zaehlt nur fuer den aktuellen Wortlaut
   // eines belegten Statements.
@@ -121,6 +128,14 @@ export function ResonanceModule({ items: statements = [], itemsLoading: isLoadin
     [members],
   )
   const nameOf = (id: string) => memberOptions.find((option) => option.id === id)?.label ?? id
+  // Aus der Uebersicht waehlt der Import sein Ziel: Privat und die Spaces.
+  const importTargets = useMemo(
+    () => [
+      ...(personalGroupId ? [{ id: personalGroupId, name: "Privat" }] : []),
+      ...groups.filter((group) => group.id !== personalGroupId).map((group) => ({ id: group.id, name: group.name })),
+    ],
+    [groups, personalGroupId],
+  )
   const moduleFilterActive = chosenPeople.length > 0 || votersOnly || greenBy.length > 0
   const chips = moduleFilterActive ? (
     <>
@@ -158,23 +173,35 @@ export function ResonanceModule({ items: statements = [], itemsLoading: isLoadin
         }
         chipsExtra={chips}
         trailingActions={
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
-                <ArrowUpDown className="h-3.5 w-3.5" />
-                {SORT_LABELS[sortMode]}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuRadioGroup value={sortMode} onValueChange={(value) => setSortMode(value as ResonanceSortMode)}>
-                {SORT_MODES.map((mode) => (
-                  <DropdownMenuRadioItem key={mode} value={mode}>
-                    {SORT_LABELS[mode]}
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
+                  <ArrowUpDown className="h-3.5 w-3.5" />
+                  {SORT_LABELS[sortMode]}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuRadioGroup value={sortMode} onValueChange={(value) => setSortMode(value as ResonanceSortMode)}>
+                  {SORT_MODES.map((mode) => (
+                    <DropdownMenuRadioItem key={mode} value={mode}>
+                      {SORT_LABELS[mode]}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <ResonanceTransferMenu
+              space={currentSpace}
+              targetSpaces={importTargets}
+              userId={currentUser?.id}
+              shownStatements={sortedStatements}
+              verifiedRecords={verifiedVoteRecords}
+              contentHashes={contentHashes}
+              population={population}
+              tags={sharedTags}
+            />
+          </>
         }
       />
 
