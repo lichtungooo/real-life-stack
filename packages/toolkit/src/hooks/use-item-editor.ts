@@ -4,6 +4,7 @@ import { deriveContext, hasItemGroups } from "@real-life-stack/data-interface"
 import { useCreateItem, useUpdateItem, useDeleteItem } from "./use-mutations"
 import { useConnector } from "./connector-context"
 import type { ContentComposerSubmitData } from "../components/composer/content-composer"
+import { writeOwnStatement, type OwnStatement } from "../lib/own-statement"
 
 /**
  * The shape a caller-supplied mapper returns. The hook handles the
@@ -22,6 +23,12 @@ export interface ItemEditorPayload {
    * vocabulary outside the activation heuristic is needed.
    */
   "@context"?: string[]
+  /**
+   * Eigene Aussagen an Record-Kanten, die nach dem Speichern geschrieben
+   * werden (Event: Zusagen im Personenfeld, 08 → Teilnahme am Event). Nie
+   * Teil des Items.
+   */
+  statements?: readonly OwnStatement[]
 }
 
 /**
@@ -81,7 +88,17 @@ export interface UseItemEditorResult {
    */
   submit(
     submission: ContentComposerSubmitData,
-    options?: { existingItem?: Item },
+    options?: {
+      existingItem?: Item
+      /** Receives the caught error (the reason) before `submit` resolves `null`. */
+      onError?: (error: Error) => void
+      /**
+       * The item is stored (created or updated) — called before the follow-up
+       * steps (space, statements). If one of those fails, a retry continues
+       * on this item instead of creating a second one (#523).
+       */
+      onPersisted?: (item: Item) => void
+    },
   ): Promise<Item | null>
 
   /**
@@ -211,7 +228,7 @@ export function useItemEditor(options: UseItemEditorOptions): UseItemEditorResul
   const submit = useCallback(
     async (
       submission: ContentComposerSubmitData,
-      submitOptions?: { existingItem?: Item },
+      submitOptions?: { existingItem?: Item; onError?: (error: Error) => void; onPersisted?: (item: Item) => void },
     ): Promise<Item | null> => {
       const existingItem = submitOptions?.existingItem ?? currentItem
       const activeMode: "create" | "edit" = existingItem ? "edit" : "create"
@@ -229,14 +246,18 @@ export function useItemEditor(options: UseItemEditorOptions): UseItemEditorResul
         if (activeMode === "create") {
           const payload = buildCreatePayload(mapped, currentUserId)
           const created = await createItem(payload)
+          submitOptions?.onPersisted?.(created)
           await applyItemGroup(connector, created.id, submission.data.group)
+          await applyStatements(connector, created, mapped.statements)
           await onCreated?.(created)
           return created
         }
 
         const update = buildUpdatePayload(mapped, existingItem!)
         const updated = await updateItem(existingItem!.id, update)
+        submitOptions?.onPersisted?.(updated)
         await applyItemGroup(connector, updated.id, submission.data.group)
+        await applyStatements(connector, updated, mapped.statements)
         if (currentItem && currentItem.id === existingItem!.id) {
           setCurrentItem(updated)
         }
@@ -245,6 +266,7 @@ export function useItemEditor(options: UseItemEditorOptions): UseItemEditorResul
       } catch (err) {
         const wrapped = err instanceof Error ? err : new Error(String(err))
         setError(wrapped)
+        submitOptions?.onError?.(wrapped)
         return null
       } finally {
         setIsSubmitting(false)
@@ -285,4 +307,9 @@ export function useItemEditor(options: UseItemEditorOptions): UseItemEditorResul
     submit,
     remove,
   }
+}
+
+/** Nach dem Speichern: die eigenen Aussagen, der Reihe nach (Fehler brechen ab und zeigen sich im Formular). */
+async function applyStatements(connector: DataInterface, item: Item, statements: readonly OwnStatement[] | undefined): Promise<void> {
+  for (const statement of statements ?? []) await writeOwnStatement(connector, item, statement)
 }

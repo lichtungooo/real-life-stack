@@ -37,6 +37,12 @@ export interface FieldOption {
   id: string
   label: string
   tone?: string
+  /**
+   * Nur Qualifier-Werte einer Kante mit Selbstaktion: die Beschriftung der
+   * Pill, die diesen Wert setzt („Zusagen" für `going`, dessen `label`
+   * „zugesagt" am Chip steht). Ohne Angabe steht `label` auf der Pill.
+   */
+  action?: string
 }
 
 export interface FieldEntry {
@@ -82,6 +88,30 @@ export interface EdgeEntry {
   list?: { filter?: "open" | "upcoming"; sort?: string }
   /** Nur `storage: "record"` (Regel 8). */
   count?: "one-per-subject" | "collect-accepted"
+  /** Beschriftung des Hinzufügen-Felds im Formular (C1: „Einladen…", „Zuweisen…"). */
+  add?: string
+  /**
+   * Nur Personen-Kanten: Prädikat einer anderen Personen-Kante desselben
+   * Typs, deren Menschen-Zeile diese Kante teilt. Das Event führt so
+   * `attends` in der Zeile von `invited` (08 → Teilnahme am Event, Regel 5).
+   * Ohne Angabe steht jede Personen-Kante in ihrer eigenen Zeile.
+   */
+  joins?: string
+}
+
+/**
+ * `joins` muss eine Personen-Kante der zusammengesetzten Kantenliste nennen
+ * (geprüft nach dem Vereinigen, weil ein Fragment die Zielkante der Basis
+ * nennen darf).
+ */
+export function assertJoins(typeId: string, edges: readonly EdgeEntry[] = []): void {
+  for (const edge of edges) {
+    if (!edge.joins) continue
+    const target = edges.find((e) => e !== edge && e.predicate === edge.joins && e.widget === "people" && e.pos === "meta" && !e.joins)
+    if (edge.widget !== "people" || !target) {
+      throw new Error(`Typ-Register: Kante (${edge.predicate}, ${edge.itemRole}) an "${typeId}" nennt in joins "${edge.joins}", aber keine Personen-Kante der Meta-Box ohne eigenes joins (Spec 06, Feld- und Kantenregister).`)
+    }
+  }
 }
 
 export interface ListEntry {
@@ -147,6 +177,20 @@ export function assertRegisterLists(
     }
     if (edge.storage === "record" && edge.qualifier && !edge.count) {
       fail(layer, typeId, `Record-Kante (${edge.predicate}, ${edge.itemRole}) mit Qualifier braucht count`)
+    }
+    // Regel 9: Die Pills einer Selbstaktion setzen deklarierte Qualifier-Werte.
+    if (edge.selfAction?.qualifiers?.length) {
+      const allowed = new Set((edge.qualifier?.values ?? []).map((v) => v.id))
+      const unknown = edge.selfAction.qualifiers.filter((q) => !allowed.has(q))
+      if (unknown.length > 0) {
+        fail(layer, typeId, `Selbstaktion an (${edge.predicate}, ${edge.itemRole}) setzt ${unknown.join(", ")}, das der Qualifier nicht deklariert`)
+      }
+    }
+    // `collect-accepted` braucht die Annahmeprüfung aus 05 (isAccepted) und
+    // mehrere Aussagen je Person; die Menschen-Zeile kann das noch nicht.
+    // Nicht anders auswerten, sondern ablehnen.
+    if (edge.count === "collect-accepted" && edge.widget === "people") {
+      fail(layer, typeId, `Kante (${edge.predicate}, ${edge.itemRole}) mit count collect-accepted wird von der Menschen-Zeile noch nicht unterstützt`)
     }
     // Regel 10: Rückwärts-Listen sind eingehende Kanten.
     if ((edge.pos === "list" || edge.list) && edge.itemRole !== "to") {

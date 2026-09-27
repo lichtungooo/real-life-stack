@@ -136,7 +136,7 @@ interface ContentTypeConfig {
 
 **Ordnung (normativ):** siehe [Detail-Anatomie](#detail-anatomie). Die Meta-Box steht auf eigener `--muted`-Fläche mit Rahmen und entfällt ohne Inhalt. Tags und Urheber teilen eine Zeile: Tags fließen links, „Erstellt von …" bleibt rechts und bricht nicht um. Der Titel steht in 20px/600.
 
-*Bis zum Entwurf S0 (26.09.2026) standen Zusagen und Stimmen als Typ-Fußzeile über dem Divider. Sie stehen jetzt im Slot `actions` direkt unter der Meta-Box; der Prop `footer` trägt danach nur noch Reaktionen und Kommentieren (Slot `bar`).*
+*Bis zum Entwurf S0 (26.09.2026) standen Zusagen und Stimmen als Typ-Fußzeile über dem Divider. Sie stehen seit S2 im Slot `actions` direkt unter der Meta-Box (Prop `selfActions`, weil `actions` das ⋮-Menü trägt); der Prop `footer` trägt danach nur noch Reaktionen und Kommentieren (Slot `bar`). Die Karte (`ItemPreview`) zeigt die Stimmleiste im Übergang weiter als Fußzeile (06, Regel 17).*
 
 **Vertrag:**
 
@@ -146,8 +146,11 @@ interface ItemDetailBodyProps {
   author?: User
   headerAdornment?: ReactNode  // Typ-/Scope-Badge
   actions?: ReactNode          // ⋮-Menü — wandert in die Panel-Kopfleiste
-  meta?: ReactNode             // Inhalt der Meta-Box, TYP-getrieben
-  footer?: ReactNode           // Typ-Fußzeile + Reaktionen
+  meta?: ReactNode             // Slot `meta`: Inhalt der Meta-Box, TYP-getrieben
+  selfActions?: ReactNode      // Slot `actions`: Selbstaktionen (C2) und Stimme (C4)
+  reverse?: ReactNode          // Slot `reverse`: Rückwärts-Listen
+  footer?: ReactNode           // Slot `bar`: Reaktionen und Kommentieren (Typ-Fußzeile nur noch für Typen ohne Feldliste)
+  note?: ReactNode             // Slot `note`: Nur-lesen-Hinweis oder Fehler-Banner
   className?: string
 }
 ```
@@ -622,7 +625,7 @@ Jedes Item öffnet in derselben Anatomie. Sie besteht aus neun Slots in fester R
 | 6 | `tags` | TagChips und Urheberzeile | Tag-Widget |
 | 7 | `bar` | Reaktionen und Kommentieren (C7) | entfällt |
 | 8 | `comments` | Thread mit gepinnter Eingabe | entfällt; stattdessen Fußzeile Löschen · Abbrechen · Speichern |
-| 9 | `note` | Nur-lesen-Hinweis (Modus) | Fehler-Banner inline |
+| 9 | `note` | Nur-lesen-Hinweis (Modus) | entfällt; der Fehler beim Speichern steht als Banner unter dem Kopf des Formulars |
 
 Regeln:
 
@@ -645,7 +648,7 @@ Regeln:
 | Viele | Eine Menschen-Zeile fasst ab einer Schwelle je Qualifier zusammen: drei Avatare, „12 zugesagt" (`going`), „Alle" |
 | Laden | Skeleton in der Anatomie, kein Spinner |
 | Minimal | nur Felder mit Inhalt (Regeln 1 und 2) |
-| Fehler | Banner inline im Slot `note` mit „Erneut"; Eingaben bleiben erhalten |
+| Fehler | Banner inline unter dem Kopf des Formulars mit „Erneut" und, wenn der Connector einen liefert, dem Grund; Eingaben bleiben erhalten. „Erneut" setzt an einem schon angelegten Item fort |
 | Mobil | Drawer von unten, gleiche Slots; Kopf fix, der Rest scrollt |
 
 ### Widget-Paare

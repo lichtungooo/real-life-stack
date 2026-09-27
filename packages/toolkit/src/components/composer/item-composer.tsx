@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { Item } from "@real-life-stack/data-interface"
 import {
   ContentComposer,
@@ -13,6 +13,8 @@ import { useItemEditor, type ItemEditorMapper } from "../../hooks/use-item-edito
 import { useOptionalCurrentUser } from "../../hooks/use-auth"
 import { useSetDraftItem, DRAFT_ITEM_ID } from "../../hooks/use-draft-item"
 import { useSetUnsavedDirty } from "../../hooks/use-unsaved-changes"
+import { resolveTypePresentation } from "../preview/type-presentation"
+import { usePeopleFormStates } from "../preview/use-people-line"
 
 export interface ItemComposerProps {
   /** Types offered. Create: a module's subset; edit: locked to the item's type. */
@@ -66,8 +68,20 @@ export function ItemComposer({
   // (save/cancel/navigate-away all unmount the composer).
   const setDraft = useSetDraftItem()
   const currentUserId = currentUser?.id
+  // #523, Codex Runde 2: Ist das Item beim Erstellen schon angelegt und ein
+  // Folgeschritt scheiterte, wird das Formular zum Bearbeiten DIESES Items —
+  // Typ fest, Zustände live aus seinen Records, „Erneut" setzt daran fort.
+  const [persisted, setPersisted] = useState<Item | null>(null)
+  const persistedRef = useRef<Item | null>(null)
+  const current = existingItem ?? persisted ?? undefined
+  // Der Space im Kopf des Formulars — für das Schreibrecht der Aussagen
+  // beim Erstellen (Codex Runde 2, Befund 1).
+  const [formGroup, setFormGroup] = useState<string | null>(null)
   const publishDraft = useCallback(
     (submission: ContentComposerSubmitData) => {
+      const group = typeof submission.data.group === "string" && submission.data.group !== "" ? submission.data.group : null
+      setFormGroup((prev) => (prev === group ? prev : group))
+      const existingItem = current
       const payload = mapper(submission, {
         mode: existingItem ? "edit" : "create",
         existingItem: existingItem ?? null,
@@ -85,7 +99,7 @@ export function ItemComposer({
         ...(relations ? { relations } : {}),
       })
     },
-    [mapper, existingItem, currentUserId, setDraft],
+    [mapper, current, currentUserId, setDraft],
   )
   useEffect(() => () => setDraft(null), [setDraft])
 
@@ -95,20 +109,51 @@ export function ItemComposer({
   const setUnsavedDirty = useSetUnsavedDirty()
   useEffect(() => () => setUnsavedDirty(false), [setUnsavedDirty])
 
+  // Zustände der Personenfelder mit Record-Kante (Event: Zusagen), live aus
+  // den geltenden Records. Beim Bearbeiten für den Typ des Items; beim
+  // Erstellen für jeden angebotenen Typ, damit ein Typwechsel sie mitbringt
+  // (#522) — ohne Item gibt es noch keine geltenden Aussagen.
+  const typeIds = contentTypes.map((t) => t.id).join(" ")
+  const formEdges = useMemo(
+    () =>
+      current
+        ? resolveTypePresentation(current.type).edges
+        : typeIds.split(" ").filter(Boolean).flatMap((id) => resolveTypePresentation(id).edges ?? []),
+    [current, typeIds],
+  )
+  const peopleStates = usePeopleFormStates(current ?? null, formEdges, formGroup)
+  // Nach dem Anlegen steht der Typ fest.
+  const offeredTypes = useMemo(() => {
+    if (!persisted || existingItem) return contentTypes
+    const own = contentTypes.filter((t) => t.id === persisted.type)
+    return own.length > 0 ? own : contentTypes
+  }, [contentTypes, persisted, existingItem])
+
   return (
     <ContentComposer
       apiRef={apiRef}
+      peopleStates={peopleStates}
       className={className}
-      contentTypes={contentTypes}
+      contentTypes={offeredTypes}
       initialContentType={initialContentType}
       initialData={initialData}
-      editMode={!!existingItem}
+      editMode={!!current}
       showPreview={false}
       {...composerProps}
       onChange={publishDraft}
       onDirtyChange={setUnsavedDirty}
       onSubmit={async (data) => {
-        const saved = await editor.submit(data, existingItem ? { existingItem } : undefined)
+        let failure: Error | undefined
+        const onError = (error: Error) => { failure = error }
+        // Ist das Item schon angelegt (ein Folgeschritt scheiterte), setzt
+        // „Erneut" an ihm fort, statt ein zweites anzulegen (#523).
+        const target = existingItem ?? persistedRef.current ?? undefined
+        const onPersisted = (item: Item) => {
+          if (existingItem) return
+          persistedRef.current = item
+          setPersisted(item)
+        }
+        const saved = await editor.submit(data, target ? { existingItem: target, onError, onPersisted } : { onError, onPersisted })
         if (saved) {
           // Clear synchronously BEFORE onDone navigates, so the nav guard doesn't
           // block the very navigation the save triggers.
@@ -118,7 +163,9 @@ export function ItemComposer({
         // submit() swallows connector errors into editor.error and returns null;
         // surface it so the composer shows its inline error instead of looking
         // like a silent success.
-        else throw new Error("Speichern fehlgeschlagen. Bitte erneut versuchen.")
+        // Der Grund des Connectors reist als `reason` mit; das Formular zeigt
+        // ihn klein im Fehler-Banner.
+        else throw Object.assign(new Error("Speichern fehlgeschlagen. Bitte erneut versuchen."), failure ? { reason: failure } : {})
       }}
       onCancel={onCancel}
     />

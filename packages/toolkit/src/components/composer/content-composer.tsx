@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Check, ChevronDown, Globe, Home, Loader2, Lock, Trash2, X } from "lucide-react"
+import { Check, ChevronDown, CircleAlert, Globe, Home, Loader2, Lock, Trash2, X } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/primitives/avatar"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/primitives/tooltip"
 import { ItemTypeBadge } from "../preview/item-type-badge"
@@ -32,9 +32,9 @@ import {
 import { LocationWidget } from "./widgets/location-widget"
 import type { Geocoder, ReverseGeocoder } from "@/lib/geocode"
 import { MediaWidget } from "./widgets/media-widget"
-import { PeopleWidget, type PersonOption } from "./widgets/people-widget"
+import { PeopleWidget, type PeopleWidgetRecord, type PersonOption } from "./widgets/people-widget"
 export type { PersonOption } from "./widgets/people-widget"
-import { resolvePeopleFields, type PeopleRelationConfig } from "./people-relations"
+import { peopleQualifierKey, peopleStatementKey, resolvePeopleFields, type PeopleRelationConfig } from "./people-relations"
 export type { PeopleRelationConfig } from "./people-relations"
 import { TagsWidget } from "./widgets/tags-widget"
 import { StatusWidget } from "./widgets/status-widget"
@@ -168,8 +168,43 @@ export interface CustomWidgetDefinition {
   component: React.ComponentType<WidgetComponentProps<unknown>>
 }
 
+/**
+ * Fehler beim Speichern (shared-components, Detail-Anatomie Slot `note` im
+ * Bearbeiten: „Fehler-Banner inline"; Zustand „Fehler": Banner mit „Erneut",
+ * Eingaben bleiben erhalten). Steht unter dem Kopf des Formulars; Farben nur
+ * über das Token `destructive`.
+ */
+function SaveErrorBanner({ reason, onRetry, busy }: { reason?: string; onRetry: () => void; busy: boolean }) {
+  return (
+    <div
+      data-slot="save-error"
+      role="alert"
+      className="flex items-start gap-2.5 rounded-lg border border-destructive/25 bg-destructive/[0.06] px-3 py-2.5 text-sm"
+    >
+      <CircleAlert className="mt-0.5 h-4 w-4 shrink-0 text-destructive" aria-hidden />
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="text-foreground">Konnte nicht gespeichert werden. Deine Eingaben bleiben erhalten.</span>
+        {reason && <span className="text-xs text-muted-foreground">{reason}</span>}
+      </div>
+      <button
+        type="button"
+        onClick={onRetry}
+        disabled={busy}
+        className="shrink-0 rounded-md px-2 py-0.5 text-sm font-semibold text-destructive hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40 disabled:opacity-50"
+      >
+        Erneut
+      </button>
+    </div>
+  )
+}
+
 export interface ContentComposerSubmitData {
   contentType: string
+  /**
+   * @deprecated Kein Mapper und kein Connector liest den Wert; die
+   * Sichtbarkeit folgt aus dem Space im Kopf des Formulars (shared-components,
+   * Edit-Regeln 3). Bleibt bis zum nächsten Major im Vertrag.
+   */
   isPublic: boolean
   data: WidgetData
 }
@@ -204,6 +239,12 @@ export interface ContentComposerProps {
   geocode?: Geocoder
   /** Reverse geocoder: fills the address field after a map pick. */
   reverseGeocode?: ReverseGeocoder
+  /**
+   * Geltende Zustände der Personenfelder mit Record-Kante (Event: Zusagen),
+   * je Prädikat des Feldes. Fehlt der Eintrag, kann der Connector die
+   * Aussagen nicht schreiben, und das Feld zeigt keine Zustände.
+   */
+  peopleStates?: Record<string, { live: PeopleWidgetRecord["live"] }>
   /** Structured people options: stores IDs, displays names. Takes precedence over peopleSuggestions. */
   peopleOptions?: PersonOption[]
   /** Simple string suggestions (legacy). Ignored when `peopleOptions` is provided. */
@@ -351,11 +392,13 @@ const DIRTY_FIELDS: readonly string[] = [
  */
 function dirtySignature(data: WidgetData, peopleKeys: readonly string[]): string {
   const out: Record<string, unknown> = {}
-  const fields = [...new Set([...DIRTY_FIELDS, ...peopleKeys])]
+  // Qualifier je Person zählen mit: Antippen am Chip ist eine Änderung.
+  const fields = [...new Set([...DIRTY_FIELDS, ...peopleKeys.flatMap((key) => [key, peopleQualifierKey(key), peopleStatementKey(key)])])]
   for (const field of fields) {
     const value = (data as Record<string, unknown>)[field]
     if (value === "" || value === null || value === undefined) continue
     if (Array.isArray(value) && value.length === 0) continue
+    if (typeof value === "object" && !Array.isArray(value) && Object.keys(value as object).length === 0) continue
     out[field] = value
   }
   return JSON.stringify(out)
@@ -719,6 +762,7 @@ export function ContentComposer({
   geocode,
   reverseGeocode,
   peopleOptions,
+  peopleStates,
   peopleSuggestions,
   tagSuggestions,
   tagQuickSuggestions,
@@ -982,7 +1026,9 @@ export function ContentComposer({
   const canSubmit = !!(data.title?.trim() || data.text?.trim() || (data.media && data.media.length > 0))
 
   const [submitting, setSubmitting] = React.useState(false)
-  const [submitError, setSubmitError] = React.useState<string | null>(null)
+  // Fehler beim Speichern: Banner unter dem Kopf; `reason` ist der Grund des
+  // Connectors, wenn er einen liefert (Error.cause).
+  const [submitError, setSubmitError] = React.useState<{ reason?: string } | null>(null)
 
   const handleSubmit = async () => {
     if (!canSubmit || submitting) return
@@ -991,7 +1037,11 @@ export function ContentComposer({
     try {
       await onSubmit({ contentType: selectedType, isPublic, data })
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "Speichern fehlgeschlagen.")
+      // Grund des Connectors: `reason` oder `cause` am Fehler (ohne es2022-Typen).
+      const carrier = (err ?? {}) as { reason?: unknown; cause?: unknown }
+      const cause = carrier.reason ?? carrier.cause
+      const reason = cause instanceof Error ? cause.message : typeof cause === "string" ? cause : undefined
+      setSubmitError(reason ? { reason } : {})
     } finally {
       setSubmitting(false)
     }
@@ -1025,6 +1075,8 @@ export function ContentComposer({
             : undefined
         }
       />
+
+      {submitError && <SaveErrorBanner reason={submitError.reason} onRetry={() => void handleSubmit()} busy={submitting} />}
 
       {/* Preview or Edit mode */}
       {isPreviewing ? (
@@ -1186,6 +1238,25 @@ export function ContentComposer({
                           options={peopleOptions}
                           suggestions={peopleSuggestions}
                           quickSuggestions={peopleQuickSuggestions}
+                          placeholder={field.placeholder}
+                          {...(field.record && field.predicate && peopleStates?.[field.predicate]
+                            ? {
+                                record: {
+                                  base: field.record.base,
+                                  values: field.record.values,
+                                  live: peopleStates[field.predicate].live,
+                                  changes: (data[peopleStatementKey(field.dataKey)] as Record<string, string | null> | undefined) ?? {},
+                                  onChangesChange: (next: Record<string, string | null>) => updateData(peopleStatementKey(field.dataKey), next),
+                                },
+                              }
+                            : {})}
+                          {...(field.qualifier
+                            ? {
+                                qualifier: field.qualifier,
+                                qualifiers: (data[peopleQualifierKey(field.dataKey)] as Record<string, string> | undefined) ?? {},
+                                onQualifiersChange: (next: Record<string, string>) => updateData(peopleQualifierKey(field.dataKey), next),
+                              }
+                            : {})}
                         />
                       ))}
                     </div>
@@ -1242,11 +1313,6 @@ export function ContentComposer({
         </div>
       )}
 
-      {submitError && (
-        <p className="pt-1 text-xs text-destructive" role="alert">
-          {submitError}
-        </p>
-      )}
       {/* Footer: actions (hidden in liveUpdate mode) */}
       {!liveUpdate && <div
         data-slot="edit-footer"
