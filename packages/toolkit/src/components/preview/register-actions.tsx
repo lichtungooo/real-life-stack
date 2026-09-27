@@ -5,8 +5,8 @@ import { Check } from "lucide-react"
 
 import { cn } from "../../lib/utils"
 import { VoteActions } from "../resonance/vote-actions"
-import type { EdgeEntry } from "./field-register"
-import { useSelfAction } from "./use-people-line"
+import { doneValue, type EdgeEntry, type FieldEntry } from "./field-register"
+import { useFollowUps, useSelfAction } from "./use-people-line"
 
 /**
  * Slot `actions` aus dem Register: Selbstaktionen als Pill-Zeile (C2) und die
@@ -19,7 +19,19 @@ import { useSelfAction } from "./use-people-line"
  * Verzweigt über das Widget der Kante, nie über den Typ. Rendert `null`, wenn
  * keine Aktion möglich ist — ohne Schreibrecht entfällt die Zeile ganz.
  */
-export function RegisterActions({ item, edges }: { item: Item; edges?: readonly EdgeEntry[] }) {
+export function RegisterActions({
+  item,
+  edges,
+  fields,
+  defaultStatus,
+}: {
+  item: Item
+  edges?: readonly EdgeEntry[]
+  /** Die Felder des Typs: Folgeaktionen lesen daraus ihr Status-Feld. */
+  fields?: readonly FieldEntry[]
+  /** Standard-Status beim Zurücknehmen von „Erledigt" (`composer.defaultStatus`). */
+  defaultStatus?: string
+}) {
   const rows = actionEdges(edges)
   if (rows.length === 0) return null
   return (
@@ -28,7 +40,7 @@ export function RegisterActions({ item, edges }: { item: Item; edges?: readonly 
         edge.widget === "vote" ? (
           <VoteActions key={`${edge.predicate}:${edge.itemRole}`} item={item} edge={edge} />
         ) : (
-          <SelfActionPills key={`${edge.predicate}:${edge.itemRole}`} item={item} edge={edge} />
+          <SelfActionPills key={`${edge.predicate}:${edge.itemRole}`} item={item} edge={edge} fields={fields} defaultStatus={defaultStatus} />
         ),
       )}
     </>
@@ -50,10 +62,31 @@ const capitalize = (word: string) => word.charAt(0).toLocaleUpperCase("de") + wo
 /**
  * Pill-Zeile einer Selbstaktion (C2): vor der Aktion neutral (die erste Pill
  * hervorgehoben), danach mein Zustand („✓ Zugesagt"). Auch `declined` ist ein
- * Zustand und bleibt als meiner sichtbar (Detail-Anatomie, Regel 7).
+ * Zustand und bleibt als meiner sichtbar (Detail-Anatomie, Regel 7). Jede
+ * Pill ist ein Umschalter; der zweite Klick auf meinen Zustand nimmt ihn
+ * zurück — idempotent, ein Doppelklick übernimmt nicht wieder.
+ *
+ * Deklariert die Kante eine Folgeaktion (`selfAction.followUps`, Entscheidung
+ * 27), steht nach meinem Zustand der Umschalter „Erledigt" — nur für mich,
+ * wenn ich die Selbstaussage habe, und nur mit Schreibrecht am Item:
+ * „✓ Übernommen · Erledigt", erledigt „✓ Übernommen · ✓ Erledigt". Abgeben
+ * lässt den Status, wie er ist.
  */
-export function SelfActionPills({ item, edge }: { item: Item; edge: EdgeEntry }) {
-  const { available, mine, act, error } = useSelfAction(item, edge)
+export function SelfActionPills({
+  item,
+  edge,
+  fields,
+  defaultStatus,
+}: {
+  item: Item
+  edge: EdgeEntry
+  fields?: readonly FieldEntry[]
+  defaultStatus?: string
+}) {
+  const { available, mine, act, withdraw, busy, error } = useSelfAction(item, edge)
+  const followUps = edge.selfAction?.followUps
+  const statusField = followUps ? fields?.find((f) => f.key === followUps.field) : undefined
+  const follow = useFollowUps(item, statusField, defaultStatus, edge)
   if (!available || !edge.selfAction) return null
   const values = edge.selfAction.qualifiers?.length
     ? edge.selfAction.qualifiers
@@ -61,6 +94,9 @@ export function SelfActionPills({ item, edge }: { item: Item; edge: EdgeEntry })
         .filter((v): v is NonNullable<typeof v> => !!v)
     : null
   const neutral = mine === undefined
+  const withFollowUp = !!followUps && !neutral && follow.available
+  const doneId = doneValue(statusField)
+  const isDone = withFollowUp && doneId !== undefined && item.data?.[followUps!.field] === doneId
 
   const pills = values
     ? values.map((value, index) => ({
@@ -93,16 +129,38 @@ export function SelfActionPills({ item, edge }: { item: Item; edge: EdgeEntry })
           key={pill.key}
           type="button"
           aria-pressed={pill.on}
-          onClick={() => void act(pill.value)}
+          // Mein Zustand nimmt beim zweiten Klick zurück; der Name sagt es.
+          aria-label={pill.on && followUps ? `${pill.label} – ${followUps.release}` : undefined}
+          disabled={pill.on && busy}
+          // Ohne Qualifier ist der zweite Klick die Rücknahme — idempotent
+          // (withdraw), ein Doppelklick übernimmt nicht wieder. Mit Qualifier
+          // entscheidet die Schreibkette gegen die laufende Absicht: Ein
+          // schneller Wechsel „vielleicht → zugesagt" darf nicht löschen.
+          onClick={() => void (pill.on && pill.value === undefined ? withdraw() : act(pill.value))}
           className={cn(PILL, pill.on ? PILL_ON : pill.primary ? PILL_PRIMARY : PILL_IDLE)}
         >
           {pill.on && <Check className="h-3.5 w-3.5" aria-hidden />}
           {pill.label}
         </button>
       ))}
-      {error && (
+      {withFollowUp && (
+        <button
+          type="button"
+          aria-pressed={isDone}
+          aria-label={isDone ? `${followUps!.complete.label} – ${followUps!.complete.undo}` : undefined}
+          disabled={follow.busy || busy}
+          data-follow-up="complete"
+          // Frisch geprüft beim Auslösen (#531): nur, wenn ich noch an der Kante stehe und der Status passt.
+          onClick={() => void follow.run(isDone ? "reopen" : "complete")}
+          className={cn(PILL, isDone ? PILL_ON : PILL_IDLE, "disabled:opacity-60")}
+        >
+          {isDone && <Check className="h-3.5 w-3.5" aria-hidden />}
+          {followUps!.complete.label}
+        </button>
+      )}
+      {(error || follow.error) && (
         <span role="alert" className="basis-full text-xs text-destructive">
-          Konnte nicht gespeichert werden. {error}
+          Konnte nicht gespeichert werden. {error ?? follow.error}
         </span>
       )}
     </div>

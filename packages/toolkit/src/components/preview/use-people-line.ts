@@ -28,7 +28,7 @@ import { useOptionalCurrentUser } from "../../hooks/use-auth"
 import { resolveCanCreate, resolveItemPermissions } from "../../hooks/use-item-permissions"
 import { writeOwnStatement } from "../../lib/own-statement"
 import { useVerifiedRelationRecords } from "../../hooks/use-votes"
-import type { EdgeEntry } from "./field-register"
+import { doneValue, reopenValue, type EdgeEntry, type FieldEntry } from "./field-register"
 import { peopleLine, peopleLineGroups, recordPeopleEdges, type PeopleLineEntry } from "./people-line"
 
 const NO_RECORDS: RelationRecord[] = []
@@ -175,6 +175,10 @@ export interface SelfActionState {
   mine: string | true | undefined
   /** Setzt meinen Zustand; derselbe Wert noch einmal nimmt die Aussage zurück. */
   act: (value?: string) => Promise<void>
+  /** Nimmt meine Aussage zurück — idempotent („✓ Übernommen" zurückgeben). */
+  withdraw: (guard?: (current: Item) => boolean) => Promise<void>
+  /** Ein Schreibvorgang läuft. */
+  busy: boolean
   /** Der letzte Schreibversuch scheiterte (Ablehnung des Connectors). */
   error: string | null
 }
@@ -249,23 +253,37 @@ export function useSelfAction(item: Item, edge: EdgeEntry): SelfActionState {
   const [error, setError] = useState<string | null>(null)
 
   const chain = useRef<Promise<void>>(Promise.resolve())
+  const [busy, setBusy] = useState(false)
   const act = useCallback(
-    (value?: string) => {
+    (value?: string, mode: "toggle" | "withdraw" = "toggle", guard?: (current: Item) => boolean) => {
       queued.current += 1
+      setBusy(true)
       const run = async () => {
         try {
           if (!available || !meId) return
           const current = intent.current && intent.current.context === context ? intent.current.value : mineRef.current
           const wanted = value ?? true
-          const next = current === wanted ? undefined : wanted
+          const next = mode === "withdraw" ? undefined : current === wanted ? undefined : wanted
+          // Zurücknehmen ohne eigene Aussage: nichts zu tun (Doppelklick auf meinen Zustand).
+          if (mode === "withdraw" && current === undefined) return
           intent.current = { value: next, context }
           setPending({ value: next, context })
           setError(null)
           try {
+            let written = true
             if (isRecord) {
-              await writeOwnStatement(connector, item, { predicate: edge.predicate, from: `global:${meId}`, key: edge.qualifier!.key, value: typeof next === "string" ? next : null })
+              // Die Bedingung gilt für das Trägeritem (etwa: noch offen); der
+              // Record liegt daneben.
+              const carrier = guard ? await connector.getItem(item.id) : null
+              if (guard && (!carrier || !guard(carrier))) written = false
+              else await writeOwnStatement(connector, item, { predicate: edge.predicate, from: `global:${meId}`, key: edge.qualifier!.key, value: typeof next === "string" ? next : null })
             } else {
-              await writeEmbedded(connector, item, edge, meId, next)
+              written = await writeEmbedded(connector, item, edge, meId, next, guard)
+            }
+            if (!written) {
+              // Nichts geschrieben: die Zeile folgt wieder dem geltenden Stand.
+              intent.current = null
+              setPending(null)
             }
           } catch (err) {
             intent.current = null
@@ -275,6 +293,7 @@ export function useSelfAction(item: Item, edge: EdgeEntry): SelfActionState {
         } finally {
           queued.current -= 1
           if (queued.current === 0) {
+            setBusy(false)
             intent.current = null
             setPending((p) => (p ? { ...p, settledAt: sourceRef.current } : p))
           }
@@ -287,20 +306,25 @@ export function useSelfAction(item: Item, edge: EdgeEntry): SelfActionState {
     [available, connector, context, edge, isRecord, item, meId],
   )
 
-  return { available, mine, act, error }
+  const withdraw = useCallback((guard?: (current: Item) => boolean) => act(undefined, "withdraw", guard), [act])
+  return { available, mine, act: (value?: string) => act(value), withdraw, busy, error }
 }
 
 /** Die eingebettete Kante: ich stehe daran (mit Wert) oder nicht (`undefined`). */
-async function writeEmbedded(connector: DataInterface, item: Item, edge: EdgeEntry, meId: string, next: string | true | undefined) {
+async function writeEmbedded(connector: DataInterface, item: Item, edge: EdgeEntry, meId: string, next: string | true | undefined, guard?: (current: Item) => boolean): Promise<boolean> {
   if (!isWritable(connector)) throw new Error("Dieser Speicher ist nur lesbar")
   const current = (await connector.getItem(item.id)) ?? item
+  // Die Bedingung gegen DENSELBEN Stand, aus dem die neuen Relationen entstehen.
+  if (guard && !guard(current)) return false
   const target = `global:${meId}`
   const relations = current.relations ?? []
   const key = edge.qualifier?.key
   const others = relations.filter((r) => !(r.predicate === edge.predicate && r.target === target))
   if (next === undefined) {
+    // Nichts zurückzunehmen: nicht schreiben (die Kante fehlt schon, #531).
+    if (others.length === relations.length) return false
     await connector.updateItem(item.id, { relations: others })
-    return
+    return true
   }
   const existing = relations.find((r) => r.predicate === edge.predicate && r.target === target)
   const meta = { ...(existing?.meta ?? {}), ...(key && typeof next === "string" ? { [key]: next } : {}) }
@@ -308,4 +332,77 @@ async function writeEmbedded(connector: DataInterface, item: Item, edge: EdgeEnt
   // An ihrer Stelle, damit die Reihenfolge der Kanten bleibt.
   const nextRelations = existing ? relations.map((r) => (r === existing ? mine : r)) : [...relations, mine]
   await connector.updateItem(item.id, { relations: nextRelations })
+  return true
+}
+
+export interface FollowUpState {
+  /** Schreibrecht am Item (Modi, Regel 1): Status ändern heißt das Item schreiben. */
+  available: boolean
+  busy: boolean
+  error: string | null
+  /** Schreibt den Erledigt-Wert (`complete`) oder den Standard-Status (`reopen`). */
+  run: (id: "complete" | "reopen") => Promise<void>
+}
+
+/**
+ * Folgeaktionen einer Selbstaktion am Status-Feld (Entscheidung 27):
+ * „Erledigt" schreibt den Wert, den das Register als erledigt markiert,
+ * sein zweiter Klick den Standard-Status. Geschrieben wird das Trägeritem nach
+ * dessen Rechten; das übrige `data` bleibt.
+ */
+export function useFollowUps(item: Item, statusField: FieldEntry | undefined, defaultStatus?: string, edge?: EdgeEntry): FollowUpState {
+  const connector = useConnector()
+  const { data: me } = useOptionalCurrentUser()
+  const meId = me?.id
+  const available = useMemo(
+    () => !!statusField && !!meId && isWritable(connector) && resolveItemPermissions(connector, item, meId).canEdit,
+    [connector, item, meId, statusField],
+  )
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const run = useCallback(
+    async (id: "complete" | "reopen") => {
+      if (!available || !statusField || !isWritable(connector)) return
+      const value = id === "complete" ? doneValue(statusField) : id === "reopen" ? reopenValue(statusField, defaultStatus) : undefined
+      if (value === undefined) return
+      setBusy(true)
+      setError(null)
+      try {
+        // #531: gegen den GELTENDEN Stand entscheiden, nicht gegen den Render.
+        // Bin ich nicht mehr an der Kante, oder passt der Status nicht mehr zur
+        // Aktion, wird nichts geschrieben; die Zeile folgt dem lebenden Item.
+        // Ein fremder Edit zwischen Lesen und Schreiben bleibt möglich (kein
+        // bedingtes Schreiben im DataInterface); das betrifft nur die Semantik
+        // der Folgeaktion, Mitglieder dürfen den Status ohnehin ändern.
+        const current = await connector.getItem(item.id)
+        if (!current || !meId) return
+        const status = (current.data as Record<string, unknown> | undefined)?.[statusField.key]
+        const isDone = status === doneValue(statusField)
+        if ((id === "complete" && isDone) || (id === "reopen" && !isDone)) return
+        if (edge && !(await stillMine(connector, current, edge, meId))) return
+        await connector.updateItem(item.id, { data: { ...(current.data ?? {}), [statusField.key]: value } })
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err))
+      } finally {
+        setBusy(false)
+      }
+    },
+    [available, connector, defaultStatus, edge, item, meId, statusField],
+  )
+  return { available, busy, error, run }
+}
+
+/** Stehe ich (noch) an der Kante? Eingebettet am Item, als Record über den RelationStore. */
+async function stillMine(connector: DataInterface, current: Item, edge: EdgeEntry, meId: string): Promise<boolean> {
+  const self = `global:${meId}`
+  if (edge.storage === "embedded") return (current.relations ?? []).some((r) => r.predicate === edge.predicate && r.target === self)
+  // Nur geltende eigene Aussagen (Leseregeln L1/L2): verifiziert valid oder trusted.
+  if (!hasRelationRecords(connector) || !hasClaimVerification(connector)) return false
+  const own = await connector.getRelationRecords({ predicate: edge.predicate, from: self, to: `item:${current.id}` })
+  for (const record of own) {
+    if (record.createdBy !== meId) continue
+    const verdict = await connector.verifyRecordClaim(record)
+    if (verdict === "valid" || verdict === "trusted") return true
+  }
+  return false
 }

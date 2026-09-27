@@ -200,7 +200,7 @@ describe("ContentTypeConfig aus dem Register (Spec 06, Regel 16)", () => {
 
   it("task: Status-Optionen und Beschriftungen aus den Feldeinträgen", () => {
     const task = contentTypeFromRegister("task")
-    expect(task.defaultWidgets).toEqual(["title", "text", "people", "date", "status", "tags"])
+    expect(task.defaultWidgets).toEqual(["title", "text", "people", "date", "item-relation", "status", "tags"])
     expect(task.statusOptions?.map((o) => o.id)).toEqual(["open", "in-progress", "done"])
     expect(task.widgetLabels).toMatchObject({ text: "Beschreibung", date: "Fällig" })
     expect(task.peopleRelations).toEqual([{ predicate: "assignedTo", label: "Zugewiesen", placeholder: "Zuweisen…" }])
@@ -276,6 +276,8 @@ const users: User[] = [
   { id: "u2", displayName: "Kollegin" },
 ]
 const connector = {
+  // Item-Kanten (C3) lösen ihre Ziele über observe auf; hier gibt es keine.
+  observe: () => createObservable<Item[]>([]),
   observeMembers: () => createObservable(users),
   observeCurrentUser: () => createObservable<User | null>(users[0]!),
   getAuthState: () => createObservable({ status: "authenticated", user: users[0] }),
@@ -358,12 +360,12 @@ describe("Meta-Box aus dem Register", () => {
     await unmount()
   })
 
-  it("Übergang (Regel 17): ein Typ mit eigenem detail/footer behält beide (Resonanz)", () => {
+  it("Übergang (Regel 17): die Aussage behält ihre Karten-Fußzeile; die Fassungen kommen seit S3 aus dem Register", () => {
     const statement = resolveTypePresentation("statement")
     expect(statement.footer).toBeDefined()
-    // Die Aussage hat keine Meta-Box: ihr Übergangs-Slot steht in `reverse`
-    // (Fassungen und „+ Variante", Design Anton), die Meta-Box kommt aus dem Register.
-    expect(statement.reverse?.name).toBe("StatementDetail")
+    // Fassungen und „+ Variante" sind die Liste `family` im Slot `reverse`
+    // (06, Regel 12); die Meta-Box kommt aus dem Register.
+    expect(statement.reverse?.name).toBe("RegisterReverseSlot")
     expect(statement.detail.name).toBe("RegisterDetail")
   })
 })

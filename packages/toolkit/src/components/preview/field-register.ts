@@ -43,6 +43,30 @@ export interface FieldOption {
    * „zugesagt" am Chip steht). Ohne Angabe steht `label` auf der Pill.
    */
   action?: string
+  /**
+   * Nur Optionen eines `status`-Felds: Dieser Wert heißt „erledigt". Höchstens
+   * eine Option je Feld. der Umschalter „Erledigt" (an und zurück) und die
+   * Leseform erledigter Ziele (C3, durchgestrichen) lesen ihn; die Spalten
+   * eines Kanban sind je App verschieden und sagen es nicht.
+   */
+  done?: boolean
+}
+
+/**
+ * Die Folgeaktion einer Selbstaktion (C2, Entscheidung 27, Anton): ein
+ * Umschalter „Erledigt" am Status-Feld, wie die Zusagen am Event. An schreibt
+ * die Option mit `done: true`, ein zweiter Klick den Standard-Status
+ * (`composer.defaultStatus`, sonst die erste offene Option). Abgeben ist der
+ * zweite Klick auf meinen Zustand („✓ Übernommen"). Zuweisung und Status sind
+ * getrennt: Wer eine erledigte Aufgabe abgibt, lässt sie erledigt.
+ */
+export interface SelfActionFollowUps {
+  /** `key` eines `status`-Felds desselben Typs, das eine Option mit `done: true` führt. */
+  field: string
+  /** Der Umschalter: Beschriftung („Erledigt") und seine Rücknahme für Screenreader („Als offen markieren"). */
+  complete: { label: string; undo: string }
+  /** Rücknahme meines Zustands für Screenreader („Übernahme zurückgeben"). */
+  release: string
 }
 
 export interface FieldEntry {
@@ -82,8 +106,12 @@ export interface EdgeEntry {
   pos: "meta" | "actions" | "list" | "badge"
   label: string
   qualifier?: { key: string; values: readonly FieldOption[] }
-  /** Selbstaktion (C2). */
-  selfAction?: { label: string; mine: string; qualifiers?: readonly string[] }
+  /**
+   * Selbstaktion (C2). `followUps`: was nach der Selbstaktion in derselben
+   * Zeile steht („✓ Übernommen · Erledigt"), nur für die Person
+   * mit der Selbstaussage (Entscheidung 27).
+   */
+  selfAction?: { label: string; mine: string; qualifiers?: readonly string[]; followUps?: SelfActionFollowUps }
   /** Nur für `itemRole: "to"` (Rückwärts-Liste). */
   list?: { filter?: "open" | "upcoming"; sort?: string }
   /** Nur `storage: "record"` (Regel 8). */
@@ -97,6 +125,40 @@ export interface EdgeEntry {
    * Ohne Angabe steht jede Personen-Kante in ihrer eigenen Zeile.
    */
   joins?: string
+}
+
+/**
+ * Folgeaktionen einer Selbstaktion (Entscheidung 27) brauchen ein Status-Feld
+ * desselben Typs mit genau einem Erledigt-Wert; die Rücknahme braucht dazu
+ * einen offenen Wert. Geprüft nach dem Vereinigen, weil Feld und Kante aus
+ * verschiedenen Beiträgen kommen dürfen.
+ */
+export function assertFollowUps(typeId: string, fields: readonly FieldEntry[] = [], edges: readonly EdgeEntry[] = [], defaultStatus?: string): void {
+  for (const edge of edges) {
+    const followUps = edge.selfAction?.followUps
+    if (!followUps) continue
+    const where = `Folgeaktionen an (${edge.predicate}, ${edge.itemRole}) an "${typeId}"`
+    const field = fields.find((f) => f.key === followUps.field && f.widget === "status")
+    const done = field?.options?.filter((o) => o.done) ?? []
+    if (!field || done.length !== 1) {
+      throw new Error(`Typ-Register: ${where} nennen "${followUps.field}", aber kein status-Feld mit genau einem Erledigt-Wert (Spec 06, Feld- und Kantenregister).`)
+    }
+    if (!reopenValue(field, defaultStatus)) {
+      throw new Error(`Typ-Register: ${where}: Die Rücknahme von „${followUps.complete.label}" braucht einen offenen Wert (Spec 06).`)
+    }
+  }
+}
+
+/** Der Erledigt-Wert eines Status-Felds, oder undefined. */
+export function doneValue(field: FieldEntry | undefined): string | undefined {
+  return field?.options?.find((o) => o.done)?.id
+}
+
+/** Der Wert beim Zurücknehmen von „Erledigt": der Standard-Status, sonst die erste offene Option. */
+export function reopenValue(field: FieldEntry | undefined, defaultStatus?: string): string | undefined {
+  const options = field?.options ?? []
+  if (defaultStatus && options.some((o) => o.id === defaultStatus && !o.done)) return defaultStatus
+  return options.find((o) => !o.done)?.id
 }
 
 /**
@@ -159,6 +221,9 @@ export function assertRegisterLists(
     // Regel 11: item-ref trägt ref, und nur item-ref.
     if (field.widget === "item-ref" && !field.ref) fail(layer, typeId, `Feld "${field.key}" (item-ref) braucht ref`)
     if (field.widget !== "item-ref" && field.ref) fail(layer, typeId, `Feld "${field.key}" trägt ref, ist aber kein item-ref`)
+    const doneOptions = (field.options ?? []).filter((o) => o.done)
+    if (doneOptions.length > 0 && field.widget !== "status") fail(layer, typeId, `Feld "${field.key}" markiert einen Erledigt-Wert, ist aber kein status`)
+    if (doneOptions.length > 1) fail(layer, typeId, `Feld "${field.key}" markiert mehr als einen Erledigt-Wert`)
   }
 
   const declared = new Set((manifest.get(typeId)?.relations ?? []).map(relationAffordanceKey))
@@ -317,6 +382,16 @@ const FORM_POSITIONS = ["head", "content", "meta", "tags", "badge"] as const
 const FORM_EDGE_WIDGETS: ReadonlySet<EdgeWidgetId> = new Set(["people", "item-relation"])
 
 /**
+ * Item-Kanten mit Schreibform im Formular: die eingebetteten ausgehenden, die
+ * das Item selbst trägt. Eine eingehende Kante („Braucht") liegt am anderen
+ * Item; sie zu schreiben hieße fremde Items umschreiben — im Formular dieses
+ * Items steht sie nicht (offen, siehe PR S3).
+ */
+export function isFormItemEdge(edge: EdgeEntry): boolean {
+  return edge.widget === "item-relation" && edge.storage === "embedded" && edge.itemRole === "from" && edge.pos === "meta"
+}
+
+/**
  * `defaultWidgets` aus Feldern und Kanten: `pos` head, content, meta, tags,
  * badge, ohne `edit: false`; `meta` in der Reihenfolge der Meta-Box, die
  * anderen Slots in Register-Reihenfolge. Ein Widget steht einmal, auch wenn
@@ -324,7 +399,7 @@ const FORM_EDGE_WIDGETS: ReadonlySet<EdgeWidgetId> = new Set(["people", "item-re
  */
 export function composerWidgetsFromRegister(fields: readonly FieldEntry[] = [], edges: readonly EdgeEntry[] = []): string[] {
   const formFields = fields.filter((x) => x.edit !== false)
-  const formEdges = edges.filter((e) => FORM_EDGE_WIDGETS.has(e.widget))
+  const formEdges = edges.filter((e) => FORM_EDGE_WIDGETS.has(e.widget) && (e.widget !== "item-relation" || isFormItemEdge(e)))
   const order: string[] = []
   const add = (widget: string) => {
     if (!order.includes(widget)) order.push(widget)

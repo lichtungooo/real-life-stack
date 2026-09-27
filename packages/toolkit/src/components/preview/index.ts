@@ -51,5 +51,15 @@ export {
   type ListEntry,
   type MenuActionEntry,
   type MetaRow,
+  type SelfActionFollowUps,
 } from "./field-register"
+export {
+  registerListQuery,
+  resolveListQuery,
+  type ListQuery,
+  type ListQueryResult,
+  type ListRowDecoration,
+} from "./list-queries"
+export { RegisterReverse } from "./register-reverse"
+export { ItemRefChip, isItemDone, type ItemRefChipProps } from "./item-ref-chip"
 export { RegisterMeta, RegisterPeopleStack, type RegisterMetaProps } from "./register-meta"

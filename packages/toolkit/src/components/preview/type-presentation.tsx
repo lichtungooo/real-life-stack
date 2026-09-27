@@ -52,6 +52,7 @@ import {
 
 import { ItemMetaRow } from "./item-meta-row"
 import {
+  assertFollowUps,
   assertJoins,
   assertRegisterLists,
   hasRegisterLists,
@@ -66,7 +67,10 @@ import {
 import { RegisterMeta, RegisterPeopleStack } from "./register-meta"
 import { RegisterActions, actionEdges } from "./register-actions"
 import { ItemProfileMeta, ItemProjectMeta, ItemResourceMeta } from "./item-type-meta"
-import { StatementDetail, StatementVariantLine } from "../resonance/statement-variants"
+import { StatementVariantLine, familyListQuery } from "../resonance/statement-variants"
+import { registerListQuery } from "./list-queries"
+import { RegisterReverse, hasReverseLists } from "./register-reverse"
+import { RegisterCardRefs } from "./register-card-refs"
 import { VoteBar } from "../resonance/vote-bar"
 import { MessageSquareQuote } from "lucide-react"
 
@@ -201,13 +205,23 @@ export interface ResolvedTypePresentation extends RegisterLists {
  */
 const REGISTER_DETAIL: ComponentType<ItemSlotProps> = function RegisterDetail({ item }) {
   const presentation = resolveTypePresentation(item.type)
-  return <RegisterMeta item={item} fields={readableFields(presentation.fields)} edges={presentation.edges} />
+  return <RegisterMeta item={item} fields={readableFields(presentation.fields)} edges={presentation.edges} lists={presentation.lists} />
 }
+
+/** Slot `reverse` aus dem Register: Rückwärts-Listen (Detail-Anatomie, Regel 8). */
+const REGISTER_REVERSE: ComponentType<ItemSlotProps> = function RegisterReverseSlot({ item }) {
+  const presentation = resolveTypePresentation(item.type)
+  return <RegisterReverse item={item} lists={presentation.lists} edges={presentation.edges} />
+}
+
+// Die benannten Abfragen der Toolkit-Typen (06, Regel 12): `family` definiert
+// die Resonanz-Spec (resonance.md → Varianten).
+registerListQuery("family", { lazy: () => familyListQuery })
 
 /** Slot `actions` aus dem Register (C2, C4). */
 const REGISTER_ACTIONS: ComponentType<ItemSlotProps> = function RegisterActionsSlot({ item }) {
   const presentation = resolveTypePresentation(item.type)
-  return <RegisterActions item={item} edges={presentation.edges} />
+  return <RegisterActions item={item} edges={presentation.edges} fields={presentation.fields} defaultStatus={presentation.composer?.defaultStatus} />
 }
 
 function EventPreview({ item }: ItemSlotProps) {
@@ -230,11 +244,11 @@ export const GENERIC_BADGE: TypeBadgeStyle = {
 /** The seven core types RLS ships (spec 06, "Core-Typ"). Labels and badge
  *  styles are verbatim from the previous ItemTypeBadge DEFAULT_CONFIG; the
  *  preview slots are the previous getItemPreviewAdornments bodies. */
-// Feld- und Kantenlisten der Toolkit-Typen (Spec 06, Register je Typ). S1
-// fuehrt nur Kanten, die das Manifest heute deklariert (Regel 1): `locatedAt`,
-// `partOf`, `blocks` und `attends` kommen erst mit ihrer Relation-Typ-
-// Definition. Felder, deren Widget es noch nicht gibt (`meetingLink` als url,
-// `variantOf` als item-ref), folgen mit S3/S4.
+// Feld- und Kantenlisten der Toolkit-Typen (Spec 06, Register je Typ). Nur
+// Kanten, die das Manifest deklariert (Regel 1): `partOf` und `blocks` seit S3
+// mit ihrer Relation-Typ-Definition (TOOLKIT_RELATION_PREDICATES); `locatedAt`
+// am Event folgt mit S4 (Kollision 7 aus #506). Felder, deren Widget es noch
+// nicht gibt (`meetingLink` als url), folgen mit S4.
 const TITLE: FieldEntry = { key: "title", widget: "title", pos: "head" }
 const DESCRIPTION: FieldEntry = { key: "description", widget: "text", pos: "content", label: "Beschreibung" }
 const TAGS: FieldEntry = { key: "tags", widget: "tags", pos: "tags" }
@@ -318,7 +332,8 @@ const CORE_PRESENTATION: readonly TypePresentationEntry[] = [
         options: [
           { id: "open", label: "To Do" },
           { id: "in-progress", label: "In Arbeit" },
-          { id: "done", label: "Erledigt" },
+          // Der Erledigt-Wert: Folgeaktionen und durchgestrichene Ziele lesen ihn.
+          { id: "done", label: "Erledigt", done: true },
         ],
       },
       TAGS,
@@ -335,8 +350,24 @@ const CORE_PRESENTATION: readonly TypePresentationEntry[] = [
         pos: "meta",
         label: "Zugewiesen",
         add: "Zuweisen…",
-        selfAction: { label: "Übernehmen", mine: "Übernommen" },
+        // Folgeaktion „Erledigt" nur für die Person, die übernommen hat; beides Umschalter (Entscheidung 27).
+        selfAction: {
+          label: "Übernehmen",
+          mine: "Übernommen",
+          followUps: {
+            field: "status",
+            complete: { label: "Erledigt", undo: "Als offen markieren" },
+            release: "Übernahme zurückgeben",
+          },
+        },
       },
+      // Item-Kanten (C3). `blocks` heißt von beiden Enden gleich: „Braucht"
+      // (eingehend) und „Ermöglicht" (ausgehend) (Entscheidung 19). Beide
+      // eingebettet am blockierenden Item; geschrieben wird im Formular die
+      // ausgehende Kante, die das Item selbst trägt.
+      { predicate: "blocks", itemRole: "to", storage: "embedded", widget: "item-relation", pos: "meta", label: "Braucht" },
+      { predicate: "blocks", itemRole: "from", storage: "embedded", widget: "item-relation", pos: "meta", label: "Ermöglicht", add: "@ Aufgabe suchen…" },
+      { predicate: "partOf", itemRole: "from", storage: "embedded", widget: "item-relation", pos: "meta", label: "Teil von", add: "@ Projekt suchen…" },
     ],
   },
   {
@@ -355,7 +386,27 @@ const CORE_PRESENTATION: readonly TypePresentationEntry[] = [
     id: "statement",
     label: "Aussage",
     badge: { icon: MessageSquareQuote, className: "bg-sky-50 text-sky-700 border-sky-200" },
-    fields: [{ ...TITLE, label: "Aussage" }, { ...DESCRIPTION, label: "Kontext" }, TAGS],
+    fields: [
+      { ...TITLE, label: "Aussage" },
+      { ...DESCRIPTION, label: "Kontext" },
+      // Feld mit Item-Verweis (B15, Regel 11): gehört zum signierten Wortlaut,
+      // darum ein Feld und keine Kante; nach dem Anlegen fest. Auf der Karte
+      // als Chip, im Detail durch die Liste `family` abgedeckt (`covers`).
+      {
+        key: "variantOf",
+        widget: "item-ref",
+        pos: "meta",
+        label: "Variante von",
+        edit: "fixed",
+        ref: { type: "statement", missing: "nicht verfügbare Aussage" },
+      },
+      TAGS,
+    ],
+    // Fassungen und „+ Variante" (resonance.md → Varianten; Entscheidung 24:
+    // die Aktion gehört zur Liste, nicht ins ⋮-Menü).
+    lists: [
+      { query: "family", label: "Fassungen", action: { id: "create-variant", label: "+ Variante" }, covers: ["variantOf"] },
+    ],
     // Die Stimme ist ein Qualifier am Record (08, Qualifier an Kanten). Im
     // Detail steht sie im Slot `actions` (Pills und Balken, C4); die Karte
     // zeigt im Übergang weiter den `footer` (Regel 17).
@@ -380,13 +431,6 @@ const CORE_PRESENTATION: readonly TypePresentationEntry[] = [
       },
     ],
     composer: { submitLabel: "Einbringen" },
-    // Ausführlich im Panel: Fassungen der Aussage und „Variante anlegen"
-    // (resonance.md → Varianten); `preview` bleibt frei, damit die Karten
-    // ihr Badge behalten.
-    detail: StatementDetail,
-    // Nach Antons Design hat die Aussage keine Meta-Box: Fassungen und
-    // „+ Variante" stehen als Rückwärts-Liste unter dem Inhalt.
-    detailSlot: "reverse",
     footer: StatementVotesFooter,
   },
 ]
@@ -586,6 +630,7 @@ function composePresentation(): Map<string, TypePresentationEntry> {
   for (const entry of composed.values()) {
     assertNoParallelComposerSource(entry)
     assertJoins(entry.id, entry.edges)
+    assertFollowUps(entry.id, entry.fields, entry.edges, entry.composer?.defaultStatus)
   }
   composedCache = composed
   return composed
@@ -628,10 +673,11 @@ export function resolveTypePresentation(typeId: string): ResolvedTypePresentatio
   // Typ ohne Feldliste behält die Vorschau-Zeile.
   const fromRegister = hasRegisterLists(entry) ? REGISTER_DETAIL : (entry.preview ?? GENERIC_DETAIL)
   const inReverse = entry.detail && entry.detailSlot === "reverse"
+  const reverse = inReverse ? entry.detail : hasReverseLists(entry.lists, entry.edges) ? REGISTER_REVERSE : undefined
   return {
     ...entry,
     detail: inReverse ? fromRegister : (entry.detail ?? fromRegister),
-    ...(inReverse ? { reverse: entry.detail } : {}),
+    ...(reverse ? { reverse } : {}),
     ...(actionEdges(entry.edges).length > 0 ? { actions: REGISTER_ACTIONS } : {}),
     generic: false,
   }
@@ -658,7 +704,15 @@ export function renderTypeFooter(item: Item): ReactNode {
  */
 export function renderTypeCardFooter(item: Item): ReactNode {
   const presentation = resolveTypePresentation(item.type)
-  if (presentation.footer) return createElement(presentation.footer, { item })
-  if (!presentation.edges?.length) return null
-  return createElement(RegisterPeopleStack, { item, edges: presentation.edges })
+  // Felder mit Item-Verweis stehen auf der Karte immer als Chip (B15, Regel 11).
+  const refs = (presentation.fields ?? []).some((f) => f.widget === "item-ref")
+    ? createElement(RegisterCardRefs, { item, fields: presentation.fields })
+    : null
+  const main = presentation.footer
+    ? createElement(presentation.footer, { item })
+    : presentation.edges?.length
+      ? createElement(RegisterPeopleStack, { item, edges: presentation.edges })
+      : null
+  if (!refs) return main
+  return createElement("div", { className: "flex w-full flex-col gap-1.5" }, main, refs)
 }
