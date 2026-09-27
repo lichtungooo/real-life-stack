@@ -339,7 +339,7 @@ interface ItemPreviewProps {
 - `comfortable` (Default) — Feed-Card-Form: Avatar 10×10, font-base Title, p-4 Spacing, Description wird angezeigt, Footer mit Border-Top.
 - `compact` — Kanban-/Liste-Form: Avatar 6×6, font-sm Title, p-3 Spacing, **Description wird ausgeblendet**, Footer ohne Border. Tauglich für dichte Board-Spalten, wo mehrere Cards zugleich sichtbar bleiben sollen.
 
-**Default-Body:** Author-Row (Avatar + Name + `RelativeTime`), Title, Description (`data.content ?? data.description`, max 4 Zeilen), Tags (chips, top-level `item.tags`, Color via `getTagColor`).
+**Default-Body:** Author-Row (Avatar + Name + `RelativeTime`), Title, Description (`data.content ?? data.description`, max 4 Zeilen), Tags (chips, top-level `item.tags`, Color via `getTagColor`). Tags und Urheber teilen eine Zeile, die nie umbricht: Es stehen so viele Tags, wie neben den Urheber passen, der Rest als „+N"; der Urheber behält seinen Platz rechts. Das gilt in beiden Dichten.
 
 **Slot-Konvention:** Module liefern modul-spezifische Cues über die drei Slots. Jeder Slot rendert **unabhängig vom Content** der Card — eine Card ohne Author kann trotzdem ein `headerAdornment` haben, eine Card ohne Title kann trotzdem ein `metaAdornment` zeigen. Slots und Datenfelder sind orthogonal. Adornments, die eigene Buttons enthalten, müssen `event.stopPropagation()` aufrufen, damit ein Button-Click nicht den Card-Click mit auslöst.
 
@@ -614,7 +614,7 @@ Jedes Item öffnet in derselben Anatomie. Sie besteht aus neun Slots in fester R
 
 | # | Slot | Lesen | Bearbeiten |
 |---|---|---|---|
-| 1 | `head` | Typ-Badge, Space-Badge (nur außerhalb des eigenen Space), ⋮ und ✕, Titel; bei `person` Avatar, Name und Untertitel | Badge „Bearbeiten" und ✕ bleiben; Titelfeld (bei `person` Avatar-Feld und Name) |
+| 1 | `head` | Typ-Badge, Space-Badge (nur außerhalb des eigenen Space), ⋮ und ✕, Titel; bei `person` Avatar, Name und Untertitel | Typ fest, Space wählbar (wenn der Connector verschieben kann, sonst fest) und ✕, siehe [Edit-Regeln](#edit-regeln), Regel 3; Titelfeld (bei `person` Avatar-Feld und Name) |
 | 2 | `meta` | Meta-Box: eine Zeile je Feld oder Kante | Schreibformen derselben Felder in derselben Reihenfolge |
 | 3 | `actions` | Selbstaktion als Pill-Zeile (C2) | entfällt |
 | 4 | `content` | Beschreibung (Markdown), Medien | Text-Widget, Medien-Widget |
@@ -668,7 +668,7 @@ Jedes Feld und jede Kante hat eine Lese- und eine Schreibform auf **einem** Date
 | B10 | `chips` | Chip-Reihe mit Label | Chips mit Vorschlägen und „+ eigenes" |
 | B11 | `avatar` | Kopf-Avatar | Bild wählen, Resize auf 512 px |
 | B12 | `contact` | Zeile mit Sprung „Anrufen" | Textfeld mit Sichtbarkeits-Hinweis |
-| B13 | `group` | Space-Badge im Kopf, nur außerhalb des Space | Space-Auswahl in der Fußzeile |
+| B13 | `group` | Space-Badge im Kopf, nur außerhalb des Space | Space-Auswahl im Kopf des Formulars |
 | B14 | `tags` | TagChips | Chips „+ Tag" |
 | B15 | `item-ref` | Chip in Typfarbe wie C3 („Variante von …") auf der Karte; im Detail nur ohne abdeckende Liste; fehlendes Ziel als Text („nicht verfügbare Aussage") | nur soweit der Typ es erlaubt; bei `edit: "fixed"` feste Anzeige (siehe unten) |
 
@@ -713,14 +713,15 @@ Regeln:
 
 ### Edit-Regeln
 
-1. Bearbeiten tauscht die Slots `meta` bis `comments` in derselben Card gegen die Schreibformen. Der Kopf bleibt mit Badge „Bearbeiten" und ✕.
-2. Die Reihenfolge der Schreibformen ist die Reihenfolge der Meta-Zeilen. Der Titel steht zuerst; die Beschreibung ist eingeklappt, wenn sie leer ist.
-3. Die Fußzeile hat Löschen links (hinter Bestätigung) und Abbrechen und Speichern rechts. Speichern schließt nur bei Erfolg. Ein Fehler erscheint inline, die Eingaben bleiben. Beim Schließen mit ungespeicherten Änderungen fragt ein Unsaved-Guard nach.
-4. Position, Reihenfolge und System-Felder (`pos: "module"` und `pos: "system"` im Register) erscheinen nicht im Formular.
-5. Ein Qualifier-Chip wechselt beim Antippen zum nächsten Wert, den das Register für die Kante deklariert.
-6. Eine Item-Relation (C3) wird über eine `@`-Suche über die Items des Space gesetzt. Der zweite Weg ist der Modul-Pick (Brett-Klick, Marker-Klick); ihn liefert das Modul.
-7. Es gibt keinen zweiten Editor neben dem Item-Edit.
-8. Ein Feld mit `edit: "fixed"` erscheint fest: sichtbar, nicht bearbeitbar, mit einem Symbol dafür. Beispiele: „Variante von" (Chip) und „Space" im Formular einer Variante.
+1. Bearbeiten tauscht die Slots `meta` bis `comments` in derselben Card gegen die Schreibformen. Kommentarliste und Kommentar-Eingabe entfallen. Das ✕ bleibt.
+2. Das Formular hat diese Reihenfolge: Kopf (Typ, Space) → Titel → Beschreibung → Felder in der Reihenfolge der Meta-Zeilen → Tags. Die Beschreibung ist als „+ Beschreibung" eingeklappt, wenn sie leer ist; ohne Titelfeld (Beitrag) ist sie der Inhalt und nie eingeklappt. Lesen bleibt Titel → Meta-Box → Beschreibung: Titel und Text schreibt man in einem Zug, beim Lesen stehen die Fakten zuerst.
+3. Typ und Space stehen im Kopf als kompakte Auswahlfelder. Der Space steht oben, weil er Sichtbarkeit sowie Personen- und Tag-Vorschläge bestimmt. Beim Erstellen sind Typ und Space wählbar. Beim Bearbeiten steht der Typ fest; der Space ist wählbar, wenn der Connector Items verschieben kann (`moveItemToGroup`). Ist ein Space Pflicht und keiner gesetzt (Übersicht), ist das Feld markiert.
+4. Die Fußzeile klebt am Ende der Card. Sie hat Löschen links (nur mit Recht, hinter Bestätigung) und Abbrechen und Speichern rechts. Speichern schließt nur bei Erfolg. Ein Fehler erscheint inline, die Eingaben bleiben. Beim Schließen mit ungespeicherten Änderungen fragt ein Unsaved-Guard nach.
+5. Position, Reihenfolge und System-Felder (`pos: "module"` und `pos: "system"` im Register) erscheinen nicht im Formular.
+6. Ein Qualifier-Chip wechselt beim Antippen zum nächsten Wert, den das Register für die Kante deklariert.
+7. Eine Item-Relation (C3) wird über eine `@`-Suche über die Items des Space gesetzt. Der zweite Weg ist der Modul-Pick (Brett-Klick, Marker-Klick); ihn liefert das Modul.
+8. Es gibt keinen zweiten Editor neben dem Item-Edit.
+9. Ein Feld mit `edit: "fixed"` erscheint fest: sichtbar, nicht bearbeitbar, mit einem Symbol dafür. Beispiele: „Variante von" (Chip) und „Space" im Formular einer Variante.
 
 ## Hooks
 
