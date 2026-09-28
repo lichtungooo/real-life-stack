@@ -11,6 +11,8 @@ import {
 } from "../preview/field-register"
 import type { ContentTypeConfig } from "./content-composer"
 import { createComposerMapping, withGroupOptions } from "./composer-mapping"
+import { valueFieldsFromRegister } from "./value-fields"
+import { optionTone } from "../../lib/field-values"
 
 /**
  * Die Inhaltstypen des Composers, ZUSAMMENGESETZT aus dem Typ-Register
@@ -69,7 +71,7 @@ function ausFeldliste(
   typeId: string,
   fields: readonly FieldEntry[],
   edges: readonly EdgeEntry[],
-): Pick<ContentTypeConfig, "defaultWidgets" | "peopleRelations" | "statusOptions" | "widgetLabels" | "textField" | "itemRelations" | "itemRefs"> {
+): Pick<ContentTypeConfig, "defaultWidgets" | "peopleRelations" | "statusOptions" | "widgetLabels" | "textField" | "itemRelations" | "itemRefs" | "valueFields"> {
   const widgetLabels: Record<string, string> = {}
   for (const field of fields) {
     if (field.label && !(field.widget in widgetLabels)) widgetLabels[field.widget] = field.label
@@ -127,16 +129,20 @@ function ausFeldliste(
   const itemRefs = fields
     .filter((x) => x.widget === "item-ref" && x.ref && x.edit !== false)
     .map((x) => ({ key: x.key, label: x.label ?? x.key, targetType: x.ref!.type, missing: x.ref!.missing, fixed: x.edit === "fixed" }))
+  // Wert-Felder (S4a: number, select, url, chips, contact), je Feld eines.
+  const valueFields = valueFieldsFromRegister(fields)
   const status = fields.find((x) => x.widget === "status" && x.options && x.options.length > 0)
   const body = fields.find((x) => x.widget === "text" && x.pos === "content")
   return {
     defaultWidgets: composerWidgetsFromRegister(fields, edges),
     ...(peopleRelations.length > 0 ? { peopleRelations } : {}),
-    ...(status ? { statusOptions: status.options!.map((o) => ({ id: o.id, label: o.label })) } : {}),
+    // Ton der Pille: tone der Option, sonst ihre Rolle, sonst die Typfarbe (B6).
+    ...(status ? { statusOptions: status.options!.map((o) => ({ id: o.id, label: o.label, tone: optionTone("status", o) })) } : {}),
     ...(Object.keys(widgetLabels).length > 0 ? { widgetLabels } : {}),
     ...(body && (body.key === "content" || body.key === "description") ? { textField: body.key } : {}),
     ...(itemRelations.length > 0 ? { itemRelations } : {}),
     ...(itemRefs.length > 0 ? { itemRefs } : {}),
+    ...(valueFields.length > 0 ? { valueFields } : {}),
   }
 }
 
