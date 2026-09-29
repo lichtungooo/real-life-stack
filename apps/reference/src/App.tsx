@@ -40,7 +40,7 @@ import { SpaceProfilPanel } from "./views/profil-panel"
 // LiveKit unter kreis.wir.ooo traegt Bild und Ton; `?kreis=lokal` waehlt den
 // Probe-Raum, der nur die Fenster auf einem Geraet verbindet, ohne Server.
 import { lokalerKreisRaum } from "@kreis/core"
-import { KreisRaumProvider } from "@kreis/ui"
+import { KreisRaumProvider } from "@kreis/ui/raum"
 import { liveKitKreisRaum, KREIS_WIR_OOO } from "@kreis/livekit"
 
 // Einmal gewaehlt, fuer die ganze Sitzung: Die Fabrik darf nicht bei jedem

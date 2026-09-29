@@ -6,11 +6,19 @@
 
 import { useCurrentUser, useGroups, type ModuleViewProps } from "@real-life-stack/toolkit"
 import { KreisRaumFlaeche } from "./kreis-raum-flaeche"
+import { useReiterWechsel } from "./reiter"
 
 export function KreisFlaeche({ groupId }: ModuleViewProps) {
   const { data: groups } = useGroups()
   const { data: user } = useCurrentUser()
   const space = (groups ?? []).find((g) => g.id === groupId)
   const raumName = space?.name ?? groupId ?? "kreis"
-  return <KreisRaumFlaeche raumName={raumName} vorschlagName={user?.displayName} />
+  const reiter = useReiterWechsel(groupId)
+  return (
+    <KreisRaumFlaeche
+      raumName={raumName}
+      vorschlagName={user?.displayName}
+      zurKonferenz={reiter.fuehrt("video") ? () => reiter.wechseln("video") : undefined}
+    />
+  )
 }

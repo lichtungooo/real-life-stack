@@ -46,7 +46,7 @@ Ein Prozess ist eine reine Beschreibung: Name, Herkunft, Empfehlungen, Schritte.
 Regeln:
 
 1. Top-level Item-Felder bleiben auf den RLS-Core beschränkt.
-2. Fachliche Felder liegen in `item.data` (`data.prozess`, beim Protokoll `data.text`, `data.raum`, `data.teilnehmer`).
+2. Fachliche Felder liegen in `item.data` (`data.prozess`, beim Protokoll `data.text`, `data.raum`, `data.teilnehmer`). Das Protokoll ist ein `post`: Einen Typ `note` fuehrt der Stack nicht.
 3. Der flüchtige Sitzungszustand wird nie als Item geschrieben.
 
 ## Capabilities
@@ -98,7 +98,7 @@ Eine App bindet den Adapter über einen Provider. Fehlt er, degradiert das Modul
 | Pause | im Raum | alle sehen die Pause mit Rückkehrzeit |
 | Schritt vor und zurück | Prozess läuft | alle sehen den neuen Schritt |
 | Kleingruppen einteilen | Schritt der Art `kleingruppen` | Einteilung für alle sichtbar |
-| Protokoll speichern | `ItemWriter` | ein Item vom Typ `note` mit `data.text` |
+| Protokoll speichern | `ItemWriter` | ein Beitrag (`post`) mit `data.title`, `data.text`, `data.raum`, `data.teilnehmer` (siehe [video.md](video.md)) |
 
 Regeln:
 

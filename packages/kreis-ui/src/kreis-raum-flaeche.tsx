@@ -38,10 +38,12 @@ const PAUSE_MINUTEN = 10
  * So laesst er sich allein pruefen und in jede Flaeche setzen.
  */
 export function KreisRaumFlaeche({
-  raumName, vorschlagName,
+  raumName, vorschlagName, zurKonferenz,
 }: {
   raumName: string
   vorschlagName?: string
+  /** Fuehrt der Space das Video, fuehrt dieser Weg dorthin, ohne die Verbindung zu trennen. */
+  zurKonferenz?: () => void
 }) {
   const kreis = useKreisVerbindung()
   if (!kreis) return <OhneRaum />
@@ -49,7 +51,7 @@ export function KreisRaumFlaeche({
     return <AndererRaum kreis={kreis} hier={raumName} vorschlagName={vorschlagName} />
   }
   if (kreis.zustand !== "drin") return <Vorraum kreis={kreis} raumName={raumName} vorschlagName={vorschlagName} />
-  return <ImKreis kreis={kreis} raumName={raumName} />
+  return <ImKreis kreis={kreis} raumName={raumName} zurKonferenz={zurKonferenz} />
 }
 
 /** Fehlt der Raum-Adapter, degradiert das Modul sichtbar (Spec, Capabilities). */
@@ -65,7 +67,7 @@ export function OhneRaum() {
 }
 
 /** Man sitzt schon in einem anderen Kreis: dort bleiben oder hierher wechseln. */
-function AndererRaum({ kreis, hier, vorschlagName }: { kreis: KreisVerbindung; hier: string; vorschlagName?: string }) {
+export function AndererRaum({ kreis, hier, vorschlagName }: { kreis: KreisVerbindung; hier: string; vorschlagName?: string }) {
   const meinName = kreis.teilnehmer.find((t) => t.ichSelbst)?.name ?? vorschlagName ?? ""
   return (
     <div className="mx-auto flex h-full max-w-md flex-col justify-center gap-3 p-6">
@@ -82,7 +84,18 @@ function AndererRaum({ kreis, hier, vorschlagName }: { kreis: KreisVerbindung; h
   )
 }
 
-function Vorraum({ kreis, raumName, vorschlagName }: { kreis: KreisVerbindung; raumName: string; vorschlagName?: string }) {
+export function Vorraum({
+  kreis, raumName, vorschlagName, titel = "Kreis",
+  einleitung = "Hier trifft sich der Kreis, auch wenn alle weit verstreut leben. Ein Prozess gibt dem Gespräch seine Form.",
+  knopf = "Den Kreis betreten",
+}: {
+  kreis: KreisVerbindung
+  raumName: string
+  vorschlagName?: string
+  titel?: string
+  einleitung?: string
+  knopf?: string
+}) {
   const [name, setName] = useState(vorschlagName ?? "")
   useEffect(() => {
     if (vorschlagName) setName((jetzt) => jetzt || vorschlagName)
@@ -91,10 +104,10 @@ function Vorraum({ kreis, raumName, vorschlagName }: { kreis: KreisVerbindung; r
   return (
     <div className="mx-auto flex h-full w-full max-w-md flex-col justify-center gap-5 p-6">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Kreis</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{titel}</p>
         <h2 className="text-2xl font-semibold text-foreground">{raumName}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Hier trifft sich der Kreis, auch wenn alle weit verstreut leben. Ein Prozess gibt dem Gespräch seine Form.
+          {einleitung}
         </p>
       </div>
       <form
@@ -117,7 +130,7 @@ function Vorraum({ kreis, raumName, vorschlagName }: { kreis: KreisVerbindung; r
           disabled={kreis.zustand === "verbindet"}
           className="rounded-lg bg-primary px-4 py-2.5 font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-60"
         >
-          {kreis.zustand === "verbindet" ? "Einen Moment …" : "Den Kreis betreten"}
+          {kreis.zustand === "verbindet" ? "Einen Moment …" : knopf}
         </button>
         {kreis.fehler && <p className="text-sm text-rose-600">{kreis.fehler}</p>}
       </form>
@@ -142,7 +155,7 @@ function StabIcon({ className }: { className?: string }) {
   )
 }
 
-function ImKreis({ kreis, raumName }: { kreis: KreisVerbindung; raumName: string }) {
+function ImKreis({ kreis, raumName, zurKonferenz }: { kreis: KreisVerbindung; raumName: string; zurKonferenz?: () => void }) {
   const { raum, teilnehmer, ich, sitzung, prozess, jetzt, handle } = kreis
   const anwesend = useMemo(() => teilnehmer.map((t) => t.id), [teilnehmer])
   const meinName = teilnehmer.find((t) => t.id === ich)?.name ?? "Gast"
@@ -233,6 +246,11 @@ function ImKreis({ kreis, raumName }: { kreis: KreisVerbindung; raumName: string
         <span className="text-xs text-muted-foreground">
           {teilnehmer.length} {teilnehmer.length === 1 ? "Mensch" : "Menschen"} im Kreis
         </span>
+        {zurKonferenz && (
+          <button type="button" onClick={zurKonferenz} className="ml-auto flex items-center gap-1.5 self-center rounded-lg bg-muted px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/70">
+            <Video className="h-3.5 w-3.5" /> zur Konferenz
+          </button>
+        )}
       </header>
 
       <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto p-4 lg:grid-cols-[minmax(0,1fr)_360px]">

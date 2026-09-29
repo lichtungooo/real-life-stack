@@ -17,7 +17,8 @@
         "calendar",
         "map",
         "baukasten",
-        "kreis"
+        "kreis",
+        "video"
       ],
       "isNetwork": true,
       "primaryColor": "#b16105",
@@ -55,7 +56,8 @@
         "calendar",
         "map",
         "baukasten",
-        "kreis"
+        "kreis",
+        "video"
       ],
       "isNetwork": true,
       "spaceKinds": [
@@ -132,7 +134,8 @@
         "calendar",
         "map",
         "baukasten",
-        "kreis"
+        "kreis",
+        "video"
       ],
       "isNetwork": true,
       "network": "30455be1-a5f9-465d-8d19-a72dd8da2d83",

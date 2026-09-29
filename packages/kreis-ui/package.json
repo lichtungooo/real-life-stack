@@ -13,6 +13,16 @@
       "types": "./dist/src/index.d.ts",
       "development": "./src/index.ts",
       "import": "./dist/src/index.js"
+    },
+    "./flaechen": {
+      "types": "./dist/src/flaechen.d.ts",
+      "development": "./src/flaechen.ts",
+      "import": "./dist/src/flaechen.js"
+    },
+    "./raum": {
+      "types": "./dist/src/raum.d.ts",
+      "development": "./src/raum.ts",
+      "import": "./dist/src/raum.js"
     }
   },
   "files": [
@@ -30,7 +40,8 @@
   },
   "peerDependencies": {
     "lucide-react": "*",
-    "react": "^18 || ^19"
+    "react": "^18 || ^19",
+    "react-router-dom": "^7"
   },
   "devDependencies": {
     "@types/react": "^19.0.2",
@@ -40,6 +51,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "@types/react-dom": "^19.0.2",
-    "lucide-react": "^0.468.0"
+    "lucide-react": "^0.468.0",
+    "react-router-dom": "^7.1.1"
   }
 }

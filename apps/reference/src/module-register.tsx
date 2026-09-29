@@ -6,8 +6,8 @@
 // eigene Module einfuehrt (`definitions`) oder eine Toolkit-Flaeche
 // ausdruecklich ersetzt (`extensions` mit `replaces: ["view"]`).
 
-import { Blocks, CircleDot, Sparkles } from "lucide-react"
-import { KreisFlaeche } from "@kreis/ui"
+import { Suspense, lazy } from "react"
+import { Blocks, CircleDot, Sparkles, Video } from "lucide-react"
 import {
   TOOLKIT_DEFINITION,
   composeModules,
@@ -18,6 +18,15 @@ import { BaukastenView } from "./views/baukasten-view"
 import { CompanionView } from "./views/companion-view"
 
 const Baukasten = ({ groupId }: ModuleViewProps) => <BaukastenView groupId={groupId} />
+
+// Kreis und Video werden nachgeladen statt mitgeliefert: Wer den Reiter nie
+// oeffnet, laedt ihre Flaechen nicht. Die Verbindung selbst (Provider in
+// App.tsx) ist klein und bleibt im Hauptstueck.
+const KreisLazy = lazy(() => import("@kreis/ui/flaechen").then((m) => ({ default: m.KreisFlaeche })))
+const VideoLazy = lazy(() => import("@kreis/ui/flaechen").then((m) => ({ default: m.VideoFlaeche })))
+const laedt = <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Einen Moment …</div>
+const Kreis = (p: ModuleViewProps) => <Suspense fallback={laedt}><KreisLazy {...p} /></Suspense>
+const VideoModul = (p: ModuleViewProps) => <Suspense fallback={laedt}><VideoLazy {...p} /></Suspense>
 
 // Einmal komponiert, einmal gebunden, danach unveraenderlich (Spec 01, Regel 3).
 export const MODULE_REGISTRY = composeModules([
@@ -46,7 +55,10 @@ export const MODULE_REGISTRY = composeModules([
   // Wechsel zur Karte die Sitzung nicht beenden darf: Wer im Kreis sitzt,
   // bleibt drin, auch wenn er kurz etwas nachsieht.
   { name: "kreis", definitions: [
-    { id: "kreis", label: "Kreis", icon: CircleDot, fill: "bleed", keepMounted: true, view: KreisFlaeche },
+    { id: "kreis", label: "Kreis", icon: CircleDot, fill: "bleed", keepMounted: true, view: Kreis },
+    // Das Video (docs/spec/modules/video.md): dieselbe Verbindung wie der
+    // Kreis, und Gastgeber fuer jedes andere Modul des Space.
+    { id: "video", label: "Video", icon: Video, fill: "bleed", keepMounted: true, view: VideoModul },
   ] },
   { name: "app", definitions: [], extensions: [] },
 ])
