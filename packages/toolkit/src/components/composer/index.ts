@@ -26,8 +26,24 @@ export {
   type PeopleField,
   type PeopleRelationSource,
 } from "./people-relations"
+export { itemRelationDataKey } from "./item-relations"
 export {
   ComposerFullscreenShell,
   type ComposerFullscreenShellProps,
 } from "./composer-fullscreen-shell"
 export { ItemComposer, type ItemComposerProps } from "./item-composer"
+export {
+  createComposerMapping,
+  textFieldFor,
+  withGroupOptions,
+  type ComposerMapping,
+} from "./composer-mapping"
+export { toDateInputValue, toStoredDateTime } from "./date-widget-state"
+export {
+  contentTypeFromRegister,
+  contentTypesFromRegister,
+  resolveContentType,
+  pickContentTypes,
+  mapComposerSubmission,
+  itemToComposerData,
+} from "./content-types"

@@ -18,23 +18,23 @@ Der Toolkit-Code muss die RLS-Taxonomie nicht in jedem Ordnernamen exakt spiegel
 
 | RLS-Ebene | Typische Code-Orte | Beispiele |
 |---|---|---|
-| App Shell | `packages/toolkit/src/components/layout/`, `auth/`, `contacts/`, `debug/` | Navbar, BottomNav, WorkspaceSwitcher, UserMenu, ProfileDialog, ContactsDialog, VerificationDialog, DebugDashboard |
-| Space Modules | `packages/toolkit/src/components/feed/`, `kanban/`, `calendar/`, `map/` | Feed, Kanban / Tasks, Calendar, Map |
-| Module Components | geteilte Top-Level-Ordner (`comments/`, `reactions/`, `composer/`, `detail/`, `preview/`) oder Unterordner innerhalb von Space Modules | ItemPreview + Adornments (ItemTypeBadge, ItemMetaRow, ItemCommentCount), ContentComposer, ReactionBar, CommentSection, ItemDetailPanel, KanbanCard, KanbanToolbar |
+| App Shell | `packages/toolkit/src/components/layout/`, `auth/`, `contacts/`, `debug/` | Navbar, BottomNav, WorkspaceSwitcher, UserMenu, ProfilePanelContent, ContactsDialog, VerificationDialog, DebugDashboard |
+| Space Modules | `packages/toolkit/src/components/feed/`, `kanban/`, `calendar/`, `map/`, `resonance/`, `lens/` (CollectionView als Modul `collection`), `graph/` | Feed, Kanban / Tasks, Calendar, Map, Resonance, Collection, Graph |
+| Module Components | geteilte Top-Level-Ordner (`comments/`, `reactions/`, `composer/`, `detail/`, `preview/`) oder Unterordner innerhalb von Space Modules | ItemPreview + Adornments (ItemTypeBadge, ItemMetaRow, ItemCommentCount), ContentComposer, ReactionBar, CommentSection, ItemDetailPanel, KanbanCard |
 | Read-only Lenses | `packages/toolkit/src/components/lens/` | CollectionView (List/Grid-Dichte), ListView, GridView; Apps kombinieren sie mit ihren Presets |
 | Primitives | `packages/toolkit/src/components/primitives/` | Button, Card, Dialog, Input, Tabs |
-| Hooks | `packages/toolkit/src/hooks/` | useItems, useComments, useReactions, useConfirmations |
-| Logik-Helfer (modulübergreifend) | `packages/toolkit/src/lib/` | applyItemListFilter (Display-Filter), parseEventDate / isAllDayDate |
+| Hooks | `packages/toolkit/src/hooks/` | useItems, useComments, useReactions, useVotes |
+| Logik-Helfer (modulübergreifend) | `packages/toolkit/src/lib/` | filterByAssignee (Zuweisungsfilter), itemTitle / itemText, parseEventDate / isAllDayDate, moduleForItem |
 | Logik-Helfer (modulgebunden) | im jeweiligen Modul-Ordner, z.B. `components/kanban/reorder.ts` | computeColumnReorder, normalizeStatus |
 
 In der Reference-App spiegelt sich die Taxonomie so:
 
 | App-Ebene | Code-Ort |
 |---|---|
-| Komposition (Provider, AuthGate, App Shell) | `apps/reference/src/App.tsx` |
-| Space-Module-Instanzen (eine Datei pro Modul) | `apps/reference/src/views/feed-view.tsx`, `kanban-view.tsx`, `calendar-view.tsx`, `map-view.tsx` |
-| Modul-Dispatch (welches Modul rendert, wie es den Space füllt) | `apps/reference/src/views/module-outlet.tsx` |
-| Space/Module-Routing (URL → aktiver Space + Modul) | `apps/reference/src/hooks/use-workspace-routing.ts` |
+| Komposition (AuthGate, Connector, App-Eigenes) | `apps/reference/src/App.tsx` — der Rahmen selbst: `packages/toolkit/src/components/frame/app-frame.tsx` + `components/router/routed-app-frame.tsx` |
+| Space-Module-Instanzen (eine Datei pro Modul) | `apps/reference/src/views/feed-view.tsx`, `kanban-view.tsx`, `calendar-view.tsx`, `map-view.tsx`, `resonance-view.tsx`, `collection-view.tsx`, `graph-view.tsx` |
+| Modul-Dispatch (welches Modul rendert, wie es den Space füllt) | `packages/toolkit/src/components/host/module-outlet.tsx`, gerendert vom Rahmen `components/frame/app-frame.tsx` |
+| Space/Module-Routing (URL → aktiver Space + Modul) | `packages/toolkit/src/components/router/workspace-routing.tsx` (`@real-life-stack/toolkit/router`; bis rls#429 in der Referenz-App) |
 
 Regeln:
 
@@ -51,23 +51,41 @@ Storybook soll die RLS-Taxonomie sichtbar machen. Story-Titel verwenden diese To
 
 ```text
 RLS
+├─ Einstieg
+├─ App
 ├─ App Shell
-├─ Space Modules
-├─ Module Components
-└─ Primitives
+├─ Spaces
+├─ Module
+├─ Items
+└─ Grundlagen
 ```
 
-Namensregeln:
+Die Navigation folgt der UI-Logik: zuerst die komplette App und ihr Kontext,
+danach Module, gemeinsame Item-Darstellungen und zuletzt kleine Bausteine.
+Innerhalb eines Moduls steht die Übersicht vor Komponenten und Zuständen.
+„Modul“ ist der aktuelle Oberbegriff; „Linse“ bleibt nur als historischer Alias
+beziehungsweise bestehender Code-Name auffindbar. „Ansicht“ bezeichnet eine
+Darstellungsvariante. Allgemeine Item-Inhalte heißen „Detailansicht“;
+„Personenprofil“ benennt den fachlichen Spezialfall.
 
-| Ebene | Storybook-Prefix | Beispiel |
-|---|---|---|
-| App Shell | `RLS/App Shell/...` | `RLS/App Shell/Navigation/Navbar` |
-| Space Module Overview | `RLS/Space Modules/{Module}/Overview` | `RLS/Space Modules/Kanban/Overview` |
-| Space Module Component | `RLS/Space Modules/{Module}/{Component}` | `RLS/Space Modules/Kanban/Board` |
-| Geteilte Module Component | `RLS/Module Components/{Group}/{Component}` | `RLS/Module Components/Reactions/ReactionBar` |
-| Primitive | `RLS/Primitives/{Component}` | `RLS/Primitives/Button` |
+Jede Story-Datei trägt ihre Id ausdrücklich in `meta.id`, nach dem Schema
+`rls-<abschnitt>-<seite>` (seit rls#436 durchgängig Englisch, z. B.
+`rls-app-04-loading-contract`, `rls-foundations-hooks`). URLs bleiben damit
+stabil, auch wenn Titel oder Dateien umziehen. Ob eine Id existiert, prüfen
+die Skripte: `scripts/site/check.mjs` gegen den gebauten Storybook-Index,
+`scripts/hooks/lib.mjs` (`storyIds()`) aus dem Quelltext.
 
-Storybook darf dieselbe Komponente mehrfach zeigen, wenn dadurch unterschiedliche RLS-Kontexte klarer werden. Beispiel: `ReactionBar` kann als generische Module Component erscheinen und später zusätzlich in einer Feed-Overview verwendet werden.
+Am 19.09.2026 sind fünf Stories entfallen: PostCard, StatCard, ActionCard,
+KanbanToolbar und das GridView-Duplikat (Begründung in rls#416). Neu
+hinzugekommen sind `RLS/App shell/The module surface`,
+`RLS/Foundations/Hooks` und `RLS/Foundations/All hooks`.
+
+`RLS/Foundations/All hooks` ist erzeugt: `scripts/hooks/generate.mjs` liest den
+Dokumentationskommentar über jedem öffentlichen Hook (erster Absatz = Frage,
+`@answers`, `@without`, `@group`, `@see story`, `@see spec`) und schreibt
+`src/hooks/all-hooks.json`, das die Seite rendert. `pnpm check:hooks` fällt in
+CI, wenn ein Hook ohne vollständigen Block exportiert wird, eine Story-Id oder
+Spec-Datei fehlt oder die Datei nicht mehr zum Code passt (`pnpm docs:hooks`).
 
 ## Overview Stories
 
@@ -89,9 +107,9 @@ Kanban / Tasks ist das erste abgerundete Referenzmodul für diese Mapping-Regeln
 
 | Spec-Begriff | Code | Storybook | Daten-/Capability-Annahme |
 |---|---|---|---|
-| Kanban / Tasks Space Module | `packages/toolkit/src/components/kanban/kanban-module.stories.tsx` | `RLS/Space Modules/Kanban/Overview` | Items im Current Space mit Kanban-kompatiblem `data.status` |
-| Board-Layout | `kanban-board.tsx` | `RLS/Space Modules/Kanban/Board` | `Item.data[statusField]` (Default `status`), schreibbar zusätzlich `Item.data.order`, optional `relations: assignedTo` und `users` |
-| Filter/Werkzeuge | `kanban-toolbar.tsx` | `RLS/Space Modules/Kanban/Toolbar` | Items, optionale `users`, optionaler `currentUserId`; Mutationen werden über Callbacks/Capabilities angebunden |
+| Kanban / Tasks Space Module | `packages/toolkit/src/components/kanban/kanban-module.stories.tsx` | `RLS/Modules/Kanban/Overview` | Items im Current Space mit Kanban-kompatiblem `data.status` |
+| Board-Layout | `kanban-board.tsx` | `RLS/Modules/Kanban/Board` | `Item.data[statusField]` (Default `status`), schreibbar zusätzlich `Item.data.order`, optional `relations: assignedTo` und `users` |
+| Filter/Werkzeuge | `kanban-toolbar.tsx` | Story entfallen (19.09.2026); Kanban baut seinen Kopf aus `ModuleToolbar` | Items, optionale `users`, optionaler `currentUserId`; Mutationen werden über Callbacks/Capabilities angebunden |
 | Task-Erstellung/Bearbeitung | `kanban-task-create.tsx` | Modulkomponente; in späteren Stories direkt prüfbar | `ItemWriter` für persistente Erstellung/Bearbeitung; App entscheidet über erlaubte Felder |
 | Kartendetail | `kanban-card-detail.tsx` | Modulkomponente; in späteren Stories direkt prüfbar | Item-Daten, optional `users`, Tags, Status und Assignee-Relations |
 
@@ -104,11 +122,14 @@ Mutations-Callbacks ein.
 
 | Spec-Begriff | Code | Storybook | Daten-/Capability-Annahme |
 |---|---|---|---|
-| Generische Sammlungs-Linse | `components/lens/collection-view.tsx` | `RLS/Module Components/Lenses/CollectionView` | alle Nicht-Relation-Items; session-lokaler Listen-/Raster-Toggle; `activeItemId?` und optionaler Sichtbereichs-Inset aus der Shell |
-| Generische Listen-Projektion | `components/lens/list-view.tsx` | `RLS/Module Components/Lenses/ListView` | Baustein der CollectionView: kompakte Dichte ohne lokalen Filter |
+| Generische Sammlungs-Linse | `components/lens/collection-view.tsx` | `RLS/Modules/Shared views/Collection view` | alle Nicht-Relation-Items; session-lokaler Listen-/Raster-Toggle; `activeItemId?` und optionaler Sichtbereichs-Inset aus der Shell |
+| Generische Listen-Projektion | `components/lens/list-view.tsx` | `RLS/Modules/Shared views/Collection view` (eigene Story entfallen 22.09.2026, Baustein der CollectionView) | Baustein der CollectionView: kompakte Dichte ohne lokalen Filter |
 | Generische Linsen-Karte | `components/preview/item-preview.tsx` + `preview/item-type-meta.tsx` | Linsen-Stories | ItemPreview: List kompakt, Grid komfortabel; `active` nutzt den geteilten Glow; Typ-Meta für Person, Projekt, Ressource und Event sowie Typ-Badge-Fallback |
-| Typspezifische Raster-Projektion | `components/lens/grid-view.tsx` | `RLS/Module Components/Lenses/GridView` | Baustein der CollectionView: komfortable Dichte mit geteilten Preview-Adornments |
-| Read-only Karten-Linse | `components/lens/map-lens.tsx` | `RLS/Module Components/Lenses/MapLens` | Nicht-Relation-Items mit gültigem GeoJSON-`Point`; `createAdapter` erzeugt pro Mount eine frische Engine; ein Marker zentriert im Shell-Sichtbereich bei Zoom 16, mehrere nutzen `fitBounds`; `viewportResetKey` re-armt beim Bestandswechsel; kein lokaler Filter |
+| Kartendichten | `components/preview/item-preview.tsx` | `RLS/Items/Item preview/ItemPreview` → „Densities side by side", „Dense — twelve-column grid" | Ein Item in allen vier Dichten; `dense` für Matrix-Flächen mit 12+ Spalten |
+| Zugewiesene, zwei Formen | `components/preview/item-assignees.tsx` | `RLS/Items/Item preview/ItemPreview` → „Assignees — solid and outline, with and without photo" | Resolved User-Liste, je Eintrag optional `variant`; mit und ohne Profilfoto, `size="xs"` |
+| Typspezifische Raster-Projektion | `components/lens/grid-view.tsx` | eigene Story entfallen (19.09.2026); sichtbar in `RLS/Modules/Shared views/Collection view` | Baustein der CollectionView: komfortable Dichte mit geteilten Preview-Adornments |
+| Read-only Karten-Linse | `components/lens/map-lens.tsx` | `RLS/Modules/Map/MapView` (eigene MapLens-Story entfallen 22.09.2026; `lens-auto-fit`) | Nicht-Relation-Items mit gültigem GeoJSON-`Point`; `createAdapter` erzeugt pro Mount eine frische Engine; ein Marker zentriert im Shell-Sichtbereich bei Zoom 16, mehrere nutzen `fitBounds`; `viewportResetKey` re-armt beim Bestandswechsel; kein lokaler Filter |
+| MapView | `components/map/map-view.tsx` | `RLS/Modules/Map/MapView` | Die Kartenfläche selbst; rendert MapLens intern |
 
 Die CollectionView und die Map-Linse sind presentationale, read-only Module
 Components. List/Grid sind deren wiederverwendbare Dichte-Projektionen und komponieren keine eigene Card-Fläche; die Map-Linse
@@ -126,12 +147,12 @@ Feed ist das Referenzmodul für einen generischen Aktivitäts- und Inhaltsstrom 
 
 | Spec-Begriff | Code | Storybook | Daten-/Capability-Annahme |
 |---|---|---|---|
-| Feed Space Module | `packages/toolkit/src/components/feed/feed-module.stories.tsx` | `RLS/Space Modules/Feed/Overview` | Feed-fähige Items im Current Space, sortiert nach `createdAt` |
+| Feed Space Module | `packages/toolkit/src/components/feed/feed-module.stories.tsx` | `RLS/Modules/Feed/Overview` | Feed-fähige Items im Current Space, sortiert nach `createdAt` |
 | Feed Item | `preview/item-preview.tsx` (shared) + Adornments (`item-type-badge.tsx`, `item-meta-row.tsx`, `item-comment-count.tsx`) | In der Overview als Standardprojektion verwendet | Generisches `Item` mit `data.title`, `data.content` oder `data.description`; type-spezifische Metadaten kommen über Adornments |
-| Composer | `feed/feed-composer-trigger.tsx` (Feed-Trigger), `composer/content-composer.tsx` (geteilt) | `RLS/Module Components/ContentComposer` und Feed-Overview | Persistente Erstellung braucht später `ItemWriter`; die Story hält neue Items nur lokal |
-| Reaktionen | `components/reactions/` (geteilt) | `RLS/Module Components/Reactions/...`; in der Overview als statischer Slot sichtbar | Optional über `RelationCapable`/`reactsTo`; Feed bleibt nutzbar ohne Relations |
-| Kommentare | `components/comments/` (geteilt) | `RLS/Module Components/Comments/CommentSection` | Optional über `RelationCapable`/`commentOn`; `ItemCommentCount` zeigt die Anzahl im Footer |
-| PostCard | `post-card.tsx` | `RLS/Module Components/Feed/PostCard` | Spezifische ältere Post-Projektion; nicht die kanonische generische Feed-Projektion |
+| Composer | `feed/feed-composer-trigger.tsx` (Feed-Trigger), `composer/content-composer.tsx` (geteilt) | `RLS/Items/Create and edit/ContentComposer` und Feed-Overview | Persistente Erstellung braucht später `ItemWriter`; die Story hält neue Items nur lokal |
+| Reaktionen | `components/reactions/` (geteilt) | `RLS/Items/Detail view/Reactions and comments/ReactionBar` (auch ReactionPicker, ReactionDetails) | Optional über `RelationCapable`/`reactsTo`; Feed bleibt nutzbar ohne Relations |
+| Kommentare | `components/comments/` (geteilt) | `RLS/Items/Detail view/Reactions and comments/CommentSection` | Optional über `RelationCapable`/`commentOn`; `ItemCommentCount` zeigt die Anzahl im Footer |
+| PostCard | `post-card.tsx` | Story entfallen (19.09.2026) | Spezifische ältere Post-Projektion ohne Aufrufer; nicht die kanonische generische Feed-Projektion |
 
 Die Feed-Overview darf keine Backend-Simulation erzwingen. Sie zeigt das Zusammenspiel von Composer, `ItemPreview` und optionalen Social Slots; echte Mutationen, Relations und Confirmations werden über Connector-Capabilities angebunden.
 
@@ -141,16 +162,28 @@ Calendar ist das Referenzmodul für zeitliche Projektionen im Current Space. Es 
 
 | Spec-Begriff | Code | Storybook | Daten-/Capability-Annahme |
 |---|---|---|---|
-| Calendar Space Module | `packages/toolkit/src/components/calendar/calendar-module.stories.tsx` | `RLS/Space Modules/Calendar/Overview` | Items im Current Space mit `data.start`, optional `data.end` |
-| Header und Ansichtsauswahl | `calendar-view.tsx` | `RLS/Space Modules/Calendar/Overview` | UI-Zustand steuert Zeitraum, Monat/Woche/Tag/Liste und Heute-Sprung; `initialVisibleDate` öffnet additiv einen Startzeitraum ohne den Heute-Wert zu überschreiben |
-| Filter | `calendar-view.tsx` | `RLS/Space Modules/Calendar/Overview` | Typ-, Orts- und Current-User-Filter bleiben lokal; ihre Optionen stammen nur aus zeitlich darstellbaren Items; Persistenz ist App-/Shell-Verantwortung |
-| Monatsansicht | `calendar-view.tsx` | `RLS/Space Modules/Calendar/Overview` | `Item.data.start` gruppiert Events nach Kalendertag; Event-Pills öffnen das Item |
-| Wochen-/Tagesansicht | `calendar-view.tsx` | `RLS/Space Modules/Calendar/Overview` | Zeitgebundene Items werden auf einfache Zeitslots projiziert |
-| Eventliste | `calendar-view.tsx` | `RLS/Space Modules/Calendar/Overview` | Zeitgebundene Items im sichtbaren Zeitraum, sortiert und nach Tag gruppiert |
+| Calendar Space Module | `packages/toolkit/src/components/calendar/calendar-module.stories.tsx` | `RLS/Modules/Calendar/Overview` | Items im Current Space mit `data.start`, optional `data.end` |
+| Header und Ansichtsauswahl | `calendar-view.tsx` | `RLS/Modules/Calendar/Overview` | UI-Zustand steuert Zeitraum, Monat/Woche/Tag/Liste und Heute-Sprung; `initialVisibleDate` öffnet additiv einen Startzeitraum ohne den Heute-Wert zu überschreiben |
+| Filter | `calendar-view.tsx` | `RLS/Modules/Calendar/Overview` | Typ-, Tag- und Textfilter laufen über die geteilte Leiste (`useModuleFilteredItems`); Orts- und Current-User-Filter bleiben lokal; ihre Optionen stammen nur aus zeitlich darstellbaren Items; Persistenz ist App-/Shell-Verantwortung |
+| Monatsansicht | `calendar-view.tsx` | `RLS/Modules/Calendar/Overview` | `Item.data.start` gruppiert Events nach Kalendertag; Event-Pills öffnen das Item |
+| Wochen-/Tagesansicht | `calendar-view.tsx` | `RLS/Modules/Calendar/Overview` | Zeitgebundene Items werden auf einfache Zeitslots projiziert |
+| Eventliste | `calendar-view.tsx` | `RLS/Modules/Calendar/Overview` | Zeitgebundene Items im sichtbaren Zeitraum, sortiert und nach Tag gruppiert |
 | Event-Erstellung/Bearbeitung | `CalendarView` Create-Hook, später über `ContentComposer` | Create-Hook sichtbar, Persistenz noch nicht abgebildet | Persistente Erstellung braucht `ItemWriter`; Calendar bleibt ohne Writer read-only |
 | Teilnehmer/Bestätigungen | spätere Module Components | noch nicht abgebildet | Optional über `RelationCapable` und `ConfirmationCapable` |
 
 Die Calendar-Overview orientiert sich am Edge-Prototyp unter `https://real-life-stack.de/edge/` (Navigation `Kalender`), bleibt aber technisch eine backend-agnostische Projektion über generische Items.
+
+## Flächen ohne Spec-Dokument
+
+Diese Code-Flächen existieren, werden aber von keinem Spec-Dokument beschrieben. Die Liste hält die Lücke fest; sie ersetzt keine Spezifikation.
+
+- `components/graph/` ist als Modul `graph` im Register; ein Modul-Spec-Dokument fehlt.
+- `components/lens/collection-view.tsx` ist als Modul `collection` im Register, in der Spec aber nur als Linse beschrieben; die Modul-Spec fehlt.
+- `components/activity/` liefert ActivityBell, ActivityPanel und NotificationCenter; eine Spec fehlt.
+- `components/debug/` liefert DebugDashboard, StoreInspector und TraceTimeline; eine Spec fehlt.
+- `components/contacts/` liefert Kontaktliste, Kontakt- und Verifizierungsdialoge sowie RelayStatusBadge; eine Spec fehlt.
+- `layout/space-theme-panel.tsx` stellt die Farbeinstellung eines Space im Modul-Panel; eine Spec fehlt.
+- `layout/connector-switcher.tsx` wechselt den aktiven Connector; eine Spec fehlt.
 
 ## Nicht-Ziele
 
@@ -167,6 +200,3 @@ Diese Spec definiert nicht:
 1. Ob `components/auth/` dauerhaft App Shell bleibt oder später stärker WoT-spezifisch ausgelagert wird.
 2. Ob einzelne Module Components, z.B. `ReactionBar`, eigene geteilte Code-Ordner bekommen sollen.
 3. Ob Storybook später automatisiert gegen die Spec-Module-Liste geprüft werden soll.
-# MapView
-
-- `MapView` → `packages/toolkit/src/components/map/map-view.tsx` → Storybook `RLS/Space Modules/MapView` (bbox-module und lens-auto-fit, Auswahl und Cluster).

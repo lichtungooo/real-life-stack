@@ -1,5 +1,57 @@
 # Changelog
 
+## [0.2.2](https://github.com/real-life-org/real-life-stack/compare/wot-connector-v0.2.1...wot-connector-v0.2.2) (2026-09-28)
+
+
+### Features
+
+* item-authorial im Schreibweg der Connectoren (WoT, Local, Mock) ([#496](https://github.com/real-life-org/real-life-stack/issues/496)) ([cb3a60b](https://github.com/real-life-org/real-life-stack/commit/cb3a60bbb65e79d2df53657503f36b393aacf37d))
+* Space des Formulars und GroupScopeCapable in allen Connectoren (S3b A) ([#536](https://github.com/real-life-org/real-life-stack/issues/536)) ([b4d7eb7](https://github.com/real-life-org/real-life-stack/commit/b4d7eb79475abacb4f25fd018567619e151623bd))
+* **toolkit:** Menschen-Zeile mit Qualifier und Selbstaktionen (S2) ([#518](https://github.com/real-life-org/real-life-stack/issues/518)) ([30daafe](https://github.com/real-life-org/real-life-stack/commit/30daafe008daa9ea7bf7387bdde9b3c444b5e68d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @real-life-stack/data-interface bumped to 0.4.0
+    * @real-life-stack/toolkit bumped to 0.3.0
+
+## [0.2.1](https://github.com/real-life-org/real-life-stack/compare/wot-connector-v0.2.0...wot-connector-v0.2.1) (2026-09-24)
+
+
+### Bug Fixes
+
+* **deps:** update wot-pakete ([#479](https://github.com/real-life-org/real-life-stack/issues/479)) ([88dbead](https://github.com/real-life-org/real-life-stack/commit/88dbead9d010f75402a120d04c940fa269a427c1))
+* **wot-connector:** Gruppe verlassen entfernt sich nicht zusaetzlich selbst ([#474](https://github.com/real-life-org/real-life-stack/issues/474)) ([abd5dcc](https://github.com/real-life-org/real-life-stack/commit/abd5dcc5e67e14893431b35ed29105ed61f6adda))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @real-life-stack/data-interface bumped to 0.3.1
+    * @real-life-stack/toolkit bumped to 0.2.1
+
+## [0.2.0](https://github.com/real-life-org/real-life-stack/compare/wot-connector-v0.1.10...wot-connector-v0.2.0) (2026-09-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* **toolkit:** Der Modul-Host — B0 komplett (Schritte 1–5b + Codex-Fixes #415–#417) ([#414](https://github.com/real-life-org/real-life-stack/issues/414))
+
+### Features
+
+* **toolkit:** Der Modul-Host — B0 komplett (Schritte 1–5b + Codex-Fixes [#415](https://github.com/real-life-org/real-life-stack/issues/415)–[#417](https://github.com/real-life-org/real-life-stack/issues/417)) ([#414](https://github.com/real-life-org/real-life-stack/issues/414)) ([97baf68](https://github.com/real-life-org/real-life-stack/commit/97baf683b212a784246711022b393d9002234be6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @real-life-stack/data-interface bumped to 0.3.0
+    * @real-life-stack/toolkit bumped to 0.2.0
+
 ## [0.1.10](https://github.com/real-life-org/real-life-stack/compare/wot-connector-v0.1.9...wot-connector-v0.1.10) (2026-09-16)
 
 

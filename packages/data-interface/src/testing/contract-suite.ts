@@ -20,10 +20,12 @@ import type { DataInterface, Item, RelationRecord } from "../index.js"
 import {
   deriveRelationRecordId,
   hasClaimVerification,
+  hasGroupScope,
   hasGroups,
   hasItemGroups,
   hasRelationRecords,
   hasRelationRecordWriter,
+  hasItemClaimVerification,
   isWritable,
 } from "../index.js"
 
@@ -64,6 +66,19 @@ export interface ContractHarness {
    * regular ingress binds the author to the session (spec 08).
    */
   bindsAuthorToSession?: boolean
+  /**
+   * Zwei Spaces für `GroupScopeCapable` (02 → Lesen/Anlegen in einem
+   * bestimmten Space): `open` ist geöffnet (der Harness öffnet ihn), `other`
+   * nicht. Pflicht für einen Connector mit `hasGroupScope()`; ohne ihn
+   * schlagen die Fälle laut fehl, statt still zu bestehen.
+   */
+  groupScope?(context: ContractContext): Promise<{ open: string; other: string }>
+  /**
+   * `false`, wenn der Harness keine Live-Beobachtung trägt (WoT-Light-Harness
+   * ohne Replikations-Laufzeit); der Observe-Fall mit `group` steht dann im
+   * connector-eigenen Test.
+   */
+  observesGroupScopeLive?: boolean
 }
 
 let uniqueCounter = 0
@@ -353,24 +368,83 @@ export function describeDataInterfaceContract(name: string, harness: ContractHar
         })
       })
 
-      it("refuses to change or remove ANOTHER author's comment/reaction", async () => {
+      it("refuses to change the content of, or remove, ANOTHER author's statement/comment/reaction", async () => {
         // Kein stiller Skip: ein Harness ohne Seeding muss den Grund nennen.
         if (harness.cannotSeedForeignItem) return
         expect(harness.seedForeignItem, "Harness braucht seedForeignItem oder cannotSeedForeignItem").toBeDefined()
         await withConnector(async (context) => {
           const { connector, currentUserId } = context
           if (!isWritable(connector)) return
-          for (const type of ["comment", "reaction"]) {
+          // Inhaltsfelder laut Katalog (Spec 08): nur deren Aenderung ist der
+          // Autorin vorbehalten. Felder ausserhalb des Inhalts duerfen andere
+          // schreiben, ein strengeres Backend darf das trotzdem sperren.
+          const cases: Array<[string, Record<string, unknown>, Record<string, unknown>]> = [
+            ["statement", { title: "ihre Aussage" }, { title: "gekapert" }],
+            ["comment", { content: "ihre Aussage" }, { content: "gekapert" }],
+            ["reaction", { emoji: "❤️" }, { emoji: "👎" }],
+          ]
+          for (const [type, data, hijacked] of cases) {
             const foreign = unique(`ct-foreign-${type}`)
             await harness.seedForeignItem!(context, {
-              id: foreign, type, createdBy: "did:key:someone-else", data: { text: "ihre Aussage" },
+              id: foreign, type, createdBy: "did:key:someone-else", data,
             })
             // The UI hides the buttons — but the UI is not the boundary. A
             // wire client must be refused at the ingress too.
-            await expect(connector.updateItem(foreign, { data: { text: "gekapert" } })).rejects.toThrow()
+            await expect(connector.updateItem(foreign, { data: hijacked })).rejects.toThrow()
             await expect(connector.deleteItem(foreign)).rejects.toThrow()
             expect(await connector.getItem(foreign)).not.toBeNull()
           }
+        })
+      })
+
+      it("owns data.claim of authorial items: a caller-supplied claim never survives (spec 08)", async () => {
+        await withConnector(async ({ connector, currentUserId }) => {
+          if (!isWritable(connector) || !hasItemClaimVerification(connector)) return
+          const created = await connector.createItem({
+            type: "comment",
+            createdBy: currentUserId,
+            data: { content: "meine Aussage", claim: "forged.claim.jws" },
+            relations: [{ predicate: "commentOn", target: `item:${unique("ct-target")}` }],
+          })
+          const persisted = (await connector.getItem(created.id))!
+          expect(persisted.data.claim).not.toBe("forged.claim.jws")
+          expect(await connector.verifyItemClaim(persisted)).not.toBe("invalid")
+        })
+      })
+
+      it("keeps the verdict positive when the author changes the content or anyone changes other fields", async () => {
+        await withConnector(async ({ connector, currentUserId }) => {
+          if (!isWritable(connector) || !hasItemClaimVerification(connector)) return
+          const created = await connector.createItem({ type: "statement", createdBy: currentUserId, data: { title: "vorher" } })
+          await connector.updateItem(created.id, { data: { title: "nachher" } })
+          await connector.updateItem(created.id, { tags: [unique("ct-tag")] })
+          const persisted = (await connector.getItem(created.id))!
+          expect(persisted.data.title).toBe("nachher")
+          expect(await connector.verifyItemClaim(persisted)).not.toBe("invalid")
+        })
+      })
+
+      it("refuses a content change of a frozen item, even by its author (spec 08 → Einfrieren)", async () => {
+        if (harness.cannotSeedForeignItem) return
+        expect(harness.seedForeignItem, "Harness braucht seedForeignItem oder cannotSeedForeignItem").toBeDefined()
+        await withConnector(async (context) => {
+          const { connector, currentUserId } = context
+          if (!isWritable(connector) || !hasItemClaimVerification(connector)) return
+          const statement = await connector.createItem({ type: "statement", createdBy: currentUserId, data: { title: "gesagt" } })
+          const voter = "did:key:someone-else"
+          await harness.seedForeignItem!(context, {
+            id: unique("ct-vote"),
+            type: "relation",
+            createdBy: voter,
+            data: { predicate: "votesOn", value: "green", contentHash: "sha256:0" },
+            relations: [
+              { predicate: "from", target: `global:${voter}` },
+              { predicate: "to", target: `item:${statement.id}` },
+            ],
+          })
+          await expect(connector.updateItem(statement.id, { data: { title: "anders" } })).rejects.toThrow(/frozen/)
+          await connector.updateItem(statement.id, { tags: [unique("ct-tag")] })
+          expect((await connector.getItem(statement.id))!.data.title).toBe("gesagt")
         })
       })
 
@@ -471,6 +545,97 @@ export function describeDataInterfaceContract(name: string, harness: ContractHar
           expect(observed!["@context"]).toEqual([VOCAB_A])
           expect(observed!.relations).toEqual([{ predicate: "relatesTo", target: "item:ct-obs-target" }])
           expect(observed!.createdBy).toBe(currentUserId)
+        })
+      })
+    })
+
+    describe("group scope (GroupScopeCapable, capability-gated)", () => {
+      async function spaces(context: ContractContext) {
+        if (!harness.groupScope) throw new Error("Harness muss groupScope() liefern: der Connector meldet hasGroupScope()")
+        return harness.groupScope(context)
+      }
+      const openId = (connector: DataInterface) => (hasGroups(connector) ? connector.getCurrentGroup()?.id ?? null : null)
+
+      it("legt mit group unmittelbar im genannten Space an und liest ihn, ohne ihn zu öffnen", async () => {
+        await withConnector(async (context) => {
+          const { connector, currentUserId } = context
+          if (!hasGroupScope(connector)) return
+          const { open, other } = await spaces(context)
+          expect(openId(connector)).toBe(open)
+          const type = unique("ct-scope")
+          const created = await connector.createItem({ type, createdBy: currentUserId, data: { title: "dort" } }, { group: other })
+          // Der geöffnete Space bleibt (02, Anlegen Regel 4; Lesen Regel 4).
+          expect(openId(connector)).toBe(open)
+          const dort = await connector.getItems({ type, group: other })
+          expect(dort.map(({ id }) => id)).toEqual([created.id])
+          expect(dort[0]!.data).toEqual({ title: "dort" })
+          // Im geöffneten Space liegt es nicht, weder ausdrücklich noch implizit.
+          expect(await connector.getItems({ type, group: open })).toEqual([])
+          expect(await connector.getItems({ type })).toEqual([])
+          expect(openId(connector)).toBe(open)
+          if (hasItemGroups(connector)) expect(connector.getItemGroupId(created.id)).toBe(other)
+        })
+      })
+
+      it("liest mit group nur den genannten Space, auch aus der Übersicht", async () => {
+        await withConnector(async (context) => {
+          const { connector, currentUserId } = context
+          if (!hasGroupScope(connector)) return
+          const { open, other } = await spaces(context)
+          const type = unique("ct-scope-read")
+          const hier = await connector.createItem({ type, createdBy: currentUserId, data: { title: "hier" } })
+          const dort = await connector.createItem({ type, createdBy: currentUserId, data: { title: "dort" } }, { group: other })
+          expect((await connector.getItems({ type, group: open })).map(({ id }) => id)).toEqual([hier.id])
+          expect((await connector.getItems({ type, group: other })).map(({ id }) => id)).toEqual([dort.id])
+          if (hasGroups(connector)) {
+            connector.setCurrentGroup(null)
+            await new Promise((resolve) => setTimeout(resolve, 0))
+            expect((await connector.getItems({ type, group: other })).map(({ id }) => id)).toEqual([dort.id])
+            expect((await connector.getItems({ type, group: open })).map(({ id }) => id)).toEqual([hier.id])
+          }
+        })
+      })
+
+      it("ein unbekannter Space ergibt eine leere Menge und lehnt das Anlegen ab", async () => {
+        await withConnector(async (context) => {
+          const { connector, currentUserId } = context
+          if (!hasGroupScope(connector)) return
+          const { open, other } = await spaces(context)
+          const type = unique("ct-scope-unknown")
+          await connector.createItem({ type, createdBy: currentUserId, data: {} })
+          expect(await connector.getItems({ group: unique("kein-space") })).toEqual([])
+          await expect(
+            connector.createItem({ type, createdBy: currentUserId, data: {} }, { group: unique("kein-space") }),
+          ).rejects.toThrow()
+          // Nirgends angelegt: weder im geöffneten noch im anderen Space.
+          expect(await connector.getItems({ type, group: open })).toHaveLength(1)
+          expect(await connector.getItems({ type, group: other })).toEqual([])
+        })
+      })
+
+      it("observe mit group meldet ein Anlegen in diesem Space, solange er nicht geöffnet ist", async () => {
+        if (harness.observesGroupScopeLive === false) return
+        await withConnector(async (context) => {
+          const { connector, currentUserId } = context
+          if (!hasGroupScope(connector)) return
+          const { open, other } = await spaces(context)
+          const type = unique("ct-scope-obs")
+          const observable = connector.observe({ type, group: other })
+          await new Promise((resolve) => setTimeout(resolve, 0))
+          expect(observable.current).toEqual([])
+          const created = await connector.createItem({ type, createdBy: currentUserId, data: { title: "live" } }, { group: other })
+          const find = () => observable.current.find(({ id }) => id === created.id)
+          if (!find()) {
+            await new Promise<void>((resolve) => {
+              const stop = observable.subscribe(() => { if (find()) { stop(); resolve() } })
+            })
+          }
+          expect(find()?.data).toEqual({ title: "live" })
+          expect(openId(connector)).toBe(open)
+          // Ein Anlegen im geöffneten Space erscheint dort nicht.
+          await connector.createItem({ type, createdBy: currentUserId, data: {} })
+          await new Promise((resolve) => setTimeout(resolve, 0))
+          expect(observable.current.map(({ id }) => id)).toEqual([created.id])
         })
       })
     })

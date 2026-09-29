@@ -26,7 +26,7 @@
 // documentation and a foundation for future typing.
 
 import type { Item } from "./index.js"
-import type { CoreItemTypeId, STATEMENT_TYPE_DEFINITION } from "./type-manifest"
+import type { ToolkitItemTypeId } from "./type-manifest"
 
 // --- Shared Types ---
 
@@ -92,8 +92,10 @@ export interface TaskRelations {
     assignedTo: ProfileItem
     /** Subtask belongs to a parent task → TaskItem (scope: item:, 0..1) */
     childOf: TaskItem
-    /** Task blocks other tasks → TaskItem (scope: item:, 0..n) */
+    /** Task blocks other tasks → TaskItem (scope: item:, 0..n). Shown as „Ermöglicht" (outgoing) and „Braucht" (incoming). */
     blocks: TaskItem
+    /** Task is part of a project → ProjectItem (scope: item:, 0..1). „Teil von". */
+    partOf: ProjectItem
     /** General link → any item (scope: item:, 0..n) */
     relatedTo: Item
   }
@@ -238,6 +240,18 @@ export interface ProjectData {
 }
 
 export type ProjectItem = Item & { type: "project"; data: ProjectData }
+
+/** Forward and reverse relations for a project. */
+export interface ProjectRelations {
+  forward: {
+    /** General link → any item (scope: item:, 0..n) */
+    relatedTo: Item
+  }
+  reverse: {
+    /** Tasks that are part of this project (partOf → this project, 0..n) */
+    partOf: TaskItem
+  }
+}
 
 export function isProject(item: Item): item is ProjectItem {
   return item.type === "project"
@@ -473,10 +487,9 @@ export const SYSTEM_ITEM_TYPES = ["relation", "reaction", "comment"] as const
  * manifest definition (registered by the app layer).
  */
 export type KnownItemType =
-  | CoreItemTypeId
+  | ToolkitItemTypeId
   | (typeof SYSTEM_ITEM_TYPES)[number]
   | "feature"
-  | (typeof STATEMENT_TYPE_DEFINITION)["id"]
 
 /**
  * Types an aggregating view does not list on their own: the system types are

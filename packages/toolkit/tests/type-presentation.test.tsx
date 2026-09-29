@@ -1,11 +1,9 @@
 // @vitest-environment jsdom
-import { act, createElement } from "react"
-import { createRoot } from "react-dom/client"
+import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { afterEach, describe, expect, it } from "vitest"
-import { createObservable, type Item, type User } from "@real-life-stack/data-interface"
+import type { Item } from "@real-life-stack/data-interface"
 
-import { ConnectorProvider } from "../src/hooks/connector-context"
 import { ItemTypeBadge } from "../src/components/preview/item-type-badge"
 import { getItemPreviewAdornments } from "../src/components/preview/item-type-meta"
 import {
@@ -17,14 +15,25 @@ import {
 } from "../src/components/preview/type-presentation"
 import {
   composeTypeManifest,
-  CORE_TYPE_LAYER,
-  STATEMENT_TYPE_DEFINITION,
+  TOOLKIT_TYPE_LAYER,
+  type TypeManifestEntry,
 } from "@real-life-stack/data-interface"
 
-/** Manifest wie in der App komponiert: Core + statement. */
+/**
+ * Ein App-eigener Typ mit einer Kante, wie ihn eine App mitbringen wuerde.
+ * Bis zum 21.09.2026 stand hier `statement`; das ist seither ein Toolkit-Typ
+ * (Spec 06) und kann von keiner App mehr definiert werden.
+ */
+const SIGHTING_TYPE_DEFINITION: TypeManifestEntry = {
+  id: "sighting",
+  vocabularies: [],
+  relations: [{ predicate: "spottedBy", itemRole: "to", otherKind: "person" }],
+}
+
+/** Manifest wie in einer App komponiert: Toolkit + eigener Typ. */
 const APP_MANIFEST = composeTypeManifest([
-  CORE_TYPE_LAYER,
-  { name: "app", definitions: [STATEMENT_TYPE_DEFINITION] },
+  TOOLKIT_TYPE_LAYER,
+  { name: "app", definitions: [SIGHTING_TYPE_DEFINITION] },
 ])
 
 ;(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true
@@ -60,15 +69,15 @@ describe("type presentation registry", () => {
 
   it("lets the same layer re-register itself (Vite HMR re-executes modules)", () => {
     setTypeManifest(APP_MANIFEST)
-    registerTypePresentation("app", [{ id: "statement", label: "Aussage" }])
-    registerTypePresentation("app", [{ id: "statement", label: "These" }])
-    expect(resolveTypePresentation("statement").label).toBe("These")
+    registerTypePresentation("app", [{ id: "sighting", label: "Aussage" }])
+    registerTypePresentation("app", [{ id: "sighting", label: "These" }])
+    expect(resolveTypePresentation("sighting").label).toBe("These")
   })
 
   it("still rejects an id owned by ANOTHER layer", () => {
     setTypeManifest(APP_MANIFEST)
-    registerTypePresentation("app", [{ id: "statement", label: "Aussage" }])
-    expect(() => registerTypePresentation("space", [{ id: "statement", label: "X" }]))
+    registerTypePresentation("app", [{ id: "sighting", label: "Aussage" }])
+    expect(() => registerTypePresentation("space", [{ id: "sighting", label: "X" }]))
       .toThrow(/bereits in Layer "app"/)
   })
 
@@ -84,25 +93,25 @@ describe("type presentation registry", () => {
 
   it("rejects a fragment setting a scalar the base already sets", () => {
     const Footer = () => null
-    // task already ships a footer (assignees) — a fragment may not shadow it.
-    expect(() => registerTypePresentation("app", { extensions: [{ id: "task", footer: Footer }] }))
+    // statement ships a footer (votes, transition rule 17) — a fragment may not shadow it.
+    expect(() => registerTypePresentation("app", { extensions: [{ id: "statement", footer: Footer }] }))
       .toThrow(/Basis bereits setzt/)
     // The failed registration leaves no partial layer behind.
-    expect(resolveTypePresentation("task").footer).not.toBe(Footer)
+    expect(resolveTypePresentation("statement").footer).not.toBe(Footer)
   })
 
   it("revalidates EXTENSION relationWidgets on manifest rebind (#228)", () => {
-    // Valid under the app manifest (statement declares votesOn/to)…
+    // Valid under the app manifest (sighting declares spottedBy/to)…
     setTypeManifest(APP_MANIFEST)
     registerTypePresentation("app", {
-      definitions: [{ id: "statement", label: "Aussage" }],
-      extensions: [{ id: "statement", relationWidgets: { "votesOn to": "people" } }],
+      definitions: [{ id: "sighting", label: "Aussage" }],
+      extensions: [{ id: "sighting", relationWidgets: { "spottedBy to": "people" } }],
     })
     // …but a rebind to a manifest without that edge must throw, not leave
     // the orphan widget behind.
     expect(() => setTypeManifest(composeTypeManifest([
-      CORE_TYPE_LAYER,
-      { name: "app", definitions: [{ id: "statement", vocabularies: [] }] },
+      TOOLKIT_TYPE_LAYER,
+      { name: "app", definitions: [{ id: "sighting", vocabularies: [] }] },
     ]))).toThrow(/keine Manifest-Kante/)
   })
 
@@ -112,7 +121,7 @@ describe("type presentation registry", () => {
     setTypeManifest(APP_MANIFEST)
     expect(() =>
       registerTypePresentation("app", [{
-        id: "statement",
+        id: "sighting",
         label: "Aussage",
         relationWidgets: { "endorses from": "people" },
       }]),
@@ -140,9 +149,9 @@ describe("type presentation registry", () => {
 
   it("lets an app layer present a MANIFEST-known type that then resolves everywhere", () => {
     setTypeManifest(APP_MANIFEST)
-    registerTypePresentation("app", [{ id: "statement", label: "Aussage" }])
-    expect(resolveTypePresentation("statement").label).toBe("Aussage")
-    expect(resolveTypePresentation("statement").generic).toBe(false)
+    registerTypePresentation("app", [{ id: "sighting", label: "Aussage" }])
+    expect(resolveTypePresentation("sighting").label).toBe("Aussage")
+    expect(resolveTypePresentation("sighting").generic).toBe(false)
   })
 
   it("rejects orphan presentation — the register cannot introduce types (rules 1/6)", () => {
@@ -154,8 +163,8 @@ describe("type presentation registry", () => {
 
   it("resolves a manifest entry WITHOUT presentation as generic (rule 5)", () => {
     setTypeManifest(APP_MANIFEST)
-    // statement is in the manifest, but no presentation layer registered it.
-    const resolved = resolveTypePresentation("statement")
+    // sighting is in the manifest, but no presentation layer registered it.
+    const resolved = resolveTypePresentation("sighting")
     expect(resolved.generic).toBe(true)
     expect(resolved.detail).toBeTruthy()
   })
@@ -166,40 +175,10 @@ describe("type presentation registry", () => {
     expect(markup).toContain("Ada Lovelace")
   })
 
-  it("renders the task footer with resolved assignees on any surface", async () => {
-    // Minimal fake: exactly the two observables the footer's hooks consume.
-    const users: User[] = [{ id: "u1", displayName: "Ich" }, { id: "u2", displayName: "Kollegin" }]
-    // The hooks route through useGroupConnector(), whose hasGroups() guard
-    // wants the full group-manager surface — stubbed inertly.
-    const connector = {
-      observeMembers: () => createObservable(users),
-      observeCurrentUser: () => createObservable<User | null>(users[0]),
-      getAuthState: () => createObservable({ status: "authenticated", user: users[0] }),
-      authenticate: async () => {},
-      getCurrentUser: async () => users[0],
-      getGroups: async () => [], observeGroups: () => createObservable([]),
-      getMembers: async () => users, getCurrentGroup: () => null,
-      observeCurrentGroup: () => createObservable(null), setCurrentGroup: () => {},
-      createGroup: async () => { throw new Error("unused") },
-      updateGroup: async () => { throw new Error("unused") },
-      deleteGroup: async () => {}, inviteMember: async () => {}, removeMember: async () => {},
-    }
-
-    const task = item("task", { title: "T", status: "open" }, [
-      { predicate: "assignedTo", target: "global:u2" },
-    ])
-    const container = document.createElement("div")
-    const root = createRoot(container)
-    await act(async () => {
-      root.render(
-        createElement(ConnectorProvider, {
-          connector: connector as never,
-          children: renderTypeFooter(task),
-        }),
-      )
-    })
-    expect(container.textContent).toContain("Kollegin")
-    await act(async () => root.unmount())
+  // Bis S1 zeigte eine Typ-Fußzeile die Zugewiesenen einer Aufgabe. Sie sind
+  // jetzt eine Kante in der Meta-Box (feld-und-kantenregister.test.tsx).
+  it("gives the task no footer — assignees live in the meta box since S1", () => {
+    expect(renderTypeFooter(item("task", { title: "T" }, [{ predicate: "assignedTo", target: "global:u2" }]))).toBeNull()
   })
 
   it("returns no footer for types without one", () => {

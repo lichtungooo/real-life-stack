@@ -1,0 +1,21 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro'
+import { heroPreviewHtml } from '../../lib/story-embed'
+import Landing from '../../components/Landing.astro'
+import { translations, type TranslatedLanguage } from '../../i18n/landing'
+export function getStaticPaths() {
+  return (Object.keys(translations) as TranslatedLanguage[]).filter((l) => l !== 'de').map((lang) => ({ params: { lang } }))
+}
+const lang = Astro.params.lang as TranslatedLanguage
+const t = translations[lang] ?? translations.en
+---
+<StarlightPage frontmatter={{ title: 'Real Life Stack', description: t.hero.subtitle, template: 'splash', tableOfContents: false, hero: {
+  title: `${t.hero.title} <span class="rl-accent">${t.hero.titleHighlight}</span>`, tagline: t.hero.subtitle,
+  image: { html: heroPreviewHtml(lang) },
+  actions: [
+    { text: t.hero.demo, link: 'https://real-life-stack.de/app/', icon: 'right-arrow', variant: 'primary' },
+    { text: lang === 'en' ? 'Handbook' : 'Handbuch', link: `/${lang}/handbuch/`, icon: 'open-book', variant: 'secondary' },
+    { text: t.hero.storybook, link: 'https://real-life-stack.de/storybook/', icon: 'external', variant: 'minimal' },
+  ] } }}>
+  <Landing lang={lang} />
+</StarlightPage>

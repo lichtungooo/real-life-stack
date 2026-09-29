@@ -1,0 +1,263 @@
+/*
+ * Die Site trägt die Tokens des Toolkits (packages/toolkit/src/styles/globals.css):
+ * dieselbe warme Grundfläche, dasselbe Orange, dieselbe Schrift — Landing,
+ * Handbuch, Storybook und App sind eine Sache. Starlight liest seine Farben
+ * aus `--sl-*`; hier werden sie aus den Toolkit-Werten gesetzt, nicht neu
+ * erfunden.
+ */
+:root {
+  --sl-font: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sl-font-mono: "Source Code Pro", ui-monospace, monospace;
+  --sl-content-width: 54rem;
+  --sl-text-5xl: 3.4rem;
+  /* Orange der Marke (--primary: oklch(0.63 0.16 55)). Dunkel: accent-high
+     traegt Seitentitel und Hauptknopf — ein echtes Orange, kein Beige (Anton, 23.09.). */
+  --sl-color-accent-low: oklch(0.30 0.07 55);
+  --sl-color-accent: oklch(0.72 0.15 55);
+  --sl-color-accent-high: oklch(0.80 0.16 55);
+  --rl-blue: oklch(0.55 0.21 264);
+  --rl-green: oklch(0.62 0.15 150);
+  --rl-purple: oklch(0.58 0.2 300);
+}
+:root[data-theme='light'] {
+  --sl-color-accent-low: oklch(0.92 0.06 55);
+  --sl-color-accent: oklch(0.63 0.16 55);
+  --sl-color-accent-high: oklch(0.38 0.10 55);
+  --sl-color-bg: oklch(0.975 0.003 70);
+  --sl-color-bg-nav: oklch(0.975 0.003 70 / 0.9);
+  --sl-color-bg-sidebar: oklch(0.985 0.0025 70);
+  --sl-color-text: oklch(0.28 0.02 265);
+  --sl-color-white: oklch(0.20 0.02 265);
+}
+:root[data-theme='dark'] {
+  --sl-color-bg: oklch(0.15 0.02 265);
+  --sl-color-bg-nav: oklch(0.15 0.02 265 / 0.9);
+  --sl-color-bg-sidebar: oklch(0.17 0.02 265);
+}
+h1 { letter-spacing: -.04em; line-height: 1.1 !important; }
+h2, h3 { letter-spacing: -.02em; }
+.site-title { letter-spacing: -.03em; font-weight: 750; }
+
+/* Landing */
+/* So breit wie der Hero darüber: Starlight setzt die Inhaltsbreite, die Sektionen folgen ihr. */
+.rl-landing { max-width: none; margin-inline: 0; padding-inline: 0; }
+.rl-accent { color: var(--sl-color-accent); }
+/* Der farbige Teil der Hero-Zeile steht immer in einer eigenen Zeile. */
+.hero h1 .rl-accent { display: block; }
+/* Hero mit App-Vorschau rechts: das Telefon, mittig in Starlights Bildspalte. */
+.hero > .hero-html { width: 100%; }
+.hero-story { margin: 0; width: 100%; }
+.hero-story .story-stage { justify-content: center; }
+/* Unter 50rem stellt Starlight das Bild ueber die Ueberschrift; ein Telefon im Telefon bringt nichts und laedt nur Storybook. */
+@media (max-width: 49.99rem) { .hero > .hero-html { display: none; } }
+
+/* Der Stack als Karte der Seite (Abschnitt Aufbau): vier Schichten, jede fuehrt zu ihrem Abschnitt. */
+.rl-stack { margin: 0; display: flex; flex-direction: column; align-items: center; gap: .9rem; width: 100%; max-width: 28rem; margin-inline: auto; }
+.rl-stack-layer {
+  --rl-tone: var(--sl-color-accent);
+  position: relative; display: block; width: 100%; box-sizing: border-box; text-decoration: none; color: inherit;
+  border: 1px solid color-mix(in oklab, var(--rl-tone) 45%, var(--sl-color-gray-5));
+  border-radius: .8rem; padding: .6rem .5rem .65rem;
+  background: color-mix(in oklab, var(--rl-tone) 7%, var(--sl-color-bg-sidebar));
+}
+.rl-stack-layer:hover { border-color: var(--rl-tone); }
+.rl-stack-layer.tone-green { --rl-tone: oklch(0.62 0.15 150); }
+.rl-stack-layer.tone-blue { --rl-tone: oklch(0.55 0.21 264); }
+.rl-stack-layer.tone-orange { --rl-tone: oklch(0.68 0.18 50); }
+.rl-stack-layer.tone-purple { --rl-tone: oklch(0.58 0.2 300); }
+/* Die Taille: ein Vertrag zwischen vielen Oberflaechen oben und vielen Connectoren unten. */
+.rl-stack-layer[data-layer='interface'] { width: 84%; }
+/* Verbindung zur Schicht darueber. */
+.rl-stack-layer + .rl-stack-layer::before {
+  content: ''; position: absolute; left: 50%; top: calc(-.9rem - 1px); height: .9rem; width: 2px; transform: translateX(-50%);
+  background: color-mix(in oklab, var(--rl-tone) 55%, transparent);
+}
+.rl-stack-label {
+  display: block; margin-bottom: .45rem; text-align: center;
+  font-size: .72rem; font-weight: 650; letter-spacing: .06em; text-transform: uppercase;
+  /* Mit Textfarbe gemischt: 4.5:1 auch bei kleiner Schrift, hell wie dunkel, und die Farbe der Schicht bleibt erkennbar. */
+  color: color-mix(in oklab, var(--rl-tone) 62%, var(--sl-color-white));
+}
+.rl-stack-layer ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: .3rem; }
+.rl-stack-layer li {
+  margin: 0; display: inline-flex; align-items: center; gap: .3rem;
+  padding: .25rem .6rem; border-radius: 999px; font-size: .8rem; line-height: 1.3; white-space: nowrap;
+  background: var(--sl-color-bg); border: 1px solid var(--sl-color-gray-5); color: var(--sl-color-white);
+}
+.rl-stack-layer li svg { width: .85rem; height: .85rem; color: var(--rl-tone); flex-shrink: 0; }
+@media (max-width: 49.99rem) {
+  .rl-stack { gap: .7rem; }
+  .rl-stack-layer + .rl-stack-layer::before { top: calc(-.7rem - 1px); height: .7rem; }
+  .rl-stack-layer li { font-size: .72rem; padding: .18rem .42rem; gap: .25rem; }
+  .rl-stack-layer li svg { width: .75rem; height: .75rem; }
+}
+.hero { padding-block: 2rem 1rem; }
+.hero .tagline { line-height: 1.6; }
+.rl-hero { text-align: center; padding-block: 3rem 3.5rem; }
+.rl-hero h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); margin: 0 0 1rem; }
+.rl-hero h1 em { font-style: normal; color: var(--sl-color-accent); }
+.rl-hero p { font-size: 1.2rem; color: var(--sl-color-gray-2); max-width: 40rem; margin: 0 auto 1.75rem; line-height: 1.6; }
+.rl-actions { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; }
+.rl-btn { display: inline-flex; align-items: center; gap: .5rem; border-radius: .6rem; padding: .7rem 1.2rem; font-weight: 600; text-decoration: none; border: 1px solid var(--sl-color-gray-5); color: var(--sl-color-white); }
+/* Hauptknoepfe (Hero und Schluss) teilen eine Flaeche: dunkel Starlights helles Orange mit dunkler Schrift.
+   Hell traegt weisse Schrift auf dem Markenorange nur 3,7:1; ein tieferes Orange nur fuer die Knopfflaeche
+   erreicht 4,5:1, Links und Marken behalten ihr Orange. */
+:root { --rl-primary-bg: var(--sl-color-text-accent); }
+:root[data-theme='light'] { --rl-primary-bg: oklch(0.56 0.15 52); }
+.hero .sl-link-button.primary { background: var(--rl-primary-bg); border-color: var(--rl-primary-bg); }
+.rl-btn.primary { background: var(--rl-primary-bg); color: var(--sl-color-black); border-color: transparent; }
+.rl-btn.primary:hover { color: var(--sl-color-black); }
+.rl-btn:hover { border-color: var(--sl-color-accent); }
+/* Luft wie im Entwurf: jeder Abschnitt steht fuer sich, Text und Bild mit deutlichem Abstand. */
+.rl-section { display: grid; gap: 4.5rem; align-items: center; padding-block: 6rem; border-top: 1px solid var(--sl-color-gray-6); }
+@media (min-width: 52rem) { .rl-section { grid-template-columns: 1fr 1fr; } .rl-section.flip > :first-child { order: 2; } }
+/* Die Marke traegt Namen und Farbe der Schicht aus dem Bild; mit Textfarbe gemischt wie die Schichtbeschriftung, damit Blau und Lila auch dunkel lesbar bleiben. */
+.rl-badge { display: inline-flex; align-items: center; gap: .5rem; font-size: .85rem; font-weight: 600; color: color-mix(in oklab, var(--rl-accent, var(--sl-color-accent)) 62%, var(--sl-color-white)); margin-bottom: .75rem; }
+.rl-badge::before { content: ''; width: .5rem; height: .5rem; border-radius: 50%; background: var(--rl-accent, var(--sl-color-accent)); }
+.rl-section h2 { font-size: 2.25rem; font-weight: 700; letter-spacing: -.025em; color: var(--sl-color-white); margin: 0 0 1.1rem; }
+/* Ueberschriften tragen ihre eigene Zeilenhoehe: Starlights 1.75 fuer Fliesstext liess
+   um jede von ihnen eine halbe Leerzeile stehen — auf dem Telefon je Umbruch. */
+.rl-section h2, .rl-ways h2 { line-height: 1.2; }
+.rl-section p { color: var(--sl-color-gray-2); font-size: 1.06rem; line-height: 1.7; margin: 0 0 1.1rem; }
+.rl-section p:last-child { margin-bottom: 0; }
+.rl-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; align-items: stretch; }
+.rl-cards.three { grid-template-columns: repeat(3, 1fr); }
+.rl-cards.one { grid-template-columns: 1fr; }
+/* Karten: etwas heller als die Seite, zarter Rand, beim Zeigen Rand in der Markenfarbe. */
+.rl-card { border: 1px solid color-mix(in oklab, var(--sl-color-gray-5) 70%, var(--sl-color-bg)); border-radius: .9rem; padding: 1.25rem; background: color-mix(in oklab, var(--sl-color-bg-sidebar) 70%, var(--sl-color-gray-6)); display: flex; flex-direction: column; gap: .3rem; align-self: stretch; transition: border-color .15s ease, background-color .15s ease; }
+:root[data-theme='light'] .rl-card { background: oklch(1 0 0 / .7); }
+a.rl-card { text-decoration: none; color: inherit; }
+a.rl-card:hover { border-color: var(--sl-color-accent); }
+.rl-section .rl-more { margin: 1.5rem 0 0; font-size: .95rem; line-height: 1.5; }
+.rl-more-link { color: var(--sl-color-accent); font-weight: 600; text-decoration: none; }
+.rl-more-link:hover { text-decoration: underline; }
+.rl-card strong { display: block; font-size: 1rem; font-weight: 600; color: var(--sl-color-white); }
+/* 1.75 auf 13.6px zog die Karten auseinander; auf dem Telefon, wo der Text vier Zeilen
+   braucht statt zwei, wurde daraus eine halbe Bildschirmhoehe. */
+/* Als Block: inline erbte der Text Starlights Zeilenhoehe 1.75 vom Elternteil und lief auseinander. */
+.rl-card span { display: block; font-size: .875rem; line-height: 1.5; color: var(--sl-color-gray-2); }
+/* Die Symbolkachel ist auch ein span: sie bleibt eine zentrierende Flexbox. */
+.rl-card .rl-icon { display: inline-flex; }
+/* Zeilenkarte: Kachel links, Text rechts, rechts aussen optional ein Hinweis (npm, Spec). Schnittstelle und Connectoren. */
+.rl-card.row { flex-direction: row; gap: 1rem; align-items: center; padding-block: 1.1rem; }
+.rl-card.row > div strong { margin-bottom: .15rem; }
+.rl-card.row > div { min-width: 0; flex: 1; text-align: start; }
+.rl-card.row > div span { display: block; }
+.rl-card.row .rl-icon.tile { margin-bottom: 0; }
+.rl-card.open { border-style: dashed; }
+.rl-tag { font-style: normal; font-size: .75rem; font-weight: 600; padding: .15rem .5rem; border-radius: .35rem; border: 1px solid var(--sl-color-gray-5); color: var(--sl-color-gray-2); flex-shrink: 0; }
+.rl-card.centered { text-align: center; align-items: center; }
+.rl-card.centered .rl-icon { margin: 0 auto .6rem; }
+/* Farbige Symbole wie in der React-Landing vor der Astro-Site: Kachel in Pastell, Symbol in der Vollfarbe. */
+.rl-icon { display: inline-flex; align-items: center; justify-content: center; color: var(--rl-tone); flex-shrink: 0; }
+/* Auf dem svg selbst, nicht auf dem span: `.rl-card span` setzt Grau mit hoeherer Spezifitaet (rls#447). */
+.rl-icon svg { width: 1.25rem; height: 1.25rem; color: var(--rl-tone); }
+.rl-icon.tile { width: 2.5rem; height: 2.5rem; border-radius: .6rem; background: color-mix(in oklab, var(--rl-tone) 14%, transparent); margin-bottom: .6rem; }
+.rl-icon.tone-green { --rl-tone: oklch(0.62 0.15 150); }
+.rl-icon.tone-blue { --rl-tone: oklch(0.55 0.21 264); }
+.rl-icon.tone-orange { --rl-tone: oklch(0.68 0.18 50); }
+.rl-icon.tone-purple { --rl-tone: oklch(0.58 0.2 300); }
+.rl-icon.tone-red { --rl-tone: oklch(0.6 0.2 25); }
+.rl-icon.tone-teal { --rl-tone: oklch(0.62 0.13 190); }
+:root[data-theme='dark'] .rl-icon.tile { background: color-mix(in oklab, var(--rl-tone) 22%, transparent); }
+.rl-ways { padding-block: 5rem 6rem; border-top: 1px solid var(--sl-color-gray-6); }
+.rl-ways h2 { font-size: 2.25rem; font-weight: 700; letter-spacing: -.025em; color: var(--sl-color-white); margin: 0 0 .6rem; }
+.rl-ways-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: .5rem 1.5rem; margin-bottom: 2rem; }
+.rl-ways-head p { color: var(--sl-color-gray-2); font-size: 1.06rem; margin: 0; }
+.rl-ways .rl-cards { grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+.rl-ways a.rl-card { text-decoration: none; color: inherit; }
+.rl-ways .rl-icon.tile { margin-bottom: .75rem; }
+.rl-ways a.rl-card:hover { border-color: var(--sl-color-accent); }
+.rl-ways .soon { opacity: .6; }
+
+/* Schluss der Landing: die beiden Einstiege aus dem Hero noch einmal, als Band in der Markenfarbe.
+   Oben so viel Abstand wie zwischen zwei Abschnitten (6rem Polster + 6rem), sonst klebt es an den Connectoren. */
+.rl-outro { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.5rem 2.5rem; margin-block: 6rem 4rem; padding: 3.5rem; border-radius: 1.5rem; border: 1px solid color-mix(in oklab, var(--sl-color-accent) 35%, transparent); background: color-mix(in oklab, var(--sl-color-accent) 7%, transparent); }
+.rl-outro > div:first-child { max-width: 34rem; }
+.rl-outro h2 { text-wrap: balance; font-size: 2rem; font-weight: 700; letter-spacing: -.025em; line-height: 1.2; color: var(--sl-color-white); margin: 0 0 .75rem; }
+.rl-outro p { color: var(--sl-color-gray-2); font-size: 1.06rem; line-height: 1.7; margin: 0; }
+.rl-outro .rl-btn { min-height: 3rem; box-sizing: border-box; padding-inline: 1.4rem; border-radius: .75rem; }
+.rl-outro .rl-actions { justify-content: flex-start; margin: 0; }
+
+/* Fußzeile: Teil des Real Life Projekts */
+.rl-family { margin-top: 2rem; padding-top: 1.25rem; border-top: 1px solid var(--sl-color-gray-5); font-size: .85rem; color: var(--sl-color-gray-2); display: grid; gap: .5rem; }
+.rl-family nav { display: flex; flex-wrap: wrap; gap: 1rem; }
+.rl-family a { color: inherit; }
+.rl-family small { display: block; }
+
+/* Eingebettete Stories */
+/* Story-Einbettung: der Rahmen liegt nur um die Vorschau, damit sie wie die App wirkt; Zeile davor und Satz danach stehen frei. */
+.story-example { margin-block: 2rem; }
+.story-example figcaption { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1rem; padding: 0 .1rem .5rem; font-size: .78rem; color: var(--sl-color-gray-2); }
+.story-example figcaption > a { margin-inline-start: auto; }
+.story-example[data-frame="phone"] .story-stage { justify-content: center; }
+.story-frames { display: inline-flex; margin: 0; border: 1px solid var(--sl-color-gray-5); border-radius: 999px; overflow: hidden; line-height: 1; }
+.story-frames button { all: unset; box-sizing: border-box; font: inherit; line-height: 1; color: var(--sl-color-gray-2); padding: .35rem .75rem; cursor: pointer; }
+.story-frames button + button { border-inline-start: 1px solid var(--sl-color-gray-5); }
+.story-frames button:hover { color: var(--sl-color-white); }
+.story-frames button[aria-pressed="true"] { background: var(--sl-color-accent); color: var(--sl-color-black); }
+.story-frames button:focus-visible { outline: 2px solid var(--sl-color-accent); outline-offset: -2px; }
+.story-example p { margin: 0; }
+/* `clip` statt `hidden`: Die Box behaelt ihre ungestauchte Groesse im Layout (die
+   Verkleinerung ist eine Transformation), also ragt sie ueber die Buehne hinaus.
+   Ein `hidden`-Container laesst sich vom Browser trotzdem scrollen — ein Klick in
+   die Vorschau schob das Telefon nach oben und schnitt es dort ab. `clip` ist kein
+   Scroll-Container. */
+.story-stage { display: flex; justify-content: flex-start; overflow: clip; }
+/* clip-path zusaetzlich zu overflow: Die Karte (WebGL) liegt als eigene Ebene, die Chrome mit GPU nicht an border-radius beschneidet. */
+.story-box { --rl-r: .7rem; flex: none; overflow: hidden; border: 1px solid var(--sl-color-gray-5); border-radius: var(--rl-r); clip-path: inset(0 round var(--rl-r)); background: var(--sl-color-bg); transform-origin: top left; isolation: isolate; }
+.story-example iframe { display: block; width: 100%; height: 100%; max-width: none; border: 0; background: var(--sl-color-bg); }
+/* Rahmen und App bleiben unsichtbar, bis die Story gerendert ist, und ploppen dann gemeinsam auf; die Hoehe ist schon reserviert. */
+.story-box { opacity: 0; translate: 0 14px; transition: opacity .45s ease, translate .45s cubic-bezier(.2, .9, .3, 1.2); }
+.story-box.is-ready { opacity: 1; translate: 0 0; }
+@media (prefers-reduced-motion: reduce) { .story-box { translate: 0 0; transition: opacity .2s ease; } }
+.story-example[data-frame="phone"] .story-stage { justify-content: center; }
+.story-example[data-frame="phone"] .story-box { --rl-r: 1.4rem; border-width: 2px; transform-origin: top center; }
+.story-example p { padding: .6rem .1rem 0; font-size: .8rem; color: var(--sl-color-gray-2); margin: 0; }
+@media (max-width: 50rem) { :root { --sl-text-5xl: 2.4rem; } .rl-cards, .rl-cards.three { grid-template-columns: 1fr 1fr; } .rl-cards.one { grid-template-columns: 1fr; } }
+/* Telefon: Die Abstaende der Landing sind fuer zwei Spalten gedacht. Untereinander
+   gestapelt ergaben 3rem zwischen den Abschnitten und 2.5rem zwischen Text und Bild
+   Strecken, auf denen nichts steht. */
+@media (max-width: 49.99rem) {
+  .rl-ways, .rl-section { padding-block: 3.5rem; }
+  .rl-section { gap: 2.25rem; }
+  .rl-section h2, .rl-ways h2 { font-size: 1.65rem; }
+  .rl-section p, .rl-ways-head p { font-size: 1rem; }
+  /* Die Wege als Zeilen wie im Entwurf: Kachel links neben Titel und Text, statt vier hoher Karten untereinander. */
+  .rl-ways .rl-card { display: grid; grid-template-columns: 2.5rem 1fr; column-gap: 1rem; row-gap: .2rem; align-items: start; padding: 1rem; }
+  .rl-ways .rl-icon.tile { grid-row: span 2; margin-bottom: 0; }
+  .rl-outro { margin-block: 3.5rem 2.5rem; padding: 1.75rem 1.25rem; }
+  .rl-outro h2 { font-size: 1.4rem; }
+  .rl-outro .rl-actions, .rl-outro .rl-btn { width: 100%; justify-content: center; }
+  .rl-landing .rl-cards { gap: .75rem; }
+  .hero { padding-block: 1.5rem .5rem; }
+  /* Starlight klemmt die Hero-Zeile unten bei --sl-text-3xl (1.8rem) fest; auf dem
+     Telefon blieb davon eine Ueberschrift uebrig, die kaum groesser war als der Text
+     darunter. Hier waechst sie mit der Breite und fuellt die Zeile. */
+  .hero h1 { font-size: clamp(2.2rem, 9vw, 3rem); line-height: 1.1; }
+  .hero .tagline { font-size: 1.05rem; }
+}
+
+/* Referenz: dichte Tabellen, das Verhalten ohne Faehigkeit farbig wie im Storybook. */
+.rl-table { overflow-x: auto; }
+.rl-ref table { font-size: .9rem; width: 100%; }
+.rl-ref td, .rl-ref th { vertical-align: top; }
+.rl-ref h2 small { font-weight: 400; color: var(--sl-color-gray-3); font-size: .7em; margin-inline-start: .35rem; }
+.rl-links { font-size: .8em; margin-top: .2rem; display: flex; gap: .5rem; }
+.rl-legend li { margin: 0; }
+.rl-without.throws { color: var(--sl-color-red); }
+.rl-without.none { color: var(--sl-color-gray-3); }
+.rl-note { color: var(--sl-color-gray-3); }
+
+.rl-hooks { display: grid; gap: .6rem; margin-top: 1rem; }
+.rl-hook { border: 1px solid var(--sl-color-gray-5); border-radius: .6rem; padding: .7rem .9rem; background: var(--sl-color-bg-sidebar); }
+.rl-hook-head { display: flex; flex-wrap: wrap; gap: .4rem .5rem; align-items: baseline; font-size: .95rem; }
+.rl-hook-head > code:first-child { font-weight: 600; }
+.rl-arrow { color: var(--sl-color-gray-3); }
+.rl-hook-q { margin: .35rem 0 .4rem !important; line-height: 1.5; }
+.rl-hook-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .3rem 1rem; font-size: .82rem; color: var(--sl-color-gray-2); }
+.rl-hook-meta .rl-links { margin-top: 0; font-size: 1em; }
+/* Paketnamen nicht umbrechen: die erste Spalte traegt den ganzen Namen. */
+.rl-packages td:first-child, .rl-packages th:first-child { white-space: nowrap; width: 1%; padding-inline-end: 1.5rem; }
+.rl-ref th { text-align: start; white-space: nowrap; width: 1%; padding-inline-end: 1rem; font-weight: 600; }
+.rl-hint { display: inline-block; margin-inline-end: .75rem; }

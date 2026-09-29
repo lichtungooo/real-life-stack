@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, startTransition } fr
 import type { Item } from "@real-life-stack/data-interface"
 import { isWritable, hasRelations, isAuthenticatable, deriveContext } from "@real-life-stack/data-interface"
 import { useConnector } from "./connector-context"
+import { standingMark, standingStateCounts, useCanVerifyItems, useItemStandings } from "./use-item-standing"
 
 /** Aggregated reaction for a single emoji. */
 export interface AggregatedReaction {
@@ -23,7 +24,7 @@ export interface AggregatedReaction {
 /** Return value of useReactions hook. */
 export interface UseReactionsResult {
   /** Aggregated reactions sorted by count (highest first). */
-  reactions: AggregatedReaction[]
+  data: AggregatedReaction[]
   /** Set or toggle the current user's reaction. Same emoji = remove, different emoji = switch. */
   react: (emoji: string) => Promise<void>
   /** Whether the hook is loading initial data. */
@@ -33,9 +34,17 @@ export interface UseReactionsResult {
 }
 
 /**
+ * How was reacted, and can I set my reaction?
+ *
  * Hook for reading and toggling reactions on an item.
  * Reads from item.data.reactions (summary) and item.data.myReaction (current user).
  * Uses optimistic updates with latest-wins for rapid clicks.
+ *
+ * @answers `{data, isLoading, react, canReact}`
+ * @without empty — `react` no-op
+ * @group relations
+ * @see story rls-foundations-hooks--relations
+ * @see spec docs/spec/08-relation-records.md
  */
 export function useReactions(itemId: string): UseReactionsResult {
   const connector = useConnector()
@@ -48,7 +57,14 @@ export function useReactions(itemId: string): UseReactionsResult {
     () => (canRelate ? connector.observeRelatedItems(itemId, "reactsTo", { direction: "to" }) : null),
     [canRelate, connector, itemId],
   )
-  const [reactionItems, setReactionItems] = useState<Item[]>(relatedObservable?.current ?? [])
+  const [relatedReactions, setReactionItems] = useState<Item[]>(relatedObservable?.current ?? [])
+  // Only reactions that count (spec 08 → Beleg erforderlich: attested or
+  // unsigned) — invalid ones and those still being verified do not.
+  const standings = useItemStandings(relatedReactions)
+  const reactionItems = useMemo(
+    () => relatedReactions.filter((reaction) => standingStateCounts(standings.get(reaction.id))),
+    [relatedReactions, standings],
+  )
   useEffect(() => {
     if (!relatedObservable) return
     setReactionItems(relatedObservable.current)
@@ -70,7 +86,9 @@ export function useReactions(itemId: string): UseReactionsResult {
 
   // Optimistic overlay for the current user's own reaction: applied on click,
   // dropped as soon as the related-items observable reflects the write.
-  const [pending, setPending] = useState<{ emoji: string | null } | null>(null)
+  // `writtenId`: the reaction item the write produced — the overlay is bound
+  // to exactly that item, so a final negative verdict on it withdraws it.
+  const [pending, setPending] = useState<{ emoji: string | null; writtenId?: string } | null>(null)
 
   const myReactionItem = useMemo(
     () => (currentUserId ? reactionItems.find((r) => r.createdBy === currentUserId) : undefined),
@@ -79,10 +97,15 @@ export function useReactions(itemId: string): UseReactionsResult {
   const persistedMyReaction = typeof myReactionItem?.data.emoji === "string" ? myReactionItem.data.emoji : undefined
   const myReaction = pending ? pending.emoji ?? undefined : persistedMyReaction
 
+  // The written reaction's verdict is FINAL and negative (spec 08: invalid
+  // never counts). While it is still being verified the overlay stays — no
+  // flicker; once rejected it is withdrawn.
+  const writtenRejected = pending?.writtenId !== undefined && standings.get(pending.writtenId) === "invalid"
+
   useEffect(() => {
     if (!pending) return
-    if ((pending.emoji ?? undefined) === persistedMyReaction) setPending(null)
-  }, [pending, persistedMyReaction])
+    if ((pending.emoji ?? undefined) === persistedMyReaction || writtenRejected) setPending(null)
+  }, [pending, persistedMyReaction, writtenRejected])
 
   const reactions: AggregatedReaction[] = useMemo(() => {
     const byEmoji = new Map<string, string[]>()
@@ -146,13 +169,16 @@ export function useReactions(itemId: string): UseReactionsResult {
 
       if (!isSameEmoji) {
         const data = { emoji }
-        await writableConnector.createItem({
+        const written = await writableConnector.createItem({
           type: "reaction",
           createdBy: userId ?? "anonymous",
           "@context": deriveContext("reaction", data),
           data,
           relations: [{ predicate: "reactsTo", target: `item:${itemId}` }],
         })
+        if (latestRef.current === requestId) {
+          setPending((current) => (current && current.emoji === emoji ? { ...current, writtenId: written.id } : current))
+        }
       }
     } catch {
       if (latestRef.current === requestId) setPending(null)
@@ -166,7 +192,7 @@ export function useReactions(itemId: string): UseReactionsResult {
   }, [performReact])
 
   return {
-    reactions,
+    data: reactions,
     react,
     isLoading: relatedObservable === null,
     canReact,
@@ -179,25 +205,36 @@ export interface ReactionUser {
   displayName: string
   avatarUrl?: string
   emoji: string
+  /** The reaction carries no signature (spec 08 → Beleg erforderlich):
+      shown and counted, subtly marked. */
+  unsigned?: boolean
 }
 
 /** Return value of useReactionUsers hook. */
 export interface UseReactionUsersResult {
   /** Users who reacted, sorted reverse chronologically. */
-  users: ReactionUser[]
+  data: ReactionUser[]
   /** Whether the data is still loading. */
   isLoading: boolean
 }
 
 /**
+ * Who reacted with which emoji?
+ *
  * Hook for loading the list of users who reacted to an item.
  * Lazy-loaded — only fetches when called.
+ *
+ * @answers `{data, isLoading}`
+ * @without empty
+ * @group relations
+ * @see story rls-foundations-hooks--relations
+ * @see spec docs/spec/08-relation-records.md
  */
 export function useReactionUsers(itemId: string, emojiFilter?: string): UseReactionUsersResult {
   const connector = useConnector()
   const canRelate = hasRelations(connector)
   const canAuth = isAuthenticatable(connector)
-  const [users, setUsers] = useState<ReactionUser[]>([])
+  const [entries, setUsers] = useState<Array<{ user: ReactionUser; item: Item }>>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -224,7 +261,7 @@ export function useReactionUsers(itemId: string, emojiFilter?: string): UseReact
         )
 
         // Resolve user info
-        const resolvedUsers: ReactionUser[] = await Promise.all(
+        const resolvedUsers: Array<{ user: ReactionUser; item: Item }> = await Promise.all(
           sorted.map(async (r) => {
             let displayName = r.createdBy
             let avatarUrl: string | undefined
@@ -242,10 +279,13 @@ export function useReactionUsers(itemId: string, emojiFilter?: string): UseReact
             }
 
             return {
-              id: r.createdBy,
-              displayName,
-              avatarUrl,
-              emoji: (r.data as { emoji?: string }).emoji ?? "",
+              item: r,
+              user: {
+                id: r.createdBy,
+                displayName,
+                avatarUrl,
+                emoji: (r.data as { emoji?: string }).emoji ?? "",
+              },
             }
           })
         )
@@ -265,5 +305,18 @@ export function useReactionUsers(itemId: string, emojiFilter?: string): UseReact
     return () => { cancelled = true }
   }, [connector, canRelate, canAuth, itemId, emojiFilter])
 
-  return { users, isLoading }
+  // Same rule as useReactions: only counting reactions, unsigned ones marked.
+  const loadedItems = useMemo(() => entries.map((entry) => entry.item), [entries])
+  const standings = useItemStandings(loadedItems)
+  const verifiable = useCanVerifyItems()
+  const users = useMemo(
+    () => entries
+      .filter((entry) => standingStateCounts(standings.get(entry.item.id)))
+      .map((entry) => (standingMark(entry.item, standings.get(entry.item.id), verifiable) === "unsigned"
+        ? { ...entry.user, unsigned: true }
+        : entry.user)),
+    [entries, standings, verifiable],
+  )
+
+  return { data: users, isLoading }
 }

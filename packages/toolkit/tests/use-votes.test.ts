@@ -1,5 +1,6 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
-import type { DataInterface, Observable, RelationRecord, RelationRecordInput } from "@real-life-stack/data-interface"
+import type { DataInterface, Item, Observable, RelationRecord, RelationRecordInput } from "@real-life-stack/data-interface"
+import { itemContentHash } from "@real-life-stack/data-interface"
 
 interface HookSlot {
   cleanup?: () => void
@@ -9,6 +10,7 @@ interface HookSlot {
 
 const harness = {
   connector: null as unknown as DataInterface,
+  population: undefined as unknown,
   hookIndex: 0,
   slots: [] as HookSlot[],
 }
@@ -18,6 +20,7 @@ function sameDeps(left: readonly unknown[] | undefined, right: readonly unknown[
 }
 
 function resetHarness(): void {
+  harness.population = undefined
   for (const slot of harness.slots) slot?.cleanup?.()
   harness.hookIndex = 0
   harness.slots = []
@@ -34,12 +37,22 @@ function renderHookSettled<T>(render: () => T): T {
   return renderHook(render)
 }
 
-/** Render, flush async verdict effects, render again — the fail-closed
-    aggregation only counts after verification settles. */
+/** Render, flush async effects, render again — the fail-closed aggregation
+    only counts after verification settles. Several rounds: record and item
+    verdicts settle first, the statement's content hash after them. */
 async function renderHookVerified<T>(render: () => T): Promise<T> {
+  // Not a fixed number of rounds: under a loaded full-suite run the async
+  // verification and hashing take longer. Settle until the result has been
+  // unchanged for 100 ms (min 4 rounds, max ~2 s).
   renderHook(render)
-  renderHook(render)
-  await new Promise((resolve) => setTimeout(resolve, 0))
+  let last = ""
+  let stable = 0
+  for (let round = 0; round < 200 && (round < 4 || stable < 10); round++) {
+    const snapshot = JSON.stringify((renderHook(render) as { data?: unknown }).data ?? null)
+    stable = snapshot === last ? stable + 1 : 0
+    last = snapshot
+    await new Promise((resolve) => setTimeout(resolve, 10))
+  }
   return renderHook(render)
 }
 
@@ -50,6 +63,15 @@ function staticObservable<T>(value: T): Observable<T> {
 const ME = "did:key:me"
 const OTHER = "did:key:other"
 const STATEMENT = "statement-1"
+const STATEMENT_ITEM: Item = {
+  id: STATEMENT,
+  type: "statement",
+  createdBy: OTHER,
+  createdAt: "2026-08-01T00:00:00.000Z",
+  data: { title: "Wir treffen uns montags." },
+}
+/** Content hash of STATEMENT_ITEM's wording — set in beforeAll. */
+let HASH = ""
 
 function voteRecord(id: string, voter: string, value: string, overrides: Partial<RelationRecord> = {}): RelationRecord {
   return {
@@ -57,7 +79,7 @@ function voteRecord(id: string, voter: string, value: string, overrides: Partial
     predicate: "votesOn",
     from: `global:${voter}`,
     to: `item:${STATEMENT}`,
-    fields: { value },
+    fields: { value, contentHash: HASH },
     createdBy: voter,
     createdAt: "2026-08-04T00:00:00.000Z",
     ...overrides,
@@ -74,7 +96,7 @@ interface FakeWrites {
  * Stateful record fake: writes mutate the record set, so a second serialized
  * vote() call reads the effect of the first — the double-click contract.
  */
-function connector(initialRecords: RelationRecord[], opts?: { userId?: string | null; authenticatable?: boolean; verdicts?: false | ((record: RelationRecord) => "valid" | "invalid" | "trusted") }) {
+function connector(initialRecords: RelationRecord[], opts?: { userId?: string | null; authenticatable?: boolean; verdicts?: false | ((record: RelationRecord) => "valid" | "invalid" | "trusted"); statementVerdict?: "valid" | "invalid" | "trusted" }) {
   const writes: FakeWrites = { created: [], updated: [], deleted: [] }
   const records = [...initialRecords]
   const userId = opts?.userId === undefined ? ME : opts.userId
@@ -88,7 +110,7 @@ function connector(initialRecords: RelationRecord[], opts?: { userId?: string | 
     getItems: async () => [],
     getItem: async () => null,
     observe: () => staticObservable([]),
-    observeItem: () => staticObservable(null),
+    observeItem: (id: string) => staticObservable(id === STATEMENT ? STATEMENT_ITEM : null),
     // RelationRecordCapable
     getRelationRecords: vi.fn(async (filter?: { predicate?: string; to?: string }) => matches(filter)),
     observeRelationRecords: vi.fn((filter?: { predicate?: string; to?: string }) => staticObservable(matches(filter))),
@@ -106,6 +128,7 @@ function connector(initialRecords: RelationRecord[], opts?: { userId?: string | 
         predicate: input.predicate,
         from: input.from,
         to: input.to,
+        fields: { ...input.fields },
       })
       records.push(record)
       return record
@@ -126,6 +149,8 @@ function connector(initialRecords: RelationRecord[], opts?: { userId?: string | 
     // Default: authoritative-style trusted verdict, overridable per record.
     const verdictFor = typeof opts?.verdicts === "function" ? opts.verdicts : () => "trusted" as const
     fake.verifyRecordClaim = vi.fn(async (record: RelationRecord) => verdictFor(record))
+    // The statement stands (authoritative-style): its wording decides.
+    fake.verifyItemClaim = vi.fn(async () => (opts?.statementVerdict ?? "trusted"))
   }
   if (opts?.authenticatable !== false) {
     Object.assign(fake, {
@@ -144,8 +169,13 @@ function connector(initialRecords: RelationRecord[], opts?: { userId?: string | 
 let hooks: typeof import("../src/hooks/use-votes")
 
 beforeAll(async () => {
+  HASH = (await itemContentHash(STATEMENT_ITEM))!
   vi.doMock("react", () => ({
     startTransition: (callback: () => void) => callback(),
+    // Contexts resolve to their default (no provider in this harness), unless
+    // a test sets `harness.population`.
+    createContext: <T>(value: T) => ({ defaultValue: value, Provider: () => null }),
+    useContext: <T>(context: { defaultValue: T }) => (harness.population ?? context.defaultValue) as T,
     useMemo: <T>(factory: () => T, deps: readonly unknown[]) => {
       const index = harness.hookIndex++
       const previous = harness.slots[index]
@@ -185,6 +215,7 @@ beforeAll(async () => {
   }))
   vi.doMock("../src/hooks/connector-context", () => ({
     useConnector: () => harness.connector,
+    useOptionalConnector: () => harness.connector,
   }))
   hooks = await import("../src/hooks/use-votes")
 })
@@ -195,14 +226,14 @@ describe("useVotes — write contract (auth-bound record facade)", () => {
   it("casts a vote through createRelationRecord with the canonical author-bound input — never a caller-supplied createdBy", async () => {
     const { connector: c, writes } = connector([])
     harness.connector = c
-    const result = renderHookSettled(() => hooks.useVotes(STATEMENT))
+    const result = await renderHookVerified(() => hooks.useVotes(STATEMENT))
     await result.vote("green")
 
     expect(writes.created).toEqual([{
       predicate: "votesOn",
       from: `global:${ME}`,
       to: `item:${STATEMENT}`,
-      fields: { value: "green" },
+      fields: { value: "green", contentHash: HASH },
     }])
     expect("createdBy" in (writes.created[0] as object)).toBe(false)
     expect(writes.updated).toHaveLength(0)
@@ -213,10 +244,10 @@ describe("useVotes — write contract (auth-bound record facade)", () => {
     const mine = voteRecord("rel-mine", ME, "green")
     const { connector: c, writes } = connector([mine])
     harness.connector = c
-    const result = renderHookSettled(() => hooks.useVotes(STATEMENT))
+    const result = await renderHookVerified(() => hooks.useVotes(STATEMENT))
     await result.vote("red")
 
-    expect(writes.updated).toEqual([{ id: "rel-mine", updates: { fields: { value: "red" } } }])
+    expect(writes.updated).toEqual([{ id: "rel-mine", updates: { fields: { value: "red", contentHash: HASH } } }])
     expect(writes.created).toHaveLength(0)
     expect(writes.deleted).toHaveLength(0)
   })
@@ -225,7 +256,7 @@ describe("useVotes — write contract (auth-bound record facade)", () => {
     const mine = voteRecord("rel-mine", ME, "yellow")
     const { connector: c, writes } = connector([mine])
     harness.connector = c
-    const result = renderHookSettled(() => hooks.useVotes(STATEMENT))
+    const result = await renderHookVerified(() => hooks.useVotes(STATEMENT))
     await result.vote("yellow")
 
     expect(writes.deleted).toEqual(["rel-mine"])
@@ -239,7 +270,7 @@ describe("useVotes — write contract (auth-bound record facade)", () => {
     // against the stale rendered myVote and vote again.
     const { connector: c, writes } = connector([])
     harness.connector = c
-    const result = renderHookSettled(() => hooks.useVotes(STATEMENT))
+    const result = await renderHookVerified(() => hooks.useVotes(STATEMENT))
     await result.vote("green")
     await result.vote("green")
 
@@ -253,10 +284,10 @@ describe("useVotes — write contract (auth-bound record facade)", () => {
     const broken = voteRecord("rel-mine", ME, "purple")
     const { connector: c, writes } = connector([broken])
     harness.connector = c
-    const result = renderHookSettled(() => hooks.useVotes(STATEMENT))
+    const result = await renderHookVerified(() => hooks.useVotes(STATEMENT))
     await result.vote("green")
 
-    expect(writes.updated).toEqual([{ id: "rel-mine", updates: { fields: { value: "green" } } }])
+    expect(writes.updated).toEqual([{ id: "rel-mine", updates: { fields: { value: "green", contentHash: HASH } } }])
     expect(writes.deleted).toHaveLength(0)
   })
 
@@ -264,10 +295,10 @@ describe("useVotes — write contract (auth-bound record facade)", () => {
     const broken = voteRecord("rel-mine", ME, "unused", { fields: {} })
     const { connector: c, writes } = connector([broken])
     harness.connector = c
-    const result = renderHookSettled(() => hooks.useVotes(STATEMENT))
+    const result = await renderHookVerified(() => hooks.useVotes(STATEMENT))
     await result.vote("yellow")
 
-    expect(writes.updated).toEqual([{ id: "rel-mine", updates: { fields: { value: "yellow" } } }])
+    expect(writes.updated).toEqual([{ id: "rel-mine", updates: { fields: { value: "yellow", contentHash: HASH } } }])
     expect(writes.deleted).toHaveLength(0)
   })
 
@@ -299,7 +330,7 @@ describe("useVotes — aggregation (shared validation)", () => {
       voteRecord("rel-4", ME, "yellow"),
     ]).connector
     const result = await renderHookVerified(() => hooks.useVotes(STATEMENT))
-    expect(result.summary).toEqual({ green: 2, yellow: 1, red: 1, total: 4, myVote: "yellow" })
+    expect(result.data).toEqual({ green: 2, yellow: 1, red: 1, total: 4, myVote: "yellow" })
   })
 
   it("ignores forged records (endpoint not bound to author) and malformed values", async () => {
@@ -310,7 +341,7 @@ describe("useVotes — aggregation (shared validation)", () => {
       voteRecord("rel-3", "did:key:third", "purple"),
     ]).connector
     const result = await renderHookVerified(() => hooks.useVotes(STATEMENT))
-    expect(result.summary).toEqual({ green: 1, yellow: 0, red: 0, total: 1 })
+    expect(result.data).toEqual({ green: 1, yellow: 0, red: 0, total: 1 })
   })
 
   it("counts at most one vote per voter even when duplicate records exist", async () => {
@@ -319,8 +350,8 @@ describe("useVotes — aggregation (shared validation)", () => {
       voteRecord("rel-a", OTHER, "red"),
     ]).connector
     const result = await renderHookVerified(() => hooks.useVotes(STATEMENT))
-    expect(result.summary.total).toBe(1)
-    expect(result.summary.red).toBe(1) // deterministic winner: smallest record id
+    expect(result.data.total).toBe(1)
+    expect(result.data.red).toBe(1) // deterministic winner: smallest record id
   })
 })
 
@@ -329,10 +360,10 @@ describe("useVotes — claim verdicts (fail closed, spec 08 L1-L3)", () => {
     harness.connector = connector([voteRecord("rel-1", OTHER, "green")]).connector
     // First frames: verdicts pending → nothing counts.
     const early = renderHookSettled(() => hooks.useVotes(STATEMENT))
-    expect(early.summary.total).toBe(0)
+    expect(early.data.total).toBe(0)
     // After the verdict effect settles: counted (monotone unverified→counted).
     const settled = await renderHookVerified(() => hooks.useVotes(STATEMENT))
-    expect(settled.summary).toEqual({ green: 1, yellow: 0, red: 0, total: 1 })
+    expect(settled.data).toEqual({ green: 1, yellow: 0, red: 0, total: 1 })
   })
 
   it("invalid records never count", async () => {
@@ -341,13 +372,119 @@ describe("useVotes — claim verdicts (fail closed, spec 08 L1-L3)", () => {
       voteRecord("rel-bad", "did:key:third", "red"),
     ], { verdicts: (record) => (record.id === "rel-bad" ? "invalid" : "valid") }).connector
     const result = await renderHookVerified(() => hooks.useVotes(STATEMENT))
-    expect(result.summary).toEqual({ green: 1, yellow: 0, red: 0, total: 1 })
+    expect(result.data).toEqual({ green: 1, yellow: 0, red: 0, total: 1 })
   })
 
   it("a connector WITHOUT the verification capability yields an empty authorial aggregate", async () => {
     harness.connector = connector([voteRecord("rel-1", OTHER, "green")], { verdicts: false }).connector
     const result = await renderHookVerified(() => hooks.useVotes(STATEMENT))
-    expect(result.summary.total).toBe(0)
+    expect(result.data.total).toBe(0)
+  })
+})
+
+describe("useVotes — a vote counts for one wording (resonance.md, vote rule 5)", () => {
+  it("counts only votes on the current wording; the own earlier vote shows as myVoteOtherVersion", async () => {
+    harness.connector = connector([
+      voteRecord("rel-1", "did:key:third", "green"),
+      voteRecord("rel-2", "did:key:fourth", "red", { fields: { value: "red", contentHash: "sha256:earlier" } }),
+      voteRecord("rel-3", "did:key:fifth", "red", { fields: { value: "red" } }),
+      voteRecord("rel-4", ME, "yellow", { fields: { value: "yellow", contentHash: "sha256:earlier" } }),
+    ]).connector
+    const result = await renderHookVerified(() => hooks.useVotes(STATEMENT))
+    expect(result.data).toEqual({ green: 1, yellow: 0, red: 0, total: 1, myVoteOtherVersion: "yellow" })
+  })
+
+  it("re-voting the same stance on a NEW wording renews the hash instead of withdrawing", async () => {
+    const mine = voteRecord("rel-mine", ME, "yellow", { fields: { value: "yellow", contentHash: "sha256:earlier" } })
+    const { connector: c, writes } = connector([mine])
+    harness.connector = c
+    const result = await renderHookVerified(() => hooks.useVotes(STATEMENT))
+    await result.vote("yellow")
+    expect(writes.updated).toEqual([{ id: "rel-mine", updates: { fields: { value: "yellow", contentHash: HASH } } }])
+    expect(writes.deleted).toHaveLength(0)
+  })
+
+  it("repairs an idempotent create that returns the own record with a stale hash", async () => {
+    const stale = voteRecord("rel-mine", ME, "green", { fields: { value: "green", contentHash: "sha256:earlier" } })
+    const { connector: c, writes } = connector([stale])
+    // Fresh read misses it (e.g. not yet synced), the create hits it.
+    ;(c as unknown as { getRelationRecords: ReturnType<typeof vi.fn> }).getRelationRecords.mockImplementation(async () => [])
+    harness.connector = c
+    const result = await renderHookVerified(() => hooks.useVotes(STATEMENT))
+    await result.vote("green")
+    expect(writes.updated).toEqual([{ id: "rel-mine", updates: { fields: { value: "green", contentHash: HASH } } }])
+  })
+
+  it("cannot vote on a statement without a positive verdict — no write, no optimistic count", async () => {
+    const { connector: c, writes } = connector([], { statementVerdict: "invalid" })
+    harness.connector = c
+    const before = await renderHookVerified(() => hooks.useVotes(STATEMENT))
+    expect(before.canVote).toBe(false)
+    await before.vote("green")
+    const after = await renderHookVerified(() => hooks.useVotes(STATEMENT))
+    expect(writes.created).toHaveLength(0)
+    expect(after.data.total).toBe(0)
+  })
+
+  it("an optimistic vote is void once the wording it was cast on changes", async () => {
+    const { connector: c } = connector([])
+    // The write never lands, so the overlay stays pending.
+    ;(c as unknown as { createRelationRecord: ReturnType<typeof vi.fn> }).createRelationRecord
+      .mockImplementation(() => new Promise(() => {}))
+    let current: Item = STATEMENT_ITEM
+    const listeners = new Set<(value: Item) => void>()
+    ;(c as unknown as { observeItem: unknown }).observeItem = () => ({
+      get current() { return current },
+      loaded: true,
+      subscribe: (callback: (value: Item) => void) => {
+        listeners.add(callback)
+        return () => listeners.delete(callback)
+      },
+    })
+    harness.connector = c
+    const ready = await renderHookVerified(() => hooks.useVotes(STATEMENT))
+    void ready.vote("green")
+    await new Promise((resolve) => setTimeout(resolve, 5))
+    const optimistic = renderHook(() => hooks.useVotes(STATEMENT))
+    expect(optimistic.data).toEqual({ green: 1, yellow: 0, red: 0, total: 1, myVote: "green" })
+
+    // The author rewords the statement while the write is still pending.
+    current = { ...STATEMENT_ITEM, data: { title: "Wir treffen uns dienstags." } }
+    for (const listener of listeners) listener(current)
+    const early = renderHook(() => hooks.useVotes(STATEMENT))
+    expect(early.data.total).toBe(0)
+    const settled = await renderHookVerified(() => hooks.useVotes(STATEMENT))
+    expect(settled.data).toEqual({ green: 0, yellow: 0, red: 0, total: 0 })
+  })
+
+  it("an own vote WITHOUT a hash does not count but is shown to its voter", async () => {
+    harness.connector = connector([voteRecord("rel-4", ME, "green", { fields: { value: "green" } })]).connector
+    const result = await renderHookVerified(() => hooks.useVotes(STATEMENT))
+    expect(result.data).toEqual({ green: 0, yellow: 0, red: 0, total: 0, myVoteOtherVersion: "green" })
+  })
+
+  it("no vote counts on a statement without a positive verdict", async () => {
+    harness.connector = connector([
+      voteRecord("rel-1", OTHER, "green"),
+      voteRecord("rel-2", ME, "red"),
+    ], { statementVerdict: "invalid" }).connector
+    const result = await renderHookVerified(() => hooks.useVotes(STATEMENT))
+    // Nothing counts, and the own vote is not an "earlier version" either.
+    expect(result.data).toEqual({ green: 0, yellow: 0, red: 0, total: 0 })
+  })
+})
+
+describe("useVotes — person set of the evaluation (resonance.md → Auswertung)", () => {
+  it('counts only the chosen people and reports „ohne Stimme"; the own stance stays', async () => {
+    harness.connector = connector([
+      voteRecord("rel-1", OTHER, "green"),
+      voteRecord("rel-2", "did:key:third", "red"),
+      voteRecord("rel-3", ME, "yellow"),
+    ]).connector
+    harness.population = { people: new Set([OTHER, "did:key:third", "did:key:fourth"]), size: 3 }
+    const result = await renderHookVerified(() => hooks.useVotes(STATEMENT))
+    // ME is outside the set: not counted, but still sees and can change the own vote.
+    expect(result.data).toEqual({ green: 1, yellow: 0, red: 1, total: 2, myVote: "yellow", noVote: 1 })
   })
 })
 
@@ -373,21 +510,21 @@ describe("useVotes — verdict binds CONTENT, not just the record id (#235 revie
       .mockImplementation(() => live)
     harness.connector = c
     const counted = await renderHookVerified(() => hooks.useVotes(STATEMENT))
-    expect(counted.summary.total).toBe(1)
+    expect(counted.data.total).toBe(1)
 
     // A manipulated peer write: SAME id, changed content, emitted as a new
     // array — exactly what the real observable does.
-    current = [{ ...record, fields: { value: "red" } }]
+    current = [{ ...record, fields: { value: "red", contentHash: HASH } }]
     for (const listener of listeners) listener(current)
 
     // FAIL CLOSED immediately: the stale id-keyed verdict must not carry
     // over to different content — even BEFORE re-verification settles.
     const early = renderHook(() => hooks.useVotes(STATEMENT))
-    expect(early.summary.total).toBe(0)
+    expect(early.data.total).toBe(0)
 
     // And after settling, the invalid verdict keeps it out.
     const settled = await renderHookVerified(() => hooks.useVotes(STATEMENT))
-    expect(settled.summary.total).toBe(0)
+    expect(settled.data.total).toBe(0)
   })
 })
 
@@ -396,16 +533,16 @@ describe("useVotes — verdicts are bound to the connector instance (#235 round 
     const records = [voteRecord("rel-1", OTHER, "green")]
     harness.connector = connector(records).connector
     const counted = await renderHookVerified(() => hooks.useVotes(STATEMENT))
-    expect(counted.summary.total).toBe(1)
+    expect(counted.data.total).toBe(1)
 
     // New connector instance, same records: the previous instance's verdicts
     // must not carry over for even one frame.
     harness.connector = connector(records).connector
     const early = renderHook(() => hooks.useVotes(STATEMENT))
-    expect(early.summary.total).toBe(0)
+    expect(early.data.total).toBe(0)
 
     const settled = await renderHookVerified(() => hooks.useVotes(STATEMENT))
-    expect(settled.summary.total).toBe(1)
+    expect(settled.data.total).toBe(1)
   })
 })
 

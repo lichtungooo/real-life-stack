@@ -1,9 +1,13 @@
 import { useCallback, useState } from "react"
 import type { DataInterface, Item, Relation } from "@real-life-stack/data-interface"
-import { deriveContext, hasItemGroups } from "@real-life-stack/data-interface"
+import { deriveContext, hasGroups, hasItemGroups, isWritable, parseLocalItemTarget, parseQualifiedItemTarget } from "@real-life-stack/data-interface"
 import { useCreateItem, useUpdateItem, useDeleteItem } from "./use-mutations"
 import { useConnector } from "./connector-context"
 import type { ContentComposerSubmitData } from "../components/composer/content-composer"
+import { writeOwnStatement, type OwnStatement } from "../lib/own-statement"
+import { resolveItemPermissions } from "./use-item-permissions"
+import type { IncomingEdgeChange } from "../components/composer/item-relations"
+import { createOptionsForSpace } from "../lib/create-in-space"
 
 /**
  * The shape a caller-supplied mapper returns. The hook handles the
@@ -22,6 +26,18 @@ export interface ItemEditorPayload {
    * vocabulary outside the activation heuristic is needed.
    */
   "@context"?: string[]
+  /**
+   * Eigene Aussagen an Record-Kanten, die nach dem Speichern geschrieben
+   * werden (Event: Zusagen im Personenfeld, 08 → Teilnahme am Event). Nie
+   * Teil des Items.
+   */
+  statements?: readonly OwnStatement[]
+  /**
+   * Eingehende Item-Kanten („Braucht"), die nach dem Speichern an den
+   * ANDEREN Items geschrieben werden — nur mit Schreibrecht dort. Nie Teil
+   * des Items.
+   */
+  incoming?: readonly IncomingEdgeChange[]
 }
 
 /**
@@ -81,7 +97,24 @@ export interface UseItemEditorResult {
    */
   submit(
     submission: ContentComposerSubmitData,
-    options?: { existingItem?: Item },
+    options?: {
+      existingItem?: Item
+      /** Receives the caught error (the reason) before `submit` resolves `null`. */
+      onError?: (error: Error) => void
+      /**
+       * The item is stored (created or updated) — called before the follow-up
+       * steps (space, statements). If one of those fails, a retry continues
+       * on this item instead of creating a second one (#523).
+       */
+      onPersisted?: (item: Item) => void
+      /**
+       * Setzt ein Anlegen fort, dessen Folgeschritt scheiterte (#523): Hat
+       * sich am Item nichts geändert, wird es nicht noch einmal geschrieben,
+       * nur die Folgeschritte laufen. Das Item kann in einem anderen als dem
+       * geöffneten Space liegen (Space des Formulars, Regel 6).
+       */
+      resume?: boolean
+    },
   ): Promise<Item | null>
 
   /**
@@ -150,12 +183,30 @@ export function buildUpdatePayload(
   }
 }
 
+/** Ändert `update` nichts an `stored`? (Leere Tags/Relationen gleich fehlenden.) */
+function sameAsStored(update: Partial<Item>, stored: Item): boolean {
+  const norm = (key: string, value: unknown) =>
+    JSON.stringify(value ?? (key === "tags" || key === "relations" ? [] : null))
+  return Object.entries(update).every(([key, value]) => norm(key, value) === norm(key, (stored as unknown as Record<string, unknown>)[key]))
+}
+
+/** Der Space des Formulars aus der Einreichung; leer = keiner. */
+function formGroupOf(submission: ContentComposerSubmitData): string | undefined {
+  const group = submission.data.group
+  return typeof group === "string" && group !== "" ? group : undefined
+}
+
 /**
- * Apply the composer's `group` selection as the item's group/space association.
- * The group is NOT item data — it's a connector association (`moveItemToGroup`),
- * so mappers omit `data.group` and we persist it here, for every module that
- * surfaces the group widget. No-ops when the connector has no groups, the
- * value is blank, or it already matches.
+ * Anlegen in einem Schritt (shared-components → Space des Formulars, Regel
+ * 6): die gemeinsame Anlegeprüfung {@link createOptionsForSpace}.
+ */
+const createOptionsFor = createOptionsForSpace
+
+/**
+ * Beim Bearbeiten: Wechselt der Space im Formular, verschiebt das Item
+ * (`moveItemToGroup`, Regel 6). Die Zuordnung ist keine Item-Eigenschaft;
+ * Mapper lassen `data.group` weg. No-op ohne Gruppen, ohne Wert oder wenn er
+ * schon stimmt.
  */
 async function applyItemGroup(
   connector: DataInterface,
@@ -168,12 +219,21 @@ async function applyItemGroup(
   await connector.moveItemToGroup(itemId, group)
 }
 
+/**
+ * Open the composer and save an input as an item, including its space.
+ *
+ * @answers `{isOpen, mode, submit, remove, …}`
+ * @without throws on call
+ * @group write
+ * @see story rls-foundations-hooks--write
+ * @see spec docs/spec/02-data-interface.md
+ */
 export function useItemEditor(options: UseItemEditorOptions): UseItemEditorResult {
   const { currentUserId, mapSubmission, onCreated, onUpdated, onDeleted } = options
   const connector = useConnector()
-  const { mutate: createItem } = useCreateItem()
-  const { mutate: updateItem } = useUpdateItem()
-  const { mutate: deleteItem } = useDeleteItem()
+  const createItem = useCreateItem()
+  const updateItem = useUpdateItem()
+  const deleteItem = useDeleteItem()
 
   const [isOpen, setIsOpen] = useState(false)
   const [currentItem, setCurrentItem] = useState<Item | null>(null)
@@ -202,7 +262,7 @@ export function useItemEditor(options: UseItemEditorOptions): UseItemEditorResul
   const submit = useCallback(
     async (
       submission: ContentComposerSubmitData,
-      submitOptions?: { existingItem?: Item },
+      submitOptions?: { existingItem?: Item; onError?: (error: Error) => void; onPersisted?: (item: Item) => void; resume?: boolean },
     ): Promise<Item | null> => {
       const existingItem = submitOptions?.existingItem ?? currentItem
       const activeMode: "create" | "edit" = existingItem ? "edit" : "create"
@@ -219,15 +279,27 @@ export function useItemEditor(options: UseItemEditorOptions): UseItemEditorResul
       try {
         if (activeMode === "create") {
           const payload = buildCreatePayload(mapped, currentUserId)
-          const created = await createItem(payload)
-          await applyItemGroup(connector, created.id, submission.data.group)
+          const created = await createItem(payload, createOptionsFor(connector, formGroupOf(submission)))
+          submitOptions?.onPersisted?.(created)
+          await applyStatements(connector, created, mapped.statements)
+          await applyIncoming(connector, created, mapped.incoming, currentUserId, formGroupOf(submission))
           await onCreated?.(created)
           return created
         }
 
         const update = buildUpdatePayload(mapped, existingItem!)
-        const updated = await updateItem(existingItem!.id, update)
+        const unchanged = submitOptions?.resume && sameAsStored(update, existingItem!)
+        // Fortsetzen mit geänderten Feldern: Bearbeiten erreicht nur Items im
+        // geöffneten Space. Liegt das angelegte Item woanders, sagt das
+        // Formular es, statt zu scheitern oder etwas vorzutäuschen (Codex R2/1).
+        if (submitOptions?.resume && !unchanged && !(await connector.getItem(existingItem!.id))) {
+          throw new Error("Schon in einem anderen Space angelegt – Änderungen dort bearbeiten; ohne Änderung setzt „Erneut“ fort")
+        }
+        const updated = unchanged ? existingItem! : await updateItem(existingItem!.id, update)
+        submitOptions?.onPersisted?.(updated)
         await applyItemGroup(connector, updated.id, submission.data.group)
+        await applyStatements(connector, updated, mapped.statements)
+        await applyIncoming(connector, updated, mapped.incoming, currentUserId, formGroupOf(submission))
         if (currentItem && currentItem.id === existingItem!.id) {
           setCurrentItem(updated)
         }
@@ -236,6 +308,7 @@ export function useItemEditor(options: UseItemEditorOptions): UseItemEditorResul
       } catch (err) {
         const wrapped = err instanceof Error ? err : new Error(String(err))
         setError(wrapped)
+        submitOptions?.onError?.(wrapped)
         return null
       } finally {
         setIsSubmitting(false)
@@ -276,4 +349,91 @@ export function useItemEditor(options: UseItemEditorOptions): UseItemEditorResul
     submit,
     remove,
   }
+}
+
+/** Nach dem Speichern: die eigenen Aussagen, der Reihe nach (Fehler brechen ab und zeigen sich im Formular). */
+async function applyStatements(connector: DataInterface, item: Item, statements: readonly OwnStatement[] | undefined): Promise<void> {
+  for (const statement of statements ?? []) await writeOwnStatement(connector, item, statement)
+}
+
+/**
+ * Nach dem Speichern: eingehende Item-Kanten („Braucht") an den anderen Items,
+ * der Reihe nach. Jede Quelle wird frisch gelesen; ohne Schreibrecht dort
+ * bricht das Speichern mit Grund ab, statt etwas vorzutäuschen. Idempotent:
+ * Eine Kante, die schon da ist (oder schon fehlt), wird nicht noch einmal
+ * geschrieben — „Erneut" setzt so ohne Doppel fort (#523).
+ */
+async function applyIncoming(
+  connector: DataInterface,
+  item: Item,
+  changes: readonly IncomingEdgeChange[] | undefined,
+  currentUserId: string | undefined,
+  formGroup: string | undefined,
+): Promise<void> {
+  if (!changes?.length) return
+  // Die Quellen liegen im Formular-Space; `getItem`/`updateItem` erreichen
+  // nur den geöffneten. Weichen beide ab, träfe eine gleiche Id in einem
+  // anderen Space das falsche Item (Codex R1/1) — dann nichts schreiben.
+  const openSpace = hasGroups(connector) ? (connector.getCurrentGroup()?.id ?? null) : null
+  if (hasItemGroups(connector) && formGroup && openSpace !== formGroup) {
+    throw new Error("„Braucht“ lässt sich nur im geöffneten Space speichern – zum Verknüpfen dorthin wechseln")
+  }
+  const space = formGroup ?? (hasItemGroups(connector) ? connector.getItemGroupId(item.id) : null)
+  // Vorprüfung: Erst wenn jede Quelle erreichbar und schreibbar ist, wird
+  // geschrieben — ein vorhersehbarer Teilfehler entsteht so nicht. Atomar ist
+  // das nicht; scheitert ein Schreibvorgang doch, setzt „Erneut" fort.
+  for (const change of changes) {
+    for (const id of [...change.add, ...change.remove]) await checkedSource(connector, id, currentUserId, space)
+  }
+  for (const change of changes) {
+    for (const id of change.add) await writeIncoming(connector, item, change.predicate, id, true, currentUserId, space)
+    for (const id of change.remove) await writeIncoming(connector, item, change.predicate, id, false, currentUserId, space)
+  }
+}
+
+/** Die Quelle frisch, im richtigen Space und schreibbar — sonst ein Fehler mit Grund. */
+async function checkedSource(connector: DataInterface, sourceId: string, currentUserId: string | undefined, space: string | null): Promise<Item> {
+  if (!isWritable(connector)) throw new Error("Dieser Speicher ist nur lesbar")
+  const source = await connector.getItem(sourceId)
+  if (!source || (space && hasItemGroups(connector) && connector.getItemGroupId(sourceId) !== space)) {
+    throw new Error("Eine verknüpfte Aufgabe ist hier nicht erreichbar – die Verknüpfung wurde nicht gespeichert")
+  }
+  const title = typeof source.data?.title === "string" && source.data.title.trim() !== "" ? source.data.title : "Ohne Titel"
+  if (!resolveItemPermissions(connector, source, currentUserId).canEdit) {
+    throw new Error(`Keine Schreibrechte an „${title}“ – die Verknüpfung wurde dort nicht gespeichert`)
+  }
+  return source
+}
+
+async function writeIncoming(
+  connector: DataInterface,
+  item: Item,
+  predicate: string,
+  sourceId: string,
+  add: boolean,
+  currentUserId: string | undefined,
+  space: string | null,
+): Promise<void> {
+  // Frisch vor jedem Schreibvorgang: eine Kante, die inzwischen dazukam, bleibt.
+  const source = await checkedSource(connector, sourceId, currentUserId, space)
+  if (!isWritable(connector)) return
+  const relations = source.relations ?? []
+  // Wie die Leseform (04, Target-Konventionen): `item:<id>` ist space-lokal,
+  // `space:{id}/item:<id>` zeigt auf genau diesen Space.
+  const pointsHere = (r: Relation) => {
+    if (r.predicate !== predicate) return false
+    if (parseLocalItemTarget(r.target) === item.id) return true
+    const qualified = parseQualifiedItemTarget(r.target)
+    // Nur bei bekanntem Space — wie die Leseform (targetPointsTo), sonst träfe
+    // es eine Kante in einen anderen Space (Codex R2/2).
+    return !!qualified && space !== null && qualified.itemId === item.id && qualified.homeSpaceId === space
+  }
+  if (add) {
+    if (relations.some(pointsHere)) return
+    await connector.updateItem(sourceId, { relations: [...relations, { predicate, target: `item:${item.id}` }] })
+    return
+  }
+  const kept = relations.filter((r) => !pointsHere(r))
+  if (kept.length === relations.length) return
+  await connector.updateItem(sourceId, { relations: kept })
 }

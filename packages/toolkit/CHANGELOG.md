@@ -1,5 +1,120 @@
 # Changelog
 
+## [0.3.0](https://github.com/real-life-org/real-life-stack/compare/toolkit-v0.2.1...toolkit-v0.3.0) (2026-09-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* **toolkit:** SelfActionFollowUps hat die Form { field, complete, release }; SelfActionFollowUp und FOLLOW_UP_WHEN entfallen (seit #528, nicht released).
+* **toolkit:** Die Gruppenwahl ist kein Widget im Formularkörper mehr, sondern steht im Kopf; der Typ-Umschalter ist ein Auswahlfeld.
+* aggregateVoteStats(records, contentHashes) verlangt die Inhalts-Hashes der zählenden Statements.
+
+### Features
+
+* Space des Formulars und GroupScopeCapable in allen Connectoren (S3b A) ([#536](https://github.com/real-life-org/real-life-stack/issues/536)) ([b4d7eb7](https://github.com/real-life-org/real-life-stack/commit/b4d7eb79475abacb4f25fd018567619e151623bd))
+* Stimmen an den Wortlaut binden, Beleg-Status aus dem Katalog ([#502](https://github.com/real-life-org/real-life-stack/issues/502)) ([16e6eb8](https://github.com/real-life-org/real-life-stack/commit/16e6eb8886467dd24d47b53c94ef9a884cdc78f2))
+* **toolkit:** Auswertung im Resonanzmodul – Personenmenge, Personen-Filter, neue Sortierungen ([#508](https://github.com/real-life-org/real-life-stack/issues/508)) ([7a0fb0b](https://github.com/real-life-org/real-life-stack/commit/7a0fb0b51eaa856e59ee8c279ce818e4e09e28b1))
+* **toolkit:** einfache Wert-Widgets status, number, select, url, chips, contact (S4a) ([#543](https://github.com/real-life-org/real-life-stack/issues/543)) ([847a1e7](https://github.com/real-life-org/real-life-stack/commit/847a1e7c31ceb1c0efd252c5529313adc12d07a8))
+* **toolkit:** Fassungen-Liste nach dem Claude Design, Resonanz im Demo-Space ([#537](https://github.com/real-life-org/real-life-stack/issues/537)) ([b2bd4f7](https://github.com/real-life-org/real-life-stack/commit/b2bd4f7269fd245e01161d7c9bed83518209a2cd))
+* **toolkit:** Import und Export im Resonanzmodul ([#519](https://github.com/real-life-org/real-life-stack/issues/519)) ([1c590cc](https://github.com/real-life-org/real-life-stack/commit/1c590cc363a985c71d189e8c50611d628988eb8d))
+* **toolkit:** Item-Detail und Composer aus dem Feld- und Kantenregister (S1) ([#511](https://github.com/real-life-org/real-life-stack/issues/511)) ([6531610](https://github.com/real-life-org/real-life-stack/commit/6531610f6a544e956fd9cdfc26e9bc3744c0ca91))
+* **toolkit:** ItemPreview-Dichte dense für Matrix-Flächen ([#360](https://github.com/real-life-org/real-life-stack/issues/360)) ([b05ef47](https://github.com/real-life-org/real-life-stack/commit/b05ef478944d97892a609160c37ee0febf7b95a1))
+* **toolkit:** Kommentare und Reaktionen nach Beleg-Status zählen und markieren ([#503](https://github.com/real-life-org/real-life-stack/issues/503)) ([997b1a6](https://github.com/real-life-org/real-life-stack/commit/997b1a61b6fe9d7c47f73adb41b13f43ea72e130))
+* **toolkit:** Menschen-Zeile mit Qualifier und Selbstaktionen (S2) ([#518](https://github.com/real-life-org/real-life-stack/issues/518)) ([30daafe](https://github.com/real-life-org/real-life-stack/commit/30daafe008daa9ea7bf7387bdde9b3c444b5e68d))
+* **toolkit:** Modul-Filter überdauern den Modulwechsel (useModuleFilter) ([#509](https://github.com/real-life-org/real-life-stack/issues/509)) ([0265645](https://github.com/real-life-org/real-life-stack/commit/02656456ffec5d750d803fea92a07ef20f044f43))
+* **toolkit:** Varianten im Resonanzmodul, kein Bearbeiten bei eingefrorenem Wortlaut ([#505](https://github.com/real-life-org/real-life-stack/issues/505)) ([ffe4bde](https://github.com/real-life-org/real-life-stack/commit/ffe4bde2a54683c0c813310d20c9a7241540e7d5))
+* **toolkit:** Verknüpfungen, Item-Verweis, Rückwärts-Listen und Folgeaktionen der Aufgabe (S3) ([#528](https://github.com/real-life-org/real-life-stack/issues/528)) ([ee5efb3](https://github.com/real-life-org/real-life-stack/commit/ee5efb3f8dc47ee69539468e9d11bd8aa11f47d5))
+* **toolkit:** Zustandsmodell der Aufgabe, Mitmachen, assignedTo.role, „Braucht“ schreibbar, Listenzeilen aus ItemPreview (S3b B) ([#542](https://github.com/real-life-org/real-life-stack/issues/542)) ([4e85fa1](https://github.com/real-life-org/real-life-stack/commit/4e85fa1769a9b05baa9f82793e3672388f2b58c2))
+
+
+### Bug Fixes
+
+* **site:** Proportionen der Landing auf dem Telefon ([#483](https://github.com/real-life-org/real-life-stack/issues/483)) ([653310a](https://github.com/real-life-org/real-life-stack/commit/653310a8ef39f017e7efc0dea6e3f5da060c38e7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @real-life-stack/data-interface bumped to 0.4.0
+  * devDependencies
+    * @real-life-stack/mock-connector bumped to 0.2.2
+
+## [0.2.1](https://github.com/real-life-org/real-life-stack/compare/toolkit-v0.2.0...toolkit-v0.2.1) (2026-09-24)
+
+
+### Features
+
+* **site:** Referenz „Module" aus dem Register; Dunkelmodus mit echtem Orange ([#467](https://github.com/real-life-org/real-life-stack/issues/467)) ([cec044b](https://github.com/real-life-org/real-life-stack/commit/cec044b8e8109d61a60f211b9b6aae86a7222246))
+* **toolkit:** Build-Zeile im Nutzer-Menü — welcher Stand läuft, so dezent wie möglich ([#461](https://github.com/real-life-org/real-life-stack/issues/461)) ([b68c3ad](https://github.com/real-life-org/real-life-stack/commit/b68c3ad96af68d95011f2f37c45d60362209afd0))
+* **toolkit:** Gemeinschaftsgarten auf dem echten Rahmen ([#477](https://github.com/real-life-org/real-life-stack/issues/477)) ([2c9902f](https://github.com/real-life-org/real-life-stack/commit/2c9902f7a0aa8892a8c15b74e311ad68ee8f6e1c))
+
+
+### Bug Fixes
+
+* **toolkit:** Drawer deckend, Space-Name kürzt nur bei Platzmangel ([#475](https://github.com/real-life-org/real-life-stack/issues/475)) ([f21583c](https://github.com/real-life-org/real-life-stack/commit/f21583ca5a99d6718b1617c2c98bf7356beae19a))
+* **toolkit:** Filter und Plusknopf auf einer Grundlinie über der Bottom-Nav ([#480](https://github.com/real-life-org/real-life-stack/issues/480)) ([84b6f3f](https://github.com/real-life-org/real-life-stack/commit/84b6f3faf9f47d6025c6b3c8a3a7e29ec20ee4da))
+* **toolkit:** Kartensteuerung aus den Tokens für alle Apps und Stories ([#476](https://github.com/real-life-org/real-life-stack/issues/476)) ([895f810](https://github.com/real-life-org/real-life-stack/commit/895f8103e53e907b8d899b0d549bb76136b5a82b))
+* **toolkit:** Schreib-Einstiege nach Fähigkeit, Tabs und Kopfzeile auf dem Telefon ([#481](https://github.com/real-life-org/real-life-stack/issues/481)) ([4a819c6](https://github.com/real-life-org/real-life-stack/commit/4a819c6b3dfb1803ed31232ce326bf11958347d5))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @real-life-stack/data-interface bumped to 0.3.1
+  * devDependencies
+    * @real-life-stack/mock-connector bumped to 0.2.1
+
+## [0.2.0](https://github.com/real-life-org/real-life-stack/compare/toolkit-v0.1.10...toolkit-v0.2.0) (2026-09-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* **toolkit:** useCreateItem/useUpdateItem/useDeleteItem geben die Funktion zurück statt `{mutate}`. useComments: `comments` → `data`; useReplies: `replies` → `data`; useReactions: `reactions` → `data`; useReactionUsers und useVoteUsers: `users` → `data`; useVotes: `summary` → `data`. Aufrufer im Toolkit (Kanban, Item-Editor, Kommentar-Sektion, Reaktionen, Vote-Bar, Stories, Tests) angepasst.
+* **toolkit:** Nicht mehr aus @real-life-stack/toolkit exportiert: useRegisterDetail, useRegisterCreate, useOptionalModuleHost, useModuleLayout, useModuleContentClass, useOptionalModuleHead, usePanelEdges, useLocationPick, useFieldLink, useCommentLink, useTagLink, useFilterableItems, useModuleFilteredItems, useBeforeUnloadWarning, useItemComposerProps, useItemDetailEdit; aus /router: useWorkspaceRouting. Umbenannt: useSpaceVocabulary/spaceVocabulary/SpaceVocabulary → useGroupVocabulary/groupVocabulary/GroupVocabulary. Der Rahmen (RoutedAppFrame) stellt alles davon; die veröffentlichte 0.1.10 enthielt den Rahmen noch nicht.
+* **toolkit:** Der Modul-Host — B0 komplett (Schritte 1–5b + Codex-Fixes #415–#417) ([#414](https://github.com/real-life-org/real-life-stack/issues/414))
+* **toolkit:** Vokabular, Filterkarte und Chips gehören der Fläche ([#407](https://github.com/real-life-org/real-life-stack/issues/407))
+* **toolkit:** die Suche gehört der Fläche, das Modul nur seine eigenen Knöpfe ([#405](https://github.com/real-life-org/real-life-stack/issues/405))
+* **toolkit:** Nachzug von #400 und #401 auf master ([#403](https://github.com/real-life-org/real-life-stack/issues/403))
+
+### Features
+
+* **network:** die Netzwerk-App läuft auf dem Modul-Host (Spec 01, Regel 5) ([#429](https://github.com/real-life-org/real-life-stack/issues/429)) ([55f571c](https://github.com/real-life-org/real-life-stack/commit/55f571c41cbb854493f8b4dd6de23166b8a26a45))
+* **storybook:** Ordnung nach UI-Konzepten, feste Story-IDs, Gemeinschaftsgarten ([#398](https://github.com/real-life-org/real-life-stack/issues/398)) ([6099993](https://github.com/real-life-org/real-life-stack/commit/6099993dc56aee0643fbd5084b0ef92a0a333b4d))
+* **toolkit:** das Kanban kommt vollstaendig aus dem Toolkit (B5) — alle sieben Module laufen ohne eine Zeile in der App ([#428](https://github.com/real-life-org/real-life-stack/issues/428)) ([920622d](https://github.com/real-life-org/real-life-stack/commit/920622d2bad3b2aa818fc0ae86c67a6b1dfb18bf))
+* **toolkit:** der Feed kommt vollständig aus dem Toolkit (B1) ([#422](https://github.com/real-life-org/real-life-stack/issues/422)) ([36a04d0](https://github.com/real-life-org/real-life-stack/commit/36a04d01271117d813e11e32b4651fe737e2c0d5))
+* **toolkit:** der Graph kommt vollstaendig aus dem Toolkit (B3) ([#426](https://github.com/real-life-org/real-life-stack/issues/426)) ([48c9b00](https://github.com/real-life-org/real-life-stack/commit/48c9b002577193dcdbea4f1430221914b31ea9b9))
+* **toolkit:** Der Modul-Host — B0 komplett (Schritte 1–5b + Codex-Fixes [#415](https://github.com/real-life-org/real-life-stack/issues/415)–[#417](https://github.com/real-life-org/real-life-stack/issues/417)) ([#414](https://github.com/real-life-org/real-life-stack/issues/414)) ([97baf68](https://github.com/real-life-org/real-life-stack/commit/97baf683b212a784246711022b393d9002234be6))
+* **toolkit:** der Rahmen einer App liegt im Toolkit (AppFrame, RoutedAppFrame) ([#430](https://github.com/real-life-org/real-life-stack/issues/430)) ([7f6d780](https://github.com/real-life-org/real-life-stack/commit/7f6d780f403ba38a237741e9b2a3f2ab15f6ed28))
+* **toolkit:** die Liste kommt vollständig aus dem Toolkit (B2) ([#424](https://github.com/real-life-org/real-life-stack/issues/424)) ([464d145](https://github.com/real-life-org/real-life-stack/commit/464d14501cb68654273b5c6ca1da5e19f9cf1872))
+* **toolkit:** die Resonanz kommt vollstaendig aus dem Toolkit (B4) ([#427](https://github.com/real-life-org/real-life-stack/issues/427)) ([2bc1cbc](https://github.com/real-life-org/real-life-stack/commit/2bc1cbcb5af856ad6e4304a97ef6ce56d8cc3193))
+* **toolkit:** die Suche gehört der Fläche, das Modul nur seine eigenen Knöpfe ([#405](https://github.com/real-life-org/real-life-stack/issues/405)) ([a58f833](https://github.com/real-life-org/real-life-stack/commit/a58f8334f4ac02a4d00ce6cf72e80632a68d60b2))
+* **toolkit:** Host-Dienste — Autor, aktives Item, Filterzustand, Scrollen, Karten-Regel ([#425](https://github.com/real-life-org/real-life-stack/issues/425)) ([9e62cd1](https://github.com/real-life-org/real-life-stack/commit/9e62cd1994544f4a0b74e0fe0c11e7cd18143c9e))
+* **toolkit:** öffentliche Hook-API — Verdrahtung von Host, Rahmen und Panel ist intern (Inventur, Schritt 1) ([#454](https://github.com/real-life-org/real-life-stack/issues/454)) ([1cb3ecf](https://github.com/real-life-org/real-life-stack/commit/1cb3ecf4849d0f5ae7a263bb085e03dff7cec122))
+* **toolkit:** Rückgabeformen, useItemPresentation, neun Gruppen, Story je Hook (Inventur 2–4) ([#455](https://github.com/real-life-org/real-life-stack/issues/455)) ([aa9206d](https://github.com/real-life-org/real-life-stack/commit/aa9206d4f07d9cf95df9e07654fcc12398aa4966))
+* **toolkit:** Vokabular, Filterkarte und Chips gehören der Fläche ([#407](https://github.com/real-life-org/real-life-stack/issues/407)) ([a0a7779](https://github.com/real-life-org/real-life-stack/commit/a0a7779f0c084460071f593ce56a2eda7691c9c6))
+
+
+### Bug Fixes
+
+* **graph:** die Kamera folgt dem Netz, statt zu springen ([#420](https://github.com/real-life-org/real-life-stack/issues/420)) ([7c3a3c8](https://github.com/real-life-org/real-life-stack/commit/7c3a3c835f611ff3f942cc603b4555919ce7b442))
+* **toolkit:** Sammlung und Graph bringen ihre Fläche vollständig mit ([#419](https://github.com/real-life-org/real-life-stack/issues/419)) ([6ff4aa5](https://github.com/real-life-org/real-life-stack/commit/6ff4aa557b1f290053727d343b9072ff719c7b02))
+
+
+### Code Refactoring
+
+* **toolkit:** Nachzug von [#400](https://github.com/real-life-org/real-life-stack/issues/400) und [#401](https://github.com/real-life-org/real-life-stack/issues/401) auf master ([#403](https://github.com/real-life-org/real-life-stack/issues/403)) ([fa2630f](https://github.com/real-life-org/real-life-stack/commit/fa2630f4ccc045af76d9d7986b4db98ed8806b25))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @real-life-stack/data-interface bumped to 0.3.0
+  * devDependencies
+    * @real-life-stack/mock-connector bumped to 0.2.0
+
 ## [0.1.10](https://github.com/real-life-org/real-life-stack/compare/toolkit-v0.1.9...toolkit-v0.1.10) (2026-09-16)
 
 

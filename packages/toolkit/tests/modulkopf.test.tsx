@@ -41,7 +41,14 @@ function rendere(node: React.ReactNode) {
 }
 
 const kopf = () => host.querySelector("[data-module-head]")
-const kopfInhalt = () => host.querySelector("[data-module-head-slot]")
+/** Der ganze Kopfbereich: Suchzeile plus Chip-Zeile. Er traegt die Geometrie. */
+const kopfBereich = () => host.querySelector("[data-module-head-content]")
+/** Der Platz NEBEN der Suche, in den das Modul seine Knoepfe portalt. */
+const aktionen = () => host.querySelector("[data-module-head-actions]")
+/** Die Chip-Zeile unter der Suche — sie gehoert der Flaeche. */
+const chipZeile = () => host.querySelector("[data-filter-chips]")
+/** Der Platz IN der Chip-Zeile, in den das Modul seine eigenen Chips portalt. */
+const chipSlot = () => host.querySelector("[data-module-head-chips]")
 const scrollbereich = () => host.querySelector("[data-module-scroll]")
 
 /**
@@ -50,16 +57,21 @@ const scrollbereich = () => host.querySelector("[data-module-scroll]")
  * Flaeche, das Modul reicht seine Steuerleiste hinein.
  */
 describe("Der Modulkopf", () => {
-  it("bleibt leer, wenn das Modul nichts hineinreicht", () => {
+  it("zeigt die Suche auch dann, wenn das Modul nichts beitraegt", () => {
+    // Die Suche gehoert der FLAECHE und zieht sich ausnahmslos durch alle
+    // Module (Anton, 19.09.2026). Sie steht also, bevor irgendein Modul etwas
+    // hineinreicht.
     rendere(createElement(ModuleFrame, { moduleId: "feed" }, "INHALT"))
-    // Der Kopf-Slot ist als Portal-Ziel immer da, aber ohne Beitrag leer —
-    // eine leere Zeile waere schlimmer als kein Kopf (Spec 01, Regel 4).
-    expect(kopfInhalt()).not.toBeNull()
-    expect(kopfInhalt()!.childNodes.length).toBe(0)
-    expect(kopf()!.hasAttribute("hidden")).toBe(true)
+    expect(kopf()!.hasAttribute("hidden")).toBe(false)
+    expect(kopfBereich()!.querySelector("input")).not.toBeNull()
+    // Die Slots des Moduls sind als Portal-Ziele da, aber leer.
+    expect(chipSlot()!.childNodes.length).toBe(0)
+    expect(aktionen()!.childNodes.length).toBe(0)
+    // Die Chip-Zeile selbst gehoert der Flaeche und steht schon bereit.
+    expect(chipZeile()).not.toBeNull()
   })
 
-  it("zeigt Suche und Modul-Aktionen, aber keinen Filter mehr", () => {
+  it("stellt die Knoepfe des Moduls NEBEN die Suche, nicht darunter", () => {
     rendere(
       createElement(
         ModuleFrame,
@@ -72,74 +84,79 @@ describe("Der Modulkopf", () => {
       ),
     )
     expect(kopf()!.hasAttribute("hidden")).toBe(false)
-    expect(kopfInhalt()!.querySelector("input")).not.toBeNull()
-    expect(kopfInhalt()!.querySelector("[data-heute]")).not.toBeNull()
+    // Suche und Knopf teilen sich eine Zeile: der Knopf liegt im Platz neben
+    // der Suche, und beide haben denselben Elternteil.
+    const feld = kopfBereich()!.querySelector("input")!
+    const heute = aktionen()!.querySelector("[data-heute]")
+    expect(heute).not.toBeNull()
+    expect(feld.closest("[data-module-head-content]")!.contains(aktionen()!)).toBe(true)
     // Der Filter-KNOPF ist unten (Board 2g) — die aktiven Filter bleiben oben.
-    expect(kopfInhalt()!.querySelector("[data-filter-pill-trigger]")).toBeNull()
-    expect(kopfInhalt()!.querySelector("[data-filter-chips]")).not.toBeNull()
+    expect(kopfBereich()!.querySelector("[data-filter-pill-trigger]")).toBeNull()
+    expect(chipZeile()).not.toBeNull()
   })
 
-  it("verschwindet ohne Suche und ohne Modul-Aktionen, obwohl es Filter gibt", () => {
+  it("gibt es genau einmal, auch wenn zwei Leisten in denselben Kopf reichen", () => {
+    // Der Befund, der zu dieser Umstellung fuehrte (Anton, 19.09.2026): Im
+    // Kalender stand die Suche zweimal untereinander, weil die Linse eine
+    // Leiste mitbrachte und die Flaeche darueber eine zweite. Seit die Suche
+    // der Flaeche gehoert, kann das nicht mehr passieren — egal wie viele
+    // Leisten hineinreichen.
+    //
+    // Nur fuer die SUCHE. Die Chip-Zeile kann weiter doppelt stehen, weil sie
+    // die geteilten Filterwerte liest, aber vom Modul gerendert wird — sie
+    // gehoert aus demselben Grund der Flaeche und wandert mit dem
+    // Typ-Vokabular hoch (Schritt A des Folge-PRs).
     rendere(
       createElement(
         ModuleFrame,
         { moduleId: "feed" },
-        createElement(ModuleToolbar, { availableTags: ["garten"], search: false }),
-        "INHALT",
-      ),
-    )
-    expect(kopf()!.hasAttribute("hidden")).toBe(true)
-    // Die Pille steht trotzdem — sie haengt nicht am Kopf.
-    expect(host.querySelector("[data-module-controls] [data-filter-pill-trigger]")).not.toBeNull()
-  })
-
-  it("zeigt Modul-Aktionen ohne Suche, wenn das Modul nicht sucht", () => {
-    // `search={false}` schaltete die ganze Zeile ab oder gar nichts — die
-    // Suche kam trotzdem mit, sobald es Aktionen gab (#322).
-    rendere(
-      createElement(
-        ModuleFrame,
-        { moduleId: "feed" },
+        createElement(ModuleToolbar, { availableTags: ["garten"] }),
         createElement(ModuleToolbar, {
-          search: false,
           trailingActions: createElement("button", { "data-heute": true }, "Heute"),
         }),
         "INHALT",
       ),
     )
-    expect(kopf()!.hasAttribute("hidden")).toBe(false)
-    expect(kopfInhalt()!.querySelector("[data-heute]")).not.toBeNull()
-    expect(kopfInhalt()!.querySelector("input")).toBeNull()
+    expect(host.querySelectorAll("input").length).toBe(1)
+    expect(aktionen()!.querySelector("[data-heute]")).not.toBeNull()
   })
 
-  it("bleibt leer, wenn das Modul-Extra gerade nichts rendert", () => {
-    // Ein leeres Fragment als `chipsExtra` hielt den Kopf am Leben: eine
-    // unsichtbare Zeile mit 32px Polster (Copilot-Befund).
+  it("verschwindet nur ohne Filter-Besitzer", () => {
+    // Ohne Besitzer gibt es keine Suche, und ohne Beitrag des Moduls auch
+    // sonst nichts — dann waere eine leere Zeile schlimmer als kein Kopf
+    // (Spec 01, Regel 4).
+    act(() => root.render(createElement(ModuleFrame, { moduleId: "feed" }, "INHALT")))
+    expect(kopf()!.hasAttribute("hidden")).toBe(true)
+  })
+
+  it("laesst die Chip-Zeile leer, wenn das Modul-Extra gerade nichts rendert", () => {
+    // Ein leeres Fragment als `chipsExtra` hielt frueher den Kopf am Leben:
+    // eine unsichtbare Zeile mit 32px Polster (Copilot-Befund). Der Kopf steht
+    // heute wegen der Suche — die CHIP-Zeile muss trotzdem leer bleiben.
     rendere(
       createElement(
         ModuleFrame,
         { moduleId: "feed" },
-        createElement(ModuleToolbar, { search: false, chipsExtra: undefined }),
+        createElement(ModuleToolbar, { chipsExtra: undefined }),
         "INHALT",
       ),
     )
-    expect(kopf()!.hasAttribute("hidden")).toBe(true)
+    expect(chipSlot()!.childNodes.length).toBe(0)
   })
 
-  it("kommt zurueck, sobald ein Modul-Extra aktiv ist", () => {
+  it("fuellt die Chip-Zeile, sobald ein Modul-Extra aktiv ist", () => {
     rendere(
       createElement(
         ModuleFrame,
         { moduleId: "feed" },
         createElement(ModuleToolbar, {
-          search: false,
           chipsExtra: createElement("span", { "data-extra": true }, "Nur meine"),
         }),
         "INHALT",
       ),
     )
     expect(kopf()!.hasAttribute("hidden")).toBe(false)
-    expect(kopfInhalt()!.querySelector("[data-extra]")).not.toBeNull()
+    expect(chipSlot()!.querySelector("[data-extra]")).not.toBeNull()
   })
 
   it("stellt die Filter-Pille in die schwebende Ecke, nicht in den Scrollbereich", () => {
@@ -156,13 +173,43 @@ describe("Der Modulkopf", () => {
   })
 
   it("faellt ohne Flaeche darueber an seinen Ort zurueck", () => {
-    // Story, Test, eingebettete Ansicht (Spec 01, Regel 3): Kopfzeile und
-    // Pille verschwinden nicht spurlos, wenn es keinen Kopf gibt.
-    rendere(createElement(ModuleToolbar, { availableTags: ["garten"] }))
+    // Story, Test, eingebettete Ansicht (Spec 01, Regel 3): Was das MODUL
+    // beitraegt, verschwindet nicht spurlos, wenn es keinen Kopf gibt. Was der
+    // FLAECHE gehoert, gibt es dort nicht — weder Suche noch Filterkarte noch
+    // die Chips der aktiven Filter.
+    rendere(
+      createElement(ModuleToolbar, {
+        trailingActions: createElement("button", { "data-heute": true }, "Heute"),
+        chipsExtra: createElement("span", { "data-extra": true }, "Nur meine"),
+      }),
+    )
     const leiste = host.querySelector("[data-module-toolbar]")
     expect(leiste).not.toBeNull()
-    expect(leiste!.querySelector("input")).not.toBeNull()
-    expect(leiste!.querySelector("[data-filter-pill-trigger]")).not.toBeNull()
+    expect(leiste!.querySelector("[data-heute]")).not.toBeNull()
+    expect(leiste!.querySelector("[data-extra]")).not.toBeNull()
+    expect(leiste!.querySelector("[data-filter-pill-trigger]")).toBeNull()
+    expect(leiste!.querySelector("input")).toBeNull()
+  })
+
+  it("haelt die Kartenecke frei, auch wenn das Modul sonst nichts beitraegt", () => {
+    // Codex-Review zu #405: Die Anmeldung von `clearsTopLeft` hing am
+    // Kopf-Beitrag. Seit die Suche der Flaeche gehoert, zaehlt sie nicht mehr
+    // als Beitrag — eine Karte ohne Ortungsknopf (kein navigator.geolocation)
+    // und ohne aktive Filter meldete deshalb nichts an, und die Suche lag auf
+    // den Zoom-Knoepfen. Dass das Modul dort Knoepfe fuehrt, ist eine Aussage
+    // ueber seine Flaeche und unabhaengig vom Kopf-Beitrag.
+    rendere(
+      createElement(
+        ModuleFrame,
+        { moduleId: "map" },
+        "KARTE",
+        createElement(ModuleToolbar, { clearsTopLeft: true }),
+      ),
+    )
+    const schutzzone = kopf()!.closest("[data-panel-safe-area]") ?? kopf()!.parentElement!
+    expect(schutzzone.className).toContain("pl-16")
+    // Die Suche steht trotzdem — sie gehoert der Flaeche.
+    expect(kopfBereich()!.querySelector("input")).not.toBeNull()
   })
 
   it("schwebt bei ueberlagerten Flaechen, statt zu verschwinden", () => {
@@ -179,7 +226,7 @@ describe("Der Modulkopf", () => {
     )
     expect(host.textContent).toContain("KARTE")
     expect(kopf()!.hasAttribute("hidden")).toBe(false)
-    expect(kopfInhalt()!.querySelector("input")).not.toBeNull()
+    expect(kopfBereich()!.querySelector("input")).not.toBeNull()
     expect(host.querySelector("[data-module-controls] [data-filter-pill-trigger]")).not.toBeNull()
     // Kein zweiter Wirt: Suche und Pille gibt es genau einmal.
     expect(host.querySelectorAll("input").length).toBe(1)
@@ -209,7 +256,7 @@ describe("Der Modulkopf", () => {
         new MouseEvent("click", { bubbles: true }),
       )
     })
-    const chips = kopfInhalt()!.querySelector("[data-filter-chips]")
+    const chips = chipZeile()
     expect(chips).not.toBeNull()
     expect(chips!.textContent).toContain("garten")
   })
@@ -226,7 +273,7 @@ describe("Die Geometrie der Spalte", () => {
     rendere(createElement(ModuleFrame, { moduleId: "feed" }, "INHALT"))
     const geometrie = moduleContainerClass(resolveModuleLayout({ moduleId: "feed" }))!
     for (const klasse of geometrie.split(/\s+/)) {
-      expect(kopfInhalt()!.className).toContain(klasse)
+      expect(kopfBereich()!.className).toContain(klasse)
       expect(scrollbereich()!.firstElementChild!.className).toContain(klasse)
     }
   })
@@ -250,5 +297,44 @@ describe("Die Geometrie der Spalte", () => {
     rendere(createElement(ModuleFrame, { moduleId: "collection" }, "LISTE"))
     expect(scrollbereich()).toBeNull()
     expect(host.querySelector("[data-module-fill]")).not.toBeNull()
+  })
+})
+
+/**
+ * Eine freistehende Ansicht hat keinen Connector, aber ihre Items als Prop —
+ * und ist die einzige, die sie kennt. Bis zum 20.09.2026 leitete sie ihr
+ * Vokabular daraus selbst ab; seit es der Flaeche gehoert, muss sie es
+ * hinaufreichen, sonst verliert sie Tag- und Typfilter ganz
+ * (Codex-Review zu #407, rls#408).
+ */
+describe("Das Vokabular einer freistehenden Flaeche", () => {
+  const item = (id: string, typ: string, tags: string[]) => ({
+    id, type: typ, createdAt: "2026-01-01T00:00:00.000Z", createdBy: "mira", data: {}, tags,
+  })
+
+  it("kommt aus den Items, die der Aufrufer mitbringt", () => {
+    rendere(
+      createElement(
+        ModuleFrame,
+        {
+          moduleId: "feed",
+          fallbackItems: [item("1", "event", ["garten"]), item("2", "post", ["zaun"])],
+        },
+        "INHALT",
+      ),
+    )
+    const pille = host.querySelector<HTMLButtonElement>("[data-filter-pill-trigger]")
+    expect(pille).not.toBeNull()
+    act(() => pille!.dispatchEvent(new MouseEvent("click", { bubbles: true })))
+    const text = document.body.textContent ?? ""
+    expect(text).toContain("garten")
+    expect(text).toContain("zaun")
+  })
+
+  it("bleibt leer, wenn der Aufrufer nichts mitbringt", () => {
+    rendere(createElement(ModuleFrame, { moduleId: "feed" }, "INHALT"))
+    const pille = host.querySelector<HTMLButtonElement>("[data-filter-pill-trigger]")
+    act(() => pille!.dispatchEvent(new MouseEvent("click", { bubbles: true })))
+    expect(document.body.textContent ?? "").not.toContain("garten")
   })
 })

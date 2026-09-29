@@ -7,9 +7,12 @@ import { RelativeTime } from "../primitives/relative-time"
 import { ProfileLink } from "../profile/profile-link"
 import { TagFilterChip } from "../tag/tag-filter-chip"
 import { MarkdownText } from "./markdown-text"
+import { editedLabel } from "@/lib/item-text"
+import { useFittingTags } from "./use-fitting-tags"
 import { cn } from "../../lib/utils"
 import { useItemTags } from "../../hooks/use-item-tags"
 import { useUserNameResolver } from "../../hooks/use-user-names"
+import { useCanComment } from "../../hooks/use-comments"
 import { useCommentCount } from "../../hooks/use-comment-count"
 import { useCommentLink } from "../navigation/comment-navigation"
 import { MessageSquare } from "lucide-react"
@@ -53,9 +56,17 @@ import { MessageSquare } from "lucide-react"
  * 10×10, font-base title, p-4 spacing, description shown). `compact`
  * is tuned for kanban boards and dense list views: no description in
  * the body, smaller padding/font/avatar so multiple cards fit a
- * column without bleeding off-screen.
+ * column without bleeding off-screen. `row` is ONE line: header
+ * adornment (badge), title (truncated), footer adornment on the right —
+ * the rows of reverse lists in the detail (shared-components,
+ * Detail-Anatomie Regel 8). It drops description, meta, tags, author and
+ * the comment hint. `dense` is the matrix tile: a title of at most three
+ * lines plus the footer the caller supplies, nothing else, so twelve
+ * columns fit one screen. Masse aus „RLS System Design → Dragon
+ * Dreaming.dc.html", Variante 1a: 112 px breit, 61 px hoch (75 px mit
+ * drei Titelzeilen).
  */
-export type ItemPreviewDensity = "comfortable" | "compact"
+export type ItemPreviewDensity = "comfortable" | "compact" | "row" | "dense"
 export type ItemPreviewSurface = "card" | "panel"
 
 /** Neutral toolkit default; apps may supply an origin-group colour instead. */
@@ -64,8 +75,6 @@ export type ItemPreviewSurface = "card" | "panel"
 const MAX_SICHTBARE_TAGS = 3
 
 export const DEFAULT_ACTIVE_ITEM_COLOR = "#64748b"
-/** @deprecated Frueherer Name von {@link DEFAULT_ACTIVE_ITEM_COLOR}. */
-export const DEFAULT_ACTIVE_ITEM_GLOW_COLOR = DEFAULT_ACTIVE_ITEM_COLOR
 
 export interface ItemPreviewProps {
   item: Item
@@ -93,7 +102,11 @@ export interface ItemPreviewProps {
   /**
    * Layout density. Default `comfortable` matches the feed card.
    * `compact` shrinks paddings and avatar, drops the description
-   * block — fits kanban / dense list contexts.
+   * block — fits kanban / dense list contexts. `row` is one line for
+   * reverse lists. `dense` is the tile for grids and matrices (12+
+   * columns): title (max 3 lines) plus the `footerAdornment` the caller
+   * supplies — no body, no meta row, no tags, no author, no comment hint.
+   * Spec: `docs/spec/modules/shared-components.md`.
    */
   density?: ItemPreviewDensity
   /**
@@ -121,6 +134,14 @@ export interface ItemPreviewProps {
    * Space. Zwei Aussagen, nicht drei.
    */
   active?: boolean
+  /**
+   * Die Sache ist erledigt: Haekchen vor dem Titel (fuer Screenreader
+   * „Erledigt: "), die ganze Karte gedimmt. Was „erledigt" heisst, entscheidet
+   * die Flaeche (etwa die Rolle `done` des Status, Spec 06 Regel 18) — das
+   * Toolkit zeigt es nur an. Uebernommen aus Draft rls#360; gilt fuer alle
+   * Dichten.
+   */
+  completed?: boolean
   /** Farbe des Rands der aktiven Karte (`#rrggbb`), meist die Space-Farbe. */
   activeColor?: string
   /** @deprecated Frueherer Name von {@link activeColor}. */
@@ -187,6 +208,15 @@ function KommentarHinweis({
   )
 }
 
+/** Der Text einer Zeile: Titel, Name oder der Anfang des Inhalts; sonst „Ohne Titel". */
+function rowTitle(data: Record<string, unknown>): string {
+  for (const key of ["title", "displayName", "content", "description"]) {
+    const value = data[key]
+    if (typeof value === "string" && value.trim() !== "") return value.trim().split("\n")[0]!
+  }
+  return "Ohne Titel"
+}
+
 function getInitials(name: string): string {
   if (!name) return "?"
   return name
@@ -207,7 +237,7 @@ function getInitials(name: string): string {
  * cards of work per update. The memo only bites where the surface hands over
  * stable props; a freshly built `headerAdornment` or an inline `onClick`
  * defeats it, so a surface builds its row in a component of its own (see
- * `FeedCard` in feed-view.tsx, `KanbanCard` here in the toolkit).
+ * `FeedCard` in modules/feed-module.tsx, `KanbanCard` here in the toolkit).
  */
 export const ItemPreview = memo(function ItemPreview({
   item,
@@ -220,15 +250,29 @@ export const ItemPreview = memo(function ItemPreview({
   density = "comfortable",
   surface = "card",
   active = false,
+  completed = false,
   activeColor,
   activeGlowColor,
   className,
   style,
 }: ItemPreviewProps) {
   const data = item.data as Record<string, unknown>
-  const title = typeof data.title === "string" ? data.title : undefined
+  const isRow = density === "row"
+  // `dense` ist die Matrix-Kachel: Sie teilt mit `compact` die engen Masse,
+  // laesst aber alles weg, was eine Zelle von 112 px Breite nicht traegt.
+  const isDense = density === "dense"
+  // Die Kachel zeigt nichts ausser dem Titel — ohne ihn stuende sie leer da.
+  // Darum wie `row`: Name oder der Anfang des Inhalts, sonst „Ohne Titel".
+  const title =
+    typeof data.title === "string" && data.title.trim() !== ""
+      ? data.title
+      : isDense
+        ? rowTitle(data)
+        : typeof data.title === "string"
+          ? data.title
+          : undefined
   const description =
-    density === "compact"
+    density === "compact" || isRow || isDense
       ? ""
       : (typeof data.content === "string" && data.content) ||
         (typeof data.description === "string" && data.description) ||
@@ -242,19 +286,21 @@ export const ItemPreview = memo(function ItemPreview({
   // Eingabefeld), nicht diese Karte.
   const zumKommentieren = useCommentLink(item)
   // Ohne Kommentare steht dort keine Null, sondern eine Einladung — aber nur,
-  // wenn man ihr auch folgen kann. Sonst bliebe „Kommentieren" ein Versprechen
-  // ohne Deckung.
-  const showCommentHint = !isPanel && (commentCount > 0 || zumKommentieren !== null)
+  // wenn man ihr auch folgen kann: ein Ziel (Route, Panel) UND die Faehigkeit
+  // zu schreiben (Spec 03). Sonst bliebe „Kommentieren" ein Versprechen ohne
+  // Deckung. Vorhandene Kommentare zeigt die Karte weiter, auch nur lesend.
+  const darfKommentieren = useCanComment()
+  // In der Matrix-Kachel steht kein Zaehler: Sie zeigt genau zwei Dinge, den
+  // Titel und wer dranhaengt.
+  const showCommentHint = !isPanel && !isRow && !isDense && (commentCount > 0 || (zumKommentieren !== null && darfKommentieren))
 
   const authorName = author?.displayName ?? item.createdBy
   const authorAvatar = author?.avatarUrl
   const authorId = author?.id ?? item.createdBy
   // Who edited it, resolved like any other user id; falls back to the raw id.
   const resolveName = useUserNameResolver()
-  const editedTitle = item.updatedAt
-    ? `Bearbeitet von ${resolveName(item.updatedBy ?? item.createdBy)} am ${new Date(item.updatedAt).toLocaleString("de-DE")}`
-    : undefined
-  const isCompact = density === "compact"
+  const editedTitle = editedLabel(item, resolveName)
+  const isCompact = density === "compact" || isRow || isDense
 
   // Keyboard activation: when the card is interactive, treat Enter and
   // Space like a button. We don't render a real <button> because the
@@ -272,10 +318,12 @@ export const ItemPreview = memo(function ItemPreview({
       }
     : undefined
 
-  // Wieviele Tags die Zeile traegt, ohne den Urheber zu verdraengen. Fest
-  // statt gemessen: Eine Messung waere erst nach dem ersten Bild da und
-  // liesse die Karte sichtbar springen. In der dichten Ansicht bleibt einer.
-  const sichtbareTags = tags.slice(0, isCompact ? 1 : MAX_SICHTBARE_TAGS)
+  // Wieviele Tags die Zeile traegt, ohne den Urheber zu verdraengen: so
+  // viele, wie hineinpassen (Anton, 27.09.2026). Gemessen an einer
+  // unsichtbaren Zeile vor dem ersten Bild, darum springt die Karte nicht;
+  // ohne Layout (Server, Tests) gilt die alte feste Zahl.
+  const tagFit = useFittingTags(tags, isCompact ? 1 : MAX_SICHTBARE_TAGS, 12)
+  const sichtbareTags = tags.slice(0, tagFit.visible)
   const verborgeneTags = tags.length - sichtbareTags.length
 
   // Alter Prop-Name gilt weiter: das Toolkit ist veroeffentlicht.
@@ -285,13 +333,61 @@ export const ItemPreview = memo(function ItemPreview({
   // Deckkraft traegt er sichtbar dicker auf, obwohl er gleich breit ist.
   const aktivRand = /^#[0-9a-f]{6}$/i.test(aktivFarbe) ? `${aktivFarbe}4d` : aktivFarbe
 
+  // Erledigtes traegt das Haekchen im Titel (rls#360): Es verschwindet nicht,
+  // es tritt zurueck.
+  const erledigt = completed && (
+    <>
+      <span aria-hidden>✓ </span>
+      <span className="sr-only">Erledigt: </span>
+    </>
+  )
+
+  if (isRow) {
+    // Eine Zeile: Badge, Titel, rechts der Zusatz. Die angezeigte Zeile ist
+    // markiert (aria-current), ohne den Schatten der schwebenden Karte.
+    return (
+      <article
+        data-preview-density={density}
+        data-active-preview={active ? "true" : undefined}
+        data-completed={completed ? "true" : undefined}
+        aria-current={active ? "true" : undefined}
+        className={cn(
+          "flex min-w-0 flex-row items-center gap-2 rounded-md border px-2 py-1.5 transition-colors",
+          active ? "border-primary/40 bg-primary/5" : "border-border bg-card",
+          interactive &&
+            "cursor-pointer hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+          className,
+        )}
+        style={{ ...(completed ? { opacity: 0.55 } : {}), ...style }}
+        onClick={onClick}
+        role={interactive ? "button" : undefined}
+        tabIndex={interactive ? 0 : undefined}
+        onKeyDown={handleKeyDown}
+      >
+        {headerAdornment && <span className="flex shrink-0 items-center gap-1.5">{headerAdornment}</span>}
+        <span data-row-title className="min-w-0 flex-1 truncate text-left text-sm font-medium text-foreground">
+          {erledigt}
+          {rowTitle(data)}
+        </span>
+        {footerAdornment && <span className="flex shrink-0 items-center gap-2">{footerAdornment}</span>}
+      </article>
+    )
+  }
+
   return (
     <article
       data-preview-density={density}
       data-active-preview={active ? "true" : undefined}
+      data-completed={completed ? "true" : undefined}
       className={cn(
-        "flex flex-col rounded-lg border bg-card transition-all",
-        isCompact ? "gap-1.5 p-3" : "gap-2 p-4",
+        "flex flex-col border bg-card transition-all",
+        // Die Kachel traegt den kleineren Radius: 8 px runden an einer
+        // 112-px-Flaeche sichtbar mehr ab als an einer Feed-Karte.
+        // Die Kachel bringt ihre Masse selbst mit (Design 1a): 112 px breit,
+        // mindestens 61 px hoch; drei Titelzeilen lassen sie auf 75 px
+        // wachsen. Ein Raster darf die Breite per `className` ueberschreiben.
+        isDense ? "w-[112px] min-h-[61px] gap-1 rounded-md p-[7px]" : "rounded-lg",
+        isDense ? "" : isCompact ? "gap-1.5 p-3" : "gap-2 p-4",
         interactive &&
           "cursor-pointer hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
         // Derselbe Schatten wie die schwebende Karte: die ausgewaehlte Karte
@@ -299,7 +395,7 @@ export const ItemPreview = memo(function ItemPreview({
         active && "shadow-xl",
         className,
       )}
-      style={{ ...(active ? { borderColor: aktivRand } : {}), ...style }}
+      style={{ ...(active ? { borderColor: aktivRand } : {}), ...(completed ? { opacity: 0.55 } : {}), ...style }}
       onClick={onClick}
       role={interactive ? "button" : undefined}
       tabIndex={interactive ? 0 : undefined}
@@ -313,7 +409,21 @@ export const ItemPreview = memo(function ItemPreview({
         <div className="flex items-start justify-between gap-2">
           <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 gap-y-1">
             {title && (
-              <h3 className="min-w-0 flex-1 text-base font-semibold leading-snug text-foreground">
+              <h3
+                // Deutsche Komposita sind lang und eine Kachel ist 112 px
+                // breit: ohne Trennung stuende „Gemeinschaftsgarten" ueber den
+                // Rand hinaus. `lang` macht die Silbentrennung erst moeglich.
+                lang={isDense ? "de" : undefined}
+                className={cn(
+                  "min-w-0 flex-1 font-semibold text-foreground",
+                  // Drei Zeilen, dann Auslassung: In einer Matrix ist die
+                  // Zeilenhoehe die Rasterhoehe — ein langer Titel darf die
+                  // Zeile darunter nicht verschieben.
+                  isDense ? "line-clamp-3 text-[10.5px] leading-[1.3]" : "text-base leading-snug",
+                )}
+                style={isDense ? { overflowWrap: "anywhere", hyphens: "auto" } : undefined}
+              >
+                {erledigt}
                 {title}
               </h3>
             )}
@@ -323,12 +433,15 @@ export const ItemPreview = memo(function ItemPreview({
         </div>
       )}
 
+      {/* Erledigt ohne Titel: das Häkchen braucht trotzdem einen Platz. */}
+      {!title && completed && <div className="text-sm font-semibold text-muted-foreground">{erledigt}</div>}
+
       {!title && headerAdornment && !actions && (
         <div className="flex flex-wrap items-center gap-1.5">{headerAdornment}</div>
       )}
 
       {/* Die harten Fakten des Typs: wann, wo, mit wem. */}
-      {metaAdornment && <div className="text-xs text-muted-foreground">{metaAdornment}</div>}
+      {metaAdornment && !isDense && <div className="text-xs text-muted-foreground">{metaAdornment}</div>}
 
       {description && (
         // Der Composer schreibt Markdown, also wird ueberall Markdown
@@ -343,12 +456,34 @@ export const ItemPreview = memo(function ItemPreview({
           bleibt: Wer etwas geschrieben hat, ist die verlaesslichere Auskunft
           als der fuenfte Tag. Umbrechen darf hier nichts — sonst waechst die
           Karte je nach Anzahl der Tags unterschiedlich hoch. */}
-      {(sichtbareTags.length > 0 || author !== null) && (
-        <div className="flex items-center gap-x-3 overflow-hidden">
-          {sichtbareTags.length > 0 && (
+      {!isDense && (tags.length > 0 || author !== null) && (
+        <div ref={tagFit.rowRef} data-measure="tag-row" className="relative flex items-center gap-x-3 overflow-hidden">
+          {tagFit.measuring && tags.length > 0 && (
+            // Messzeile: alle Chips und ein „+N"-Muster, unsichtbar und ohne
+            // Platz im Fluss. Aus ihr liest useFittingTags die Breiten.
+            <div
+              ref={tagFit.measureRef}
+              aria-hidden
+              className="pointer-events-none invisible absolute left-0 top-0 flex items-center gap-1.5 whitespace-nowrap"
+            >
+              {tags.map((tag) => (
+                <span key={tag} data-measure="tag-chip" className="shrink-0">
+                  <TagFilterChip tag={tag} />
+                </span>
+              ))}
+              <span data-measure="tag-plus" className="shrink-0 rounded-full border px-1.5 py-0.5 text-[10px] font-medium">
+                +{tags.length}
+              </span>
+            </div>
+          )}
+          {/* Auch ohne einen einzigen passenden Chip: dann steht allein „+N"
+              mit allen Tags im Titel, nie gar nichts (#513). */}
+          {tags.length > 0 && (
             <div className="flex min-w-0 shrink items-center gap-1.5 overflow-hidden">
               {sichtbareTags.map((tag) => (
-                <TagFilterChip key={tag} tag={tag} />
+                <span key={tag} data-visible-tag className="shrink-0">
+                  <TagFilterChip tag={tag} />
+                </span>
               ))}
               {verborgeneTags > 0 && (
                 <span
@@ -372,7 +507,7 @@ export const ItemPreview = memo(function ItemPreview({
                ganz aus der Zeile, und Datum und Bearbeitungshinweis
                verschwaenden im `overflow-hidden` darum herum. Derselbe Fehler
                stand schon einmal in ItemDetailBody (#307). */
-            <div className="ml-auto flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+            <div ref={tagFit.fixedRef} data-measure="tag-author" className="ml-auto flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
               <ProfileLink userId={authorId} label={`Profil von ${authorName} öffnen`}>
                 {/* In der dichten Ansicht traegt das Bild den Namen: In einer
                     Kanban-Spalte ist fuer beides kein Platz. */}
@@ -405,8 +540,17 @@ export const ItemPreview = memo(function ItemPreview({
           Diskussion. Ohne Kommentare steht dort keine Null — sie sagte
           dasselbe wie nichts und kostete eine Zeile. */}
       {(footerAdornment || showCommentHint) && (
-        <div className={cn("flex items-center justify-between gap-3 border-t", isCompact ? "-mx-3 mt-0.5 px-3 pt-1.5" : "-mx-4 mt-1 px-4 pt-2")}>
-          <div className="flex min-w-0 items-center gap-3">{footerAdornment}</div>
+        <div
+          className={cn(
+            "flex items-center justify-between",
+            // Die Matrix-Zelle hat fuer einen Trenner keine Hoehe uebrig; die
+            // Fusszeile sitzt direkt unter dem Titel.
+            isDense
+              ? "mt-auto gap-1"
+              : cn("gap-3 border-t", isCompact ? "-mx-3 mt-0.5 px-3 pt-1.5" : "-mx-4 mt-1 px-4 pt-2"),
+          )}
+        >
+          <div className={cn("flex min-w-0 items-center", isDense ? "gap-1" : "gap-3")}>{footerAdornment}</div>
           {showCommentHint && <KommentarHinweis
             anzahl={commentCount}
             kompakt={isCompact}

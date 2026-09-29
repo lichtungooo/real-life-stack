@@ -1,257 +1,48 @@
-import { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense, type ReactNode } from "react"
-import { Routes, Route, useNavigate, useSearchParams, useLocation } from "react-router-dom"
-import {
-  IdCard,
-  Plus,
-  Sun,
-  Moon,
-} from "lucide-react"
+import { useState, useMemo, useCallback, useEffect, lazy, Suspense } from "react"
+import { useNavigate, useSearchParams, useLocation, useParams } from "react-router-dom"
+import { IdCard } from "lucide-react"
 
 import {
-  AppShell,
-  AppShellMain,
-  FilterProvider,
-  Navbar,
-  NavbarStart,
-  NavbarCenter,
-  NavbarEnd,
-  WorkspaceSwitcher,
-  UserMenu,
-  ModuleTabs,
-  BottomNav,
-  ConnectorSwitcher,
-  Button,
-  GroupDialog,
-  SpaceThemeCard,
   AdaptivePanel,
-  CommentNavigationProvider,
-  FieldNavigationProvider,
-  TagNavigationProvider,
-  findModulePresenting,
-  OpenProfileProvider,
-  DraftItemProvider,
-  UnsavedChangesProvider,
-  ModulePanelProvider,
-  useModulePanel,
-  DebugDashboard,
   ProfilePanelContent,
-  type ProfileData,
-  ContactsDialog,
-  VerificationDialog,
-  IncomingVerificationDialog,
-  IncomingSpaceInviteDialog,
-  MutualVerificationDialog,
-  RelayStatusBadge,
+  ConnectorSwitcher,
+  ConnectorProvider,
   IncomingEventsProvider,
   useIncomingEvents,
-  ConnectorProvider,
-  useCreateGroup,
-  useUpdateGroup,
-  useDeleteGroup,
-  useInviteMember,
-  useRemoveMember,
-  useCurrentGroup,
-  useCurrentUser,
-  useInitialSync,
-  useMembers,
   useConnector,
+  useCurrentUser,
   useContacts,
-  useVerification,
   useRelayStatus,
-  ActivityBell,
-  ActivityPanel,
-  useActivity,
-  NotificationBell,
-  NotificationCenter,
-  useNotifications,
-  useMarkNotificationsSeen,
-  useItems,
-  type Workspace,
-  type UserData,
-  type ConnectorOption,
-  type GroupDialogMode,
+  useModulePanel,
+  DebugDashboard,
+  RelayStatusBadge,
   AuthScreen,
-  AddContactDialog,
+  IncomingVerificationDialog,
   IncomingContactRequestDialog,
+  IncomingSpaceInviteDialog,
+  MutualVerificationDialog,
   getRuntimeConfig,
-  getModule,
+  useGroups,
   resolveSpaceModules,
+  Button,
+  type ProfileData,
+  type ConnectorOption,
 } from "@real-life-stack/toolkit"
-import { initialDarkMode, rememberColorScheme } from "./initial-color-scheme"
 import type { DataInterface, User } from "@real-life-stack/data-interface"
-import {
-  type Item, isAuthenticatable, hasMessaging, hasEncounterVerification, hasProfile, moduleHintsFor } from "@real-life-stack/data-interface"
+import { isAuthenticatable, hasMessaging, hasEncounterVerification, hasProfile } from "@real-life-stack/data-interface"
 // Prototyp trustdonation: Die Musterdaten kommen als Seed aus unserem Paket,
 // nicht aus Antons Demodaten. Beide Connectoren nehmen einen Seed als
 // Parameter, darum bleiben seine Dateien unberuehrt (NAEHTE Abschnitt C).
 import { traegtProfil } from "@trustdonation/core"
 import { StiftungenImport } from "@trustdonation/ui"
+import { SpaceProfilPanel } from "./views/profil-panel"
+import { MapLibreAdapterProvider } from "@real-life-stack/toolkit/maplibre"
 import { MockConnector } from "@real-life-stack/mock-connector"
 import { LocalConnector } from "@real-life-stack/local-connector"
-import { ModuleOutlet } from "./views/module-outlet"
-import { SpaceProfilPanel } from "./views/profil-panel"
-import { useWorkspaceRouting, STORAGE_KEY_GROUP } from "./hooks/use-workspace-routing"
-import { buildNotificationRoute, moduleCanDisplay } from "./notification-navigation"
-import { ItemFocusProvider } from "./hooks/use-item-focus"
-import { LocationPickProvider, useLocationPick } from "./location-pick"
-import { CreateHostProvider, CreateSheetController } from "./create-host"
-import { DetailHostProvider, DetailHostController } from "./detail-host"
-import { UnsavedChangesGuard } from "./unsaved-changes-guard"
-import { useItemFocus } from "./hooks/use-item-focus"
+// Der Rahmen mit Router: Fokus in der URL, Space/Modul/Item aus der URL,
+// Provider, Panel, Kopfzeile, Controller — einmal im Toolkit (Spec 01).
+import { RoutedAppFrame } from "@real-life-stack/toolkit/router"
 
-
-/**
- * Links ODER rechts, nie beide. Die Feineinstellung (links) und das
- * Modul-Panel (rechts: Details, Composer, Debug) schliessen einander aus:
- * oeffnet das eine, geht das andere zu. Zwei offene Panels liessen dem
- * Inhalt auf dem Laptop kaum Platz und waeren auf dem Handy zwei Drawer.
- *
- * Sitzt im Provider-Baum, weil `useModulePanel` nur dort geht; `Home`
- * selbst steht ausserhalb.
- */
-function PanelExclusivity({ themeOpen, onCloseTheme }: { themeOpen: boolean; onCloseTheme: () => void }) {
-  const panel = useModulePanel()
-  const rightOpen = panel.current !== null
-  const rightKey = panel.current ? `${panel.current.kind}:${panel.current.itemId ?? ""}` : null
-  const prevRightKey = useRef(rightKey)
-  const prevThemeOpen = useRef(themeOpen)
-  useEffect(() => {
-    // Die Feineinstellung ist gerade aufgegangen → rechts schliessen.
-    if (themeOpen && !prevThemeOpen.current && rightOpen) panel.close()
-    // Rechts ist gerade etwas (Neues) aufgegangen → Feineinstellung schliessen.
-    if (rightKey !== null && rightKey !== prevRightKey.current && themeOpen) onCloseTheme()
-    prevThemeOpen.current = themeOpen
-    prevRightKey.current = rightKey
-  }, [themeOpen, rightOpen, rightKey, panel, onCloseTheme])
-  return null
-}
-
-/**
- * Renders the single app-level ModulePanel and suspends it (hidden, kept
- * mounted) while the user picks a location on the map — so the drawer steps
- * aside on mobile. Lives inside LocationPickProvider to read `isPicking`.
- */
-function ModulePanelHost({ children, onDrawerHeightChange }: { children: ReactNode; onDrawerHeightChange: (height: number) => void }) {
-  const { isPicking } = useLocationPick()
-  return (
-    // No "modal" mode (drops the maximise/mode-switch) and no pinning — both were
-    // controls without a real use in the detail panel (Pin does nothing in a
-    // sidebar; maximise hides the context, esp. on the map). Chrome is just the
-    // close button; item actions live in the card header (ItemDetailActions).
-    <ModulePanelProvider
-      allowedModes={["floating", "drawer"]}
-      sidebarWidth="420px"
-      sidebarMinWidth="300px"
-      sidebarMaxWidth="70vw"
-      suspended={isPicking}
-      onDrawerHeightChange={onDrawerHeightChange}
-    >
-      {children}
-    </ModulePanelProvider>
-  )
-}
-
-/**
- * Accepts either a raw user id or a shared profile URL (…?profile=<id>) in
- * the add-contact input — people paste what they got.
- */
-function extractProfileId(input: string): string {
-  const trimmed = input.trim()
-  try {
-    const url = new URL(trimmed)
-    const fromParam = url.searchParams.get("profile")
-    if (fromParam) return fromParam
-  } catch {
-    // not a URL — treat as raw id
-  }
-  return trimmed
-}
-
-/** Meta-item types the shell has no detail projection for (log stays visible, not clickable). */
-const UNPROJECTABLE_TARGET_TYPES = new Set(["relation", "comment"])
-
-/** Activity deliberately shares the module panel instead of adding a second shell overlay. */
-function ActivityPanelController({ open, onClose, onOpenNotification, onOpenGroup, onOpenEntryTarget }: { open: boolean; onClose: () => void; onOpenNotification: (notification: import("@real-life-stack/toolkit").NotificationCandidate) => void; onOpenGroup: (groupId: string) => void; onOpenEntryTarget: (targetId: string) => void }) {
-  const panel = useModulePanel()
-  const { clearFocus } = useItemFocus()
-  const ownedActivityPanel = useRef(false)
-  const wasOpen = useRef(open)
-  const openTarget = useCallback((entry: import("@real-life-stack/data-interface").ActivityEntry) => {
-    onOpenEntryTarget(entry.targetId)
-    onClose()
-  }, [onOpenEntryTarget, onClose])
-  useEffect(() => {
-    const openedNow = open && !wasOpen.current
-    wasOpen.current = open
-    if (!open) {
-      ownedActivityPanel.current = false
-      if (panel.current?.itemId === "__activity__") panel.close({ silent: true })
-      return
-    }
-    if (panel.current?.itemId === "__activity__") {
-      ownedActivityPanel.current = true
-      return
-    }
-    // A content swap does not invoke the previous panel's onClose. Yield the
-    // shared shell instead of reclaiming it from the new owner.
-    if (ownedActivityPanel.current && !openedNow) {
-      ownedActivityPanel.current = false
-      onClose()
-      return
-    }
-    ownedActivityPanel.current = true
-    // Like starting a create, opening the history DROPS the item focus: the
-    // shared panel shows exactly one thing, and only a focus CHANGE hands it
-    // back to the detail host. Keeping a stale focus would make clicking the
-    // same item a no-op (no focus change → no detail reopen).
-    clearFocus()
-    panel.open({
-      kind: "custom",
-      itemId: "__activity__",
-      content: <ReferenceNotificationCenterContent onOpenTarget={openTarget} onOpenNotification={onOpenNotification} onOpenGroup={onOpenGroup} onCloseCenter={onClose} onOpenActivity={() => panel.open({ kind: "custom", itemId: "__activity__", content: <ReferenceActivityPanelContent onOpenTarget={openTarget} />, onClose })} />,
-      onClose,
-    })
-  }, [clearFocus, onClose, open, openTarget, panel.close, panel.current?.itemId, panel.open])
-  return null
-}
-
-function ReferenceNotificationCenterContent({ onOpenTarget, onOpenNotification, onOpenGroup, onOpenActivity, onCloseCenter }: { onOpenTarget: (entry: import("@real-life-stack/data-interface").ActivityEntry) => void; onOpenNotification: (notification: import("@real-life-stack/toolkit").NotificationCandidate) => void; onOpenGroup: (groupId: string) => void; onOpenActivity: () => void; onCloseCenter: () => void }) {
-  const notifications = useNotifications()
-  useMarkNotificationsSeen(notifications)
-  if (!notifications.supported) return <ReferenceActivityPanelContent onOpenTarget={onOpenTarget} />
-  return <NotificationCenter notifications={notifications.notifications} onOpenSubject={onOpenNotification} onOpenGroup={onOpenGroup} onOpenActivity={onOpenActivity} onMarkRead={notifications.stateSupported ? (keys) => void notifications.update?.({ op: "markRead", keys }) : undefined} onMarkAllRead={notifications.stateSupported ? () => { if (notifications.maxTs) void notifications.update?.({ op: "markAllReadUpTo", ts: notifications.maxTs }); onCloseCenter() } : undefined} onMuteGroup={notifications.stateSupported ? (groupId, muted) => void notifications.update?.(muted ? { op: "mute", groupId } : { op: "unmute", groupId }) : undefined} />
-}
-
-function ReferenceActivityPanelContent({ onOpenTarget }: { onOpenTarget: (entry: import("@real-life-stack/data-interface").ActivityEntry) => void }) {
-  const { data: entries } = useActivity()
-  const { data: items } = useItems()
-  const currentGroup = useCurrentGroup()
-  const { data: members } = useMembers(currentGroup?.id ?? null)
-  const { data: currentUser } = useCurrentUser()
-  const itemById = useMemo(() => new Map(items.map((item) => [item.id, item])), [items])
-  // A reaction entry opens its PARENT (the reacted-to item) — the reaction
-  // itself has no detail projection.
-  const resolveOpenId = useCallback((entry: import("@real-life-stack/data-interface").ActivityEntry) => {
-    if (UNPROJECTABLE_TARGET_TYPES.has(entry.targetType) || entry.action === "delete") return undefined
-    if (entry.targetType === "reaction") {
-      const reaction = itemById.get(entry.targetId)
-      const target = reaction?.relations?.find((relation) => relation.predicate === "reactsTo")?.target
-      const parentId = target?.startsWith("item:") ? target.slice("item:".length) : undefined
-      return parentId && itemById.has(parentId) ? parentId : undefined
-    }
-    return itemById.has(entry.targetId) ? entry.targetId : undefined
-  }, [itemById])
-  const isTargetOpenable = useCallback((entry: import("@real-life-stack/data-interface").ActivityEntry) => resolveOpenId(entry) !== undefined, [resolveOpenId])
-  const resolveActor = useCallback(
-    (actorId: string) => members.find((member) => member.id === actorId) ?? (currentUser?.id === actorId ? currentUser : undefined),
-    [members, currentUser],
-  )
-  const openResolvedTarget = useCallback((entry: import("@real-life-stack/data-interface").ActivityEntry) => {
-    const openId = resolveOpenId(entry)
-    if (openId) onOpenTarget({ ...entry, targetId: openId })
-  }, [onOpenTarget, resolveOpenId])
-  return <ActivityPanel entries={entries} isTargetOpenable={isTargetOpenable} onOpenTarget={openResolvedTarget} resolveActor={resolveActor} />
-}
 
 const CONNECTOR_OPTIONS: ConnectorOption[] = [
   { id: "mock", name: "Mock", description: "In-Memory, kein Speichern" },
@@ -498,108 +289,24 @@ export function ProfilePanelHost({
   )
 }
 
+/**
+ * Die Shell der Referenz-App: der Rahmen aus dem Toolkit (`RoutedAppFrame`,
+ * Spec 01 „Was bei der App bleibt") plus das, was nur diese App hat — das
+ * Profil-Overlay in der URL, die WoT-Ereignisdialoge, der Relay-Status, der
+ * Connector-Umschalter im Dev-Modus. Bis zum 21.09.2026 zaehlte `Home` hier
+ * zehn Provider und vier Controller von Hand auf.
+ */
 function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: string; onConnectorChange: (id: string) => void }) {
   const connector = useConnector()
   const navigate = useNavigate()
-  const {
-    groups,
-    workspaces,
-    activeWorkspace,
-    activeModule,
-    modules,
-    urlSpaceId,
-    urlItemId,
-    handleWorkspaceChange,
-    handleModuleChange,
-    activeNetworkId,
-  } = useWorkspaceRouting()
-  const createGroup = useCreateGroup()
-  const updateGroup = useUpdateGroup()
-  const deleteGroup = useDeleteGroup()
-  const inviteMember = useInviteMember()
-  const removeMember = useRemoveMember()
-  const { data: currentUser } = useCurrentUser()
-  // Erstbefüllung dieses Geräts — die Gruppenliste ist dann unvollständig,
-  // nicht leer (rls#265).
-  const initialSync = useInitialSync()
-  const { activeContacts, pendingContacts, contacts: allContacts, isLoading: contactsLoading, addContact, activateContact, removeContact, updateContactName, supportsContacts } = useContacts()
-  const verification = useVerification()
-
-  // Erstbefüllung des Verify-Dialogs: restore-dann-create (Entscheidung 1c).
-  // Der Dialog-Stack ist reload-fest (?dialog=verify) — nach einem Reload mit
-  // offenem QR lebt die persistierte Challenge weiter, statt dass eine neue
-  // die alte (vom Freund evtl. schon gescannte) still ersetzt.
-  const ensureVerificationChallenge = useCallback(async () => {
-    const restored = await verification.restoreChallenge()
-    if (restored) return restored
-    return verification.createChallenge()
-  }, [verification.restoreChallenge, verification.createChallenge])
-
-  // Dialog-Ebene (Ebene 2) als Back-Stack, an die Browser-History gekoppelt:
-  // der Stack lebt im ?dialog=-Query (Komma-Liste, letztes = oben). Öffnen
-  // pusht einen History-Eintrag; Schließen (X/Esc/Backdrop) und Browser-Zurück
-  // poppen über die History eine Ebene. Verify aus Kontakten heraus → zurück
-  // zu Kontakten; direkt geöffnet → einfach zu. Deep-linkbar + refresh-fest.
-  // Spec: 01-app-composition → Overlay-Flächen, Regel 5.
-  type DialogLayerId = "contacts" | "verify"
-  const [searchParams, setSearchParams] = useSearchParams()
   const location = useLocation()
-  const dialogStack = useMemo<DialogLayerId[]>(() => {
-    const raw = searchParams.get("dialog")?.split(",") ?? []
-    return raw.filter((x): x is DialogLayerId => x === "contacts" || x === "verify")
-  }, [searchParams])
-  const topDialog = dialogStack[dialogStack.length - 1] ?? null
-  const openDialog = (id: DialogLayerId) => {
-    const next = [...dialogStack.filter((x) => x !== id), id]
-    const params = new URLSearchParams(searchParams)
-    params.set("dialog", next.join(","))
-    // Jeden In-App-Push als unseren markieren, damit popDialog ihn sicher
-    // erkennt. Vorhandenen Route-State erhalten.
-    const prev = (typeof location.state === "object" && location.state) || {}
-    setSearchParams(params, { state: { ...prev, rlsDialogPush: true } })
-  }
-  // Schließen poppt eine Ebene. Nur In-App geöffnete Dialoge haben einen
-  // echten History-Eintrag, den navigate(-1) sauber poppt (Browser-Zurück
-  // identisch). Wir markieren diese Pushes mit state.rlsDialogPush.
-  //
-  // location.key taugt NICHT als Detektor: ein replace erzeugt einen neuen
-  // Key, also wäre bei gestapeltem Deep-Link (?dialog=contacts,verify) nur
-  // der erste Close "default", der zweite würde fälschlich navigate(-1)
-  // rausnavigieren. state.rlsDialogPush überlebt das, weil wir es beim
-  // replace-Entfernen NICHT setzen — Deep-Link/Refresh-Einträge bleiben so
-  // dauerhaft "nicht-gepusht" und schließen Ebene für Ebene per replace,
-  // ohne die App zu verlassen.
-  const popDialog = () => {
-    const pushed = (location.state as { rlsDialogPush?: boolean } | null)?.rlsDialogPush
-    if (pushed) {
-      navigate(-1)
-    } else {
-      const next = dialogStack.slice(0, -1)
-      const params = new URLSearchParams(searchParams)
-      if (next.length > 0) params.set("dialog", next.join(","))
-      else params.delete("dialog")
-      setSearchParams(params, { replace: true })
-    }
-  }
-  // Radix-Dialoge (RemoveScroll) setzen `body { pointer-events: none }` und
-  // können es nach gestapeltem Open/Close (Kontakte unter Verify) HÄNGEN
-  // lassen → danach ist die ganze App unklickbar (Erstellen-Button „ohne
-  // Wirkung"). Das AdaptivePanel nutzt einen eigenen Backdrop, kein body-Lock;
-  // sobald also kein Dialog mehr offen ist, body sicher wieder freigeben.
-  useEffect(() => {
-    if (topDialog !== null) return
-    const t = setTimeout(() => {
-      if (document.body.style.pointerEvents === "none") {
-        document.body.style.pointerEvents = ""
-      }
-    }, 0)
-    return () => clearTimeout(t)
-  }, [topDialog])
-  // The profile overlay lives in the URL (`?profile={userId}`) so it is
-  // deep-linkable and back-stackable: opening pushes a history entry (joining
-  // the same rlsDialogPush mechanism as the dialog stack), so browser-back / X
-  // pops it. The own profile (id === currentUser.id) opens the editor, any
-  // other id a read-only view.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const { data: currentUser } = useCurrentUser()
+  const { activeContacts, contacts: allContacts, addContact, supportsContacts } = useContacts()
+
+  // Das Profil-Overlay lebt in der URL (`?profile={userId}`): verlinkbar, und
+  // Zurueck im Browser schliesst es (derselbe Push-Marker wie der
+  // Dialog-Stack des Rahmens). Bleibt App-Sache, bis das Profil ein Item ist.
   const profileUserId = searchParams.get("profile")
   const openProfile = useCallback((userId: string) => {
     const params = new URLSearchParams(searchParams)
@@ -608,9 +315,6 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
     setSearchParams(params, { state: { ...prev, rlsDialogPush: true } })
   }, [searchParams, setSearchParams, location.state])
   const closeProfile = useCallback(() => {
-    // Mirror popDialog: an in-app push has a real history entry → navigate(-1)
-    // (browser-back identical); a deep-link/refresh entry isn't pushed → strip
-    // the param via replace so we never navigate out of the app.
     const pushed = (location.state as { rlsDialogPush?: boolean } | null)?.rlsDialogPush
     if (pushed) {
       navigate(-1)
@@ -620,528 +324,81 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
       setSearchParams(params, { replace: true })
     }
   }, [location.state, navigate, searchParams, setSearchParams])
-
-  // Das Profil eines Space liegt auf derselben Ebene wie das eines Menschen:
-  // rechts im Panel, ueber `?profil={spaceId}` in der URL, mit demselben
-  // Push-und-Pop wie der Dialog-Stack. Timo am 20.09.2026: *"Es ist nicht
-  // einfach ein Modul, sondern eine Komponente. Dann ist es aber auch rechts
-  // angeordnet."* Ein Reiter ist eine Arbeitsflaeche; ein Profil ist die
-  // Identitaetskarte dessen, mit dem man es zu tun hat (docs/13-profil.md).
-  //
-  // Zwei Schreibweisen, ein Buchstabe Unterschied: `profile` traegt eine
-  // Nutzer-Id, `profil` eine Space-Id. Das ist Absicht und steht hier, damit
-  // niemand sie fuer einen Tippfehler haelt.
-  // Traegt der offene Space ueberhaupt ein Profil? Die Regel steht in
-  // `@trustdonation/core`: ein Bauplan greift UND mindestens ein Feld hat
-  // eine Angabe. Ein Netzwerk hat weder das eine noch das andere.
-  const spaceTraegtProfil = useMemo(
-    () =>
-      activeWorkspace != null &&
-      activeWorkspace.scope !== "overview" &&
-      traegtProfil(
-        (groups.find((g) => g.id === activeWorkspace.id)?.data ?? {}) as Record<string, unknown>,
-      ),
-    [activeWorkspace, groups],
+  const { data: alleGroups } = useGroups()
+  const spaceModule = useCallback(
+    (id: string) => (alleGroups ?? []).find((g) => g.id === id)?.data?.modules as string[] | undefined,
+    [alleGroups],
   )
-
-  const profilGroupId = searchParams.get("profil")
-  const openSpaceProfil = useCallback((groupId: string) => {
-    const params = new URLSearchParams(searchParams)
-    params.set("profil", groupId)
-    const prev = (typeof location.state === "object" && location.state) || {}
-    setSearchParams(params, { state: { ...prev, rlsDialogPush: true } })
-  }, [searchParams, setSearchParams, location.state])
-  const closeSpaceProfil = useCallback(() => {
-    const pushed = (location.state as { rlsDialogPush?: boolean } | null)?.rlsDialogPush
-    if (pushed) {
-      navigate(-1)
-    } else {
-      const params = new URLSearchParams(searchParams)
-      params.delete("profil")
-      setSearchParams(params, { replace: true })
-    }
-  }, [location.state, navigate, searchParams, setSearchParams])
-
   const handleSaveProfile = useCallback(async (updates: { name: string; bio: string; avatar?: string }) => {
-    if (hasProfile(connector)) {
-      await connector.updateMyProfile(updates)
-    }
+    if (hasProfile(connector)) await connector.updateMyProfile(updates)
   }, [connector])
-
-  const [addContactOpen, setAddContactOpen] = useState(false)
-
-  // Group dialog state
-  const [groupDialogOpen, setGroupDialogOpen] = useState(false)
-  /**
-   * Die Feineinstellung des Aussehens als schwebende Karte ueber dem Inhalt
-   * (Entwurf 5b) — kein Dialog, kein Modul-Panel. Sie regelt immer den
-   * AKTIVEN Space (useCurrentGroup), ein key setzt die Regler beim Wechsel
-   * sauber neu.
-   */
-  const [themeCardOpen, setThemeCardOpen] = useState(false)
-  /**
-   * Fuer WELCHEN Space die Karte angefragt wurde. Der Wechsel dorthin laeuft
-   * ueber die URL und setzt die aktuelle Gruppe erst in einem Effekt; bis
-   * dahin liefert useCurrentGroup noch die vorige — und die Karte schriebe
-   * in den falschen Space. Gerendert wird erst, wenn beide uebereinstimmen.
-   */
-  const [themeGroupId, setThemeGroupId] = useState<string | null>(null)
-  const currentGroup = useCurrentGroup()
-  const themeGroup = currentGroup && currentGroup.id === themeGroupId ? currentGroup : null
-  const [groupDialogMode, setGroupDialogMode] = useState<GroupDialogMode>({ type: "create" })
-  const openCreateDialog = useCallback(() => {
-    setGroupDialogMode({ type: "create" })
-    setGroupDialogOpen(true)
-  }, [])
-
-  const openEditDialog = useCallback((workspace: Workspace) => {
-    if (workspace.scope === "overview") return
-    const group = groups.find((g) => g.id === workspace.id)
-    if (!group) return
-    setGroupDialogMode({ type: "edit", group })
-    setGroupDialogOpen(true)
-  }, [groups])
-
-  // Die Netzwerke, in denen der Mensch Mitglied ist — der Gruppen-Dialog
-  // bietet sie zur Zuordnung an und liest ihre Arten (Spec 04, "Netzwerk").
-  const networkOptions = useMemo(
-    () => workspaces.filter((w) => w.isNetwork).map((w) => ({ id: w.id, name: w.name, kinds: w.kinds ?? [] })),
-    [workspaces],
-  )
-
-  const userData: UserData = useMemo(
-    () => ({
-      id: currentUser?.id ?? "",
-      name: currentUser?.displayName ?? "Laden...",
-      email: "",
-      avatar: currentUser?.avatarUrl,
-    }),
-    [currentUser]
-  )
-
-  const [isDark, setIsDark] = useState(initialDarkMode)
-  const [drawerHeight, setDrawerHeight] = useState(0)
-  const [activityOpen, setActivityOpen] = useState(false)
-  const closeActivity = useCallback(() => setActivityOpen(false), [])
-  const activity = useActivity()
-  const notifications = useNotifications()
-  const openNotification = useCallback((notification: import("@real-life-stack/toolkit").NotificationCandidate) => {
-    navigate(buildNotificationRoute(notification, groups))
-    closeActivity()
-  }, [closeActivity, groups, navigate])
-  // Raw-history clicks escalate the module when the active one cannot show
-  // the target (lens-active-item-escalates-view) — otherwise plain focus.
-  const { data: allItems } = useItems()
-  const { itemId: offenesItem, focusItem, commentOnItem } = useItemFocus()
-  const openEntryTarget = useCallback((targetId: string) => {
-    const item = allItems.find(({ id }) => id === targetId)
-    const hints = item ? moduleHintsFor(item) : undefined
-    if (item && activeWorkspace && !moduleCanDisplay(activeModule ?? "feed", hints, item.type)) {
-      navigate(buildNotificationRoute({ groupId: activeWorkspace.id, subjectId: targetId, subjectType: item.type, moduleHints: hints } as import("@real-life-stack/toolkit").NotificationCandidate, groups))
-      return
-    }
-    focusItem(targetId)
-  }, [activeModule, activeWorkspace, allItems, focusItem, groups, navigate])
-  const supportsMessaging = hasMessaging(connector)
-
-  // Ein Feld fuehrt zu der Sicht, die es darstellen kann — das Datum in den
-  // Kalender, die Position auf die Karte. Drei Dinge kommen hier zusammen, und
-  // nur hier liegen sie alle vor: WELCHES Modul ein Feld zeigt (Register),
-  // WELCHE Module dieser Space fuehrt, und WIE man hinkommt.
-  // Der Kommentar-Hinweis einer Karte fuehrt ins Kommentarfeld des Panels.
-  // Steht das Item schon offen, fuehrt er nirgendwohin — man ist bereits da.
-  const kommentarNavigation = useMemo(
-    () => ({
-      openComments: (item: Item) =>
-        offenesItem === item.id ? null : () => commentOnItem(item.id),
-    }),
-    [commentOnItem, offenesItem],
-  )
-
-  const feldNavigation = useMemo(
-    () => ({
-      openField: (field: string, item: Item) => {
-        const ziel = findModulePresenting(field, modules.map(({ id }) => id))
-        // Kein Modul dafuer, oder wir stehen schon darin: Dann ist der Wert
-        // eine Auskunft und kein Weg. Ein Link, der nichts tut, ist schlimmer
-        // als schlichter Text.
-        if (!ziel || ziel.id === activeModule) return null
-        // Modul und Item in EINER Navigation: Nacheinander gesetzt, naehme der
-        // zweite Schritt den ersten zurueck (er liest das noch alte Modul).
-        return () => focusItem(item.id, ziel.id)
-      },
-    }),
-    [activeModule, focusItem, modules],
-  )
-
-  // Die Klasse folgt dem Zustand, nicht dem Klick. Gespeichert wird hier
-  // BEWUSST nicht: dieser Effekt laeuft auch beim Mount, und dann schriebe er
-  // die Systemvorgabe als Wahl fest — ein spaeterer Wechsel des Systems bliebe
-  // wirkungslos. Festgehalten wird nur, was jemand wirklich waehlt.
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", isDark)
-  }, [isDark])
-
-  const toggleTheme = () => {
-    const naechster = !isDark
-    setIsDark(naechster)
-    rememberColorScheme(naechster)
-  }
+  // Eine eingehende Verifikation schliesst den eigenen Verify-Dialog des
+  // Rahmens (`?dialog=…,verify`) — per replace, ohne die App zu verlassen.
+  const closeVerifyOverlay = useCallback(() => {
+    const stack = searchParams.get("dialog")?.split(",") ?? []
+    if (!stack.includes("verify")) return
+    const next = stack.filter((x) => x !== "verify")
+    const params = new URLSearchParams(searchParams)
+    if (next.length > 0) params.set("dialog", next.join(","))
+    else params.delete("dialog")
+    setSearchParams(params, { replace: true })
+  }, [searchParams, setSearchParams])
 
   return (
-    <CommentNavigationProvider value={kommentarNavigation}>
-    <FieldNavigationProvider value={feldNavigation}>
-    <OpenProfileProvider openProfile={openProfile}>
-    <DraftItemProvider>
-    <UnsavedChangesProvider>
-    <DetailHostProvider>
-    <LocationPickProvider
-      navigateToModule={handleModuleChange}
-      currentModule={activeModule}
-      canOpenMap={modules.some((m) => m.id === "map")}
-    >
-    <CreateHostProvider>
-    {/* Der Filter lebt neben dem persistenten Panel: beides ueberdauert den
-        Modulwechsel (Spec shared-components → „Modul-uebergreifender
-        Filter-State", Regel 1). */}
-    <FilterProvider>
-    {/* Tags werden zum Weg: ein Klick setzt den geteilten Filter. Der Provider
-        haengt UNTER dem Filter, nicht bei den anderen Navigationen — er
-        braucht den Zustand, den er setzt. */}
-    <TagNavigationProvider>
-    <ModulePanelHost onDrawerHeightChange={setDrawerHeight}>
-    <ActivityPanelController open={activityOpen} onClose={closeActivity} onOpenNotification={openNotification} onOpenEntryTarget={openEntryTarget} onOpenGroup={(groupId) => { const group = workspaces.find((workspace) => workspace.id === groupId); if (group) handleWorkspaceChange(group); closeActivity() }} />
-    <CreateSheetController />
-    <DetailHostController activeModule={activeModule} activeGroupId={activeWorkspace?.id ?? null} />
-    <UnsavedChangesGuard />
-    <AppShell>
-      <Navbar>
-        <NavbarStart>
-          {/* Jede Seite braucht eine Ueberschrift erster Ordnung. Wer mit
-              einem Screenreader springt, findet sonst keinen Anfang. Sie
-              steht IN der vorhandenen Leiste: ein eigener header daneben
-              waere ein zweiter gleichnamiger Bereich, und dann weiss die
-              Vorlesehilfe nicht mehr, welcher der Kopf der Seite ist. */}
-          <h1 className="sr-only">
-            {activeWorkspace?.name ?? getRuntimeConfig().branding?.appName ?? "Real Life Stack"}
-          </h1>
-          {workspaces.length > 0 ? (
-            // Switcher stays available even when activeWorkspace is null
-            // (no-access URL) so the user can navigate to their spaces.
-            <WorkspaceSwitcher
-              workspaces={workspaces}
-              activeWorkspace={activeWorkspace}
-              onWorkspaceChange={handleWorkspaceChange}
-              onCreateWorkspace={openCreateDialog}
-              onEditWorkspace={openEditDialog}
-              syncing={initialSync.active}
-              syncExpected={initialSync.expectedGroups}
-              activeNetworkId={activeNetworkId}
-            />
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={openCreateDialog}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Neue Gruppe
-            </Button>
-          )}
-        </NavbarStart>
-        <NavbarCenter>
-          {/* Die Reiterleiste bleibt in ihrem Kasten.
-
-              Ein Flex-Kind hat `min-width: auto` und weigert sich darum zu
-              schrumpfen: Die Leiste behält ihre volle Breite und quillt, weil
-              `NavbarCenter` mittig ausrichtet, nach beiden Seiten heraus. Sie
-              liegt dann über dem Space-Umschalter links und über dem
-              Hell-Dunkel-Schalter rechts und verschluckt deren Klicks.
-
-              Gemessen bei 1280 px: Der Umschalter reicht bis x=236, die
-              Leiste begann bei x=110. Bei neun Reitern begann sie bei x=199
-              und traf seine Mitte knapp nicht; der zehnte Reiter (die
-              Begleitung) hat es sichtbar gemacht. Der Durchgang fiel daran
-              aus, und ein Mensch unter 1600 px erreicht den Umschalter nicht.
-
-              `min-w-0` erlaubt das Schrumpfen, `overflow-x-auto` gibt den
-              Reitern dahinter einen Weg. Der Balken bleibt unsichtbar, sonst
-              frisst er von den 56 px Kopfhöhe.
-
-              Über den Haken `className`, ohne Eingriff in Antons Komponente.
-              Der Wunsch an ihn: dieselben Klassen in `module-tabs.tsx`, dann
-              trifft es keine App mehr. */}
-          <ModuleTabs
-            className="min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-            modules={modules}
-            activeModule={activeModule}
-            onModuleChange={handleModuleChange}
-          />
-        </NavbarCenter>
-        <NavbarEnd>
-          {/* Wer Beispieldaten sieht, soll es wissen.
-              
-              Der Prototyp startet mit dem local-Connector, damit eine Stiftung
-              ohne Anmeldung etwas sieht (Entscheidung E4). Ohne diesen Hinweis
-              hält jeder das Gezeigte für sein eigenes Konto: Timo hat sein
-              Profilbild nicht wiedererkannt und seine Kontakte vermisst,
-              während sie unberührt im Web of Trust lagen. */}
-          {activeConnectorId === "local" && (
-            <a
-              href={`${import.meta.env.BASE_URL}?connector=wot`}
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-dashed px-2.5 py-1 text-xs text-muted-foreground hover:border-primary hover:text-foreground"
-              title="Diese Ansicht zeigt Beispieldaten. Hier geht es zum eigenen Konto im Web of Trust."
-            >
-              Beispieldaten
-              <span aria-hidden="true">·</span>
-              <span className="font-medium">Mein Konto</span>
-            </a>
-          )}
-          {supportsMessaging && <RelayStatusBadgeWrapper />}
-          {notifications.supported ? <NotificationBell open={activityOpen} count={notifications.badgeCount} onOpenChange={setActivityOpen} /> : activity.supported && <ActivityBell open={activityOpen} onOpenChange={setActivityOpen} />}
-          {/* Das Profil des offenen Space, rechts neben dem des Menschen.
-              Es erscheint, sobald ein Space offen ist: Wer eine Stiftung
-              ansieht, schlaegt hier ihre Karte auf.
-
-              Die Uebersicht bleibt aussen vor, und ein Netzwerk auch: Beide
-              sind keine Einrichtung, und `traegtProfil` sagt das. Eine Taste,
-              die auf "traegt noch keine Angaben" fuehrt, wirkt kaputt. */}
-          {activeWorkspace && spaceTraegtProfil && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => openSpaceProfil(activeWorkspace.id)}
-              aria-label={`Profil von ${activeWorkspace.name} ansehen`}
-              title={`Profil von ${activeWorkspace.name}`}
-              className="h-9 w-9"
-            >
-              <IdCard className="h-4 w-4" />
-            </Button>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            aria-label={isDark ? "Zur hellen Ansicht wechseln" : "Zur dunklen Ansicht wechseln"}
-            className="h-9 w-9"
-          >
-            {isDark ? (
-              <Sun className="h-4 w-4" />
-            ) : (
-              <Moon className="h-4 w-4" />
-            )}
-          </Button>
-          <UserMenu
-            user={userData}
-            onProfile={() => { if (currentUser?.id) openProfile(currentUser.id) }}
-            onContacts={supportsContacts ? () => openDialog("contacts") : undefined}
-            contactCount={activeContacts.length}
-            onVerify={hasEncounterVerification(connector) ? () => openDialog("verify") : undefined}
-            onLogout={isAuthenticatable(connector) ? async () => {
-              await connector.logout()
-              window.location.reload()
-            } : undefined}
-          />
-        </NavbarEnd>
-      </Navbar>
-
-      {/* Map is full-bleed: skip the bottom-nav padding so the map fills the
-          area behind the translucent BottomNav instead of leaving a gap above
-          it. Scrolling modules keep the padding so content clears the nav. */}
-      <AppShellMain
-        withBottomNav={activeModule !== "map"}
-        // Aus dem Register, nicht aus einer Liste hier: sonst weiss die App
-        // wieder, welches Modul was braucht, und die Liste driftet.
-        inset={getModule(activeModule)?.panelFit !== "overlay"}
-      >
-        <ModuleOutlet
-          activeWorkspace={activeWorkspace}
-          activeModule={activeModule}
-          groups={groups}
-          urlSpaceId={urlSpaceId}
-          urlItemId={urlItemId}
-          selectionFocusVisibleArea={drawerHeight > 0 ? { bottomInset: drawerHeight } : undefined}
-        />
-      </AppShellMain>
-
-      <BottomNav
-        items={modules}
-        activeItem={activeModule}
-        onItemChange={handleModuleChange}
-      />
-      <GroupDialog
-        key={groupDialogMode.type === "edit" ? `edit-${groupDialogMode.group.id}` : "create"}
-        open={groupDialogOpen}
-        onOpenChange={setGroupDialogOpen}
-        mode={groupDialogMode}
-        currentUserId={currentUser?.id}
-        contacts={allContacts}
-        networks={networkOptions}
-        currentNetworkId={activeNetworkId}
+    <MapLibreAdapterProvider>
+      <RoutedAppFrame
+        fallbackModule="feed"
+        build={__RLS_BUILD__}
+        openProfile={openProfile}
         // Der Link fuer den Knopf auf einer Landingpage: die Domain des
-        // Netzwerks, wenn es eine hat (dort laeuft dann seine eigene Instanz
-        // mit demselben Relay), sonst die Adresse, unter der die App gerade
-        // laeuft — plus Space und Karte als Einstieg.
-        // Eine fremde Domain liefert die App nach der Deploy-Vorlage unter
-        // /app aus; die eigene Adresse kennt ihren Basispfad selbst. Einstieg
+        // Netzwerks, wenn es eine hat (dort laeuft seine eigene Instanz unter
+        // /app), sonst die Adresse, unter der die App gerade laeuft. Einstieg
         // ist das erste Modul des Space, wie beim Space-Wechsel.
         spaceLink={(id, domain) => {
-          const group = groups.find((g) => g.id === id)
-          const start = resolveSpaceModules(group?.data?.modules as string[] | undefined)[0]
+          const start = resolveSpaceModules(spaceModule(id))[0]
           return domain ? `https://${domain}/app/${id}/${start}` : `${window.location.origin}${import.meta.env.BASE_URL}${id}/${start}`
         }}
-        onCreateGroup={async (name, data) => {
-          const group = await createGroup(name)
-          // Netzwerk und Art als eigener Patch nach dem Anlegen: createGroup
-          // kennt je nach Connector nur Name und Module; updateGroup mergt per
-          // Schluessel (Spec 04, Regel 3) und traegt sie in jeden Connector.
-          const patch: Record<string, unknown> = {}
-          if (data?.isNetwork) patch.isNetwork = true
-          if (data?.network) patch.network = data.network
-          if (data?.kind) patch.kind = data.kind
-          if (Object.keys(patch).length > 0) {
-            // Der Space existiert ab hier. Scheitert nur der Patch, bleibt er
-            // ohne Netzwerk und Art stehen, statt dass ein erneutes "Erstellen"
-            // ein Duplikat anlegt; die Zuordnung holt man im Zahnrad nach.
-            try {
-              await updateGroup(group.id, { data: patch })
-            } catch (err) {
-              console.warn(`[rls] Space "${group.name}" angelegt, Netzwerk/Art nicht gespeichert:`, err)
-            }
-          }
-          handleWorkspaceChange({ id: group.id, name: group.name, ...patch })
-        }}
-        onUpdateGroup={async (id, updates) => {
-          await updateGroup(id, updates)
-        }}
-        onOpenThemePanel={(group) => {
-          // Die Tokens gehoeren dem AKTIVEN Space. Aus dem Menue eines
-          // anderen geoeffnet, regelte man sonst an Farben, die gar nicht
-          // auf dem Bildschirm sind — also erst hinspringen.
-          if (activeWorkspace?.id !== group.id) handleWorkspaceChange({ id: group.id, name: group.name })
-          setThemeGroupId(group.id)
-          setThemeCardOpen(true)
-        }}
-        onDeleteGroup={async (id) => {
-          await deleteGroup(id)
-          // If deleted group was active, switch to first remaining
-          if (activeWorkspace?.id === id) {
-            const remaining = workspaces.filter((w) => w.id !== id)
-            if (remaining.length > 0) {
-              handleWorkspaceChange(remaining[0])
-            } else {
-              localStorage.removeItem(STORAGE_KEY_GROUP)
-              navigate("/")
-            }
-          }
-        }}
-        onInviteMember={async (groupId, userId) => {
-          await inviteMember(groupId, userId)
-        }}
-        onRemoveMember={async (groupId, userId) => {
-          await removeMember(groupId, userId)
-        }}
-      />
-      <PanelExclusivity themeOpen={themeCardOpen} onCloseTheme={() => setThemeCardOpen(false)} />
-      {themeCardOpen && themeGroup && (
-        <SpaceThemeCard
-          key={themeGroup.id}
-          group={themeGroup}
-          onUpdateGroup={async (id, updates) => { await updateGroup(id, updates) }}
-          onClose={() => setThemeCardOpen(false)}
+        navbarEnd={
+          <>
+            <BeispieldatenHinweis aktiv={activeConnectorId === "local"} />
+            {hasMessaging(connector) ? <RelayStatusBadgeWrapper /> : null}
+            <SpaceProfilKnopf />
+          </>
+        }
+      >
+        <SpaceProfilHost />
+        {/* Prototyp trustdonation: die recherchierten Stiftungen in einen echten
+            Space übernehmen. Über die Adresse ausgelöst, damit es keinen Knopf
+            gibt, den eine Stiftung versehentlich drückt:
+            .../<space>/feed?connector=wot&import=stiftungen */}
+        <StiftungenImportHost beispielwelt={activeConnectorId === "local"} />
+        <ProfilePanelHost
+          userId={profileUserId}
+          currentUser={currentUser}
+          connector={connector}
+          contactCount={activeContacts.length}
+          onSaveProfile={handleSaveProfile}
+          onClose={closeProfile}
+          onAddContact={supportsContacts ? addContact : undefined}
+          contactStatusFor={(id) => allContacts.find((contact) => contact.id === id)?.status}
+          contactDirectionFor={(id) => allContacts.find((contact) => contact.id === id)?.direction}
         />
-      )}
-
-      {/* Ein Panel je Art von Profil, dieselbe Flaeche rechts: ein Mensch
-          (Antons Spec 12) und eine Einrichtung (docs/13-profil.md). */}
-      <SpaceProfilPanel groupId={profilGroupId} onClose={closeSpaceProfil} />
-
-      <ProfilePanelHost
-        userId={profileUserId}
-        currentUser={currentUser}
-        connector={connector}
-        contactCount={activeContacts.length}
-        onSaveProfile={handleSaveProfile}
-        onClose={closeProfile}
-        onAddContact={supportsContacts ? addContact : undefined}
-        contactStatusFor={(id) => allContacts.find((contact) => contact.id === id)?.status}
-        contactDirectionFor={(id) => allContacts.find((contact) => contact.id === id)?.direction}
-      />
-
-      {/* Contacts Dialog */}
-      <ContactsDialog
-        open={topDialog === "contacts"}
-        onOpenChange={(open) => { if (!open) popDialog() }}
-        activeContacts={activeContacts}
-        pendingContacts={pendingContacts}
-        isLoading={contactsLoading}
-        onRemove={removeContact}
-        onEditName={updateContactName}
-        onVerify={hasEncounterVerification(connector) ? () => openDialog("verify") : undefined}
-        onAdd={supportsContacts && !hasEncounterVerification(connector) ? () => setAddContactOpen(true) : undefined}
-        onActivate={activateContact}
-        activeLabel={hasEncounterVerification(connector) ? "Verifiziert" : "Aktiv"}
-      />
-
-      {/* Kontakt per ID/Profil-Link hinzufügen (Anfrage-Connectoren). */}
-      <AddContactDialog
-        open={addContactOpen}
-        onOpenChange={setAddContactOpen}
-        onAdd={(id, name) => addContact(extractProfileId(id), name)}
-      />
-
-      <VerificationDialog
-        open={topDialog === "verify" && hasEncounterVerification(connector)}
-        onOpenChange={(open) => { if (!open) popDialog() }}
-        challenge={verification.challenge}
-        peerInfo={verification.peerInfo}
-        isProcessing={verification.isProcessing}
-        error={verification.error}
-        onCreateChallenge={verification.createChallenge}
-        onEnsureChallenge={ensureVerificationChallenge}
-        onScanChallenge={verification.scanChallenge}
-        onConfirmVerification={verification.confirmVerification}
-        onReset={verification.reset}
-      />
-
-      {/* Incoming event dialogs */}
-      <IncomingEventDialogs onCloseVerifyDialog={() => { if (topDialog === "verify") popDialog() }} />
-
-      {/* Prototyp trustdonation: die recherchierten Stiftungen in einen echten
-          Space übernehmen. Über die Adresse ausgelöst, damit es keinen Knopf
-          gibt, den eine Stiftung versehentlich drückt:
-          .../<space>/feed?connector=wot&import=stiftungen */}
-      <StiftungenImport
-        connector={connector}
-        aktiv={new URLSearchParams(window.location.search).get("import") === "stiftungen"}
-        spaceName={activeWorkspace?.name}
-        beispielwelt={activeConnectorId === "local"}
-      />
-
-      {/* Connector FAB — bottom-left, above BottomNav (only with ?dev URL param) */}
-      {initialDevMode && (
-        <div className="fixed bottom-20 left-4 z-50">
-          <ConnectorSwitcher
-            connectors={CONNECTOR_OPTIONS}
-            activeConnector={activeConnectorId}
-            onConnectorChange={onConnectorChange}
-          />
-        </div>
-      )}
-    </AppShell>
-    </ModulePanelHost>
-    </TagNavigationProvider>
-    </FilterProvider>
-    </CreateHostProvider>
-    </LocationPickProvider>
-    </DetailHostProvider>
-    </UnsavedChangesProvider>
-    </DraftItemProvider>
-    </OpenProfileProvider>
-    </FieldNavigationProvider>
-    </CommentNavigationProvider>
+        <IncomingEventDialogs onCloseVerifyDialog={closeVerifyOverlay} />
+        {/* Connector FAB — bottom-left, above BottomNav (only with ?dev URL param) */}
+        {initialDevMode && (
+          <div className="fixed bottom-20 left-4 z-50">
+            <ConnectorSwitcher
+              connectors={CONNECTOR_OPTIONS}
+              activeConnector={activeConnectorId}
+              onConnectorChange={onConnectorChange}
+            />
+          </div>
+        )}
+      </RoutedAppFrame>
+    </MapLibreAdapterProvider>
   )
 }
+
 
 async function createConnector(type: string): Promise<DataInterface> {
   if (type === "wot") {
@@ -1159,12 +416,13 @@ async function createConnector(type: string): Promise<DataInterface> {
     return connector
   }
   if (type === "local") {
-    // Die Musterdaten werden nachgeladen statt mitgeliefert. Gemessen am
-    // 20.09.2026 lagen 308 KB davon im groessten Stueck, und jeder lud sie:
-    // auch wer sich anmeldet und die Beispielwelt nie sieht. Derselbe Weg,
-    // den die Karte schon geht.
+    // `?identity=tab`: jeder Browser-Tab ist eine eigene Person — zum Testen
+    // von Mehrpersonen-Geschichten (Abstimmen, Varianten, Einfrieren).
+    const identity = new URLSearchParams(window.location.search).get("identity") === "tab" ? "per-tab" : "shared"
+    // Die Musterdaten werden nachgeladen statt mitgeliefert: 308 KB, die
+    // sonst jeder laedt, auch wer die Beispielwelt nie sieht (20.09.2026).
     const { musterdaten } = await import("@trustdonation/core/musterdaten")
-    const c = new LocalConnector(musterdaten)
+    const c = new LocalConnector(musterdaten, { identity })
     await c.init()
     return c
   }
@@ -1185,6 +443,103 @@ async function createConnector(type: string): Promise<DataInterface> {
   const c = new MockConnector(musterdaten)
   await c.init()
   return c
+}
+
+
+// ---------------------------------------------------------------------------
+// Prototyp trustdonation: was die App an den Rahmen haengt (navbarEnd,
+// children). Alles liest den Space aus der URL (`/:scope/...`), denn der
+// Rahmen legt seine Routen um genau diese Flaechen.
+
+/**
+ * Wer Beispieldaten sieht, soll es wissen. Der Prototyp startet mit dem
+ * local-Connector, damit eine Stiftung ohne Anmeldung etwas sieht (E4). Ohne
+ * diesen Hinweis haelt jeder das Gezeigte fuer sein eigenes Konto.
+ */
+function BeispieldatenHinweis({ aktiv }: { aktiv: boolean }) {
+  if (!aktiv) return null
+  return (
+    <a
+      href={`${import.meta.env.BASE_URL}?connector=wot`}
+      className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-dashed px-2.5 py-1 text-xs text-muted-foreground hover:border-primary hover:text-foreground"
+      title="Diese Ansicht zeigt Beispieldaten. Hier geht es zum eigenen Konto im Web of Trust."
+    >
+      Beispieldaten
+      <span aria-hidden="true">·</span>
+      <span className="font-medium">Mein Konto</span>
+    </a>
+  )
+}
+
+/** Das Profil eines Space oeffnen und schliessen, in der URL (`?profil=`). */
+function useSpaceProfil() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const offen = searchParams.get("profil")
+  const oeffnen = useCallback((groupId: string) => {
+    const params = new URLSearchParams(searchParams)
+    params.set("profil", groupId)
+    const prev = (typeof location.state === "object" && location.state) || {}
+    setSearchParams(params, { state: { ...prev, rlsDialogPush: true } })
+  }, [searchParams, setSearchParams, location.state])
+  const schliessen = useCallback(() => {
+    const pushed = (location.state as { rlsDialogPush?: boolean } | null)?.rlsDialogPush
+    if (pushed) { navigate(-1); return }
+    const params = new URLSearchParams(searchParams)
+    params.delete("profil")
+    setSearchParams(params, { replace: true })
+  }, [location.state, navigate, searchParams, setSearchParams])
+  return { offen, oeffnen, schliessen }
+}
+
+/**
+ * Die Taste zum Profil des offenen Space, rechts neben dem des Menschen.
+ * Zwei Schreibweisen, ein Buchstabe Unterschied: `profile` traegt eine
+ * Nutzer-Id, `profil` eine Space-Id. Das ist Absicht (docs/13-profil.md).
+ * Die Uebersicht und ein Netzwerk bleiben aussen vor: `traegtProfil` sagt,
+ * dass sie keine Einrichtung sind.
+ */
+function SpaceProfilKnopf() {
+  const { scope } = useParams()
+  const { data: groups } = useGroups()
+  const { oeffnen } = useSpaceProfil()
+  const group = scope ? (groups ?? []).find((g) => g.id === scope) : undefined
+  if (!group || !traegtProfil((group.data ?? {}) as Record<string, unknown>)) return null
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={() => oeffnen(group.id)}
+      aria-label={`Profil von ${group.name} ansehen`}
+      title={`Profil von ${group.name}`}
+      className="h-9 w-9"
+    >
+      <IdCard className="h-4 w-4" />
+    </Button>
+  )
+}
+
+/** Ein Panel je Art von Profil, dieselbe Flaeche rechts: ein Mensch und eine Einrichtung. */
+function SpaceProfilHost() {
+  const { offen, schliessen } = useSpaceProfil()
+  return <SpaceProfilPanel groupId={offen} onClose={schliessen} />
+}
+
+function StiftungenImportHost({ beispielwelt }: { beispielwelt: boolean }) {
+  const connector = useConnector()
+  const { scope } = useParams()
+  const { data: groups } = useGroups()
+  const [searchParams] = useSearchParams()
+  const space = scope ? (groups ?? []).find((g) => g.id === scope) : undefined
+  return (
+    <StiftungenImport
+      connector={connector}
+      aktiv={searchParams.get("import") === "stiftungen"}
+      spaceName={space?.name}
+      beispielwelt={beispielwelt}
+    />
+  )
 }
 
 const STORAGE_KEY_CONNECTOR = "rls-connector"
@@ -1305,21 +660,10 @@ export default function App() {
           {/* Focus lives above the routes so it survives module switches — the
               shared panel's onClose must clear the focus on whatever module the
               user is on now, not the one that opened it. */}
-          <ItemFocusProvider>
-            <Routes>
-              {/* Flat scheme — the URL is the single source of truth for the focused
-                  item. `:seg` is a module (known enum) or a module-less item id;
-                  use-workspace-routing discriminates + redirects. `/` and unknown
-                  paths fall to `*` → Home → redirect to the default scope/module.
-                  App-level surfaces (profile, contacts, …) are query overlays, not
-                  path routes. Reserved for later: literal `/u/:userId`, `/join/:token`
-                  would go ABOVE `:scope` (literal beats param). */}
-              <Route path=":scope/:seg/:itemId" element={<Home activeConnectorId={connectorId} onConnectorChange={setConnectorId} />} />
-              <Route path=":scope/:seg" element={<Home activeConnectorId={connectorId} onConnectorChange={setConnectorId} />} />
-              <Route path=":scope" element={<Home activeConnectorId={connectorId} onConnectorChange={setConnectorId} />} />
-              <Route path="*" element={<Home activeConnectorId={connectorId} onConnectorChange={setConnectorId} />} />
-            </Routes>
-          </ItemFocusProvider>
+          {/* Fokus, Routen (flaches Schema `/{scope}/{modul}/{item}`) und der
+              Rahmen kommen aus `RoutedAppFrame`; Home stellt nur, was diese
+              App zusaetzlich hat. */}
+          <Home activeConnectorId={connectorId} onConnectorChange={setConnectorId} />
         </AuthGate>
       </IncomingEventsProvider>
     </ConnectorProvider>

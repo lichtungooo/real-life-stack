@@ -5,16 +5,22 @@ import type { Item } from "@real-life-stack/data-interface"
 import { ItemDetailPanel } from "./item-detail-panel"
 import { ItemDetailActions } from "./item-detail-actions"
 import { ItemDetailSkeleton } from "./item-detail-skeleton"
+import { DeleteConfirmDialog } from "./delete-confirm-dialog"
+import { useItemPermissions } from "../../hooks/use-item-permissions"
 import {
   type ContentComposerProps,
   type ContentTypeConfig,
   type WidgetData,
 } from "../composer/content-composer"
 import { ItemComposer } from "../composer/item-composer"
+import { withEditGroup } from "../composer/composer-mapping"
+import { useItemHasBindings } from "../composer/use-item-bindings"
+import { ITEM_BINDINGS_REASON } from "../../lib/item-bindings"
 import type { ItemEditorMapper } from "../../hooks/use-item-editor"
+import { useIsFrozen } from "../../hooks/use-item-frozen"
 import { useItem } from "../../hooks/use-items"
 import { useConnector } from "../../hooks/connector-context"
-import { hasItemGroups } from "@real-life-stack/data-interface"
+import { hasItemGroups, isWritable, normalizeItemType } from "@real-life-stack/data-interface"
 
 export interface ItemDetailViewProps {
   /** The item to show. The view subscribes via `useItem`, so it always renders
@@ -76,9 +82,22 @@ export function ItemDetailView({
 }: ItemDetailViewProps) {
   const { data: item } = useItem(itemId)
   const connector = useConnector()
+  // Spec 08 → Einfrieren: once another person bound a reference to the
+  // content, its wording can no longer be edited — the edit entry disappears
+  // (resonance.md, Wortlaut rule 3; the type offers a new version instead).
+  const frozen = useIsFrozen(item)
+  // Löschen in der Fußzeile des Formulars: dieselbe Regel wie im ⋮-Menü
+  // (ItemDetailActions) — nur mit Recht, immer hinter der Bestätigung.
+  const perms = useItemPermissions(item)
+  const [confirmDelete, setConfirmDelete] = useState(false)
   // Uncontrolled by default; controlled when a `mode` prop is supplied (URL-driven).
   const [internalMode, setInternalMode] = useState<"read" | "edit">("read")
   const mode = modeProp ?? internalMode
+  // Der Space des Items (Vorauswahl beim Bearbeiten, Space des Formulars
+  // Regel 1) und ob es Beziehungen hat, die es dort halten (Regel 5) —
+  // gelesen nur im Bearbeiten.
+  const itemGroup = item && hasItemGroups(connector) ? connector.getItemGroupId(item.id) : null
+  const hasBindings = useItemHasBindings(mode === "edit" ? (item ?? null) : null, itemGroup)
   const changeMode = useCallback(
     (next: "read" | "edit") => {
       onModeChange?.(next)
@@ -95,17 +114,30 @@ export function ItemDetailView({
     )
   }
 
-  // Lock the edit composer to the item's own type (no type switcher in phase 1):
-  // narrow the caller's full type list to the matching one. NO fallback to the
-  // full list — for an item whose type the module doesn't configure, editing is
-  // simply not offered (a fallback would show a wrong type switcher / form).
-  const composerTypes = contentTypes.filter((t) => t.id === item.type)
-  const canEdit = composerTypes.length > 0
+  // Lock the edit composer to the item's own template (no type switcher in
+  // phase 1): narrow the caller's full type list to the one matching class. NO
+  // fallback to the full list — for an item none of whose classes has a
+  // template, editing is simply not offered (a fallback would show a wrong
+  // type switcher / form).
+  const vorlage = editTemplateFor(item, contentTypes)
+  // Der Space ist beim Bearbeiten nur wählbar, wenn der Connector Items
+  // verschieben kann (moveItemToGroup); sonst steht er nicht zur Wahl.
+  // Ohne Verschieben steht der bekannte Space fest im Kopf (Edit-Regeln 3).
+  // Hat das Item Beziehungen — oder ist das noch nicht bekannt —, steht er
+  // ebenfalls fest, mit Grund (Space des Formulars, Regel 5). Vorgabe ist
+  // nur der Space des Items, nie die des Erstellens (Regel 1; Codex R1/5):
+  // Ohne bekannten Space bleibt der Kopf leer, und Speichern verschiebt nicht.
+  const canMove = hasItemGroups(connector)
+  const composerTypes = withEditGroup(
+    (vorlage ? contentTypes.filter((t) => t.id === vorlage) : []).map((t) => ({ ...t, defaultGroup: itemGroup ?? undefined })),
+    canMove,
+    hasBindings === false ? undefined : ITEM_BINDINGS_REASON,
+  )
+  const canEdit = composerTypes.length > 0 && !frozen
 
   // Pre-fill the group widget with the item's ACTUAL group/space (not just the
   // config's defaultGroup = current space) so editing in the aggregate view
   // shows where the item really lives. Persisted back via useItemEditor.
-  const itemGroup = hasItemGroups(connector) ? connector.getItemGroupId(item.id) : null
   const initialData = {
     ...editInitialData(item),
     ...(itemGroup ? { group: itemGroup } : {}),
@@ -125,6 +157,7 @@ export function ItemDetailView({
   return (
     <ItemDetailPanel
       itemId={item.id}
+      editing={mode === "edit"}
       renderCommentReactions={renderCommentReactions}
       focusComposer={focusComposer}
       onComposerFocused={onComposerFocused}
@@ -132,19 +165,50 @@ export function ItemDetailView({
       {mode === "read" ? (
         renderRead(item, actions)
       ) : (
-        <ItemComposer
-          key={item.id}
-          className="p-4"
-          existingItem={item}
-          contentTypes={composerTypes}
-          initialContentType={item.type}
-          initialData={initialData}
-          mapper={mapper}
-          composerProps={composerProps}
-          onDone={() => changeMode("read")}
-          onCancel={() => changeMode("read")}
-        />
+        <>
+          <ItemComposer
+            key={item.id}
+            // Das Formular füllt die Karte, damit die Fußzeile an ihrem Ende
+            // klebt; unten kein Innenabstand, den trägt die Fußzeile selbst.
+            className="min-h-full px-4 pt-4"
+            existingItem={item}
+            contentTypes={composerTypes}
+            initialContentType={vorlage}
+            initialData={initialData}
+            mapper={mapper}
+            composerProps={{
+              ...composerProps,
+              stickyFooter: true,
+              ...(perms.canDelete ? { onDelete: () => setConfirmDelete(true) } : {}),
+            }}
+            onDone={() => changeMode("read")}
+            onCancel={() => changeMode("read")}
+          />
+          {perms.canDelete && (
+            <DeleteConfirmDialog
+              open={confirmDelete}
+              onOpenChange={setConfirmDelete}
+              title={title}
+              onConfirm={async () => {
+                if (!isWritable(connector)) return
+                await connector.deleteItem(item.id)
+                onClose()
+              }}
+            />
+          )}
+        </>
       )}
     </ItemDetailPanel>
   )
+}
+
+/**
+ * Welche Vorlage bearbeitet dieses Item? Die erste Klasse des Items, fuer die
+ * es einen Inhaltstyp gibt — ueber die normalisierte Klassenmenge, nie ueber
+ * den rohen String (Spec 06, Regeln 7 und 9). Ein Item `["post", "statement"]`
+ * bearbeitet als Beitrag; ohne Treffer gibt es kein Bearbeiten (rls#417).
+ */
+export function editTemplateFor(item: Pick<Item, "type">, contentTypes: readonly { id: string }[]): string | undefined {
+  const ids = new Set(contentTypes.map((t) => t.id))
+  return normalizeItemType(item.type).find((k) => ids.has(k))
 }

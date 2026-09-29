@@ -3,11 +3,21 @@ import { EMPTY_NOTIFICATION_STATE, hasNotificationState, hasScopedActivityLog, t
 import { projectNotifications, unreadHighPriorityKeys } from "../components/activity/notification-center"
 import { useConnector } from "./connector-context"
 import { useGroups } from "./use-groups"
-import { useCurrentUser } from "./use-auth"
+import { useOptionalCurrentUser } from "./use-auth"
 
-/** Optional shell enhancement; raw activity remains available without it. */
+/**
+ * What is new for me, and how much is unread?
+ *
+ * Optional shell enhancement; raw activity remains available without it.
+ *
+ * @answers `{notifications, badgeCount, …}`
+ * @without empty
+ * @group environment
+ * @see story rls-foundations-hooks--read
+ * @see spec docs/spec/02-data-interface.md
+ */
 export function useNotifications() {
-  const connector = useConnector(); const { data: groups } = useGroups(); const { data: user } = useCurrentUser()
+  const connector = useConnector(); const { data: groups } = useGroups(); const { data: user } = useOptionalCurrentUser()
   const scoped = useMemo(() => hasScopedActivityLog(connector) ? connector.observeScopedActivity() : null, [connector])
   const notificationState = useMemo(() => hasNotificationState(connector) ? connector.observeNotificationState() : null, [connector])
   // Observable instances are cached by connectors; their `.current` values are
@@ -30,7 +40,17 @@ export function useNotifications() {
   return { supported, stateSupported, notifications, state, badgeCount: unseenKeys.length, maxTs, update: stateSupported ? update : undefined }
 }
 
-/** Mark the visible frontier once per center mount, and only when it advances. */
+/**
+ * Advance the seen boundary once per opening.
+ *
+ * Mark the visible frontier once per center mount, and only when it advances.
+ *
+ * @answers —
+ * @without no-op
+ * @group environment
+ * @see story rls-foundations-hooks--environment
+ * @see spec docs/spec/11-runtime-config-und-branding.md
+ */
 export function useMarkNotificationsSeen(notifications: ReturnType<typeof useNotifications>) {
   // Keyed by (maxTs, persisted lastSeenTs): a repeat emission of the same
   // cloned state writes nothing (no loop), while a state RESET (logout/

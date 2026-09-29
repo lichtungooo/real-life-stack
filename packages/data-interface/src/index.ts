@@ -2,7 +2,6 @@
 // Zentrale Typdefinitionen für das DataInterface (Connector-Schnittstelle)
 
 import { BaseConnector } from "./base-connector.js"
-import { VOCAB_STATEMENT } from "./vocab.js"
 export { BaseConnector, createObservable, shallowEqual, matchesFilter, findRelatedItems, applyPagination, type ReactiveObservable } from "./base-connector.js"
 export {
   canonicalizeRelationEndpoints,
@@ -17,11 +16,16 @@ export {
 } from "./relation-records.js"
 export * from "./item-types.js"
 export * from "./mirror.js"
-import { SYSTEM_ITEM_TYPES } from "./item-types.js"
+import { isAuthorialItemType, isAuthoredItemType } from "./claims.js"
 export * from "./votes.js"
+export * from "./relation-count.js"
+export * from "./attends.js"
 export * from "./claims.js"
+export * from "./authored.js"
 export * from "./vocab.js"
 export * from "./type-manifest.js"
+export * from "./module-hints.js"
+import type { ModuleHints } from "./module-hints.js"
 export { EMPTY_NOTIFICATION_STATE, cloneNotificationState, applyNotificationStatePatch, maxTs, pruneReadEntryKeys } from "./notification-state.js"
 
 // --- Core Types ---
@@ -130,7 +134,11 @@ export interface AuthMethod {
 // --- Filter & Query ---
 
 export interface ItemFilter {
-  type?: string
+  /**
+   * Klasse(n): ein Kurzname oder eine IRI, oder eine Liste davon als ODER.
+   * Verglichen wird nach Normalisierung als Menge (Spec 06, Regeln 6–8).
+   */
+  type?: string | string[]
   hasField?: string[]
   /**
    * AND-filter on top-level `item.tags`. All listed tags must be present.
@@ -154,6 +162,12 @@ export interface ItemFilter {
    */
   bbox?: [number, number, number, number]
   source?: string
+  /**
+   * Nur Items dieses Space, unabhängig vom geöffneten (Spec 02 → Lesen in
+   * einem bestimmten Space). Nur an einen Connector mit {@link hasGroupScope}
+   * geben: Ein anderer übergeht das Feld und lieferte den geöffneten Space.
+   */
+  group?: string
   limit?: number
   offset?: number
 }
@@ -287,7 +301,7 @@ export interface ScopedActivityEntry {
     type: string
     createdBy?: string
     title?: string
-    moduleHints?: { hasPosition: boolean; hasStart: boolean; hasStatus: boolean; hasStatement?: boolean }
+    moduleHints?: ModuleHints
   } | null
   isPersonal?: boolean
   actor: User | null
@@ -320,25 +334,6 @@ export function hasNotificationState(connector: DataInterface): connector is Dat
     && typeof (connector as Partial<NotificationStateCapable>).updateNotificationState === "function"
 }
 
-const KANBAN_STATUSES = new Set(["open", "in-progress", "done", "archived"])
-export type ModuleHints = NonNullable<NonNullable<ScopedActivityEntry["subject"]>["moduleHints"]>
-
-/** The exact field predicates used by the workspace's default module resolver. */
-export function moduleHintsFor(itemOrHints: Item | ModuleHints): ModuleHints {
-  if ("hasPosition" in itemOrHints) return itemOrHints
-  const item = itemOrHints
-  const data = item.data ?? {}
-  const position = data.position as { coordinates?: unknown } | undefined
-  const status = data.status
-  return {
-    hasPosition: Array.isArray(position?.coordinates),
-    hasStart: typeof data.start === "string" && data.start.length > 0,
-    hasStatus: item.type === "task" || (typeof status === "string" && KANBAN_STATUSES.has(status)),
-    // Statements have no discriminator field — their activation hint comes
-    // from the statement/v1 schema (spec 06), never from `type`.
-    hasStatement: (item["@context"] ?? []).includes(VOCAB_STATEMENT),
-  }
-}
 
 /**
  * UCAN-style abilities for item authorization. Strings, so they map onto UCAN
@@ -394,6 +389,13 @@ export interface RelationRecord {
   claim?: string
   createdBy: string
   createdAt: string
+  /**
+   * Letzte Änderung des Relation-Items, wo der Connector sie setzt. Nur Lesen:
+   * Ohne Claim bestimmt sie unter `one-per-subject` den Zeitpunkt einer
+   * Aussage (08 → Gewinner unter `one-per-subject`, Regel 4). Nie Teil des
+   * Claim-Payloads.
+   */
+  updatedAt?: string
 }
 
 export interface RelationRecordInput {
@@ -438,6 +440,22 @@ export interface ClaimVerificationCapable {
 
 export function hasClaimVerification(c: DataInterface): c is DataInterface & ClaimVerificationCapable {
   return typeof (c as Partial<ClaimVerificationCapable>).verifyRecordClaim === "function"
+}
+
+/**
+ * Verdict for authorial items (spec 08 → Aussagen einer Person): `signed`
+ * connectors verify the `item-authorial` claim (valid/invalid),
+ * `authoritative` connectors answer "trusted" — only when every ingress
+ * binds createdBy AND restricts content changes to the author. Answers for
+ * catalog types; connectors without this capability yield no verdict, and
+ * such items count in no aggregate (fail closed).
+ */
+export interface ItemClaimVerificationCapable {
+  verifyItemClaim(item: Item): Promise<import("./claims.js").ClaimVerdict>
+}
+
+export function hasItemClaimVerification(c: DataInterface): c is DataInterface & ItemClaimVerificationCapable {
+  return typeof (c as Partial<ItemClaimVerificationCapable>).verifyItemClaim === "function"
 }
 
 export interface RelationRecordWriterCapable {
@@ -860,6 +878,28 @@ export interface ItemGroupCapable {
   getPersonalGroupId?(): string | null
 }
 
+// --- Group Scope (Lesen und Anlegen in einem bestimmten Space) ---
+
+/**
+ * Items eines bestimmten Space lesen (`ItemFilter.group`) und in ihm anlegen
+ * (`createItem(item, { group })`), ohne ihn zu öffnen. Spec 02 → Lesen in
+ * einem bestimmten Space / Anlegen in einem bestimmten Space; 03.
+ *
+ * Mit `options.group` legt der Connector das Item atomar unmittelbar in
+ * diesem Space an — nie „anlegen, dann verschieben". Ein unbekannter oder
+ * nicht beschreibbarer Space lehnt ab, ohne irgendwo anzulegen. Unabhängig
+ * von {@link ItemGroupCapable} (Regel 7).
+ */
+export interface GroupScopeCapable {
+  readonly groupScope: true
+  createItem(item: CreateItemInput, options?: CreateItemOptions): Promise<Item>
+}
+
+export interface CreateItemOptions {
+  /** Der Space, in dem das Item angelegt wird; ohne: der geöffnete. */
+  group?: string
+}
+
 // --- Convenience: Full-Featured Connector ---
 
 export type FullConnector = DataInterface & ItemWriter & RelationCapable & GroupManager & Authenticatable & MultiSource
@@ -1049,6 +1089,17 @@ export function hasItemGroups(c: DataInterface): c is DataInterface & ItemGroupC
 }
 
 /**
+ * Sagt der Connector `ItemFilter.group` und `createItem(item, { group })` zu?
+ * Nur die ausdrückliche Zusage `groupScope === true` zählt: `createItem` hat
+ * jeder Schreiber, und ein Connector ohne Zusage übergeht `group` still
+ * (Spec 02, Regel 6).
+ */
+export function hasGroupScope(c: DataInterface): c is DataInterface & ItemWriter & GroupScopeCapable {
+  const candidate = c as DataInterface & Partial<GroupScopeCapable>
+  return candidate.groupScope === true && typeof candidate.createItem === "function"
+}
+
+/**
  * The one shared implementation of the `updateGroup` data contract: shallow
  * merge of `patch` over `base`, where `null` REMOVES a key (JSON Merge Patch,
  * RFC 7386, at depth 1 — `null` because JSON transports cannot carry
@@ -1080,9 +1131,13 @@ export function stripEditStamp<T extends Record<string, unknown>>(input: T): T {
 
 /**
  * Items that carry a visible statement BY someone: a comment puts words in
- * their mouth, a reaction or a vote (relation record) casts their ballot.
- * Only the author may change these — unlike ordinary content, which any
- * space member may edit.
+ * their mouth, a reaction or a vote (relation record) casts their ballot, a
+ * statement is their wording. Only the author may change these — unlike
+ * ordinary content, which any space member may edit.
+ *
+ * @deprecated Use {@link isAuthoredItemType} (claims.ts). Kept as an alias:
+ * the set derives from the spec 08 catalog, not from SYSTEM_ITEM_TYPES
+ * (which answers a different question — what aggregating views hide).
  *
  * IMPORTANT: enforcement is only as strong as the ingress. A server-backed
  * connector (Supabase RLS, GraphQL) can make this a real boundary. In WoT it
@@ -1092,20 +1147,27 @@ export function stripEditStamp<T extends Record<string, unknown>>(input: T): T {
  * presented to users as protection.
  */
 export function isAuthoredSystemItem(type: string): boolean {
-  return (SYSTEM_ITEM_TYPES as readonly string[]).includes(type)
+  return isAuthoredItemType(type)
 }
 
 /**
  * Guard for the generic update/delete path of a connector: reject a mutation
- * of someone else's authored system item. Mirrors
- * {@link isAuthoredSystemItem}'s caveat about WoT.
+ * of someone else's authored item. Mirrors {@link isAuthoredSystemItem}'s
+ * caveat about WoT.
+ *
+ * Deleting an authored item is the author's right alone. Updating is split:
+ * relation records stay author-only as a whole; for the catalog types of
+ * spec 08 only the CONTENT is the author's — that check needs the updates
+ * and lives in `planAuthoredUpdate` (authored.ts), which every connector's
+ * update path calls.
  */
 export function assertMayMutateAuthoredItem(
   item: Pick<Item, "type" | "createdBy">,
   actorId: string,
   action: "update" | "delete",
 ): void {
-  if (!isAuthoredSystemItem(item.type)) return
+  if (!isAuthoredItemType(item.type)) return
+  if (action === "update" && isAuthorialItemType(item.type)) return
   if (item.createdBy === actorId) return
   throw new Error(`Not authorized to ${action} another author's ${item.type}`)
 }
@@ -1130,7 +1192,7 @@ export function assertAuthoredTypeUnchanged(
   updates: Partial<Item>,
 ): void {
   if (updates.type === undefined || updates.type === existing.type) return
-  if (!isAuthoredSystemItem(existing.type) && !isAuthoredSystemItem(updates.type)) return
+  if (!isAuthoredItemType(existing.type) && !isAuthoredItemType(updates.type)) return
   throw new Error(
     `cannot change type between "${existing.type}" and "${updates.type}" — authorship would be misattributed`,
   )

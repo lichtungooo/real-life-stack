@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 import type { Item } from "@real-life-stack/data-interface"
-import { useSharedFilter } from "../components/filter/filter-store"
+import { useOptionalSharedFilter } from "../components/filter/filter-store"
 import type { FilterBarValue } from "../components/filter/types"
 
 /**
@@ -33,6 +33,8 @@ export function applyFilterBarValue(items: readonly Item[], filter: FilterBarVal
 }
 
 /**
+ * The shared filter applied to a list, for surfaces that hold the bar themselves.
+ *
  * Apply a shared `FilterBarValue` to a list of items, client-side.
  *
  * Memoised on the items reference and the filter's stringified arrays,
@@ -43,6 +45,12 @@ export function applyFilterBarValue(items: readonly Item[], filter: FilterBarVal
  * filter) is intentionally out of scope here — that's a data-interface
  * concern. This hook is the UI-layer guarantee that the same filter
  * shape applies the same way in every module.
+ *
+ * @answers `{items, value, setValue, …}`
+ * @without throws on render — without `FilterProvider`
+ * @group surface
+ * @see story rls-foundations-hooks--surfaces
+ * @see spec docs/spec/01-app-composition.md
  */
 export function useFilterableItems(items: readonly Item[], filter: FilterBarValue): Item[] {
   // JSON.stringify avoids the `["a", "b"]` vs `["a b"]` collision that
@@ -75,14 +83,32 @@ export function applyItemSearch(items: readonly Item[], search: string): Item[] 
 }
 
 /**
- * Die Items eines Moduls, gefiltert wie die Steuerleiste im Kopf es anzeigt:
- * geteilte Tag-/Typ-Auswahl plus geteilter Suchtext.
+ * Exactly what the toolbar in the module head promises: filter plus search text.
  *
- * Module wenden damit genau das an, was der Nutzer im Kopf sieht — statt je
- * eine eigene Reihenfolge aus Filter und Suche zu bauen.
+ * Die Items einer Fläche, gefiltert wie die Steuerleiste im Kopf es anzeigt:
+ * geteilte Tag-/Typ-Auswahl plus geteilter Suchtext. Der Modul-Host und
+ * `ModuleSurfaceScope` wenden ihn so an; ein Modul unter dem Host bekommt
+ * seine Items schon gefiltert und ruft ihn nicht selbst (Anton, 21.09.2026:
+ * „ein Modul darf da gar nichts falsch machen koennen").
+ *
+ * Öffentlich für die Fläche AUSSERHALB des Hosts (real-life-stack#558): eine
+ * App-eigene Ansicht wie das Karabirrdt-Brett, die den geteilten Filter sonst
+ * aus `useSharedFilter`, `applyFilterBarValue` und `applyItemSearch` selbst
+ * zusammensetzen müsste. Ohne `FilterProvider` besitzt niemand einen Filter,
+ * dann kommen die Items unverändert zurück.
+ *
+ * @answers `Item[]`
+ * @without value — the items unchanged, without `FilterProvider`
+ * @group read
+ * @see story rls-foundations-hooks--surfaces
+ * @see spec docs/spec/01-app-composition.md
  */
 export function useModuleFilteredItems(items: readonly Item[]): Item[] {
-  const { value, searchText } = useSharedFilter()
+  const filter = useOptionalSharedFilter()
+  const value = filter?.value ?? LEER
+  const searchText = filter?.searchText ?? ""
   const gefiltert = useFilterableItems(items, value)
   return useMemo(() => applyItemSearch(gefiltert, searchText), [gefiltert, searchText])
 }
+
+const LEER: FilterBarValue = { tags: [], types: [] }

@@ -103,8 +103,70 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      # Normative Woerter gegen meta/CONVENTIONS.md. Eine Konvention, die
+      # nichts prueft, driftet lautlos.
+      - name: Normative Woerter
+        run: python3 scripts/check-normative-words.py
+
+      # Spec 01, Regel 2a: Was sich Module teilen koennen, gehoert der Flaeche.
+      # Vorher stand availableTags siebenmal im Code, und die Kopien liefen
+      # auseinander, ohne dass ein Test brach.
+      - name: Geteiltes bleibt geteilt
+        run: python3 scripts/check-shared-derivations.py
+
       - name: Test
         run: pnpm test
 
+      # Jedes veroeffentlichte Paket laedt in reinem Node-ESM, nicht nur in
+      # Vite: ein relativer Import ohne Endung in einem tsc-gebauten dist
+      # faellt hier, bevor er auf npm liegt (mock-connector 0.2.0, 23.09.2026).
+      - name: Packages load in Node ESM
+        run: pnpm test:esm
+
+      # Das Toolkit-dist importiert data-interface, statt eine Kopie zu
+      # buendeln: sonst bindet setTypeManifest des Toolkits nur die Kopie
+      # (real-life-stack#555).
+      - name: Toolkit imports its workspace dependencies
+        run: pnpm test:toolkit-dist
+
+      # Der Build-Stand (Version, Commit, Kanal), den Apps im Nutzer-Menue und
+      # in build-info.json zeigen: Commit aus dem Checkout, nie aus GITHUB_SHA.
+      - name: Build info
+        run: pnpm test:build-info
+
+      # Jedes Paket und jede App, die ein typecheck-Skript hat. Vorher lief nur
+      # das Toolkit, und ein toter Import in apps/reference kam erst im Review
+      # heraus (real-life-stack#403).
       - name: Typecheck
-        run: pnpm --filter @real-life-stack/toolkit typecheck
+        run: pnpm -r typecheck
+
+      # Die Site (Landing + Handbuch) baut, und jede Seite haelt, was sie
+      # verspricht: Quelldateien, verlinkte Seiten, gebaute Links
+      # (scripts/site/check.mjs). Ohne Storybook-Index bleiben Stories
+      # ungeprueft — das tut der Deploy, der beides baut.
+      - name: Site
+        run: pnpm build:site && pnpm check:site && pnpm test:site
+
+      # Die Hook-Referenz im Storybook („All hooks") entsteht aus den
+      # TSDoc-Bloecken der oeffentlichen Hooks (scripts/hooks). Faellt, wenn
+      # ein Hook ohne Block exportiert wird, eine Story-Id oder Spec-Datei
+      # fehlt oder all-hooks.json nicht mehr zum Code passt.
+      - name: Hook reference
+        run: pnpm check:hooks && pnpm test:hooks
+
+      # Die Einstiege fuer Agenten (llms.txt, docs/templates/AGENTS.md) entstehen
+      # aus Paketen, Spec-Index, Hook-Referenz und examples/first-app
+      # (scripts/agents). Faellt, wenn sie nicht mehr zum Repo passen.
+      - name: Agent entry points
+        run: pnpm check:agents && pnpm test:agents
+
+      # Die Modul-Referenz (Site, llms.txt) entsteht aus dem Register und der
+      # Hinweis-Tabelle (scripts/modules). Faellt, wenn ein Eintrag ohne Story
+      # oder Hinweis dazukommt oder all-modules.json nicht mehr passt.
+      - name: Module reference
+        run: pnpm check:modules && pnpm test:modules
+
+      # Das Beispiel aus dem Handbuch („Erste App bauen") baut gegen die
+      # gebaute Form der Pakete — was die Seite zeigt, läuft auch.
+      - name: First app (examples/first-app)
+        run: pnpm exec turbo run build --filter=first-app

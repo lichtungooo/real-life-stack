@@ -1,10 +1,11 @@
-import { useState, useCallback } from "react"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { CommentWithAuthor } from "@/hooks/use-comments"
 import type { Item } from "@real-life-stack/data-interface"
-import { CommentInput, type CommentQuote } from "./comment-input"
+import { CommentInput } from "./comment-input"
 import { CommentBubble } from "./comment-bubble"
 import { CommentThread } from "./comment-thread"
+import { CommentSection } from "./comment-section"
+import { STORY_POST, StoryWorld } from "../../story-support/story-world"
 
 // ---- Mock Data ----
 
@@ -52,100 +53,14 @@ const MOCK_REPLIES_C1: CommentWithAuthor[] = [
   },
 ]
 
-const MOCK_REPLIES_C3: CommentWithAuthor[] = [
-  {
-    item: mockItem("r3", "user-1", "2026-03-20T13:00:00Z", { content: "Lecker! Was für einen?", replyTo: "c3" }),
-    authorName: "Anna Schmidt",
-    authorAvatar: "https://randomuser.me/api/portraits/women/44.jpg",
-    replyCount: 0,
-  },
-]
-
-function getReplies(commentId: string): CommentWithAuthor[] {
-  if (commentId === "c1") return MOCK_REPLIES_C1
-  if (commentId === "c3") return MOCK_REPLIES_C3
-  return []
-}
-
 
 // ---- Standalone CommentSection for Storybook ----
-
-function StandaloneCommentSection() {
-  const [comments, setComments] = useState(MOCK_COMMENTS)
-  const [replyTo, setReplyTo] = useState<CommentQuote | null>(null)
-  const [replyToFirstLevel, setReplyToFirstLevel] = useState<string | null>(null)
-
-  const handleReply = useCallback((comment: CommentWithAuthor) => {
-    const data = comment.item.data as { content: string; replyTo?: string }
-    const isSecondLevel = !!data.replyTo
-
-    setReplyTo({
-      id: comment.item.id,
-      authorName: comment.authorName,
-      text: (data.content ?? "").slice(0, 80),
-    })
-    setReplyToFirstLevel(isSecondLevel ? data.replyTo! : comment.item.id)
-  }, [])
-
-  const handleSubmit = useCallback((text: string) => {
-    const newComment: CommentWithAuthor = {
-      item: mockItem(
-        `c-new-${Date.now()}`,
-        "user-current",
-        new Date().toISOString(),
-        {
-          content: text,
-          ...(replyToFirstLevel ? { replyTo: replyToFirstLevel } : {}),
-          ...(replyTo && replyTo.id !== replyToFirstLevel ? { replyToComment: replyTo.id } : {}),
-        }
-      ),
-      authorName: "Du",
-      replyCount: 0,
-    }
-
-    if (replyToFirstLevel) {
-      setComments((prev) =>
-        prev.map((c) =>
-          c.item.id === replyToFirstLevel ? { ...c, replyCount: c.replyCount + 1 } : c
-        )
-      )
-    } else {
-      setComments((prev) => [...prev, newComment])
-    }
-
-    setReplyTo(null)
-    setReplyToFirstLevel(null)
-  }, [replyTo, replyToFirstLevel])
-
-  return (
-    <div className="flex flex-col h-[500px] border rounded-lg bg-background">
-      <div className="flex-1 overflow-y-auto">
-        <div className="space-y-4 p-4">
-          {comments.map((comment) => (
-            <CommentThread
-              key={comment.item.id}
-              comment={comment}
-              replies={getReplies(comment.item.id)}
-              onReply={handleReply}
-
-            />
-          ))}
-        </div>
-      </div>
-
-      <CommentInput
-        onSubmit={handleSubmit}
-        replyTo={replyTo}
-        onCancelReply={() => { setReplyTo(null); setReplyToFirstLevel(null) }}
-      />
-    </div>
-  )
-}
 
 // ---- Stories ----
 
 const meta: Meta = {
-  title: "RLS/Module Components/Comments/CommentSection",
+  id: "rls-items-comment-section",
+  title: "RLS/Items/Detail view/Reactions and comments/CommentSection",
   tags: ["autodocs"],
   parameters: {
     layout: "fullscreen",
@@ -164,9 +79,29 @@ const meta: Meta = {
 export default meta
 type Story = StoryObj
 
+/**
+ * **CommentSection** is the discussion under an item: the list, replies as
+ * threads, the input. It runs on a real data source here — writing takes
+ * effect, a new comment appears at once, a reply unfolds its thread.
+ * `CommentSection` fetches everything through `useComments`; the surface only
+ * hands it the item's id.
+ *
+ * Comments are items of the class `comment` with a relation `commentOn`; a
+ * reply carries `replyTo`. Without relations there are no comments; without a
+ * write capability the input is gone.
+ *
+ * The parts below the section — input, bubble, thread — are shown on their own
+ * so their states can be compared.
+ */
 export const FullSection: Story = {
   name: "CommentSection",
-  render: () => <StandaloneCommentSection />,
+  render: () => (
+    <StoryWorld>
+      <div className="h-[32rem] overflow-hidden rounded-lg border bg-background">
+        <CommentSection itemId={STORY_POST.id} />
+      </div>
+    </StoryWorld>
+  ),
 }
 
 export const InputDefault: Story = {
@@ -201,6 +136,40 @@ export const SingleBubble: Story = {
         content="Tolle Idee! Bin dabei. Wer kommt noch mit?"
         timestamp={new Date(Date.now() - 2 * 3600000).toISOString()}
         onReply={() => console.log("Reply")}
+      />
+    </div>
+  ),
+}
+
+/**
+ * Beleg-Status (Spec 08 → Beleg erforderlich): ein belegter Kommentar ohne
+ * Markierung, ein unsignierter (vor der Signatur entstanden) dezent markiert,
+ * einer, dessen Text nicht zur Signatur passt, als „verändert". Markiert wird
+ * nur auf Connectoren, die prüfen können.
+ */
+export const BubbleStanding: Story = {
+  name: "CommentBubble — Beleg-Status",
+  render: () => (
+    <div className="max-w-lg space-y-4 p-4">
+      <CommentBubble
+        authorName="Anna Schmidt"
+        authorAvatar="https://randomuser.me/api/portraits/women/44.jpg"
+        content="Signiert und unverändert."
+        timestamp={new Date(Date.now() - 3 * 3600000).toISOString()}
+      />
+      <CommentBubble
+        authorName="Thomas Müller"
+        authorAvatar="https://randomuser.me/api/portraits/men/32.jpg"
+        content="Vor der Signaturpflicht geschrieben."
+        timestamp={new Date(Date.now() - 2 * 3600000).toISOString()}
+        mark="unsigned"
+      />
+      <CommentBubble
+        authorName="Lena Weber"
+        authorAvatar="https://randomuser.me/api/portraits/women/68.jpg"
+        content="Nachträglich an der Signatur vorbei geändert."
+        timestamp={new Date(Date.now() - 3600000).toISOString()}
+        mark="altered"
       />
     </div>
   ),

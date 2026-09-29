@@ -1,156 +1,99 @@
-import { useState } from "react"
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import type { AggregatedReaction } from "@/hooks/use-reactions"
+import type { Item } from "@real-life-stack/data-interface"
+import { ReactionDetails } from "./reaction-details"
+import { useReactions } from "../../hooks/use-reactions"
+import { STORY_POST, STORY_SEED, STORY_USERS, StoryWorld, storyReaction } from "../../story-support/story-world"
 
-// Standalone ReactionDetails for Storybook (no connector needed)
-// We inline the UI here since the real component uses useReactionUsers which needs a connector.
+/**
+ * **ReactionDetails** — "who reacted", the list behind a reaction pill.
+ *
+ * Names and pictures the component fetches itself through `useReactionUsers`
+ * from the connector; the aggregated counts are handed in by the calling
+ * surface so they are not counted twice. That is exactly what `ReactionBar`
+ * does. The stories therefore show the same wiring on real data.
+ */
 
-import { cn } from "@/lib/utils"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/primitives/avatar"
+const PEOPLE = [
+  ["Anna Schmidt", "women/44"],
+  ["Thomas Müller", "men/32"],
+  ["Lena Weber", "women/68"],
+  ["Sebastian Koch", "men/67"],
+  ["Marie Fischer", null],
+  ["Anton Berger", "men/45"],
+  ["Timo Richter", null],
+  ["Ulf Neumann", "men/52"],
+  ["Clara Hoffmann", "women/22"],
+  ["Jan Becker", null],
+] as const
 
-interface MockUser {
-  id: string
-  displayName: string
-  avatarUrl?: string
-  emoji: string
+/** Ten people, spread over the given reactions. */
+function withReactors(...groups: { emoji: string; count: number }[]) {
+  const users = PEOPLE.map(([displayName, portrait], i) => ({
+    id: `u${i + 1}`,
+    displayName,
+    ...(portrait ? { avatarUrl: `https://randomuser.me/api/portraits/${portrait}.jpg` } : {}),
+  }))
+  const items: Item[] = [STORY_POST]
+  let next = 0
+  for (const { emoji, count } of groups) {
+    for (let i = 0; i < count; i++) items.push(storyReaction(`r${next + 1}`, users[next++ % users.length].id, emoji))
+  }
+  return { ...STORY_SEED, users: [...users, ...STORY_USERS], items }
 }
 
-const MOCK_USERS: MockUser[] = [
-  { id: "u1", displayName: "Anna Schmidt", avatarUrl: "https://randomuser.me/api/portraits/women/44.jpg", emoji: "❤️" },
-  { id: "u2", displayName: "Thomas Müller", avatarUrl: "https://randomuser.me/api/portraits/men/32.jpg", emoji: "❤️" },
-  { id: "u3", displayName: "Lena Weber", avatarUrl: "https://randomuser.me/api/portraits/women/68.jpg", emoji: "👍" },
-  { id: "u4", displayName: "Sebastian Koch", avatarUrl: "https://randomuser.me/api/portraits/men/67.jpg", emoji: "😂" },
-  { id: "u5", displayName: "Marie Fischer", emoji: "❤️" },
-  { id: "u6", displayName: "Anton Berger", avatarUrl: "https://randomuser.me/api/portraits/men/45.jpg", emoji: "👍" },
-  { id: "u7", displayName: "Timo Richter", emoji: "🔥" },
-  { id: "u8", displayName: "Ulf Neumann", avatarUrl: "https://randomuser.me/api/portraits/men/52.jpg", emoji: "❤️" },
-  { id: "u9", displayName: "Clara Hoffmann", avatarUrl: "https://randomuser.me/api/portraits/women/22.jpg", emoji: "😂" },
-  { id: "u10", displayName: "Jan Becker", emoji: "🔥" },
-]
-
-const MOCK_REACTIONS: AggregatedReaction[] = [
-  { emoji: "❤️", count: 4, isMyReaction: false },
-  { emoji: "👍", count: 2, isMyReaction: true },
-  { emoji: "😂", count: 2, isMyReaction: false },
-  { emoji: "🔥", count: 2, isMyReaction: false },
-]
-
-function getInitials(name: string): string {
-  return name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2)
-}
-
-interface StandaloneDetailsProps {
-  reactions: AggregatedReaction[]
-  users: MockUser[]
-  initialEmoji?: string
-}
-
-function StandaloneDetails({ reactions, users, initialEmoji }: StandaloneDetailsProps) {
-  const [activeFilter, setActiveFilter] = useState<string | undefined>(initialEmoji)
-
-  const filteredUsers = activeFilter
-    ? users.filter((u) => u.emoji === activeFilter)
-    : users
-
-  const totalCount = reactions.reduce((sum, r) => sum + r.count, 0)
-
+/** How a surface opens the list: counts from `useReactions`, names it fetches itself. */
+function DetailsSurface({ initialEmoji }: { initialEmoji?: string }) {
+  const { data: reactions } = useReactions(STORY_POST.id)
   return (
-    <div className="flex flex-col h-80 border rounded-lg bg-background shadow-lg">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3">
-        <h3 className="text-sm font-semibold text-foreground">Reactions</h3>
-      </div>
-
-      {/* Filter row */}
-      <div className="flex flex-wrap gap-1.5 px-4 pb-3">
-        <button
-          type="button"
-          className={cn(
-            "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
-            activeFilter === undefined
-              ? "bg-primary/10 text-primary"
-              : "bg-muted/60 text-muted-foreground hover:bg-muted"
-          )}
-          onClick={() => setActiveFilter(undefined)}
-        >
-          All <span className="tabular-nums">{totalCount}</span>
-        </button>
-
-        {reactions.map((r) => (
-          <button
-            key={r.emoji}
-            type="button"
-            className={cn(
-              "inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs transition-colors",
-              activeFilter === r.emoji
-                ? "bg-primary/10 text-foreground"
-                : "bg-muted/60 text-muted-foreground hover:bg-muted"
-            )}
-            onClick={() => setActiveFilter(r.emoji)}
-          >
-            <span className="text-base leading-none">{r.emoji}</span>
-            <span className="tabular-nums">{r.count}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* User list */}
-      <div className="flex-1 overflow-y-auto">
-        <ul>
-          {filteredUsers.map((user) => (
-            <li key={user.id} className="flex items-center gap-3 px-4 py-2 hover:bg-muted/50 transition-colors">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={user.avatarUrl} alt={user.displayName} />
-                <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
-                  {getInitials(user.displayName)}
-                </AvatarFallback>
-              </Avatar>
-              <span className="flex-1 text-sm text-foreground truncate">
-                {user.displayName}
-              </span>
-              <span className="text-base leading-none">{user.emoji}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+    <div className="mx-auto h-80 max-w-sm overflow-hidden rounded-lg border bg-background shadow-lg">
+      <ReactionDetails
+        itemId={STORY_POST.id}
+        reactions={reactions}
+        initialEmoji={initialEmoji}
+        onClose={() => {}}
+      />
     </div>
   )
 }
 
-const meta: Meta<typeof StandaloneDetails> = {
-  title: "RLS/Module Components/Reactions/ReactionDetails",
-  component: StandaloneDetails,
+const meta: Meta<typeof ReactionDetails> = {
+  id: "rls-items-reaction-details",
+  title: "RLS/Items/Detail view/Reactions and comments/ReactionDetails",
+  component: ReactionDetails,
   tags: ["autodocs"],
-  parameters: {
-    layout: "padded",
-  },
+  parameters: { layout: "fullscreen" },
+  decorators: [(Story) => <div className="p-8">{Story()}</div>],
 }
 
 export default meta
-type Story = StoryObj<typeof StandaloneDetails>
+type Story = StoryObj<typeof ReactionDetails>
 
+/** All reactions, sorted by frequency. The tab at the top filters. */
 export const AllReactions: Story = {
-  args: {
-    reactions: MOCK_REACTIONS,
-    users: MOCK_USERS,
-  },
+  name: "All reactions",
+  render: () => (
+    <StoryWorld seed={withReactors({ emoji: "❤️", count: 4 }, { emoji: "👍", count: 2 }, { emoji: "😂", count: 2 }, { emoji: "🔥", count: 2 })}>
+      <DetailsSurface />
+    </StoryWorld>
+  ),
 }
 
+/** Pre-filtered, because the person pressed exactly this pill. */
 export const FilteredByEmoji: Story = {
-  args: {
-    reactions: MOCK_REACTIONS,
-    users: MOCK_USERS,
-    initialEmoji: "❤️",
-  },
+  name: "Filtered by one emoji",
+  render: () => (
+    <StoryWorld seed={withReactors({ emoji: "❤️", count: 4 }, { emoji: "👍", count: 2 }, { emoji: "😂", count: 2 }, { emoji: "🔥", count: 2 })}>
+      <DetailsSurface initialEmoji="❤️" />
+    </StoryWorld>
+  ),
 }
 
+/** Few reactions: the list stays short, the filter is still there. */
 export const FewReactions: Story = {
-  args: {
-    reactions: [
-      { emoji: "👍", count: 1, isMyReaction: true },
-    ],
-    users: [
-      { id: "u1", displayName: "Du", emoji: "👍" },
-    ],
-  },
+  name: "Few reactions",
+  render: () => (
+    <StoryWorld seed={withReactors({ emoji: "👍", count: 2 }, { emoji: "🎉", count: 1 })}>
+      <DetailsSurface />
+    </StoryWorld>
+  ),
 }

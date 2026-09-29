@@ -1,0 +1,34 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+import { HooksReference, hookCount } from '../story-support/hooks-reference'
+
+<Meta title="RLS/Foundations/All hooks" />
+
+# All hooks
+
+Every surface in Real Life Stack asks hooks, never the connector. This page lists all {hookCount} hooks the toolkit exports, with the question each answers and what happens when the connector lacks the capability.
+
+**The column "without capability" is the important one.** Reading hooks answer empty: "no groups", "nobody signed in", "zero comments" are true answers, not errors. Writing hooks fail on the call, not on preparation — any surface may build a button. Where it says "throws on render" nevertheless, that is intended: the surface cannot exist without that capability.
+
+The values read:
+
+- **—** the hook needs no capability
+- **empty** an empty list or count, never an error
+- **null** `null`, the caller decides
+- **value** a neutral value (a default, the raw id)
+- **no-op** the call does nothing
+- **throws on call** the surface renders, the action fails
+- **throws on render** the surface cannot exist without the capability
+
+Living examples are under [Foundations → Hooks](?path=/story/rls-foundations-hooks--read).
+
+*This page is generated from each hook's documentation comment (`@answers`, `@without`, `@group`, `@see`): `pnpm docs:hooks` rewrites it, `pnpm check:hooks` fails in CI when a hook is exported without one or the page no longer matches the code.*
+
+<HooksReference />
+
+## Pairs easily confused
+
+- `useCurrentUser` and `useOptionalCurrentUser` differ in what happens on a connector **without the authentication capability**: the first throws on render, the second yields `null`. While nobody is signed in, both answer `data: null`. The same pattern with `useConnector`/`useOptionalConnector`, `useItemFocus`/`useOptionalItemFocus`, `useCreate`/`useOptionalCreate`.
+- `useReactions` already carries in `data[].userIds` what `useReactionUsers` fetches again.
+- `useCommentCount` is the cheap half of `useComments`.
+- `useItems` and `useItemsWithDraft` are the same list, the latter with the running draft.
+- `useIsMobile` and `useIsCompact` are the same mechanism with a different threshold: 768px for navigation, 1024px for the panel shape.

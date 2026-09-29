@@ -1,19 +1,25 @@
 "use client"
 
 import * as React from "react"
-import { ChevronDown, Globe, Loader2, Lock, Trash2, X } from "lucide-react"
+import { Check, ChevronDown, CircleAlert, Globe, Home, Loader2, Lock, Trash2, X } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/primitives/avatar"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/primitives/tooltip"
+import { ItemTypeBadge } from "../preview/item-type-badge"
+import { GENERIC_BADGE, resolveTypePresentation } from "../preview/type-presentation"
 import { Button } from "@/components/primitives/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/primitives/dropdown-menu"
+import { useIsCompact } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 import { latLngFromPoint, pointFromLatLng, type GeoJSONPoint } from "@/lib/geo"
 import { WidgetWrapper } from "./widgets/widget-wrapper"
 import { TitleWidget } from "./widgets/title-widget"
-import { TextWidget } from "./widgets/text-widget"
+import { TextWidget, WIDGET_ICONS, WIDGET_LABELS } from "./widgets/text-widget"
 import { DateWidget } from "./widgets/date-widget"
 import {
   dateWidgetPatch,
@@ -21,17 +27,25 @@ import {
   dateWidgetValue,
   NO_DATE_TOGGLES,
   type DateWidgetToggles,
+  toDateInputValue,
 } from "./date-widget-state"
 import { LocationWidget } from "./widgets/location-widget"
 import type { Geocoder, ReverseGeocoder } from "@/lib/geocode"
 import { MediaWidget } from "./widgets/media-widget"
-import { PeopleWidget, type PersonOption } from "./widgets/people-widget"
+import { PeopleWidget, type PeopleWidgetRecord, type PersonOption } from "./widgets/people-widget"
 export type { PersonOption } from "./widgets/people-widget"
-import { resolvePeopleFields, type PeopleRelationConfig } from "./people-relations"
+import { peopleQualifierKey, peopleStatementKey, resolvePeopleFields, type PeopleRelationConfig } from "./people-relations"
 export type { PeopleRelationConfig } from "./people-relations"
 import { TagsWidget } from "./widgets/tags-widget"
+import { useFormSpaceSources } from "./use-form-space-sources"
+import { ITEM_BINDINGS_REASON } from "../../lib/item-bindings"
 import { StatusWidget } from "./widgets/status-widget"
-import { GroupWidget } from "./widgets/group-widget"
+import { ChipsField, ContactField, NumberGroupField, OptionField, UrlField } from "./widgets/value-widgets"
+import { VALUE_WIDGETS, valueFieldError, type ValueFieldConfig } from "./value-fields"
+import { groupNumberFields } from "../preview/field-register"
+import { chipValues, type OptionTone } from "../../lib/field-values"
+import { FixedItemRefField, IncomingRelationField, ItemRelationWidget, type RequestItemPick } from "./widgets/item-relation-widget"
+import { incomingRemovedKey, itemRelationChoiceKeys, itemRelationDataKey, itemRelationDataKeys, type ItemRefFieldConfig, type ItemRelationFieldConfig } from "./item-relations"
 
 // ── Types ────────────────────────────────────────────────────────────────
 
@@ -45,6 +59,16 @@ export type WidgetType =
   | "tags"
   | "status"
   | "group"
+  /** Item-Kanten (C3) aus dem Register — nie zum Zuschalten. */
+  | "item-relation"
+  /** Felder mit Item-Verweis (B15) aus dem Register — nie zum Zuschalten. */
+  | "item-ref"
+  /** Wert-Widgets (B7–B10, B12) aus dem Register — nie zum Zuschalten. */
+  | "number"
+  | "select"
+  | "url"
+  | "chips"
+  | "contact"
 
 export interface MediaFile {
   id: string
@@ -97,12 +121,22 @@ export interface WidgetData {
 export interface StatusOption {
   id: string
   label: string
+  /** Ton der Pille, aus dem Register (Ton der Option, sonst Rolle, sonst Typfarbe). */
+  tone?: OptionTone | "type"
   className?: string
 }
 
 export interface GroupOption {
   id: string
   name: string
+  /** Space logo (`data.image`), as the space switcher shows it. */
+  image?: string
+  /** Space colour (`data.primaryColor`): the logo tile's surface. */
+  color?: string
+  /** The personal space („Privat") — shown with the home icon, like the switcher. */
+  personal?: boolean
+  /** Number of members, shown muted in the space menu. */
+  memberCount?: number
 }
 
 export interface ContentTypeConfig {
@@ -118,6 +152,16 @@ export interface ContentTypeConfig {
   groupOptions?: GroupOption[]
   defaultGroup?: string
   groupRequired?: boolean
+  /** Why the space cannot be changed (one fixed option) — tooltip in the form head. */
+  groupFixedReason?: string
+  /**
+   * Der Connector hat Spaces, das Formular kann aber keinen bestimmen (etwa
+   * ohne GroupScopeCapable in der Übersicht): Anlegen ist gesperrt, der
+   * Grund steht im Formular (Space des Formulars, Regeln 6 und 8).
+   */
+  groupUnavailableReason?: string
+  /** Where this type keeps its free text. Default: `content` for `post`, else `description`. */
+  textField?: "content" | "description"
   /**
    * How this type links people: the relation predicate the `people` widget
    * maps to (task → `assignedTo`, event → `invited`, …). Declared per type so
@@ -135,6 +179,12 @@ export interface ContentTypeConfig {
    * Auflösung siehe {@link resolvePeopleFields}.
    */
   peopleRelations?: readonly PeopleRelationConfig[]
+  /** Item-Kanten (C3), je Kante ein Feld; abgeleitet aus dem Register. */
+  itemRelations?: readonly ItemRelationFieldConfig[]
+  /** Felder mit Item-Verweis (B15); abgeleitet aus dem Register. */
+  itemRefs?: readonly ItemRefFieldConfig[]
+  /** Wert-Felder (number, select, url, chips, contact); abgeleitet aus dem Register. */
+  valueFields?: readonly ValueFieldConfig[]
 }
 
 export interface WidgetComponentProps<T = unknown> {
@@ -150,8 +200,43 @@ export interface CustomWidgetDefinition {
   component: React.ComponentType<WidgetComponentProps<unknown>>
 }
 
+/**
+ * Fehler beim Speichern (shared-components, Detail-Anatomie Slot `note` im
+ * Bearbeiten: „Fehler-Banner inline"; Zustand „Fehler": Banner mit „Erneut",
+ * Eingaben bleiben erhalten). Steht unter dem Kopf des Formulars; Farben nur
+ * über das Token `destructive`.
+ */
+function SaveErrorBanner({ reason, onRetry, busy }: { reason?: string; onRetry: () => void; busy: boolean }) {
+  return (
+    <div
+      data-slot="save-error"
+      role="alert"
+      className="flex items-start gap-2.5 rounded-lg border border-destructive/25 bg-destructive/[0.06] px-3 py-2.5 text-sm"
+    >
+      <CircleAlert className="mt-0.5 h-4 w-4 shrink-0 text-destructive" aria-hidden />
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="text-foreground">Konnte nicht gespeichert werden. Deine Eingaben bleiben erhalten.</span>
+        {reason && <span className="text-xs text-muted-foreground">{reason}</span>}
+      </div>
+      <button
+        type="button"
+        onClick={onRetry}
+        disabled={busy}
+        className="shrink-0 rounded-md px-2 py-0.5 text-sm font-semibold text-destructive hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40 disabled:opacity-50"
+      >
+        Erneut
+      </button>
+    </div>
+  )
+}
+
 export interface ContentComposerSubmitData {
   contentType: string
+  /**
+   * @deprecated Kein Mapper und kein Connector liest den Wert; die
+   * Sichtbarkeit folgt aus dem Space im Kopf des Formulars (shared-components,
+   * Edit-Regeln 3). Bleibt bis zum nächsten Major im Vertrag.
+   */
   isPublic: boolean
   data: WidgetData
 }
@@ -186,6 +271,19 @@ export interface ContentComposerProps {
   geocode?: Geocoder
   /** Reverse geocoder: fills the address field after a map pick. */
   reverseGeocode?: ReverseGeocoder
+  /**
+   * Geltende Zustände der Personenfelder mit Record-Kante (Event: Zusagen),
+   * je Prädikat des Feldes. Fehlt der Eintrag, kann der Connector die
+   * Aussagen nicht schreiben, und das Feld zeigt keine Zustände.
+   */
+  peopleStates?: Record<string, { live: PeopleWidgetRecord["live"] }>
+  /**
+   * Modul-Pick für Item-Kanten (Brett-Klick, Marker-Klick; Edit-Regeln 7):
+   * Das Modul liefert ihn, das Feld zeigt dann „Im Modul wählen".
+   */
+  requestItemPick?: RequestItemPick
+  /** Das bearbeitete Item — nie sein eigenes Ziel einer Item-Kante. */
+  itemId?: string
   /** Structured people options: stores IDs, displays names. Takes precedence over peopleSuggestions. */
   peopleOptions?: PersonOption[]
   /** Simple string suggestions (legacy). Ignored when `peopleOptions` is provided. */
@@ -196,12 +294,25 @@ export interface ContentComposerProps {
   /** Quick-select people suggestions shown as clickable chips below the people input */
   peopleQuickSuggestions?: PersonOption[]
   widgets?: CustomWidgetDefinition[]
+  /**
+   * @deprecated Default `false` since S1 (Anton, 27.09.2026): the stack has no
+   * public items, and the public/private split on the submit button promised
+   * something no connector does — `isPublic` is read by no mapper. Kept for
+   * callers that set it explicitly.
+   */
   showVisibility?: boolean
   defaultPublic?: boolean
   showPreview?: boolean
   renderPreview?: (data: WidgetData, contentType: string) => React.ReactNode
   /** When true, every data change immediately calls onSubmit and the footer is hidden */
   liveUpdate?: boolean
+  /**
+   * Pin the action footer (Löschen · Abbrechen · Speichern) to the bottom of
+   * the surrounding scroll area — the edit form inside the detail card
+   * (shared-components, Edit-Regeln 4). The composer then fills the card's
+   * height so the footer sits at the card end even for a short form.
+   */
+  stickyFooter?: boolean
   /** Fires on every data/type change (and on mount) — for a live preview of the
    *  in-progress item without persisting it. */
   onChange?: (submission: ContentComposerSubmitData) => void
@@ -214,7 +325,13 @@ export interface ContentComposerProps {
 
 // ── Constants ────────────────────────────────────────────────────────────
 
-/** Fixed rendering order for widgets */
+/**
+ * Order of the widgets a type does NOT list in `defaultWidgets` (the ones a
+ * user can switch on). The type's own widgets render in ITS order — the order
+ * of the meta box, derived from the field and edge register (Spec 06, Regel
+ * 16; shared-components, Edit-Regeln 2). Until S1 this list fixed the order
+ * for every type, with `group` and `status` first.
+ */
 const WIDGET_ORDER: WidgetType[] = [
   "group",
   "status",
@@ -228,6 +345,13 @@ const WIDGET_ORDER: WidgetType[] = [
 ]
 
 const DEFAULT_WIDGET_LABELS: Record<WidgetType, string> = {
+  "item-relation": "Verknüpfungen",
+  "item-ref": "Verweis",
+  number: "Zahl",
+  select: "Auswahl",
+  url: "Link",
+  chips: "Liste",
+  contact: "Kontakt",
   group: "Gruppe",
   title: "Titel",
   text: "Text",
@@ -312,16 +436,402 @@ const DIRTY_FIELDS: readonly string[] = [
  * field, or leaving the form untouched, reads as not dirty. Fixed field order
  * keeps the JSON key order deterministic.
  */
-function dirtySignature(data: WidgetData, peopleKeys: readonly string[]): string {
+function dirtySignature(data: WidgetData, peopleKeys: readonly string[], relationKeys: readonly string[] = []): string {
   const out: Record<string, unknown> = {}
-  const fields = [...new Set([...DIRTY_FIELDS, ...peopleKeys])]
+  // Qualifier je Person zählen mit: Antippen am Chip ist eine Änderung.
+  const fields = [...new Set([...DIRTY_FIELDS, ...peopleKeys.flatMap((key) => [key, peopleQualifierKey(key), peopleStatementKey(key)]), ...relationKeys])]
   for (const field of fields) {
     const value = (data as Record<string, unknown>)[field]
     if (value === "" || value === null || value === undefined) continue
     if (Array.isArray(value) && value.length === 0) continue
+    if (typeof value === "object" && !Array.isArray(value) && Object.keys(value as object).length === 0) continue
     out[field] = value
   }
   return JSON.stringify(out)
+}
+
+/** Bearbeitbare Item-Verweise (B15) aller angebotenen Typen — auch die eines gerade nicht gewählten. */
+function refKeysOf(types: readonly ContentTypeConfig[]): string[] {
+  return types.flatMap((t) => (t.itemRefs ?? []).filter((r) => !r.fixed).map((r) => r.key))
+}
+
+/**
+ * Ein Patch, der den Space im Kopf wechselt, nimmt im SELBEN Zustand die
+ * space-lokalen Ziele heraus (`item:<id>`, Spec 04): Sie zeigten im neuen
+ * Space ins Leere oder auf ein anderes Item. Space-qualifizierte Ziele
+ * (`space:{id}/item:`) bleiben gültig. Betrifft alle Item-Kanten-Felder
+ * (`relation:*`) und bearbeitbaren Item-Verweise, auch die eines anderen
+ * Typs im Formular — ein Typwechsel hin und zurück bringt nichts Ungültiges
+ * zurück. Das erste Setzen eines Space ist kein Wechsel.
+ */
+export function withSpaceChange(d: WidgetData, patch: Partial<WidgetData>, refKeys: readonly string[]): WidgetData {
+  const next: WidgetData = { ...d, ...patch }
+  const before = typeof d.group === "string" ? d.group : ""
+  if (!("group" in patch) || !before || patch.group === before) return next
+  const local = (t: unknown) => typeof t === "string" && t.startsWith("item:")
+  for (const [key, value] of Object.entries(next)) {
+    if (key.startsWith("relation:") && Array.isArray(value)) next[key] = value.filter((t) => !local(t))
+  }
+  for (const key of refKeys) if (local(next[key])) next[key] = ""
+  return next
+}
+
+/**
+ * Position of each built-in widget in the FORM (shared-components,
+ * Edit-Regeln 2): title → description → meta fields (people → time → place →
+ * values) → tags; the space (`group`) sits in the form head. Used to place widgets a user switches on at THEIR slot
+ * instead of at the end (Edit-Regeln 2).
+ */
+const ANATOMY_RANK: Record<WidgetType, number> = {
+  title: 0,
+  text: 1,
+  media: 2,
+  people: 3,
+  date: 4,
+  location: 5,
+  "item-relation": 5.5,
+  "item-ref": 5.6,
+  status: 6,
+  select: 6.1,
+  number: 6.2,
+  url: 6.3,
+  chips: 6.4,
+  contact: 6.5,
+  tags: 7,
+  group: 8,
+}
+
+/** Widgets, die nur das Register setzt: Sie stehen, wo der Typ sie führt, und sind nie zuschaltbar. */
+const REGISTER_ONLY_WIDGETS: ReadonlySet<string> = new Set(["item-relation", "item-ref", ...VALUE_WIDGETS])
+
+/**
+ * The built-in widgets in render order: those the type lists in
+ * `defaultWidgets` keep that order; every other built-in is inserted before
+ * the first listed widget that comes after it in the anatomy. Ids the
+ * composer has no built-in for (custom widgets, or register widgets that
+ * arrive with later steps) are skipped here.
+ */
+export function widgetRenderOrder(defaultWidgets: readonly string[]): WidgetType[] {
+  const builtIn = new Set<string>([...WIDGET_ORDER, ...REGISTER_ONLY_WIDGETS])
+  const order = defaultWidgets.filter((w, i): w is WidgetType => builtIn.has(w) && defaultWidgets.indexOf(w) === i)
+  const extras = WIDGET_ORDER.filter((w) => !order.includes(w)).sort((a, b) => ANATOMY_RANK[a] - ANATOMY_RANK[b])
+  for (const w of extras) {
+    const before = order.findIndex((o) => ANATOMY_RANK[o] > ANATOMY_RANK[w])
+    if (before === -1) order.push(w)
+    else order.splice(before, 0, w)
+  }
+  return order
+}
+
+// ── Form head ────────────────────────────────────────────────────────────
+
+/** Sichtbarer Fokus und der offene Zustand (Ring in Primärfarbe, 3 px, ~18 %) an Badge und Pille. */
+const HEAD_TRIGGER =
+  "rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring/50 data-[state=open]:ring-[3px] data-[state=open]:ring-primary/20"
+
+/** Das Menü unter Badge und Pille: weiß, Radius 12 px, weicher Schatten, 6 px Innenabstand. */
+const HEAD_MENU = "rounded-xl border-border/60 p-1.5 shadow-lg"
+
+/** Eine Menüzeile; die aktuelle hervorgehoben, halbfett, Häkchen rechts in Primärfarbe. */
+const HEAD_ITEM = "flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm data-[current=true]:bg-accent data-[current=true]:font-semibold"
+
+interface ComposerHeadProps {
+  types: readonly ContentTypeConfig[]
+  selectedType: string
+  /** Set when the type may be chosen (create with several types); otherwise the type is shown fixed. */
+  onSelectType?: (id: string) => void
+  space?: {
+    value: string
+    options: readonly GroupOption[]
+    required: boolean
+    fixedReason?: string
+    /** Das Formular hat Beziehungen: Der Space steht fest, mit diesem Grund (Space des Formulars, Regel 5). */
+    lockedReason?: string
+    onChange: (id: string) => void
+  }
+}
+
+/**
+ * Kopf des Formulars (shared-components, Edit-Regeln 3; Design Anton
+ * 27.09.2026): links in einer Zeile der Typ als Typ-Badge und der Space als
+ * Pille. Wählbar öffnen beide ein Menü (DropdownMenu: Enter/Leertaste,
+ * Pfeiltasten, Escape); fest ohne Chevron und ohne Schloss, ein fester Space
+ * gedämpft mit dem Grund im Tooltip.
+ */
+function ComposerHead({ types, selectedType, onSelectType, space }: ComposerHeadProps) {
+  const current = types.find((t) => t.id === selectedType) ?? types[0]
+  return (
+    // Eine Zeile; rechts bleibt Platz für die Knöpfe eines Panels darüber (✕).
+    <div className="flex min-w-0 items-center gap-2 pr-8">
+      {current && (
+        <span data-slot="composer-type" className="inline-flex shrink-0">
+          {onSelectType ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger aria-label={`Typ wählen, aktuell ${current.label}`} data-value={current.id} className={HEAD_TRIGGER}>
+                <TypeBadge config={current} trailing={<ChevronDown className="h-3 w-3 opacity-80" aria-hidden />} />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" sideOffset={6} className={cn(HEAD_MENU, "w-[220px]")}>
+                {types.map((t) => (
+                  <DropdownMenuItem
+                    key={t.id}
+                    // Auswahlzustand für Screenreader, nicht nur als Häkchen.
+                    role="menuitemradio"
+                    aria-checked={t.id === current.id}
+                    data-current={t.id === current.id}
+                    onSelect={() => onSelectType(t.id)}
+                    className={HEAD_ITEM}
+                  >
+                    <TypeIcon config={t} />
+                    <span className="flex-1">{t.label}</span>
+                    {t.id === current.id && <Check className="h-4 w-4 text-primary" aria-hidden />}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <TypeBadge config={current} />
+          )}
+        </span>
+      )}
+      {space && <SpacePill {...space} />}
+    </div>
+  )
+}
+
+/** Badge-Stil (Icon, Label, Farbe) eines Typs aus dem Register; unbekannte Typen neutral mit eigenem Label. */
+function typeBadgeStyle(config: ContentTypeConfig) {
+  const resolved = resolveTypePresentation(config.id)
+  const badge = resolved.generic || !resolved.badge ? GENERIC_BADGE : resolved.badge
+  return { icon: config.icon ?? badge.icon, className: badge.className, generic: resolved.generic }
+}
+
+/** The type as ItemTypeBadge (register colour), sized for the form head. */
+function TypeBadge({ config, trailing }: { config: ContentTypeConfig; trailing?: React.ReactNode }) {
+  const style = typeBadgeStyle(config)
+  const override = style.generic
+    ? { [config.id]: { icon: style.icon, label: config.label, className: style.className } }
+    : undefined
+  return (
+    <ItemTypeBadge
+      type={config.id}
+      config={override}
+      fallback
+      trailing={trailing}
+      className="h-6 px-2.5 text-[11.5px] font-semibold"
+    />
+  )
+}
+
+/** Rundes Typ-Icon im Menü: 22 px, Typ-Pastell, Rand im Typton — dieselben Farben wie das Badge. */
+function TypeIcon({ config }: { config: ContentTypeConfig }) {
+  const style = typeBadgeStyle(config)
+  const Icon = style.icon
+  return (
+    <span data-slot="type-icon" className={cn("flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border", style.className)}>
+      <Icon className="h-3 w-3" />
+    </span>
+  )
+}
+
+function spaceInitials(name: string): string {
+  return name.split(/\s+/).filter(Boolean).map((w) => w[0]!).join("").toUpperCase().slice(0, 1) || "?"
+}
+
+/**
+ * Logo-Kachel eines Space wie im Space-Wechsler: Bild, sonst die Initiale auf
+ * der Space-Farbe; der persönliche Space zeigt das Haus.
+ */
+function SpaceLogo({ option, size = "sm" }: { option?: GroupOption; size?: "sm" | "md" }) {
+  const box = size === "md" ? "h-[22px] w-[22px] rounded-[6px]" : "h-[18px] w-[18px] rounded-[5px]"
+  if (option?.personal) {
+    return (
+      <span data-slot="space-logo" className={cn("flex shrink-0 items-center justify-center bg-primary/10 text-primary", box)}>
+        <Home className="h-3 w-3" aria-hidden />
+      </span>
+    )
+  }
+  return (
+    <Avatar data-slot="space-logo" className={cn("shrink-0", box)}>
+      {option?.image && <AvatarImage src={option.image} alt="" className={cn("object-cover", box)} />}
+      <AvatarFallback
+        className={cn(box, "text-[10px] font-semibold", option?.color ? "text-background" : "bg-muted text-muted-foreground")}
+        style={option?.color ? { backgroundColor: option.color } : undefined}
+      >
+        {option ? spaceInitials(option.name) : "?"}
+      </AvatarFallback>
+    </Avatar>
+  )
+}
+
+function SpacePill({ value, options, required, fixedReason: fixedBy, lockedReason, onChange }: NonNullable<ComposerHeadProps["space"]>) {
+  const selected = options.find((o) => o.id === value)
+  // Mit Beziehungen fest wie der feste Space einer Variante (Regel 5). Ohne
+  // gesetzten Space ist auch eine einzige Option zu wählen, statt als gesetzt
+  // zu erscheinen (Regeln 1 und 8).
+  const choosable = (options.length > 1 || (!selected && !fixedBy)) && !(lockedReason && selected)
+  const fixedReason = (selected && lockedReason) || fixedBy
+  const missing = required && !value
+  const [query, setQuery] = React.useState("")
+  const searchRef = React.useRef<HTMLInputElement>(null)
+  if (!choosable) {
+    // Nur der tatsächliche Wert; ohne ihn „Space unbekannt“ (Codex R2/3).
+    const only = selected
+    const fixed = (
+      <span
+        data-slot="composer-space"
+        // Mit Grund fokussierbar: Der Tooltip öffnet auch per Tastatur, und
+        // der Grund steht für Screenreader im Text.
+        tabIndex={fixedReason ? 0 : undefined}
+        className="inline-flex h-7 min-w-0 items-center gap-1.5 rounded-full text-xs text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+      >
+        {only && <SpaceLogo option={only} />}
+        <span className="truncate">{only?.name ?? "Space unbekannt"}</span>
+        {fixedReason && <span className="sr-only">{`: ${fixedReason}`}</span>}
+      </span>
+    )
+    if (!fixedReason) return fixed
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>{fixed}</TooltipTrigger>
+        <TooltipContent side="bottom">{fixedReason}</TooltipContent>
+      </Tooltip>
+    )
+  }
+  const q = query.trim().toLowerCase()
+  const shown = q ? options.filter((o) => o.name.toLowerCase().includes(q)) : options
+  const personal = shown.filter((o) => o.personal)
+  const groups = shown.filter((o) => !o.personal)
+  const row = (o: GroupOption) => (
+    <DropdownMenuItem
+      key={o.id}
+      role="menuitemradio"
+      aria-checked={o.id === value}
+      data-current={o.id === value}
+      onSelect={() => onChange(o.id)}
+      className={HEAD_ITEM}
+    >
+      <SpaceLogo option={o} size="md" />
+      <span data-slot="space-name" className="min-w-0 flex-1 truncate">{o.name}</span>
+      {o.memberCount !== undefined && <span className="text-xs font-normal text-muted-foreground">{o.memberCount}</span>}
+      {o.id === value && <Check className="h-4 w-4 shrink-0 text-primary" aria-hidden />}
+    </DropdownMenuItem>
+  )
+  return (
+    <span data-slot="composer-space" className="inline-flex min-w-0">
+      <DropdownMenu
+        onOpenChange={(open) => {
+          if (!open) {
+            setQuery("")
+            return
+          }
+          // Das Suchfeld bekommt beim Öffnen den Fokus, nachdem Radix ihn
+          // auf Menü oder ersten Eintrag gesetzt hat: tippen filtert sofort.
+          setTimeout(() => searchRef.current?.focus(), 0)
+        }}
+      >
+        <DropdownMenuTrigger
+          aria-label={selected ? `Space wählen, aktuell ${selected.name}` : "Space wählen"}
+          aria-invalid={missing || undefined}
+          aria-required={required || undefined}
+          data-value={value}
+          className={cn(
+            HEAD_TRIGGER,
+            "inline-flex h-7 min-w-0 items-center gap-1.5 border bg-background pl-1 pr-2.5 text-xs text-foreground",
+            !selected && "pl-2.5",
+            missing && "border-destructive text-destructive",
+          )}
+        >
+          {selected && <SpaceLogo option={selected} />}
+          <span className="truncate">{selected?.name ?? `Space wählen${required ? " *" : ""}`}</span>
+          <ChevronDown className="h-3 w-3 shrink-0 opacity-60" aria-hidden />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="start"
+          sideOffset={6}
+          className={cn(HEAD_MENU, "w-[250px]")}
+        >
+          <input
+            ref={searchRef}
+            type="search"
+            placeholder="Space suchen…"
+            aria-label="Space suchen"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            // Tippen gehört dem Feld, nicht der Typeahead-Suche des Menüs;
+            // Pfeiltasten und Escape bleiben beim Menü.
+            onKeyDown={(e) => {
+              // Pfeil runter führt in die Treffer; Escape bleibt beim Menü.
+              if (e.key === "ArrowDown") {
+                e.preventDefault()
+                e.stopPropagation()
+                e.currentTarget.closest('[role="menu"]')?.querySelector<HTMLElement>('[role="menuitemradio"]')?.focus()
+                return
+              }
+              if (e.key !== "Escape") e.stopPropagation()
+            }}
+            className="mb-1 h-8 w-full rounded-lg border bg-background px-2.5 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
+          />
+          {personal.length > 0 && (
+            <>
+              <DropdownMenuLabel className="px-2 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Persönlich</DropdownMenuLabel>
+              {personal.map(row)}
+            </>
+          )}
+          {groups.length > 0 && (
+            <>
+              <DropdownMenuLabel className="px-2 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Gruppen</DropdownMenuLabel>
+              {groups.map(row)}
+            </>
+          )}
+          {shown.length === 0 && <p className="px-2 py-1.5 text-sm text-muted-foreground">Kein Space gefunden</p>}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </span>
+  )
+}
+
+/** Die leere Beschreibung, eingeklappt: „+ Beschreibung" und daneben die Schalter der übrigen Felder. */
+function CollapsedText({
+  label,
+  onOpen,
+  availableWidgets,
+  onToggleWidget,
+}: {
+  label: string
+  onOpen: () => void
+  availableWidgets: readonly WidgetType[]
+  onToggleWidget: (w: WidgetType) => void
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-1">
+      <button
+        type="button"
+        onClick={onOpen}
+        className="inline-flex items-center gap-1 rounded-sm text-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+      >
+        + {label}
+      </button>
+      <span className="ml-auto flex items-center gap-0.5">
+        {availableWidgets.map((w) => {
+          const Icon = WIDGET_ICONS[w]
+          if (!Icon) return null
+          return (
+            <Button
+              key={w}
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              title={WIDGET_LABELS[w]}
+              onClick={() => onToggleWidget(w)}
+              className="h-7 w-7 text-muted-foreground"
+            >
+              <Icon className="h-3.5 w-3.5" />
+            </Button>
+          )
+        })}
+      </span>
+    </div>
+  )
 }
 
 // ── Component ────────────────────────────────────────────────────────────
@@ -335,17 +845,21 @@ export function ContentComposer({
   onSubmit,
   onCancel,
   onDelete,
+  stickyFooter = false,
   editMode: editModeProp,
   requestMapPick,
   geocode,
   reverseGeocode,
   peopleOptions,
+  peopleStates,
+  requestItemPick,
+  itemId,
   peopleSuggestions,
   tagSuggestions,
   tagQuickSuggestions,
   peopleQuickSuggestions,
   widgets: customWidgets,
-  showVisibility = true,
+  showVisibility = false,
   defaultPublic = true,
   showPreview = true,
   renderPreview,
@@ -370,6 +884,14 @@ export function ContentComposer({
   // Welche Datenschlüssel Personen tragen, sagt die Konfiguration.
   const peopleFields = resolvePeopleFields(currentConfig ?? {})
   const peopleKeys = peopleFields.map((field) => field.dataKey)
+  // Item-Kanten (C3) je Kante ein Datenschlüssel; bearbeitbare Item-Verweise (B15) dazu.
+  const relationKeys = [
+    ...itemRelationDataKeys(currentConfig?.itemRelations),
+    ...(currentConfig?.itemRefs ?? []).filter((r) => !r.fixed).map((r) => r.key),
+    // Wert-Felder (S4a) zählen für Ungespeichert und liveUpdate mit.
+    // Status nicht: Sein Standardwert ist Konfiguration, keine Eingabe (DIRTY_FIELDS).
+    ...(currentConfig?.valueFields ?? []).filter((v) => v.widget !== "status").map((v) => v.key),
+  ]
 
   const [data, setData] = React.useState<WidgetData>(() => ({
     ...DEFAULT_DATA,
@@ -387,14 +909,18 @@ export function ContentComposer({
   // it — e.g. update only `start` when another calendar date is clicked, keeping
   // already-entered content intact.
   const peopleKeysRef = React.useRef(peopleKeys)
+  const relationKeysRef = React.useRef(relationKeys)
+  const refKeysRef = React.useRef(refKeysOf(contentTypes))
   React.useEffect(() => {
     peopleKeysRef.current = peopleKeys
+    relationKeysRef.current = relationKeys
+    refKeysRef.current = refKeysOf(contentTypes)
   })
   React.useEffect(() => {
     if (!apiRef) return
     apiRef.current = {
       patchData: (patch) => {
-        setData((d) => ({ ...d, ...patch }))
+        setData((d) => withSpaceChange(d, patch, refKeysRef.current))
         // Reveal any widget the patch gives a value to, so a field prefilled
         // after mount (e.g. a position handed back from the map picker) isn't
         // stuck hidden behind a "+" toggle. manualWidgets is seeded only from
@@ -411,6 +937,62 @@ export function ContentComposer({
     }
   }, [apiRef])
   const [isPublic, setIsPublic] = React.useState(defaultPublic)
+  // Genau ein möglicher Space: Er steht fest im Kopf und MUSS dann auch
+  // gesetzt sein — eine Anzeige, die beim Speichern nicht gilt, täuscht.
+  // Genau ein möglicher Space ist beim Erstellen vorausgewählt (Space des
+  // Formulars, Regel 1): Er steht fest im Kopf und gilt dann auch. Beim
+  // Bearbeiten gibt allein der Space des Items vor, sonst verschöbe Speichern.
+  const onlySpace = !isEditMode && currentConfig?.groupOptions?.length === 1 ? currentConfig.groupOptions[0]!.id : undefined
+  React.useEffect(() => {
+    if (onlySpace && !data.group) setData((d) => (d.group ? d : { ...d, group: onlySpace }))
+  }, [onlySpace, data.group])
+  // Der Formular-Space (shared-components → Space des Formulars): EINE
+  // Quelle, `data.group`. Suche, Vorschläge, Prüfung und Speichern lesen ihn
+  // von hier, nie den geöffneten Space der App.
+  const formSpace = typeof data.group === "string" && data.group !== "" ? data.group : undefined
+  const spaceSources = useFormSpaceSources(formSpace)
+  const effectivePeopleOptions = spaceSources?.people ?? peopleOptions
+  const effectivePeopleQuick = spaceSources?.people ? spaceSources.people.slice(0, 10) : peopleQuickSuggestions
+  const effectiveTagSuggestions = spaceSources?.tags ?? tagSuggestions
+  const effectiveTagQuick = spaceSources?.tags ? spaceSources.tags.slice(0, 10) : tagQuickSuggestions
+  // Space-Pflicht beim Anlegen (Space des Formulars, Regel 8), EIN Tor für
+  // jeden Weg, der `onSubmit` erreicht: Speichern, „Erneut“ und liveUpdate
+  // (#538). Beim Bearbeiten ist der Space nie Pflicht.
+  const spaceUnavailable = !isEditMode && !!currentConfig?.groupUnavailableReason
+  const spaceRequired = spaceUnavailable || (!isEditMode && (currentConfig?.groupOptions?.length ?? 0) > 0 && (currentConfig?.groupRequired ?? true))
+  const isSpaceMissing = (d: WidgetData) => spaceUnavailable || (spaceRequired && !d.group)
+  // Ein ungültiger Wert (Adresse ohne http/https, Zahl außerhalb der Grenzen,
+  // kein Telefon/E-Mail) wird nie gespeichert — auch nicht per liveUpdate.
+  // Ein festes Feld prüft nur das Anlegen (Vorgabe des Kontexts); beim
+  // Bearbeiten bleibt der gespeicherte Wert unberührt und sperrt nichts.
+  const valueErrorsOf = (d: WidgetData): Record<string, string | null> =>
+    Object.fromEntries(
+      (currentConfig?.valueFields ?? []).map((v) => [v.key, v.fixed && isEditMode ? null : valueFieldError(v, (d as Record<string, unknown>)[v.key])]),
+    )
+  const hasInvalidValues = (d: WidgetData) => Object.values(valueErrorsOf(d)).some(Boolean)
+  // Wert-Felder eines anderen angebotenen Typs (nach einem Typwechsel) gehen
+  // nicht mit: Sie wären weder geprüft noch nach ihrem Vertrag abgebildet.
+  // Eigene Felder bleiben, auch der Status eines Typs mit `statusOptions` ohne Register.
+  const ownValueKeys = new Set([
+    ...(currentConfig?.valueFields ?? []).map((v) => v.key),
+    ...(currentConfig?.statusOptions?.length ? ["status"] : []),
+  ])
+  const foreignValueKeys = [
+    ...new Set(contentTypes.flatMap((t) => (t.valueFields ?? []).map((v) => v.key)).filter((k) => !ownValueKeys.has(k))),
+  ]
+  const submitGuarded = (submission: ContentComposerSubmitData): void | Promise<void> => {
+    if (isSpaceMissing(submission.data) || hasInvalidValues(submission.data)) return
+    if (foreignValueKeys.length === 0) return onSubmit(submission)
+    const data = { ...submission.data }
+    for (const key of foreignValueKeys) delete data[key]
+    return onSubmit({ ...submission, data })
+  }
+  // Ein verzögerter liveUpdate prüft beim Auslösen gegen den AKTUELLEN Stand
+  // (Konfiguration, Typ, Daten), nicht gegen den beim Planen (Codex zu #538).
+  const liveRef = React.useRef({ submitGuarded, selectedType, isPublic, data })
+  liveRef.current = { submitGuarded, selectedType, isPublic, data }
+  // „+ Beschreibung" aufgeklappt? Nur UI-Zustand; mit Inhalt ist sie immer offen.
+  const [textOpen, setTextOpen] = React.useState(false)
   const [isPreviewing, setIsPreviewing] = React.useState(false)
   // Aborts the previous reverse-geocode when the user re-picks on the map.
   const reverseAbortRef = React.useRef<AbortController | null>(null)
@@ -455,7 +1037,7 @@ export function ContentComposer({
         prev.status !== data.status ||
         prev.group !== data.group ||
         prev.tags !== data.tags ||
-        peopleKeys.some(
+        [...peopleKeys, ...relationKeys].some(
           (key) => (prev as Record<string, unknown>)[key] !== (data as Record<string, unknown>)[key],
         ) ||
         prev.start !== data.start ||
@@ -467,11 +1049,12 @@ export function ContentComposer({
         prev.media !== data.media
       if (isTextOnly && !hasNonTextChange) {
         const timer = setTimeout(() => {
-          void Promise.resolve(onSubmit({ contentType: selectedType, isPublic, data })).catch(() => {})
+          const now = liveRef.current
+          void Promise.resolve(now.submitGuarded({ contentType: now.selectedType, isPublic: now.isPublic, data: now.data })).catch(() => {})
         }, 300)
         return () => clearTimeout(timer)
       }
-      void Promise.resolve(onSubmit({ contentType: selectedType, isPublic, data })).catch(() => {})
+      void Promise.resolve(submitGuarded({ contentType: selectedType, isPublic, data })).catch(() => {})
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, liveUpdate])
@@ -488,11 +1071,19 @@ export function ContentComposer({
   // changes something, and an emptied form goes back to clean.
   const dirtyBaselineRef = React.useRef<string | null>(null)
   if (dirtyBaselineRef.current === null) {
-    dirtyBaselineRef.current = dirtySignature({ ...DEFAULT_DATA, ...initialData }, peopleKeys)
+    dirtyBaselineRef.current = dirtySignature({ ...DEFAULT_DATA, ...initialData }, peopleKeys, relationKeys)
   }
   React.useEffect(() => {
-    onDirtyChange?.(dirtySignature(data, peopleKeysRef.current) !== dirtyBaselineRef.current)
+    onDirtyChange?.(dirtySignature(data, peopleKeysRef.current, relationKeysRef.current) !== dirtyBaselineRef.current)
   }, [onDirtyChange, data])
+
+  // Auf dem Telefon oeffnet ein Autofokus die Tastatur und schiebt den Kopf des
+  // Formulars (Typ, Gruppe) aus dem Bild. Dort ist der Typ die erste
+  // Entscheidung, nicht der Titel — die Tastatur kommt, wenn jemand tippt.
+  // Der Hook antwortet schon im ersten Render und bleibt aktuell: Wer die
+  // Breite beim Einhaengen einfriert, haengt nach einem Groessenwechsel den
+  // Edit-Widgets den alten Wert an (rls#481).
+  const imDrawer = useIsCompact()
 
   // Active widgets = defaults + manually added
   const defaultWidgets = new Set(currentConfig.defaultWidgets)
@@ -507,15 +1098,24 @@ export function ContentComposer({
     activeWidgets.add("group")
   }
 
-  // Widgets available to toggle on (not active, not title/text, not status/group without config)
-  const toggleableWidgets = WIDGET_ORDER.filter(
+  // Render order: the type's widgets in its own order, the rest at their
+  // place in the form. The space is rendered in the form head, not here.
+  const renderOrder = widgetRenderOrder(currentConfig.defaultWidgets).filter((w) => w !== "group")
+
+  // Die Beschreibung ist eingeklappt, wenn sie leer ist — aber nur, wo es
+  // einen Titel gibt; beim Beitrag IST der Text der Inhalt (Edit-Regeln 2).
+  const textCollapsed = !textOpen && !data.text?.trim() && activeWidgets.has("title")
+
+  // Widgets available to toggle on (not active, not title/text, not status
+  // without config; the space lives in the form head, never as a toggle)
+  const toggleableWidgets = renderOrder.filter(
     (w) =>
       !activeWidgets.has(w) &&
+      !REGISTER_ONLY_WIDGETS.has(w) &&
       w !== "title" &&
       w !== "text" &&
-      !(w === "status" && !hasStatusOptions) &&
-      !(w === "group" && !hasGroupOptions),
-  ) as WidgetType[]
+      !(w === "status" && !hasStatusOptions),
+  ) as Exclude<WidgetType, "item-relation" | "item-ref" | "number" | "select" | "url" | "chips" | "contact">[]
 
   // Get widget label
   const getWidgetLabel = (widgetId: string): string => {
@@ -531,12 +1131,12 @@ export function ContentComposer({
     key: K,
     value: WidgetData[K],
   ) => {
-    setData((d) => ({ ...d, [key]: value }))
+    setData((d) => withSpaceChange(d, { [key]: value } as Partial<WidgetData>, refKeysOf(contentTypes)))
   }
 
   // Multi-field patch (used by widgets that map to several spec fields)
   const updateMany = (patch: Partial<WidgetData>) => {
-    setData((d) => ({ ...d, ...patch }))
+    setData((d) => withSpaceChange(d, patch, refKeysOf(contentTypes)))
   }
 
   // Toggle a manual widget
@@ -575,20 +1175,60 @@ export function ContentComposer({
     }
   }
 
+  // Beziehungen im Formular (Regel 5): eine gewählte Item-Kante (auch
+  // „Braucht") oder ein bearbeitbarer Item-Verweis hält den Space fest; eine
+  // entfernte eingehende Quelle nicht.
+  const choiceKeys = [
+    ...itemRelationChoiceKeys(currentConfig?.itemRelations),
+    ...(currentConfig?.itemRefs ?? []).filter((r) => !r.fixed).map((r) => r.key),
+  ]
+  const formHasItemBinding = choiceKeys.some((key) => {
+    const value = (data as Record<string, unknown>)[key]
+    return Array.isArray(value) ? value.length > 0 : typeof value === "string" && value !== ""
+  })
+  // Pflicht nur beim Anlegen (Regel 8): ohne Space kein Speichern.
+  const spaceMissing = isSpaceMissing(data)
+
   // Submit
-  const canSubmit = !!(data.title?.trim() || data.text?.trim() || (data.media && data.media.length > 0))
+  const hasContent = !!(data.title?.trim() || data.text?.trim() || (data.media && data.media.length > 0))
+  const valueErrors = valueErrorsOf(data)
+  const canSubmit = !spaceMissing && hasContent && !Object.values(valueErrors).some(Boolean)
+  // Wer den Kontakt sieht (B12): die Mitglieder des Formular-Space.
+  const formSpaceOption = currentConfig.groupOptions?.find((o) => o.id === data.group)
+  const contactVisibility = formSpaceOption
+    ? formSpaceOption.personal
+      ? "Nur für dich sichtbar (Privat)"
+      : `Sichtbar für alle in ${formSpaceOption.name}`
+    : undefined
+  // Wert-Felder stehen im Formular in Register-Reihenfolge an der Stelle des
+  // ersten Wert-Widgets; nur benachbarte Zahlen mit gleicher Beschriftung
+  // teilen eine Gruppe (B7).
+  // Der Status gehört dazu, wenn das Register ihn führt (Reihenfolge, Regel 16).
+  const statusInValues = (currentConfig.valueFields ?? []).some((v) => v.widget === "status")
+  const firstValueWidget = renderOrder.find((w) => VALUE_WIDGETS.has(w) || (statusInValues && w === "status"))
+  const chipSuggestions = (field: ValueFieldConfig): string[] => {
+    const own = field.suggestions ?? []
+    const fromSpace = (spaceSources?.items ?? []).flatMap((i) => chipValues((i.data as Record<string, unknown> | undefined)?.[field.key]))
+    return [...new Set([...own, ...fromSpace])]
+  }
 
   const [submitting, setSubmitting] = React.useState(false)
-  const [submitError, setSubmitError] = React.useState<string | null>(null)
+  // Fehler beim Speichern: Banner unter dem Kopf; `reason` ist der Grund des
+  // Connectors, wenn er einen liefert (Error.cause).
+  const [submitError, setSubmitError] = React.useState<{ reason?: string } | null>(null)
 
   const handleSubmit = async () => {
     if (!canSubmit || submitting) return
     setSubmitting(true)
     setSubmitError(null)
     try {
-      await onSubmit({ contentType: selectedType, isPublic, data })
+      await submitGuarded({ contentType: selectedType, isPublic, data })
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "Speichern fehlgeschlagen.")
+      // Grund des Connectors: `reason` oder `cause` am Fehler (ohne es2022-Typen).
+      const carrier = (err ?? {}) as { reason?: unknown; cause?: unknown }
+      const cause = carrier.reason ?? carrier.cause
+      const reason = cause instanceof Error ? cause.message : typeof cause === "string" ? cause : undefined
+      setSubmitError(reason ? { reason } : {})
     } finally {
       setSubmitting(false)
     }
@@ -603,29 +1243,33 @@ export function ContentComposer({
 
   return (
     <div className={cn("flex flex-col gap-4", className)}>
-      {/* Content type selector (multi-type mode only) */}
-      {!isSingleTypeMode && contentTypes.length > 1 && (
-        <div className="flex gap-1 overflow-x-auto">
-          {contentTypes.map((type) => {
-            const Icon = type.icon
-            return (
-              <button
-                key={type.id}
-                type="button"
-                onClick={() => setSelectedType(type.id)}
-                className={cn(
-                  "flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
-                  selectedType === type.id
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80",
-                )}
-              >
-                {Icon && <Icon className="h-4 w-4" />}
-                {type.label}
-              </button>
-            )
-          })}
-        </div>
+      {/* Kopf des Formulars: Typ und Space, kompakt als Auswahlfelder
+          (shared-components, Edit-Regeln 2). Der Space steht oben, weil er
+          Sichtbarkeit, Personen- und Tag-Vorschläge bestimmt. */}
+      <ComposerHead
+        types={contentTypes}
+        selectedType={selectedType}
+        onSelectType={!isSingleTypeMode && contentTypes.length > 1 ? setSelectedType : undefined}
+        space={
+          hasGroupOptions
+            ? {
+                value: data.group || "",
+                options: currentConfig.groupOptions!,
+                required: spaceRequired,
+                fixedReason: currentConfig.groupFixedReason,
+                ...(formHasItemBinding ? { lockedReason: ITEM_BINDINGS_REASON } : {}),
+                onChange: (v) => updateData("group", v),
+              }
+            : undefined
+        }
+      />
+
+      {submitError && <SaveErrorBanner reason={submitError.reason} onRetry={() => void handleSubmit()} busy={submitting} />}
+      {/* Ohne Space wird nichts angelegt — auch nicht per liveUpdate (#538). Sichtbar, sobald es etwas zu speichern gäbe. */}
+      {spaceMissing && hasContent && (
+        <p data-space-required role="status" className="text-xs text-destructive">
+          {currentConfig.groupUnavailableReason && !isEditMode ? currentConfig.groupUnavailableReason : "Erst einen Space wählen – vorher wird nichts gespeichert."}
+        </p>
       )}
 
       {/* Preview or Edit mode */}
@@ -645,8 +1289,8 @@ export function ContentComposer({
         </div>
       ) : (
         <div className="flex flex-col gap-5">
-          {/* Render widgets in fixed order */}
-          {WIDGET_ORDER.map((widgetId) => {
+          {/* Render widgets in the type's order (register), then the rest */}
+          {renderOrder.map((widgetId) => {
             const isActive = activeWidgets.has(widgetId)
             const isDefault = defaultWidgets.has(widgetId)
             const widgetLabel = getWidgetLabel(widgetId)
@@ -665,27 +1309,24 @@ export function ContentComposer({
                       <X className="h-3.5 w-3.5" />
                     </button>
                   )}
-                  {/* Widget content */}
-                  {widgetId === "group" &&
-                    currentConfig.groupOptions &&
-                    currentConfig.groupOptions.length > 0 && (
-                      <GroupWidget
-                        value={data.group || ""}
-                        onChange={(v) => updateData("group", v)}
-                        label={widgetLabel}
-                        options={currentConfig.groupOptions}
-                        required={currentConfig.groupRequired ?? true}
-                      />
-                    )}
+                  {/* Widget content. Der Space (`group`) steht im Kopf. */}
                   {widgetId === "title" && (
                     <TitleWidget
                       value={data.title || ""}
                       onChange={(v) => updateData("title", v)}
                       label={widgetLabel}
-                      autoFocus={!data.title}
+                      autoFocus={!data.title && !imDrawer}
                     />
                   )}
-                  {widgetId === "text" && (
+                  {widgetId === "text" && textCollapsed && (
+                    <CollapsedText
+                      label={widgetLabel}
+                      onOpen={() => setTextOpen(true)}
+                      availableWidgets={toggleableWidgets}
+                      onToggleWidget={toggleWidget}
+                    />
+                  )}
+                  {widgetId === "text" && !textCollapsed && (
                     <TextWidget
                       value={data.text || ""}
                       onChange={(v) => updateData("text", v)}
@@ -694,7 +1335,7 @@ export function ContentComposer({
                       onToggleWidget={toggleWidget}
                       onMention={handleMention}
                       onHashtag={handleHashtag}
-                      autoFocus={!activeWidgets.has("title")}
+                      autoFocus={!activeWidgets.has("title") && !imDrawer}
                     />
                   )}
                   {widgetId === "media" && (
@@ -768,6 +1409,7 @@ export function ContentComposer({
                     />
                   )}
                   {widgetId === "status" &&
+                    !statusInValues &&
                     currentConfig.statusOptions &&
                     currentConfig.statusOptions.length > 0 && (
                       <StatusWidget
@@ -775,6 +1417,7 @@ export function ContentComposer({
                         onChange={(v) => updateData("status", v)}
                         label={widgetLabel}
                         options={currentConfig.statusOptions}
+                        typeTone={typeBadgeStyle(currentConfig).className}
                       />
                     )}
                   {widgetId === "people" && (
@@ -788,11 +1431,170 @@ export function ContentComposer({
                           // die Einzahl-Kurzform schon eingesetzt; deklarierte
                           // `peopleRelations`-Labels gewinnen.
                           label={field.label}
-                          options={peopleOptions}
+                          options={effectivePeopleOptions}
                           suggestions={peopleSuggestions}
-                          quickSuggestions={peopleQuickSuggestions}
+                          quickSuggestions={effectivePeopleQuick}
+                          placeholder={field.placeholder}
+                          {...(field.record && field.predicate && peopleStates?.[field.predicate]
+                            ? {
+                                record: {
+                                  base: field.record.base,
+                                  values: field.record.values,
+                                  live: peopleStates[field.predicate].live,
+                                  changes: (data[peopleStatementKey(field.dataKey)] as Record<string, string | null> | undefined) ?? {},
+                                  onChangesChange: (next: Record<string, string | null>) => updateData(peopleStatementKey(field.dataKey), next),
+                                },
+                              }
+                            : {})}
+                          {...(field.qualifier
+                            ? {
+                                qualifier: field.qualifier,
+                                qualifiers: (data[peopleQualifierKey(field.dataKey)] as Record<string, string> | undefined) ?? {},
+                                onQualifiersChange: (next: Record<string, string>) => updateData(peopleQualifierKey(field.dataKey), next),
+                              }
+                            : {})}
                         />
                       ))}
+                    </div>
+                  )}
+                  {widgetId === "item-relation" && (
+                    <div className="flex flex-col gap-4">
+                      {(currentConfig.itemRelations ?? []).map((field) =>
+                        field.incoming ? (
+                          // „Braucht": die Kante liegt am anderen Item (S3b).
+                          <IncomingRelationField
+                            key={`in:${field.predicate}`}
+                            label={field.label}
+                            predicate={field.predicate}
+                            targetType={field.targetType}
+                            placeholder={field.placeholder}
+                            itemId={itemId}
+                            spaceId={typeof data.group === "string" && data.group !== "" ? data.group : undefined}
+                            added={(data[itemRelationDataKey(field.predicate, true)] as string[] | undefined) ?? []}
+                            removed={(data[incomingRemovedKey(field.predicate)] as string[] | undefined) ?? []}
+                            onChange={(added, removed) =>
+                              updateMany({ [itemRelationDataKey(field.predicate, true)]: added, [incomingRemovedKey(field.predicate)]: removed } as Partial<WidgetData>)
+                            }
+                            requestItemPick={requestItemPick}
+                          />
+                        ) : (
+                        <ItemRelationWidget
+                          key={field.predicate}
+                          label={field.label}
+                          predicate={field.predicate}
+                          targetType={field.targetType}
+                          placeholder={field.placeholder}
+                          value={(data[itemRelationDataKey(field.predicate)] as string[] | undefined) ?? []}
+                          onChange={(v) => updateData(itemRelationDataKey(field.predicate), v)}
+                          excludeId={itemId}
+                          spaceId={typeof data.group === "string" && data.group !== "" ? data.group : undefined}
+                          requestItemPick={requestItemPick}
+                        />
+                        ),
+                      )}
+                    </div>
+                  )}
+                  {widgetId === "item-ref" && (
+                    <div className="flex flex-col gap-4">
+                      {(currentConfig.itemRefs ?? []).map((field) => {
+                        const value = typeof data[field.key] === "string" ? (data[field.key] as string) : ""
+                        if (field.fixed) {
+                          // Fest: nur mit Wert sichtbar (06, Regel 14).
+                          return value ? <FixedItemRefField key={field.key} label={field.label} value={value} missing={field.missing} spaceId={typeof data.group === "string" && data.group !== "" ? data.group : undefined} /> : null
+                        }
+                        return (
+                          <ItemRelationWidget
+                            key={field.key}
+                            single
+                            label={field.label}
+                            predicate={field.key}
+                            targetType={field.targetType}
+                            value={value ? [value] : []}
+                            onChange={(v) => updateData(field.key, v[0] ?? "")}
+                            excludeId={itemId}
+                            spaceId={typeof data.group === "string" && data.group !== "" ? data.group : undefined}
+                          />
+                        )
+                      })}
+                    </div>
+                  )}
+                  {widgetId === firstValueWidget && (
+                    <div className="flex flex-col gap-4">
+                      {groupNumberFields(currentConfig.valueFields ?? []).map((group) => {
+                        const field = group[0]!
+                        const text = typeof data[field.key] === "string" ? (data[field.key] as string) : ""
+                        switch (field.widget) {
+                          case "number":
+                            return (
+                              <NumberGroupField
+                                key={field.key}
+                                label={field.label}
+                                fields={group}
+                                values={data as Record<string, unknown>}
+                                errors={valueErrors}
+                                onChange={(key, v) => updateData(key, v)}
+                              />
+                            )
+                          case "status":
+                            return currentConfig.statusOptions?.length ? (
+                              <StatusWidget
+                                key={field.key}
+                                value={data.status || ""}
+                                onChange={(v) => updateData("status", v)}
+                                label={getWidgetLabel("status")}
+                                options={currentConfig.statusOptions}
+                                typeTone={typeBadgeStyle(currentConfig).className}
+                              />
+                            ) : null
+                          case "select":
+                            return (
+                              <OptionField
+                                key={field.key}
+                                label={field.label}
+                                options={field.options ?? []}
+                                value={text}
+                                onChange={(v) => updateData(field.key, v)}
+                                allowClear
+                                disabled={field.fixed}
+                                typeTone={typeBadgeStyle(currentConfig).className}
+                              />
+                            )
+                          case "url":
+                            return (
+                              <UrlField
+                                key={field.key}
+                                label={field.label}
+                                value={text}
+                                onChange={(v) => updateData(field.key, v)}
+                                error={valueErrors[field.key] ?? null}
+                                disabled={field.fixed}
+                              />
+                            )
+                          case "chips":
+                            return (
+                              <ChipsField
+                                key={field.key}
+                                label={field.label}
+                                value={chipValues(data[field.key])}
+                                onChange={(v) => updateData(field.key, v)}
+                                suggestions={chipSuggestions(field)}
+                                disabled={field.fixed}
+                              />
+                            )
+                          case "contact":
+                            return (
+                              <ContactField
+                                key={field.key}
+                                label={field.label}
+                                value={text}
+                                onChange={(v) => updateData(field.key, v)}
+                                error={valueErrors[field.key] ?? null}
+                                visibility={contactVisibility}
+                                disabled={field.fixed}
+                              />
+                            )
+                        }
+                      })}
                     </div>
                   )}
                   {widgetId === "tags" && (
@@ -800,8 +1602,9 @@ export function ContentComposer({
                       value={data.tags || []}
                       onChange={(v) => updateData("tags", v)}
                       label={widgetLabel}
-                      suggestions={tagSuggestions}
-                      quickSuggestions={tagQuickSuggestions}
+                      suggestions={effectiveTagSuggestions}
+                      quickSuggestions={effectiveTagQuick}
+                      {...(spaceSources?.tagsUnavailable ? { hint: "Keine Vorschläge: Dieser Speicher liest nur Tags des geöffneten Space" } : {})}
                     />
                   )}
                 </div>
@@ -847,13 +1650,14 @@ export function ContentComposer({
         </div>
       )}
 
-      {submitError && (
-        <p className="pt-1 text-xs text-destructive" role="alert">
-          {submitError}
-        </p>
-      )}
       {/* Footer: actions (hidden in liveUpdate mode) */}
-      {!liveUpdate && <div className="flex items-center justify-between pt-1">
+      {!liveUpdate && <div
+        data-slot="edit-footer"
+        className={cn(
+          "flex items-center justify-between pt-1",
+          stickyFooter && "sticky bottom-0 z-10 -mx-4 mt-auto border-t bg-card px-4 py-3",
+        )}
+      >
         <div className="flex items-center gap-2">
           {/* Delete button (edit mode only) */}
           {isEditMode && onDelete && (
@@ -862,16 +1666,18 @@ export function ContentComposer({
               variant="ghost"
               size="sm"
               onClick={onDelete}
-              className="gap-1.5 text-xs text-destructive hover:text-destructive"
+              // Schmal gehalten: Auf dem Telefon (390 px) passen Löschen,
+              // Abbrechen und der Speichern-Split sonst nicht in eine Zeile.
+              className="gap-1.5 px-2 has-[>svg]:px-1.5 text-xs text-destructive hover:text-destructive"
             >
               <Trash2 className="h-3.5 w-3.5" />
-              Loeschen
+              Löschen
             </Button>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           {onCancel && (
-            <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
+            <Button type="button" variant="ghost" size="sm" className="px-2" onClick={onCancel}>
               Abbrechen
             </Button>
           )}
@@ -895,7 +1701,7 @@ export function ContentComposer({
                 onClick={handleSubmit}
                 disabled={!canSubmit || submitting}
                 aria-busy={submitting}
-                className="gap-1.5 rounded-r-none"
+                className="gap-1.5 rounded-r-none has-[>svg]:px-2"
               >
                 {submitting ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
@@ -999,8 +1805,8 @@ function DefaultPreview({
       )}
       {has("date") && data.start && (
         <div className="text-sm text-muted-foreground">
-          {data.start}
-          {data.end && ` — ${data.end}`}
+          {toDateInputValue(data.start)}
+          {data.end && ` — ${toDateInputValue(data.end)}`}
         </div>
       )}
       {has("location") && (data.address || data.locationName || data.meetingLink) && (

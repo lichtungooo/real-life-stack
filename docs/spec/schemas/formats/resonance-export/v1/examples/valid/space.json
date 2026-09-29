@@ -1,0 +1,33 @@
+{
+  "format": "resonance-export/1",
+  "exportedAt": "2026-09-27T18:00:00.000Z",
+  "space": "group-1",
+  "filter": { "people": ["did:key:z6MkAnna", "did:key:z6MkBert", "did:key:z6MkCarla"], "tags": ["garten"] },
+  "statements": [
+    {
+      "id": "s-1",
+      "title": "Wir öffnen den Garten einmal im Monat für die Nachbarschaft.",
+      "description": "Ein fester Sonntag, offene Tür, Kaffee.",
+      "tags": ["garten"],
+      "createdBy": "did:key:z6MkAnna",
+      "createdAt": "2026-09-27T10:00:00.000Z",
+      "contentHash": "sha256:c74e1b510fd022b1a5b43e03f9b686259c38e74393eefe21021aa6d245addb26",
+      "claim": "eyJhbGciOiJFZERTQSJ9.e30.c2ln",
+      "votes": [
+        { "voter": "did:key:z6MkBert", "value": "green", "contentHash": "sha256:c74e1b510fd022b1a5b43e03f9b686259c38e74393eefe21021aa6d245addb26", "createdAt": "2026-09-27T11:00:00.000Z", "claim": "eyJhbGciOiJFZERTQSJ9.e30.c2ln" }
+      ],
+      "summary": { "green": 1, "yellow": 0, "red": 0, "noVote": 2 }
+    },
+    {
+      "id": "s-2",
+      "title": "Wir öffnen den Garten jeden Sonntag.",
+      "variantOf": "item:s-1",
+      "tags": [],
+      "createdBy": "did:key:z6MkBert",
+      "createdAt": "2026-09-27T12:00:00.000Z",
+      "contentHash": "sha256:2165c134943e76953d22759b9fa8c4f42b82d15a4b4299c002534a9e6ddb3e49",
+      "votes": [],
+      "summary": { "green": 0, "yellow": 0, "red": 0, "noVote": 3 }
+    }
+  ]
+}

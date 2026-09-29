@@ -12,8 +12,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/primitives/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/primitives/avatar"
-import type { SpaceKind } from "@/lib/space-kinds"
-import { type GrayChoice, type RadiusStep, type Surfaces } from "../../lib/space-theme"
+import { parseSpaceKinds, type SpaceKind } from "@/lib/space-kinds"
+import type { Group } from "@real-life-stack/data-interface"
+import { readGray, readRadius, readSurfaces, type GrayChoice, type RadiusStep, type Surfaces } from "../../lib/space-theme"
 
 export interface Workspace {
   id: string
@@ -40,6 +41,33 @@ export interface Workspace {
   radius?: RadiusStep
   /** Flächen der App-Hülle (`data.surfaces`): translucent | solid. */
   surfaces?: Surfaces
+}
+
+/**
+ * Was der Space-Wechsler von einer Gruppe zeigt (Spec 04): Name, Bild aus
+ * `data.image`, Farbe und Theme-Achsen aus `data`. Die eine Ableitung fuer
+ * Rahmen, Stories und Handbuch — wer sie nachbaut, vergisst ein Feld.
+ * Ungeprueft durchgereicht, was `scalesForColor` spaeter kappt und verwirft.
+ */
+export function workspaceOf(g: Group): Workspace {
+  return {
+    id: g.id,
+    name: g.name,
+    avatar: typeof g.data?.image === "string" ? g.data.image : undefined,
+    scope: typeof g.data?.scope === "string" ? g.data.scope : undefined,
+    primaryColor: typeof g.data?.primaryColor === "string" ? g.data.primaryColor : undefined,
+    tint: typeof g.data?.tint === "number" ? g.data.tint : undefined,
+    gray: readGray(g.data?.gray) ?? undefined,
+    radius: readRadius(g.data?.radius) ?? undefined,
+    surfaces: readSurfaces(g.data?.surfaces) ?? undefined,
+    // Netzwerk und Art (Spec 04, "Netzwerk"; Spec 01, "Space-Wechsel nach
+    // Netzwerk und Art"). Arten und Domain traegt nur ein Netzwerk.
+    kind: typeof g.data?.kind === "string" ? g.data.kind : undefined,
+    isNetwork: g.data?.isNetwork === true ? true : undefined,
+    network: typeof g.data?.network === "string" ? g.data.network : undefined,
+    kinds: g.data?.isNetwork === true ? parseSpaceKinds(g.data?.spaceKinds, `Space "${g.name}", spaceKinds`) : undefined,
+    domain: g.data?.isNetwork === true && typeof g.data?.domain === "string" ? g.data.domain : undefined,
+  }
 }
 
 interface WorkspaceSwitcherProps {
@@ -233,15 +261,16 @@ export function WorkspaceSwitcher({
             <ChevronsUpDown className="h-4 w-4 text-muted-foreground" />
           </div>
         )}
-        {/* Name now also shows on mobile, truncated so a long space name can't
-            push the trailing nav actions off-screen (NavbarStart is shrink-0). */}
-        <span className="truncate max-w-[34vw] text-base font-semibold sm:max-w-none sm:text-lg">
+        {/* Der Name kuerzt sich nur, wenn der Platz wirklich fehlt: NavbarStart
+            ist min-w-0, NavbarEnd shrink-0 — ein fester Deckel (34vw) schnitt
+            „Gemeinschaftsgarten" auf dem Telefon ab, obwohl Platz war. */}
+        <span className="min-w-0 truncate text-base font-semibold sm:text-lg">
           {activeWorkspace ? activeWorkspace.name : "Space wählen"}
         </span>
         {syncing ? (
           <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted-foreground" aria-label="Gruppen werden geladen" />
         ) : (
-          <ChevronsUpDown className="h-4 w-4 opacity-50 hidden sm:block" />
+          <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
         )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-56">

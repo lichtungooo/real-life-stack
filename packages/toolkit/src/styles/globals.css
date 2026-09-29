@@ -68,6 +68,11 @@
   --warning: oklch(0.70 0.17 55);
   --warning-foreground: oklch(1.00 0 0);
 
+  /* Success, Info — Töne der Wert-Widgets (status B6, select B8; S4a).
+     Instanzfarben wie warning und destructive: nicht aus den Space-Achsen. */
+  --success: oklch(0.63 0.17 149);
+  --info: oklch(0.55 0.20 262);
+
   /* Pink - Rose (for Familie Kowalski) */
   --pink: oklch(0.65 0.20 0);
   --pink-foreground: oklch(1.00 0 0);
@@ -218,6 +223,9 @@
   --warning: oklch(0.75 0.15 55);
   --warning-foreground: oklch(0.15 0.02 265);
 
+  --success: oklch(0.72 0.17 150);
+  --info: oklch(0.70 0.15 255);
+
   /* Pink - Rose (for Familie Kowalski) */
   --pink: oklch(0.70 0.18 0);
   --pink-foreground: oklch(0.15 0.02 265);
@@ -291,6 +299,8 @@
   --color-destructive: var(--destructive);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
+  --color-success: var(--success);
+  --color-info: var(--info);
   --color-pink: var(--pink);
   --color-pink-foreground: var(--pink-foreground);
   --color-border: var(--border);
@@ -360,6 +370,101 @@
 .surface-glass-inner {
   background-color: oklch(from var(--card) l c h / var(--surface-inner-alpha));
   backdrop-filter: blur(var(--surface-blur));
+}
+
+/* Steuerelemente der Karte (Zoom, Attribution): Abstand wie Plusknopf und Filterleiste, und sie weichen den
+   AdaptivePanels aus. Das gehoert zum Toolkit, nicht zur App — sonst hat es eine App und die naechste nicht.
+   MapLibres eigenes Stylesheet importiert die App weiterhin selbst (maplibre-gl/dist/maplibre-gl.css). */
+/* Equalize the map's overlay controls with the create-FAB (bottom-right) and
+   the FilterBar (top): 16px from every edge. MapLibre's stock controls sit 10px
+   from their corner, which read as "tighter" than the FAB — nudge the zoom box
+   (top-left) and the attribution "ⓘ" (bottom-left) out to match. The extra
+   `.maplibregl-map` class gives this rule higher specificity than
+   maplibre-gl.css, so it wins regardless of stylesheet import order. */
+.maplibregl-map .maplibregl-ctrl-top-left .maplibregl-ctrl {
+  margin: 16px 0 0 16px;
+}
+.maplibregl-map .maplibregl-ctrl-top-right .maplibregl-ctrl {
+  margin: 16px 16px 0 0;
+}
+.maplibregl-map .maplibregl-ctrl-bottom-left .maplibregl-ctrl {
+  margin: 0 0 16px 16px;
+}
+.maplibregl-map .maplibregl-ctrl-bottom-right .maplibregl-ctrl {
+  margin: 0 16px 16px 0;
+}
+/* Die Steuerelemente weichen den AdaptivePanels aus. Ein linkes Panel
+   (Feineinstellung) legte sich sonst ueber Zoom und Attribution, waehrend die
+   Werkzeugleiste darueber laengst ausgewichen war — die Suchleiste stand dann
+   scheinbar "zu weit rechts", weil sie Platz fuer Zoom-Knoepfe liess, die
+   niemand sah. Die Kanten kommen aus dem Panel-Stapel (adaptive-panel.tsx). */
+.maplibregl-map .maplibregl-ctrl-top-left,
+.maplibregl-map .maplibregl-ctrl-bottom-left {
+  left: var(--adaptive-panel-edge-left, 0px);
+  transition: left 200ms ease-out;
+}
+.maplibregl-map .maplibregl-ctrl-top-right,
+.maplibregl-map .maplibregl-ctrl-bottom-right {
+  right: var(--adaptive-panel-edge-right, 0px);
+  transition: right 200ms ease-out;
+}
+
+/* Aussehen der Kartensteuerung (Zoom, Attribution) aus den Tokens und dem Dunkelmodus, plus der Abstand zur
+   Bottom-Nav auf dem Telefon. Lag nur in der Referenz-App: Storybook, Handbuch und Netzwerk-App zeigten im Dunkeln
+   MapLibres weisse Knoepfe. Querschnitts-UX gehoert ins Toolkit. */
+/* MapLibres Steuerelemente aus den Tokens statt aus seinem festen Weiss:
+   so folgen sie Flaechen, Rahmen, Rundung und dem Dunkelmodus. Die Symbole
+   sind SVG-Hintergrundbilder in Schwarz — im Dunkeln invertiert. */
+.maplibregl-map .maplibregl-ctrl-group {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.1);
+  overflow: hidden;
+}
+.maplibregl-map .maplibregl-ctrl-group:not(:empty) {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.1);
+}
+.maplibregl-map .maplibregl-ctrl-group button {
+  background-color: transparent;
+}
+.maplibregl-map .maplibregl-ctrl-group button + button {
+  border-top: 1px solid var(--border);
+}
+.maplibregl-map .maplibregl-ctrl-group button:not(:disabled):hover {
+  background-color: var(--muted);
+}
+.dark .maplibregl-map .maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+  filter: invert(1);
+}
+/* Drei Klassen, weil maplibre-gl.css die Attribution mit zwei setzt
+   (`.maplibregl-ctrl.maplibregl-ctrl-attrib`) — sonst bliebe sie weiss. */
+.maplibregl-map .maplibregl-ctrl.maplibregl-ctrl-attrib,
+.maplibregl-map .maplibregl-ctrl-attrib.maplibregl-compact {
+  background: var(--card);
+  color: var(--muted-foreground);
+  border-radius: var(--radius-md);
+}
+.maplibregl-map .maplibregl-ctrl-attrib a {
+  color: var(--foreground);
+}
+.maplibregl-map .maplibregl-ctrl-attrib-button {
+  background-color: transparent;
+}
+.dark .maplibregl-map .maplibregl-ctrl-attrib-button {
+  filter: invert(1);
+}
+
+/* On mobile (< Tailwind `md`) the map is full-bleed behind the fixed BottomNav
+   (App.tsx: `withBottomNav={false}` for the map). Lift the bottom controls clear
+   of the bar so the attribution "ⓘ" isn't hidden behind it — same offset as the
+   create-FAB (`5.25rem + safe-area`), so the bottom-left "ⓘ" and bottom-right FAB
+   line up. md+ has no BottomNav, so the 16px rule above applies there. */
+@media (max-width: 47.99rem) {
+  .maplibregl-map .maplibregl-ctrl-bottom-left .maplibregl-ctrl,
+  .maplibregl-map .maplibregl-ctrl-bottom-right .maplibregl-ctrl {
+    margin-bottom: calc(5.25rem + env(safe-area-inset-bottom));
+  }
 }
 
 /* Drop shadow under map markers (the rendered pin SVG is an <img>; a CSS

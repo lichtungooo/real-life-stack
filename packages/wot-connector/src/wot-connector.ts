@@ -1,5 +1,7 @@
 import type {
   CreateItemInput,
+  CreateItemOptions,
+  GroupScopeCapable,
   Item,
   ItemFilter,
   Group,
@@ -42,6 +44,13 @@ import {
   jcsCanonicalize,
   relationAuthorialPayload,
   verifyRelationClaim,
+  itemAuthorialPayload,
+  verifyItemClaim as verifyItemClaimSignature,
+  withAuthoredCreateClaim,
+  planAuthoredUpdate,
+  assertAuthoredCommitAllowed,
+  isFrozen,
+  type AuthoredUpdatePlan,
   createObservable,
   deriveContext,
   matchesFilter,
@@ -343,7 +352,7 @@ function isVerificationConfirmation(c: ConfirmationView): boolean {
 
 // --- WotConnector ---
 
-export class WotConnector extends BaseConnector implements ActivityLogCapable, ScopedActivityLogCapable, NotificationStateCapable, InitialSyncCapable {
+export class WotConnector extends BaseConnector implements GroupScopeCapable, ActivityLogCapable, ScopedActivityLogCapable, NotificationStateCapable, InitialSyncCapable {
   private config: WotConnectorConfig
   private runtimeOverrides: WotConnectorRuntimeOverrides
   private identity: WorkflowBackedIdentity
@@ -1064,15 +1073,21 @@ export class WotConnector extends BaseConnector implements ActivityLogCapable, S
     if (id === null) throw new Error("Cannot delete personal view")
     if (!this.replication) throw new Error("Not authenticated")
 
-    // "Delete" = leave the space: remove self from members, clean up local data
-    const did = this.identity.getDid()
-    try {
-      await this.replication.removeMember(id, did)
-    } catch {
-      // May fail if already removed or single member
-    }
-
-    // Remove space from replication adapter (stops sync, removes from spaces map)
+    // "Delete" = die Gruppe verlassen. leaveSpace IST der dedizierte
+    // Austritts-Flow: es schreibt das eigene removed-Ereignis in den Log,
+    // verteilt die member-updates an die Verbleibenden und raeumt lokal auf.
+    //
+    // Hier stand frueher ein removeMember(self) davor. Das ist der Admin-Pfad:
+    // unter log-sync stagt er durable ein Removal und bittet den Home-Broker um
+    // einen space-rotate, den ein normales Mitglied nicht admin-signieren kann.
+    // Der Broker lehnte mit AUTH_INVALID ab, der Fehler wurde hier verschluckt —
+    // aber der Staging-Record blieb liegen und zog danach JEDEN leaveSpace in
+    // dessen securePending-Zweig, der denselben unmoeglichen Rotate wiederholte.
+    // Das Ergebnis war ein Mitglied, das die Gruppe nie wieder verlassen konnte.
+    //
+    // Ein Fehler aus dem Austritt propagiert bewusst: der Dialog zeigt ihn an und
+    // der Space bleibt bestehen. Ihn zu schlucken wuerde einen gescheiterten
+    // Austritt als Erfolg melden.
     await this.replication.leaveSpace(id)
 
     // If this was the current group, switch away
@@ -1193,6 +1208,10 @@ export class WotConnector extends BaseConnector implements ActivityLogCapable, S
 
   override async getItems(filter?: ItemFilter): Promise<Item[]> {
     await this.handleReady
+    if (filter?.group !== undefined) {
+      const inSpace = await this.itemsInSpace(filter.group)
+      return applyPagination(inSpace.filter((item) => matchesFilter(item, filter)), filter.limit, filter.offset)
+    }
     const allItems = this.getCachedItems()
     if (allItems.length === 0) return []
     if (!filter) return allItems
@@ -1214,8 +1233,67 @@ export class WotConnector extends BaseConnector implements ActivityLogCapable, S
     return deserializeItem(serialized)
   }
 
-  override async createItem(item: CreateItemInput): Promise<Item> {
+  /** 02 → Lesen/Anlegen in einem bestimmten Space. Am Prototyp, nicht als Instanzfeld: gilt auch für Instanzen ohne Konstruktor (Test-Harnesse). */
+  get groupScope(): true {
+    return true
+  }
+
+  /**
+   * Ist `group` ein Space, den dieser Nutzer liest und beschreibt? Die
+   * Gruppen aus `getGroups()` und der persönliche Space (02, Lesen Regel 2).
+   */
+  private isKnownSpace(group: string): boolean {
+    return group === this.privateSpaceId || this.groupsCache.some((g) => g.id === group)
+  }
+
+  /**
+   * Die Items eines Space, synchron, wenn bekannt: das Dokument des
+   * geöffneten Space, sonst der CrossGroupIndex (hält alle Spaces offen und
+   * folgt Remote-Updates). `null`: noch nicht indiziert.
+   */
+  private itemsInSpaceNow(group: string): Item[] | null {
+    if (!this.isKnownSpace(group)) return []
+    if (group === this.currentGroupId) {
+      const doc = this.getCurrentDoc()
+      if (doc) return Object.values(doc.items ?? {}).map(deserializeItem)
+    }
+    if (this.crossGroupIndex?.hasGroup(group)) return [...this.crossGroupIndex.getByGroup(group).values()]
+    return null
+  }
+
+  /** Wie {@link itemsInSpaceNow}; ein noch nicht indizierter Space wird aus seinem Dokument gelesen. */
+  private async itemsInSpace(group: string): Promise<Item[]> {
+    const now = this.itemsInSpaceNow(group)
+    if (now) return now
+    if (!this.replication) return []
+    const handle = await this.replication.openSpace<RlsSpaceDoc>(group)
+    try {
+      return Object.values(handle.getDoc().items ?? {}).map(deserializeItem)
+    } finally {
+      handle.close()
+    }
+  }
+
+  override async createItem(item: CreateItemInput, options?: CreateItemOptions): Promise<Item> {
     await this.handleReady
+
+    // Anlegen in einem bestimmten Space (02): EINE Transaktion im
+    // Dokument des Ziel-Space — verschlüsselt mit dessen Schlüssel, zu
+    // keinem Zeitpunkt in einem anderen Space. Nie anlegen und verschieben.
+    const target = options?.group
+    if (target !== undefined) {
+      if (!this.isKnownSpace(target)) throw new Error(`Space not found: ${target}`)
+      if (target === this.currentGroupId && this.currentHandle) {
+        return this.createItemOnHandle(this.currentHandle, item, target)
+      }
+      if (!this.replication) throw new Error("Not authenticated")
+      const targetHandle = await this.replication.openSpace<RlsSpaceDoc>(target)
+      try {
+        return await this.createItemOnHandle(targetHandle, item, target)
+      } finally {
+        targetHandle.close()
+      }
+    }
 
     // In overview mode, create in private space
     if (this.currentGroupId === null) {
@@ -1225,7 +1303,9 @@ export class WotConnector extends BaseConnector implements ActivityLogCapable, S
       }
       const privateHandle = await this.replication.openSpace<RlsSpaceDoc>(this.privateSpaceId)
       try {
-        return this.createItemOnHandle(privateHandle, item, this.privateSpaceId)
+        // `return await`: createItemOnHandle is async (signing happens before
+        // the write), so the handle must stay open until it has written.
+        return await this.createItemOnHandle(privateHandle, item, this.privateSpaceId)
       } finally {
         privateHandle.close()
       }
@@ -1236,40 +1316,58 @@ export class WotConnector extends BaseConnector implements ActivityLogCapable, S
     return this.createItemOnHandle(handle, item, this.currentGroupId)
   }
 
-  private createItemOnHandle(
+  private async createItemOnHandle(
     handle: SpaceHandle<RlsSpaceDoc>,
     item: CreateItemInput,
     spaceId: string,
-  ): Item {
+  ): Promise<Item> {
     const author = this.requireActivityActor()
+
+    // Idempotent create: an existing id returns the stored item unchanged.
+    if (item.id !== undefined) {
+      const stored = handle.getDoc().items?.[item.id]
+      if (stored) return deserializeItem(stored)
+    }
+    let id = item.id
+    if (id === undefined) {
+      do {
+        id = crypto.randomUUID()
+      } while (handle.getDoc().items?.[id])
+    }
+
+    // The item exactly as it will be stored — the claim of an authorial item
+    // (spec 08) signs id, createdAt and createdBy, so they are fixed first.
+    // Signing is async; the Yjs transaction below is not.
+    const draft: Item = {
+      // A fresh item was never edited — drop any caller-supplied stamp
+      // before it reaches the synced document.
+      ...stripEditStamp(item as Record<string, unknown>),
+      id,
+      createdAt: new Date().toISOString(),
+      // Author bound to the session (spec 08). The authored-item guard
+      // decides rights BY this field — a caller that may set it could
+      // invent a foreign author and then hide behind their protection.
+      createdBy: author,
+    } as Item
+    const newItem = await withAuthoredCreateClaim(draft, {
+      actorId: author,
+      mode: "signed",
+      signer: this.claimSignerForIdentity(),
+    })
+
     let result: Item | null = null
     let created = false
-
     handle.transact((doc) => {
       if (!doc.items) doc.items = {}
-      if (item.id !== undefined && doc.items[item.id]) {
-        result = deserializeItem(doc.items[item.id])
+      const concurrent = doc.items[newItem.id]
+      if (concurrent) {
+        // Same caller-chosen id written meanwhile: idempotent. A random id
+        // cannot collide here in practice; if it does, never overwrite.
+        if (item.id === undefined) throw new Error(`Item id ${newItem.id} is already taken`)
+        result = deserializeItem(concurrent)
         return
       }
-
-      let id = item.id
-      if (id === undefined) {
-        do {
-          id = crypto.randomUUID()
-        } while (doc.items[id])
-      }
-      const newItem: Item = {
-        // A fresh item was never edited — drop any caller-supplied stamp
-        // before it reaches the synced document.
-        ...stripEditStamp(item as Record<string, unknown>),
-        id,
-        createdAt: new Date().toISOString(),
-        // Author bound to the session (spec 08). The authored-item guard
-        // decides rights BY this field — a caller that may set it could
-        // invent a foreign author and then hide behind their protection.
-        createdBy: author,
-      } as Item
-      doc.items[id] = serializeItem(newItem)
+      doc.items[newItem.id] = serializeItem(newItem)
       this.appendActivity(doc, "create", newItem)
       result = newItem
       created = true
@@ -1283,16 +1381,57 @@ export class WotConnector extends BaseConnector implements ActivityLogCapable, S
     return result
   }
 
-  private applyItemUpdate(handle: SpaceHandle<RlsSpaceDoc>, id: string, updates: Partial<Item>): void {
+  /**
+   * Plan an update against the stored item (spec 08 → Schreibweg): the
+   * content of an authorial item is the author's alone, frozen once someone
+   * else bound a reference to it, and re-signed when it changes. Signing is
+   * async, so it happens before the Yjs transaction; `contentGuard` lets the
+   * transaction detect a concurrent content change.
+   */
+  private async planItemUpdate(
+    handle: SpaceHandle<RlsSpaceDoc>,
+    id: string,
+    updates: Partial<Item>,
+  ): Promise<AuthoredUpdatePlan> {
+    const doc = handle.getDoc()
+    const serialized = doc.items?.[id]
+    if (!serialized) return { updates, contentGuard: null, changesContent: false }
+    const existing = deserializeItem(serialized)
+    const relations = this.relationItemsOf(doc)
+    return planAuthoredUpdate(
+      existing,
+      updates,
+      { actorId: this.requireActivityActor(), mode: "signed", signer: this.claimSignerForIdentity() },
+      isFrozen(existing, relations),
+    )
+  }
+
+  /** The relation items of a space document — what the freeze reads. */
+  private relationItemsOf(doc: RlsSpaceDoc): Item[] {
+    return Object.values(doc.items ?? {})
+      .filter((candidate) => candidate.type === "relation")
+      .map((candidate) => deserializeItem(candidate))
+  }
+
+  private applyItemUpdate(
+    handle: SpaceHandle<RlsSpaceDoc>,
+    id: string,
+    updates: Partial<Item>,
+    plan: Pick<AuthoredUpdatePlan, "contentGuard" | "changesContent"> = { contentGuard: null, changesContent: false },
+  ): void {
     const actor = this.requireActivityActor()
     handle.transact((doc) => {
       const existing = doc.items[id]
       if (!existing) throw new Error(`Item ${id} not found`)
       // Convention, NOT a boundary: every member holds the space key and can
       // write this document directly, so a modified client bypasses this.
-      // It keeps honest clients honest — see isAuthoredSystemItem.
+      // It keeps honest clients honest — see isAuthoredSystemItem. The claim
+      // of an authorial item is what makes a bypass visible (spec 08).
       assertMayMutateAuthoredItem(existing, actor, "update")
       assertAuthoredTypeUnchanged(existing, updates)
+      // Re-checked right before the first mutation: the content is still
+      // the planned one and no foreign vote froze it while we signed (#497).
+      assertAuthoredCommitAllowed(deserializeItem(existing), plan, this.relationItemsOf(doc))
 
       if (updates.type) existing.type = updates.type
       if (updates.data) {
@@ -1332,7 +1471,8 @@ export class WotConnector extends BaseConnector implements ActivityLogCapable, S
     await this.handleReady
 
     const handle = await this.resolveHandleForItem(id)
-    this.applyItemUpdate(handle, id, updates)
+    const plan = await this.planItemUpdate(handle, id, updates)
+    this.applyItemUpdate(handle, id, plan.updates, plan)
 
     // Reindex the affected group so CrossGroupIndex reflects local writes
     // (handle.onRemoteUpdate only fires for origin === 'remote')
@@ -1737,6 +1877,28 @@ export class WotConnector extends BaseConnector implements ActivityLogCapable, S
     if (cached) return cached
     const verdict = await verifyRelationClaim(record)
     this.claimVerdictCache.set(key, verdict)
+    return verdict
+  }
+
+  // Verdict cache for authorial items: (id, claim, expected payload) →
+  // verdict — deterministic for unchanged items, like the record cache.
+  private itemClaimVerdictCache: Map<string, ClaimVerdict> | null = null
+
+  /** `signed` verdict for authorial items (spec 08 → Aussagen einer Person):
+      the item-authorial claim in `data.claim`, verified locally (did:key). */
+  async verifyItemClaim(item: Item): Promise<ClaimVerdict> {
+    this.itemClaimVerdictCache ??= new Map()
+    let key: string
+    try {
+      const claim = typeof item.data?.claim === "string" ? item.data.claim : ""
+      key = `${item.id}|${claim}|${jcsCanonicalize(itemAuthorialPayload(item))}`
+    } catch {
+      return "invalid"
+    }
+    const cached = this.itemClaimVerdictCache.get(key)
+    if (cached) return cached
+    const verdict = await verifyItemClaimSignature(item)
+    this.itemClaimVerdictCache.set(key, verdict)
     return verdict
   }
 
@@ -2808,6 +2970,16 @@ export class WotConnector extends BaseConnector implements ActivityLogCapable, S
     // Update item list observables
     for (const [key, obs] of this.itemObservables) {
       const filter: ItemFilter = JSON.parse(key)
+      if (filter.group !== undefined) {
+        // Ein bestimmter Space, unabhängig vom geöffneten (02, Lesen Regel 5).
+        const group = filter.group
+        const apply = (inSpace: Item[]) =>
+          obs.set(applyPagination(inSpace.filter((item) => matchesFilter(item, filter)), filter.limit, filter.offset))
+        const now = this.itemsInSpaceNow(group)
+        if (now) apply(now)
+        else void this.itemsInSpace(group).then(apply).catch((err) => console.error("[WotConnector] observe(group) failed", err))
+        continue
+      }
       if (!hasData) {
         obs.set([])
       } else {

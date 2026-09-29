@@ -2,8 +2,11 @@ import { useEffect, useMemo, useState, startTransition } from "react"
 import type { Item } from "@real-life-stack/data-interface"
 import { hasRelations } from "@real-life-stack/data-interface"
 import { useOptionalConnector } from "./connector-context"
+import { standingStateCounts, useItemStandings } from "./use-item-standing"
 
 /**
+ * Is there a conversation on this card?
+ *
  * Number of comments on an item — the cheap counterpart to {@link useComments}.
  *
  * Cards only need "is there a discussion, and how big", not the threaded list
@@ -13,8 +16,17 @@ import { useOptionalConnector } from "./connector-context"
  * use. Counts replies too — a card should show that a thread exists, not just
  * its first level.
  *
+ * Counts only comments that count (spec 08 → Beleg erforderlich: attested
+ * or unsigned); invalid ones and those still being verified do not.
+ *
  * Returns 0 without a connector or on connectors without relations, so
  * callers need no guard.
+ *
+ * @answers `number`
+ * @without value — `0`
+ * @group relations
+ * @see story rls-foundations-hooks--relations
+ * @see spec docs/spec/08-relation-records.md
  */
 export function useCommentCount(itemId: string): number {
   // Optional on purpose: ItemPreview renders without a ConnectorProvider
@@ -38,5 +50,6 @@ export function useCommentCount(itemId: string): number {
     return observable.subscribe((items) => startTransition(() => setComments(items)))
   }, [observable])
 
-  return comments.length
+  const standings = useItemStandings(comments)
+  return comments.filter((comment) => comment.type !== "comment" || standingStateCounts(standings.get(comment.id))).length
 }

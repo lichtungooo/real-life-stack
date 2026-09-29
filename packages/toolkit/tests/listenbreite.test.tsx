@@ -1,12 +1,12 @@
 // @vitest-environment jsdom
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
-import { act, createElement } from "react"
+import { act, createElement, useEffect } from "react"
 import { createRoot, type Root } from "react-dom/client"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import type { Item } from "@real-life-stack/data-interface"
 
-import { FilterProvider } from "../src/components/filter/filter-store"
+import { FilterProvider, useSharedFilter } from "../src/components/filter/filter-store"
 import { CollectionView } from "../src/components/lens/collection-view"
 import { ModuleFrame } from "../src/components/layout/module-frame"
 import { ModuleToolbar } from "../src/components/layout/module-toolbar"
@@ -66,7 +66,8 @@ describe("Die Breite der Liste", () => {
         ),
       )
     })
-    const kopf = host.querySelector("[data-module-head-slot]")
+    // Die Geometrie traegt der Kopfbereich (Suchzeile plus Chip-Zeile).
+    const kopf = host.querySelector("[data-module-head-content]")
     const liste = host.querySelector("[aria-label='Listenansicht'] > div")
     expect(breite(kopf)).toBe("max-w-4xl")
     expect(breite(liste)).toBe("max-w-4xl")
@@ -94,5 +95,44 @@ describe("Keine zweite Breite in der Lens", () => {
         /className=[^\n]*max-w-6xl/,
       )
     }
+  })
+})
+
+/**
+ * Der Umschalter ist ein Steuerelement des Moduls und steht im Kopf neben der
+ * Suche (Spec 01, Regel 2) — auch freistehend. Vorher stand er in einer
+ * eigenen Zeile mit eigenem Abstand, und in der Story klaffte eine Luecke
+ * zwischen Suche und Karten (Anton, 21.09.2026).
+ */
+describe("Der Umschalter der Sammlung", () => {
+  it("steht freistehend im Kopf neben der Suche, mit zugaenglichem Zustand", () => {
+    act(() => {
+      root.render(createElement(CollectionView, { items: [eintrag], defaultLayout: "grid" }))
+    })
+    const aktionen = host.querySelector("[data-module-head-actions]")
+    expect(aktionen?.querySelector("[aria-label='Rasteransicht']")?.getAttribute("aria-pressed")).toBe("true")
+    expect(aktionen?.querySelector("[aria-label='Listenansicht']")?.getAttribute("aria-pressed")).toBe("false")
+  })
+})
+
+/**
+ * Der geteilte Filter wirkt in der Lens selbst — sonst sucht die freistehende
+ * Liste ins Leere, waehrend Feed und Kanban daneben filtern (Anton, 21.09.2026).
+ */
+describe("Die Liste filtert mit dem geteilten Zustand", () => {
+  function Suche({ text }: { text: string }) {
+    const { setSearchText } = useSharedFilter()
+    useEffect(() => { setSearchText(text) }, [setSearchText, text])
+    return null
+  }
+  it("zeigt nur noch, was der Suchtext trifft", () => {
+    const eintraege = [
+      { ...eintrag, id: "a", data: { title: "Erntefest" } },
+      { ...eintrag, id: "b", data: { title: "Beete giessen" } },
+    ]
+    act(() => {
+      root.render(createElement(FilterProvider, null, createElement(Suche, { text: "Ernte" }), createElement(CollectionView, { items: eintraege })))
+    })
+    expect(host.querySelector("[aria-label='Listenansicht'][data-virtualizer-item-count]")?.getAttribute("data-virtualizer-item-count")).toBe("1")
   })
 })

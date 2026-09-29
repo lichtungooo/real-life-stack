@@ -11,8 +11,10 @@ import {
 import { Button } from './button'
 import { MoreHorizontal } from 'lucide-react'
 
+/** **Card**: the raised surface — white on the tinted page — that every preview, panel and dialog rests on. */
 const meta: Meta<typeof Card> = {
-  title: 'RLS/Primitives/Card',
+  id: "rls-foundations-card",
+  title: "RLS/Foundations/UI primitives/Card",
   component: Card,
   tags: ['autodocs'],
 }

@@ -2,8 +2,15 @@ import { useState } from "react"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { TextWidget } from "./text-widget"
 
+/**
+ * **TextWidget** is the text field of the composer: Markdown in, a preview
+ * next to it, and the toggles that add further widgets (date, place, people)
+ * to a form. Which widgets a type offers is said by the type register
+ * (`composerWidgets`); the widget itself is the same for every type.
+ */
 const meta: Meta<typeof TextWidget> = {
-  title: "RLS/Module Components/Widgets/TextWidget",
+  id: "rls-items-text-widget",
+  title: "RLS/Items/Field widgets/TextWidget",
   component: TextWidget,
   tags: ["autodocs"],
   decorators: [
@@ -24,14 +31,14 @@ function TextWidgetControlled(props: React.ComponentProps<typeof TextWidget>) {
 }
 
 export const Default: Story = {
-  name: "Default (leer)",
+  name: "Empty",
   render: () => (
     <TextWidgetControlled value="" onChange={() => {}} label="Beschreibung" />
   ),
 }
 
-export const MitInhalt: Story = {
-  name: "Mit Inhalt",
+export const WithContent: Story = {
+  name: "With content",
   render: () => (
     <TextWidgetControlled
       value={`# Ueberschrift\n\nEin Absatz mit **fettem** und *kursivem* Text.\n\n## Unterueberschrift\n\n- Punkt eins\n- Punkt zwei\n- Punkt drei\n\n> Ein Zitat als Blockquote`}
@@ -41,8 +48,8 @@ export const MitInhalt: Story = {
   ),
 }
 
-export const MitWidgetToggles: Story = {
-  name: "Mit Widget-Toggles",
+export const WithWidgetToggles: Story = {
+  name: "With widget toggles",
   render: () => (
     <TextWidgetControlled
       value=""

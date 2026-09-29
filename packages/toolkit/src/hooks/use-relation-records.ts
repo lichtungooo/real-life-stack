@@ -1,6 +1,5 @@
 import { startTransition, useEffect, useMemo, useReducer } from "react"
 import type {
-  Item,
   Observable,
   RelationRecord,
   RelationRecordFilter,
@@ -9,7 +8,6 @@ import { hasRelationRecords } from "@real-life-stack/data-interface"
 import { useConnector } from "./connector-context"
 
 const EMPTY_RECORDS: RelationRecord[] = []
-const EMPTY_ITEMS: Item[] = []
 
 function useObservableSnapshot<T>(observable: Observable<T> | null, empty: T) {
   const [, rerender] = useReducer((value: number) => value + 1, 0)
@@ -26,6 +24,15 @@ function useObservableSnapshot<T>(observable: Observable<T> | null, empty: T) {
   }
 }
 
+/**
+ * Which signed relation records match?
+ *
+ * @answers `{data, supported}`
+ * @without empty — `supported: false`
+ * @group relations
+ * @see story rls-foundations-hooks--relations
+ * @see spec docs/spec/08-relation-records.md
+ */
 export function useRelationRecords(filter?: RelationRecordFilter) {
   const connector = useConnector()
   const supported = hasRelationRecords(connector)
@@ -37,18 +44,6 @@ export function useRelationRecords(filter?: RelationRecordFilter) {
     [connector, supported, filterKey],
   )
   const snapshot = useObservableSnapshot(observable, EMPTY_RECORDS)
-
-  return { ...snapshot, supported }
-}
-
-export function useRelationNeighbors(endpoint: string, predicate?: string) {
-  const connector = useConnector()
-  const supported = hasRelationRecords(connector)
-  const observable = useMemo(
-    () => supported ? connector.observeRelationNeighbors(endpoint, predicate) : null,
-    [connector, supported, endpoint, predicate],
-  )
-  const snapshot = useObservableSnapshot(observable, EMPTY_ITEMS)
 
   return { ...snapshot, supported }
 }

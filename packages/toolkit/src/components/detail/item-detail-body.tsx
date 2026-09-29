@@ -7,6 +7,7 @@ import { RelativeTime } from "../primitives/relative-time"
 import { ProfileLink } from "../profile/profile-link"
 import { TagFilterChip } from "../tag/tag-filter-chip"
 import { MarkdownText } from "../preview/markdown-text"
+import { editedLabel, itemText } from "@/lib/item-text"
 import { cn } from "../../lib/utils"
 import { useItemTags } from "../../hooks/use-item-tags"
 import { useUserNameResolver } from "../../hooks/use-user-names"
@@ -24,9 +25,13 @@ import { PanelHeaderActions } from "../layout/panel-header-actions"
  * weil man in einer Liste zuerst wissen will, von wem etwas kommt. Wer ein Item
  * geoeffnet hat, will zuerst wissen, WAS es ist.
  *
- * Die Ordnung hier: Typ und Aktionen → Titel → Meta-Box → Beschreibung →
- * Tags und Urheber → Aktionszeile. Der Autor rueckt nach unten, die harten
- * Fakten (wann, wo, mit wem) stehen zusammen in einer eigenen Flaeche.
+ * Die Ordnung sind die Slots der Detail-Anatomie (shared-components, „Item-
+ * Detail aus dem Register"): `head` (Typ, Aktionen, Titel) → `meta` →
+ * `actions` (Selbstaktion, hier `selfActions`) → `content` → `reverse` →
+ * `tags` (mit Urheber) → `bar` (hier `footer`) → `comments` (liefert das
+ * Panel darunter) → `note`. Ein Slot ohne Inhalt erzeugt nichts. Der Autor
+ * rueckt nach unten, die harten Fakten (wann, wo, mit wem) stehen zusammen in
+ * einer eigenen Flaeche.
  *
  * **Was NICHT hier entschieden wird:** was in der Meta-Box und der Fusszeile
  * steht. Das haengt am Item-TYP, nicht an der Flaeche (Spec 06), und kommt
@@ -34,7 +39,11 @@ import { PanelHeaderActions } from "../layout/panel-header-actions"
  */
 export interface ItemDetailBodyProps {
   item: Item
-  /** Urheber, schon aufgeloest. `undefined` → nur die rohe Id als Name. */
+  /**
+   * Urheber, schon aufgeloest. `undefined` → „Unbekannt" als Name, nie die
+   * rohe Id (eine DID liest niemand, real-life-stack#562); das Profil oeffnet
+   * weiter ueber `createdBy`.
+   */
   author?: User
   /** Typ-Badge, Scope-Badge — steht ganz oben, links neben den Aktionen. */
   headerAdornment?: ReactNode
@@ -57,10 +66,28 @@ export interface ItemDetailBodyProps {
    * leere Huelle.
    */
   meta?: ReactNode
-  /** Typ-Fusszeile (Zusagen, Stimmen) und Reaktionen, ueber dem Divider. */
+  /**
+   * Slot `actions`: die Selbstaktion als Pill-Zeile direkt unter der Meta-Box
+   * (C2, „Zusagen · Vielleicht · Absagen"). Heisst hier nicht `actions`, weil
+   * der Prop schon das ⋮-Menue traegt. Jede Kante bringt ihre eigene Zeile
+   * mit; die Stimme (C4) steht hier mit Pills und Balken.
+   */
+  selfActions?: ReactNode
+  /** Slot `reverse`: Rückwärts-Listen aus dem Register (benannte Abfragen und eingehende Kanten, S3). */
+  reverse?: ReactNode
+  /**
+   * Slot `bar`: Reaktionen und Kommentieren, ueber dem Divider. Die
+   * Typ-Fusszeile steht hier nur noch fuer Typen ohne Feld- und Kantenliste
+   * (Spec 06, Regel 17); Zusagen und Stimmen stehen in `selfActions`.
+   */
   footer?: ReactNode
+  /** Slot `note`: Nur-lesen-Hinweis oder Fehler-Banner, ganz unten. Gefuellt ab S5. */
+  note?: ReactNode
   className?: string
 }
+
+/** Name eines Autors, den niemand aufloest (real-life-stack#562). */
+const UNKNOWN_AUTHOR = "Unbekannt"
 
 function getInitials(name: string): string {
   if (!name) return "?"
@@ -79,23 +106,21 @@ export function ItemDetailBody({
   headerAdornment,
   actions,
   meta,
+  selfActions,
+  reverse,
   footer,
+  note,
   className,
 }: ItemDetailBodyProps) {
   const data = item.data as Record<string, unknown>
   const title = typeof data.title === "string" ? data.title : undefined
-  const description =
-    (typeof data.content === "string" && data.content) ||
-    (typeof data.description === "string" && data.description) ||
-    ""
+  const description = itemText(item) ?? ""
   const tags = useItemTags(item)
 
-  const authorName = author?.displayName ?? item.createdBy
+  const authorName = author?.displayName || UNKNOWN_AUTHOR
   const authorId = author?.id ?? item.createdBy
   const resolveName = useUserNameResolver()
-  const editedTitle = item.updatedAt
-    ? `Bearbeitet von ${resolveName(item.updatedBy ?? item.createdBy)} am ${new Date(item.updatedAt).toLocaleString("de-DE")}`
-    : undefined
+  const editedTitle = editedLabel(item, resolveName)
 
   return (
     <article className={cn("flex flex-col gap-3 p-4", className)}>
@@ -125,10 +150,24 @@ export function ItemDetailBody({
         </div>
       )}
 
+      {selfActions && (
+        // Slot `actions`: `empty:hidden` wie bei der Meta-Box — eine
+        // Selbstaktion, die nichts anzubieten hat, rendert `null`.
+        <div data-slot="actions" className="flex flex-col gap-2 empty:hidden">
+          {selfActions}
+        </div>
+      )}
+
       {description && (
         // Der Composer schreibt Markdown, also wird ueberall Markdown
         // gerendert. Im Detail ungekuerzt — hier ist Platz.
         <MarkdownText className="text-sm text-foreground">{description}</MarkdownText>
+      )}
+
+      {reverse && (
+        <div data-slot="reverse" className="flex flex-col gap-3 empty:hidden">
+          {reverse}
+        </div>
       )}
 
       {/* Tags und Urheber teilen eine Zeile: die Tags fliessen links, der
@@ -174,6 +213,12 @@ export function ItemDetailBody({
         // Der einzige Trenner der Ansicht — er scheidet das Item von dem, was
         // andere dazu tun (reagieren, zusagen, kommentieren).
         <div className="-mx-4 mt-1 border-t px-4 pt-3">{footer}</div>
+      )}
+
+      {note && (
+        <div data-slot="note" className="text-xs text-muted-foreground empty:hidden">
+          {note}
+        </div>
       )}
     </article>
   )

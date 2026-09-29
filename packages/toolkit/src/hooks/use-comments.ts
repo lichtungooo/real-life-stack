@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useMemo, useState, startTransition } from "react"
 import type { Item, RelatedItemsOptions } from "@real-life-stack/data-interface"
 import { isWritable, hasRelations, isAuthenticatable, deriveContext } from "@real-life-stack/data-interface"
-import { useConnector } from "./connector-context"
+import { useOptionalConnector, useConnector } from "./connector-context"
+import { standingMark, useCanVerifyItems, useItemStandings, type StandingMark } from "./use-item-standing"
+
+const NO_COMMENT_ITEMS: Item[] = []
 
 /** A comment with resolved author info, for UI rendering. */
 export interface CommentWithAuthor {
@@ -9,14 +12,20 @@ export interface CommentWithAuthor {
   authorName: string
   authorAvatar?: string
   replyCount: number
+  /** Standing mark (spec 08 → Beleg erforderlich): `unsigned` or `altered`
+      are shown subtly marked; null is unmarked. */
+  mark?: StandingMark
 }
 
 /** Return value of useComments hook. */
 export interface UseCommentsResult {
   /** First-level comments sorted chronologically (oldest first). */
-  comments: CommentWithAuthor[]
-  /** All comments (first + second level) for threading. */
+  data: CommentWithAuthor[]
+  /** All shown comments (first + second level) for threading. Invalid
+      comments without a claim are left out (spec 08 → Beleg erforderlich). */
   allComments: Item[]
+  /** Standing mark per comment id, for surfaces building their own lists. */
+  marks: ReadonlyMap<string, StandingMark>
   /**
    * Resolved author info per user id, covering authors of ALL comments
    * (first + second level). Consumers building reply lists from
@@ -33,14 +42,34 @@ export interface UseCommentsResult {
 }
 
 /**
+ * Darf hier ueberhaupt kommentiert werden? Nur die Faehigkeiten (Spec 03),
+ * ohne die Kommentare zu laden — fuer Flaechen, die allein entscheiden, ob
+ * sie zum Kommentieren einladen (die Karte im Feed). Intern: `useComments`
+ * beantwortet dieselbe Frage nebenbei mit.
+ */
+export function useCanComment(): boolean {
+  // Optional, nicht werfend: Eine Karte darf auch ohne Provider gerendert
+  // werden (Storybook, Tests) — dann kann niemand kommentieren.
+  const connector = useOptionalConnector()
+  return !!connector && isWritable(connector) && hasRelations(connector)
+}
+
+/**
+ * What was said, by whom, and may I reply?
+ *
  * Hook for reading and creating comments on an item.
  * Returns first-level comments with reply counts.
+ *
+ * @answers `{data, isLoading, canComment, createComment, …}`
+ * @without empty — writing no-op
+ * @group relations
+ * @see story rls-foundations-hooks--relations
+ * @see spec docs/spec/08-relation-records.md
  */
 export function useComments(itemId: string): UseCommentsResult {
   const connector = useConnector()
   const supportsRelations = hasRelations(connector)
-  const canWrite = isWritable(connector)
-  const canComment = canWrite && supportsRelations
+  const canComment = useCanComment()
 
   const optionsKey = JSON.stringify({ direction: "to" } satisfies RelatedItemsOptions)
 
@@ -50,14 +79,33 @@ export function useComments(itemId: string): UseCommentsResult {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connector, supportsRelations, itemId, optionsKey])
 
-  const [allComments, setAllComments] = useState<Item[]>(observable?.current ?? [])
+  const [relatedItems, setAllComments] = useState<Item[]>(observable?.current ?? [])
   const update = useCallback((items: Item[]) => startTransition(() => setAllComments(items)), [])
 
   useEffect(() => {
-    if (!observable) return
+    if (!observable) {
+      setAllComments(NO_COMMENT_ITEMS)
+      return
+    }
     setAllComments(observable.current)
     return observable.subscribe(update)
   }, [observable, update])
+
+  // Standing per comment: marks for unsigned/altered, and invalid comments
+  // without a claim are not shown at all.
+  const standings = useItemStandings(relatedItems)
+  const verifiable = useCanVerifyItems()
+  const marks = useMemo(() => {
+    const result = new Map<string, StandingMark>()
+    for (const item of relatedItems) {
+      if (item.type === "comment") result.set(item.id, standingMark(item, standings.get(item.id), verifiable))
+    }
+    return result
+  }, [relatedItems, standings, verifiable])
+  const allComments = useMemo(
+    () => relatedItems.filter((item) => marks.get(item.id) !== "hidden"),
+    [relatedItems, marks],
+  )
 
   // Resolve authors and separate first/second level
   const comments: CommentWithAuthor[] = useMemo(() => {
@@ -81,10 +129,11 @@ export function useComments(itemId: string): UseCommentsResult {
         authorName: item.createdBy,
         authorAvatar: undefined as string | undefined,
         replyCount: replyCounts.get(item.id) ?? 0,
+        mark: marks.get(item.id) ?? null,
       }))
 
     return firstLevel
-  }, [allComments])
+  }, [allComments, marks])
 
   // Resolve author info asynchronously
   const [resolvedAuthors, setResolvedAuthors] = useState<Map<string, { name: string; avatar?: string }>>(new Map())
@@ -156,8 +205,9 @@ export function useComments(itemId: string): UseCommentsResult {
   }, [connector, itemId])
 
   return {
-    comments: commentsWithAuthors,
+    data: commentsWithAuthors,
     allComments,
+    marks,
     authors: resolvedAuthors,
     isLoading: false,
     canComment,
@@ -168,14 +218,22 @@ export function useComments(itemId: string): UseCommentsResult {
 /** Return value of useReplies hook. */
 export interface UseRepliesResult {
   /** Second-level replies sorted chronologically (oldest first). */
-  replies: CommentWithAuthor[]
+  data: CommentWithAuthor[]
   /** Whether the data is still loading. */
   isLoading: boolean
 }
 
 /**
+ * Which replies does this comment have?
+ *
  * Hook for loading second-level replies to a first-level comment.
  * Filters from the parent item's full comment list.
+ *
+ * @answers `{data, isLoading}`
+ * @without empty
+ * @group relations
+ * @see story rls-foundations-hooks--relations
+ * @see spec docs/spec/08-relation-records.md
  */
 export function useReplies(itemId: string, commentId: string): UseRepliesResult {
   const connector = useConnector()
@@ -237,5 +295,17 @@ export function useReplies(itemId: string, commentId: string): UseRepliesResult 
     return () => { cancelled = true }
   }, [connector, supportsRelations, itemId, commentId])
 
-  return { replies, isLoading }
+  // Same standing rule as useComments: mark unsigned/altered, hide invalid
+  // replies without a claim.
+  const replyItems = useMemo(() => replies.map((reply) => reply.item), [replies])
+  const standings = useItemStandings(replyItems)
+  const verifiable = useCanVerifyItems()
+  const shown = useMemo(
+    () => replies
+      .map((reply) => ({ ...reply, mark: standingMark(reply.item, standings.get(reply.item.id), verifiable) }))
+      .filter((reply) => reply.mark !== "hidden"),
+    [replies, standings, verifiable],
+  )
+
+  return { data: shown, isLoading }
 }

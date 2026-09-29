@@ -51,8 +51,25 @@ const tasks: Item[] = [
   },
 ]
 
+/**
+ * **KanbanBoard** is the board underneath the kanban module: columns from
+ * `defaultColumns` or your own, cards from `ItemPreview`, drag and drop that
+ * reports `(itemId, newStatus, position)` and leaves the writing to whoever
+ * owns the items — the module writes `status` and `order` through the
+ * connector, this story keeps it in local state.
+ *
+ * The column field is configurable (`statusField`, default `status`); a value
+ * that matches no column keeps the card out of the board — the module's fine
+ * check on top of the host's coarse loading.
+ *
+ * Read-only boards can be opened but not moved. `users` resolve assignees on
+ * the cards; without them the cards show no faces.
+ *
+ * Where next: the module around it under [Overview](?path=/docs/rls-modules-kanban--docs).
+ */
 const meta: Meta<typeof KanbanBoard> = {
-  title: "RLS/Space Modules/Kanban/Board",
+  id: "rls-modules-kanban-board",
+  title: "RLS/Modules/Kanban/Board",
   component: KanbanBoard,
   tags: ["autodocs"],
   parameters: {

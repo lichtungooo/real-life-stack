@@ -32,7 +32,7 @@ Sie deckt *nicht*:
 
 - visuelle Spezifikation (Spacings, Farben, Hover-States) — folgt im UI-Polish,
 - modul-spezifische Komponenten (z.B. `KanbanBoard`, `CalendarView`) — bleiben in ihrem Modul,
-- App-Shell-Flächen (Navbar, ProfileDialog) — eigene Verträge in `01-app-composition.md`.
+- App-Shell-Flächen (Navbar, ProfilePanelContent) — eigene Verträge in `01-app-composition.md`.
 
 ## Komponenten
 
@@ -73,7 +73,7 @@ interface ContentComposerSubmitData {
 }
 ```
 
-**Slot-Konvention:** `contentTypes[].defaultWidgets` listet die Widgets, die der Composer für einen Typ rendert (`title`, `text`, `date`, `location`, `status`, `people`, `tags`, `media`, `group`). Modul-spezifische Widgets können per `widgets?: CustomWidgetDefinition[]` ergänzt werden.
+**Slot-Konvention:** `contentTypes[].defaultWidgets` listet die Widgets, die der Composer für einen Typ rendert (`title`, `text`, `date`, `location`, `status`, `people`, `tags`, `media`, `group`). `defaultWidgets` und ihre Reihenfolge leiten sich aus dem Feld- und Kantenregister ab ([06 → Feld- und Kantenregister](../06-schema-composition.md#feld--und-kantenregister)); die Reihenfolge ist die der [Edit-Regeln](#edit-regeln), keine feste Widget-Liste. Modul-spezifische Widgets können per `widgets?: CustomWidgetDefinition[]` ergänzt werden; sie sind eine Ausnahme mit Lückenmeldung, nicht die Regel.
 
 **Edit vs. Create:** Der Composer entscheidet via `editMode ?? !!onDelete` — explizit gesetzter `editMode` gewinnt; ansonsten signalisiert das Vorhandensein von `onDelete` Edit-Modus (Delete-Button erscheint, Submit-Label wechselt zu „Speichern"). Caller ohne beides sind im Create-Modus.
 
@@ -101,6 +101,7 @@ interface ContentTypeConfig {
 3. Welche Schlüssel Personen tragen, sagt die **Konfiguration**, nicht der Name: Composer (Sichtbarkeit, Ungespeichert-Schutz, `liveUpdate`) und Mapper erkennen sie über die aufgelöste Feldliste. Das `people:`-Präfix ist nur die Ableitungsregel für den Standardschlüssel, kein Erkennungsmerkmal — ein eigener `dataKey` nimmt an allem gleichberechtigt teil.
 4. Alle Felder teilen sich `peopleOptions`, `peopleSuggestions` und `peopleQuickSuggestions` sowie den einen `people`-Eintrag in `defaultWidgets` — der Typ schaltet die Personenfelder gemeinsam ein.
 5. Beim Speichern schreibt der Mapper je Feld die Relationen seines Prädikats (`global:<userId>`); Relationen anderer Prädikate — auch die eines nicht eingereichten Personenfeldes — bleiben unverändert. Die Vorbefüllung liest je Prädikat zurück.
+6. Deklariert die Kante einen Qualifier ([08 → Qualifier an Kanten](../08-relation-records.md#qualifier-an-kanten)), liest und schreibt das Feld ihn als `meta.role` je Relation. Der Mapper MUSS den Qualifier einer Person erhalten, die im Feld bleibt; er DARF `meta` beim Ersetzen der Relationen nicht verwerfen.
 
 **Code:** `packages/toolkit/src/components/composer/people-relations.ts` (`resolvePeopleFields`, `peopleDataKeys`, `peopleRelationsFromWidgetData`, `peopleRelationsToWidgetData`).
 
@@ -118,7 +119,7 @@ interface ContentTypeConfig {
 **Daten-Vertrag (geschriebene Felder):**
 
 - `data.position` MUSS ein GeoJSON `Point` sein (`pointFromLatLng(lat, lng)` aus `lib/geo`), konform zu [place/v1](../schemas/vocab/place/v1/schema.json). Beide Eingabewege (a) und (b) schreiben in dasselbe Feld.
-- `data.address` SOLL den menschlichen Adresstext halten (aus Geocoding-Auswahl oder Reverse-Geocoding).
+- `data.address` SOLLTE den menschlichen Adresstext halten (aus Geocoding-Auswahl oder Reverse-Geocoding).
 - `data.locationName` KANN einen benannten Ort halten (z.B. „Markthalle 7").
 
 **Auslieferung:** Adress-Geocoding (a) und Map-Pick (b) sind zusammen mit dem `MapLibreMapAdapter` (Vektorkarte, [map.md → Bereitgestellte Adapter](map.md)) implementiert. Ohne bereitgestellten Geocoder/Karten-Adapter funktioniert das Widget weiter als reiner Adress-Freitext (kein `data.position`, kein Pick-Button).
@@ -133,14 +134,9 @@ interface ContentTypeConfig {
 
 **Warum getrennt:** Eine Vorschau führt mit dem Autor — in einer Liste will man zuerst wissen, von wem etwas kommt. Wer ein Item geöffnet hat, will zuerst wissen, WAS es ist. Und die wiederverwendete Card ergab im schwebenden Panel eine Card in der Card: zwei Rahmen, zwei Radien, zwei Schatten um denselben Inhalt.
 
-**Ordnung (normativ):**
+**Ordnung (normativ):** siehe [Detail-Anatomie](#detail-anatomie). Die Meta-Box steht auf eigener `--muted`-Fläche mit Rahmen und entfällt ohne Inhalt. Tags und Urheber teilen eine Zeile: Tags fließen links, „Erstellt von …" bleibt rechts und bricht nicht um. Der Titel steht in 20px/600.
 
-1. **Typ-Badge** (und Scope-Badge) — die Aktionen stehen NICHT hier, siehe unten
-2. **Titel**, 20px/600
-3. **Meta-Box** — die harten Fakten des Typs (Datum, Ort, Teilnehmer) auf eigener `--muted`-Fläche mit Rahmen. Ohne Inhalt entfällt sie
-4. **Beschreibung**, ungekürzt (Markdown)
-5. **Tags und Urheber** in einer Zeile: Tags fließen links, „Erstellt von …" bleibt rechts und bricht nicht um
-6. **Aktionszeile** über dem einzigen Divider der Ansicht: Typ-Fußzeile (Zusagen, Stimmen) und Reaktionen
+*Bis zum Entwurf S0 (26.09.2026) standen Zusagen und Stimmen als Typ-Fußzeile über dem Divider. Sie stehen seit S2 im Slot `actions` direkt unter der Meta-Box (Prop `selfActions`, weil `actions` das ⋮-Menü trägt); der Prop `footer` trägt danach nur noch Reaktionen und Kommentieren (Slot `bar`). Die Karte (`ItemPreview`) zeigt die Stimmleiste im Übergang weiter als Fußzeile (06, Regel 17).*
 
 **Vertrag:**
 
@@ -150,8 +146,11 @@ interface ItemDetailBodyProps {
   author?: User
   headerAdornment?: ReactNode  // Typ-/Scope-Badge
   actions?: ReactNode          // ⋮-Menü — wandert in die Panel-Kopfleiste
-  meta?: ReactNode             // Inhalt der Meta-Box, TYP-getrieben
-  footer?: ReactNode           // Typ-Fußzeile + Reaktionen
+  meta?: ReactNode             // Slot `meta`: Inhalt der Meta-Box, TYP-getrieben
+  selfActions?: ReactNode      // Slot `actions`: Selbstaktionen (C2) und Stimme (C4)
+  reverse?: ReactNode          // Slot `reverse`: Rückwärts-Listen
+  footer?: ReactNode           // Slot `bar`: Reaktionen und Kommentieren (Typ-Fußzeile nur noch für Typen ohne Feldliste)
+  note?: ReactNode             // Slot `note`: Nur-lesen-Hinweis oder Fehler-Banner
   className?: string
 }
 ```
@@ -159,7 +158,7 @@ interface ItemDetailBodyProps {
 **Regeln:**
 
 1. Die Ansicht bringt **keinen eigenen Rahmen** mit — kein `border`, kein `rounded`, kein `shadow`, keine Card-Fläche. Das Panel IST die Karte.
-2. Was in Meta-Box und Fußzeile steht, entscheidet der **Item-Typ**, nicht die Fläche (siehe [06-schema-composition.md](../06-schema-composition.md) → Typ-Register). Beide kommen als Slot herein, gefüllt aus denselben Registereinträgen, aus denen sich auch die Vorschau bedient.
+2. Was in Meta-Box, Aktionszeile und Rückwärts-Listen steht, entscheidet der **Item-Typ**, nicht die Fläche. Die Inhalte leiten sich aus dem Feld- und Kantenregister ab (siehe [06-schema-composition.md → Feld- und Kantenregister](../06-schema-composition.md#feld--und-kantenregister)), aus dem sich auch die Vorschau bedient.
 3. Das ⋮-Menü gehört in die **Kopfleiste des Panels**, neben Modus- und Schließen-Knopf (`PanelHeaderActions`). Es im Inhalt zu zeichnen führt zur Kollision: Das Panel legt seine Knöpfe absolut in dieselbe Ecke, und wieviel Platz zu lassen wäre, hängt vom Modus ab. Ohne Panel darüber bleiben die Aktionen in der Kopfzeile der Ansicht.
 4. Der Ladezustand (`ItemDetailSkeleton`) trägt **dieselbe** Anatomie — sonst springt das Layout, sobald das Item ankommt.
 
@@ -307,7 +306,7 @@ interface ReactionBarProps {
 **Vertrag:**
 
 ```ts
-type ItemPreviewDensity = "comfortable" | "compact"
+type ItemPreviewDensity = "comfortable" | "compact" | "row" | "dense"
 
 interface ItemPreviewProps {
   item: Item
@@ -328,10 +327,12 @@ interface ItemPreviewProps {
   metaAdornment?: ReactNode
   /** Slot unter den Tag-Chips (z.B. Assignees, Comment-Count, ReactionBar). */
   footerAdornment?: ReactNode
-  /** Layout-Density (siehe unten). Default `comfortable`. */
+  /** Layout-Density (siehe unten): `comfortable` | `compact` | `row` | `dense`. Default `comfortable`. */
   density?: ItemPreviewDensity
   /** Hebt eine Karten-Linse als aktuell selektiert hervor. */
   active?: boolean
+  /** Erledigt: „✓ " vor dem Title (für Screenreader „Erledigt: "), Karte auf Opazität 0.55 gedimmt. */
+  completed?: boolean
   /** Optionaler `#rrggbb`-Override für den Active-Glow; Default ist neutral. */
   activeGlowColor?: string
   className?: string
@@ -342,8 +343,18 @@ interface ItemPreviewProps {
 
 - `comfortable` (Default) — Feed-Card-Form: Avatar 10×10, font-base Title, p-4 Spacing, Description wird angezeigt, Footer mit Border-Top.
 - `compact` — Kanban-/Liste-Form: Avatar 6×6, font-sm Title, p-3 Spacing, **Description wird ausgeblendet**, Footer ohne Border. Tauglich für dichte Board-Spalten, wo mehrere Cards zugleich sichtbar bleiben sollen.
+- `row` — **eine Zeile** für die Rückwärts-Listen im Detail ([Detail-Anatomie](#detail-anatomie), Regel 8): `headerAdornment` (Typ-Badge), der Title gekürzt auf eine Zeile (ohne Title der Name oder der Anfang des Inhalts, sonst „Ohne Titel"), rechts `footerAdornment` (Markierung, kleiner Zusatz). Sie lässt Description, `metaAdornment`, Tags, Author-Zeile und Kommentar-Hinweis weg. `active` markiert die angezeigte Zeile (`aria-current`) ohne Schatten.
+- `dense` — **Matrix-Kachel** für Raster und Bretter mit 12+ Spalten. Maße aus dem Design (*RLS System Design → Dragon Dreaming.dc.html*, Variante 1a): **112 px breit, mindestens 61 px hoch** (75 px mit drei Titelzeilen); die Kachel setzt beides selbst, ein Raster darf die Breite per `className` überschreiben, Innenabstand 7 px, Radius 6 px (`rounded-md`), Rahmen über das `border`-Token. Die Kachel zeigt **nur**:
+  - den **Title**: 10.5 px, Gewicht 600, Zeilenhöhe 1.3, auf **drei Zeilen** begrenzt (Auslassung danach), mit `overflow-wrap: anywhere`, `hyphens: auto` und `lang="de"`, damit deutsche Komposita in 112 px brechen dürfen. Ohne Title steht wie bei `row` der Name oder der Anfang des Inhalts, sonst „Ohne Titel",
+  - die `footerAdornment`-Zeile, ohne Border-Top, im Regelfall genau ein `ItemAssignees size="xs"`.
 
-**Default-Body:** Author-Row (Avatar + Name + `RelativeTime`), Title, Description (`data.content ?? data.description`, max 4 Zeilen), Tags (chips, top-level `item.tags`, Color via `getTagColor`).
+  Sie lässt weg, was auch `row` weglässt (Description, `metaAdornment`, Tags, Author-Zeile, Kommentar-Hinweis). `active`/`activeColor`, `onClick` und die Keyboard-Aktivierung sind identisch mit `compact`. Von den Typ-Slots rendert sie `headerAdornment` und `footerAdornment`; Caller legen in `dense` keinen `ItemTypeBadge` in den `headerAdornment`-Slot, eine Matrix-Zelle trägt ihn nicht.
+
+  **Tags:** `dense` zeigt **keine** Tags. Ein Farbpunkt ohne Namen wäre eine zweite Tag-Darstellung neben `TagChip` und verletzt die Regel aus [07-tags.md](../07-tags.md), dass das Default-Display über alle Flächen identisch ist.
+
+**Erledigt:** `completed` setzt ein „✓ " vor den Title (plus `sr-only`-Text „Erledigt: ") und dimmt die Karte auf Opazität 0.55, in jeder Dichte. Was „erledigt" heißt, entscheidet die Fläche (die Rückwärts-Listen: Status der Rolle `done`, [06, Regel 18](../06-schema-composition.md#feld--und-kantenregister)).
+
+**Default-Body:** Author-Row (Avatar + Name + `RelativeTime`), Title, Description (`data.content ?? data.description`, max 4 Zeilen), Tags (chips, top-level `item.tags`, Color via `getTagColor`). Tags und Urheber teilen eine Zeile, die nie umbricht: Es stehen so viele Tags, wie neben den Urheber passen, der Rest als „+N"; der Urheber behält seinen Platz rechts. Das gilt in beiden Dichten.
 
 **Slot-Konvention:** Module liefern modul-spezifische Cues über die drei Slots. Jeder Slot rendert **unabhängig vom Content** der Card — eine Card ohne Author kann trotzdem ein `headerAdornment` haben, eine Card ohne Title kann trotzdem ein `metaAdornment` zeigen. Slots und Datenfelder sind orthogonal. Adornments, die eigene Buttons enthalten, müssen `event.stopPropagation()` aufrufen, damit ein Button-Click nicht den Card-Click mit auslöst.
 
@@ -353,8 +364,9 @@ interface ItemPreviewProps {
 oder einer künftigen Linse MUSS `ItemPreview` plus dessen Adornments
 komponieren; eigene parallele Card-Markups sind nicht zulässig. Bei
 Shell-Selektion setzt eine Karten-Linse `active` auf dem korrespondierenden
-Preview. `active` nutzt `getActivePanelGlow` mit neutraler Default-Farbe;
-ein Caller darf per `activeGlowColor` z. B. seine Gruppenfarbe weiterreichen.
+Preview. `active` zeichnet den Schein intern; ein Caller darf per `activeGlowColor`
+z. B. seine Gruppenfarbe weiterreichen. (`getActivePanelGlow` war bis zum
+19.09.2026 öffentlich und ist seither ein Internum, real-life-stack#400.)
 
 **Daten-Pfad:** `useItemTags(item)` intern. Author-Resolution liegt beim Caller (`useItemAuthor` empfohlen).
 
@@ -465,13 +477,28 @@ Zwei Render-Modi je nach `onClick`:
 **Zweck:** Overlapping Avatar-Stack mit kompakter Namens-Zusammenfassung. Belongs in `footerAdornment`. Rendert `null` bei leerer User-Liste.
 
 ```ts
+type ItemAssigneeUser = User & { qualifier?: string; variant?: "solid" | "outline" }
+
 interface ItemAssigneesProps {
-  users: readonly User[]
+  users: readonly ItemAssigneeUser[]
+  /** `sm` (Default) mit Namens-Summary, `xs` nur Avatare (für `dense`). */
+  size?: "sm" | "xs"
   className?: string
 }
 ```
 
-Caller löst die User-Objekte auf (typischerweise aus `assignedTo`-Relations + Member-Liste) und übergibt sie als resolved Array. Komponente ist rein präsentational. Namens-Summary: einzelner Name, „A, B" für zwei, „A + N weitere" ab drei; voller Kommaseparierter Liste im Hover-Tooltip.
+Caller löst die User-Objekte auf (typischerweise aus `assignedTo`-Relations + Member-Liste) und übergibt sie als resolved Array. Komponente ist rein präsentational. Namens-Summary: einzelner Name, „A, B" für zwei, „A + N weitere" ab drei; voller Kommaseparierter Liste im Hover-Tooltip. `qualifier` ist der Anzeigetext des Qualifiers an der Kante und steht klein hinter dem Namen („Timo lernt", wie [Detail-Anatomie](#detail-anatomie), Regel 5); ein fehlender Qualifier (`qualifier.default`) steht nicht da. Die Kanban-Karte zeigt so `assignedTo.role`.
+
+**Größe:** `size="sm"` (Default): Avatare 5×5 plus Namens-Summary. `size="xs"`: Avatare 14 px, Initialen 6.5 px fett, Überlappung 4 px, heller Trennring 1.5 px, **ohne** Namens-Summary; die Variante für `ItemPreview density="dense"`, wo keine Textzeile mehr in die Kachel passt. Namen und Qualifier bleiben über den Tooltip erreichbar; für Screenreader steht die vollständige Liste als Text im Baum, und jede Profilbeschriftung nennt den Qualifier („Profil von Lena Berg (lernt) öffnen"). Keine zweite Komponente, damit beide Stapel nicht auseinanderlaufen.
+
+**Anzahl:** höchstens **fünf** Avatare; ab dem sechsten stehen die übrigen Namen nur noch im Tooltip.
+
+**Farbe und Form:** Initialen tragen die **Personenfarbe** `getUserColor(userId)`, dieselbe deterministische Palette wie Tags und Spaces, stabil über Geräte und Sitzungen. Jeder Eintrag wählt optional eine von zwei Formen:
+
+- `solid` (Default): ohne Foto gefüllt in der Personenfarbe, Schrift in der lesbaren Gegenfarbe (`getReadableTextColor`); mit Foto das Foto in voller Deckkraft, ohne Ring.
+- `outline`: ein Ring in der Personenfarbe mit einem Innenabstand im Hintergrund-Token; darin ohne Foto die Initialen in der Personenfarbe, mit Foto das Foto kleiner und mit verringerter Deckkraft.
+
+Die Unterscheidung MUSS mit und ohne geladenes Profilfoto, im hellen und dunklen Schema und in `size="xs"` erkennbar bleiben, und sie DARF sich nicht allein auf Farbe stützen: Ring, Innenabstand und die Helligkeit des Fotos tragen sie. Die Formen tragen **keine Bedeutung**. Welche Aussage sie ausdrücken („kann ich" / „will lernen" im Karabirrdt, Zusage / Vielleicht anderswo), entscheidet die App; der Qualifier bleibt der Text dazu.
 
 **Code:** `packages/toolkit/src/components/preview/item-{type-badge,meta-row,comment-count,assignees}.tsx`.
 
@@ -545,8 +572,8 @@ interface FilterTypeOption {
 
 Regeln:
 
-1. Der geteilte State SOLL **neben dem persistenten Content-Panel** leben (App-Shell-Ebene, [01-app-composition.md → Overlay-Flächen Ebene 1](../01-app-composition.md)). Er ist app-weit und nicht modulgebunden, analog dazu, dass das Content-Panel beim Modul-Wechsel offen bleibt.
-2. Geteilt wird der gemeinsame `FilterBarValue` (`tags`, `types`). Modul-spezifische Extras (`chipsExtra`/`drawerExtra`, z.B. Map-`bounds` oder Kanban-View-Toggle) bleiben beim jeweiligen Modul und werden NICHT app-weit geteilt.
+1. Der geteilte State SOLLTE **neben dem persistenten Content-Panel** leben (App-Shell-Ebene, [01-app-composition.md → Overlay-Flächen Ebene 1](../01-app-composition.md)). Er ist app-weit und nicht modulgebunden, analog dazu, dass das Content-Panel beim Modul-Wechsel offen bleibt.
+2. Geteilt wird der gemeinsame `FilterBarValue` (`tags`, `types`). Modul-spezifische Extras (`chipsExtra`/`drawerExtra`, z.B. Kanban „Nur meine" oder die Personen der Resonanz-Auswertung) bleiben beim jeweiligen Modul und werden NICHT app-weit geteilt: Sie bedeuten je Modul etwas anderes. Sie leben aber so lange wie der geteilte Zustand, im selben Besitzer, je Modul in einem eigenen Bereich (`useModuleFilter`). Ein Modulwechsel hin und zurück behält sie, wie er Tags und Suche behält; ein anderes Modul liest sie nie. Ansichtszustand, der kein Filter ist (Kartenausschnitt, gruppierte Ansicht), gehört nicht dazu.
 3. Die `FilterBar` selbst ist die **geteilte Fläche**: jedes Modul rendert dieselbe `FilterBar` gegen denselben `value`/`onChange`. Tag-Filter nutzen durchgängig `TagChip` mit `getTagColor`, sodass ein Tag in Picker, aktiven Chips und auf den Cards modulübergreifend identisch eingefärbt ist (siehe [`TagChip`](#tagchip), [07-tags.md](../07-tags.md)).
 4. Typen sind modulabhängig: ein in Feed gesetzter `types`-Filter KANN in einem Modul ohne diesen Typ zu einer leeren Auswahl führen. Das ist erwartet; die `availableTypes` jedes Moduls bestimmen, welche Typ-Chips dort sichtbar/abwählbar sind. Der geteilte `tags`-Filter ist davon unberührt.
 5. View-spezifische Persistierung (URL params, localStorage) bleibt Caller-Job; ein app-weiter Store ist eine Caller-Wahl, kein Toolkit-Zwang. `emptyFilterBarValue` ist der Initialwert.
@@ -607,6 +634,157 @@ interface ModulePanelEntry { kind: ModulePanelKind; content: ReactNode; onClose?
 
 **Code:** `packages/toolkit/src/components/module-panel/`.
 
+## Item-Detail aus dem Register
+
+**Status:** Normativer Entwurf (S0, 26.09.2026). Die Umsetzung folgt in S1–S6; bis dahin weicht `ItemDetailBody` hiervon ab. Gilt für `ItemDetailBody`, `ItemDetailView`, `ItemDetailPanel` und den `ContentComposer` im Edit-Modus. Die Inhalte kommen aus dem Feld- und Kantenregister ([06 → Feld- und Kantenregister](../06-schema-composition.md#feld--und-kantenregister)); die Flächen verzweigen nicht nach `type`.
+
+### Detail-Anatomie
+
+Jedes Item öffnet in derselben Anatomie. Sie besteht aus neun Slots in fester Reihenfolge:
+
+| # | Slot | Lesen | Bearbeiten |
+|---|---|---|---|
+| 1 | `head` | Typ-Badge, Space-Badge (nur außerhalb des eigenen Space), ⋮ und ✕, Titel; bei `person` Avatar, Name und Untertitel | Typ fest, Space wählbar (wenn der Connector verschieben kann, sonst fest) und ✕, siehe [Edit-Regeln](#edit-regeln), Regel 3; Titelfeld (bei `person` Avatar-Feld und Name) |
+| 2 | `meta` | Meta-Box: eine Zeile je Feld oder Kante | Schreibformen derselben Felder in derselben Reihenfolge |
+| 3 | `actions` | Selbstaktion als Pill-Zeile (C2) | entfällt |
+| 4 | `content` | Beschreibung (Markdown), Medien | Text-Widget, Medien-Widget |
+| 5 | `reverse` | Rückwärts-Listen aus kompakten `ItemPreview`s | entfällt |
+| 6 | `tags` | TagChips und Urheberzeile | Tag-Widget |
+| 7 | `bar` | Reaktionen und Kommentieren (C7) | entfällt |
+| 8 | `comments` | Thread mit gepinnter Eingabe | entfällt; stattdessen Fußzeile Löschen · Abbrechen · Speichern |
+| 9 | `note` | Nur-lesen-Hinweis (Modus) | entfällt; der Fehler beim Speichern steht als Banner unter dem Kopf des Formulars |
+
+Regeln:
+
+1. Die Reihenfolge der Slots ist fest. Ein Slot ohne Inhalt erzeugt nichts: keine leere Fläche, keine Überschrift, keinen Abstand.
+2. Ein leeres Feld erzeugt keine Zeile. Es gibt keine 0-Zähler und keinen Platzhaltertext.
+3. Die Meta-Box hat eine Zeile je Feld oder Kante, jede mit Icon. Die Zeilen stehen in dieser Reihenfolge: Menschen → Zeit → Ort → Item-Kanten → Werte. Innerhalb einer Gruppe gilt die Reihenfolge des Registers.
+4. Eine Item-Referenz erscheint als Chip in der Farbe ihres Typs. Ein Klick darauf öffnet das Ziel in derselben Panel-Instanz. Ein Wert erscheint als Text; führt er zu einer Sicht, gilt [01 → Ein Feld führt zu seiner Sicht](../01-app-composition.md#ein-feld-führt-zu-seiner-sicht).
+5. Menschen stehen in **einer Zeile je Personen-Kante**. Ist ein Qualifier-Wert gesetzt, steht er klein hinter dem Namen am Chip (etwa „Maria zugesagt" für `going`, „Timo lernt" für `learns`). Gespeichert wird die Id, das Wort kommt über die Intl-Schicht. Stammt die geltende Aussage nicht von der Person selbst, sagt der Chip, von wem: „Timo zugesagt · eingetragen von Anton" ([08 → Qualifier an Kanten](../08-relation-records.md#qualifier-an-kanten)). Ein Qualifier an einer Item-Kante (C3) steht ebenso klein hinter dem Chip. Ein Wert, den das Register nicht kennt, erscheint ohne Zustandstext und wird nie verworfen. Das Event führt Eingeladene (`invited`) und Zusagen (`attends`) in einer Zeile. Eine Person mit geltendem `declined` erscheint nicht in der Zeile und nicht in ihrer Zusammenfassung, nur in der vollständigen Liste („Alle").
+6. Position im Modul (Spalte, Stufe, Reihenfolge) steht nicht in der Meta-Box.
+7. Eine Selbstaktion ist eine Kante von mir zum Item. Sie steht als eigene Pill-Zeile direkt unter der Meta-Box: vor der Aktion neutral („Zusagen · Vielleicht · Absagen"), danach mit meinem Zustand („✓ Zugesagt" für `going`). Auch `declined` ist ein Zustand und bleibt als meiner sichtbar. Die Pill meines Zustands ist ein Umschalter; der zweite Klick nimmt ihn zurück. Deklariert die Kante eine Folgeaktion ([06 → Feld- und Kantenregister](../06-schema-composition.md#feld--und-kantenregister), Regel 9), steht sie nach meinem Zustand. Die Aufgabe: niemand zugewiesen „Übernehmen"; andere zugewiesen, ich nicht „Mitmachen"; ich allein „✓ Übernommen · Erledigt"; ich mit anderen „✓ Dabei · Erledigt"; erledigt nur Zustände, keine Aktionen: „✓ Übernommen · ✓ Erledigt" oder „✓ Dabei · ✓ Erledigt", wer nicht zugewiesen ist, nur „✓ Erledigt" — alle als Status lesbar, keiner ein Knopf ([06, Regel 19](../06-schema-composition.md#feld--und-kantenregister)). Klick auf „✓ Übernommen" oder „✓ Dabei" gibt ab, solange die Aufgabe nicht erledigt ist. Wieder öffnen geht nur über Bearbeiten oder das Kanban. Den Status beim Übernehmen, Mitmachen, Abgeben und Erledigen regelt [06, Regel 19](../06-schema-composition.md#feld--und-kantenregister): Übernehmen setzt eine offene Aufgabe auf „In Arbeit", und wer als letzte Person eine Aufgabe in Arbeit abgibt, setzt sie auf offen zurück. Der Umschalter meines Zustands trägt `aria-pressed`, gedrückt nennt die Beschriftung die Rücknahme („Übernahme zurückgeben", „Nicht mehr mitmachen"). „Erledigt" sieht nur eine Person an der Kante, und nur mit Schreibrecht am Item (Modi, Regel 1); alle anderen ändern den Status im Formular oder im Modul.
+8. Rückwärts-Listen deklariert der Typ des angezeigten Items (Register, `itemRole: "to"`, Slot `list`, oder eine benannte Abfrage in `lists`). Sie zeigen alle Einträge, jeden einmal, ohne Kappung, als kompakte `ItemPreview`s (Kartenflächen-MUSS, siehe [`ItemPreview`](#itempreview)). Trägt eine Liste eine Aktion, steht sie im Listenkopf; hat die Liste keinen Eintrag außer dem Item selbst, steht die Aktion allein an ihrer Stelle. Die Liste einer Kante DARF rechts in der Zeile den Wert eines Felds zeigen (`list.trailing`) und ihre Einträge nach einem Feld gliedern (`list.group`), mit Zwischenüberschrift und Anzahl je Gruppe ([06 → Feld- und Kantenregister](../06-schema-composition.md#feld--und-kantenregister), Regel 22). Die Liste `family` eines Statements heißt „Fassungen N"; je Zeile stehen ein Badge („Ausgang" oder „Variante"), der Titel, „diese" bei der angezeigten Fassung und eine kleine Stimmleiste. Ihre Aktion ist „+ Variante" ([resonance.md → Varianten](resonance.md#varianten)).
+9. Die Karte (`ItemPreview`) zeigt aus demselben Register: Titel, erste Meta-Zeile, Avatar-Stack, Tags gekappt. Ein Feld mit Item-Verweis (B15) steht auf der Karte als Chip („Variante von …"). Im Detail entfällt seine Meta-Zeile, wenn eine Liste des Typs es abdeckt (`covers`); beim Statement zeigt die Liste `family` die Herkunft.
+10. Ob `bar` und `comments` erscheinen, sagt das Register des Typs. Für `person` entfallen beide.
+
+**Zustände.** Jeder Zustand trägt dieselbe Anatomie:
+
+| Zustand | Verhalten |
+|---|---|
+| Normal | wie oben |
+| Viele | Eine Menschen-Zeile fasst ab einer Schwelle je Qualifier zusammen: drei Avatare, „12 zugesagt" (`going`), „Alle" |
+| Laden | Skeleton in der Anatomie, kein Spinner |
+| Minimal | nur Felder mit Inhalt (Regeln 1 und 2) |
+| Fehler | Banner inline unter dem Kopf des Formulars mit „Erneut" und, wenn der Connector einen liefert, dem Grund; Eingaben bleiben erhalten. „Erneut" setzt an einem schon angelegten Item fort |
+| Mobil | Drawer von unten, gleiche Slots; Kopf fix, der Rest scrollt |
+
+### Widget-Paare
+
+Jedes Feld und jede Kante hat eine Lese- und eine Schreibform auf **einem** Datenvertrag. Ein Widget, das schreibt, MUSS eine Leseform im Detail haben, und umgekehrt.
+
+**Wert-Widgets (Feld):**
+
+| # | Widget | Lesen | Schreiben |
+|---|---|---|---|
+| B1 | `title` | Kopfzeile | Titelfeld, fokussiert |
+| B2 | `text` | Markdown-Inhalt | Editor; `#tag` setzt ein Tag, `@name` verlinkt ein Item; eingeklappt als „+ Beschreibung", wenn leer |
+| B3 | `date` | Zeile mit Sprung in den Kalender; Wiederholung als zweite Zeile | Datum und Uhrzeit, Ende, Wiederholung als Auswahl |
+| B4 | `location` | Ort-Item als Chip oder Adresse als Text mit Sprung auf die Karte | ein Feld; die Autovervollständigung mischt Ort-Items und Adressen; Karten-Pick daneben |
+| B5 | `media` | Bildreihe im Inhalt | Chips „+ Bilder hinzufügen" |
+| B6 | `status` | Chip mit Punkt im Ton der Option (Pastellgrund, Schrift und Rand im Ton) | Pillen (bis 4 Optionen), jede mit Punkt im Ton, die gewählte wie der Chip; sonst Liste |
+| B7 | `number` | Text mit Einheit („12 h · 300 €"), ungerundet | ein Zahlenfeld je Wert, nebeneinander |
+| B8 | `select` | Chip wie B6 | Pillen wie B6 (bis 4 Optionen); sonst Dropdown |
+| B9 | `url` | Link mit Globus-Icon | Textfeld mit Icon |
+| B10 | `chips` | Chip-Reihe mit Label | Chips mit Vorschlägen und „+ eigenes" |
+| B11 | `avatar` | Kopf-Avatar | Bild wählen, Resize auf 512 px |
+| B12 | `contact` | Zeile mit Sprung „Anrufen" | Textfeld mit Sichtbarkeits-Hinweis |
+| B13 | `group` | Space-Badge im Kopf, nur außerhalb des Space | Space-Auswahl im Kopf des Formulars |
+| B14 | `tags` | TagChips | Chips „+ Tag" |
+| B15 | `item-ref` | Chip in Typfarbe wie C3 („Variante von …") auf der Karte; im Detail nur ohne abdeckende Liste; fehlendes Ziel als Text („nicht verfügbare Aussage") | nur soweit der Typ es erlaubt; bei `edit: "fixed"` feste Anzeige (siehe unten) |
+
+**Kanten-Widgets:**
+
+| # | Widget | Lesen | Schreiben |
+|---|---|---|---|
+| C1 | `people` | eine Zeile: Chips mit Avatar, Name und Qualifier; ab Schwelle Zusammenfassung je Qualifier | Chips mit Qualifier-Text, Antippen wechselt den Qualifier, „Einladen…" |
+| C2 | self-action | Pill-Zeile im Slot `actions`, neutral („Übernehmen", mit anderen an der Kante „Mitmachen") oder mein Zustand („✓ Übernommen", mit anderen „✓ Dabei"), danach die Folgeaktion (nur für mich); mein Zustand ist Umschalter; erledigt nur Zustände, keine Aktionen | entfällt (die Pill-Zeile schreibt selbst) |
+| C3 | `item-relation` | eine Zeile je Prädikat mit Label und Chips in Typfarbe, gekappt „+N"; Ziele mit Status der Rolle `done` durchgestrichen | Chips und „@ … suchen oder im Modul klicken…" |
+| C4 | `vote` | Balken grün/gelb/rot, Prozent, „12 von 14", Namen je Stufe | Pills Dafür · Skeptisch · Dagegen (als C2) |
+| C7 | comment/reaction | Aktionsleiste (`bar`) und Thread (`comments`) | inline, nie im Formular |
+
+Später, nicht Teil dieses Entwurfs: C5 `membership` (Mitglieder-Stack im Projekt, Projekt-Chips im Profil), C6 `verification` („verifiziert mit …", Pill öffnet den QR-Flow), C8 `origin` (Herkunft gespiegelter Items, [09](../09-mirror-bridge.md)/[12](../12-profile.md)), C9 `confirmations` (Liste mit Level und Anlass) und C10 `activity` (Verlauf als Projektion).
+
+Regeln:
+
+1. Es gibt ein Widget je Datentyp, nicht je Fachfeld. `number` deckt Stunden, Euro und Punkte ab. Beschriftung, Einheit und Optionen kommen aus dem Register.
+   Zahlenfelder (`number`), die in der Reihenfolge der Meta-Box aufeinander folgen und dasselbe `label` tragen, teilen eine Zeile („Aufwand 12 h · 300 €") und im Formular eine Gruppe mit einem Zahlenfeld je Wert. Ein Wert erscheint ungerundet.
+   Chip und Pillen von `status` und `select` tragen den Ton der Option ([06, Regel 21](../06-schema-composition.md#feld--und-kantenregister)): Jede Pille hat links einen Punkt im Ton; nicht gewählt steht sie hell mit Rand und gedämpfter Schrift, gewählt und als Chip mit Pastellgrund, Schrift und Rand im Ton, halbfett. Im Dunkeln ist der Pastellgrund getönt statt hell.
+2. Beschriftungen kommen über die Intl-Schicht (DE/EN), nicht aus dem Widget.
+3. `blocks` heißt in allen Typen von beiden Enden gleich: „Braucht" (eingehend) und „Ermöglicht" (ausgehend).
+4. Ein Record ist nie eine Karte. Er wird über das Item gelesen, das er berührt.
+
+### Modi
+
+Der Modus ergibt sich aus Rechten und Instanz, nicht aus dem Typ. Er bestimmt ⋮-Menü, Aktionszeile, Kommentar-Eingabe und Hinweis.
+
+| Modus | ⋮ Bearbeiten/Löschen | Aktionszeile (`actions`) | Kommentar-Eingabe | Kopf und Hinweis |
+|---|---|---|---|---|
+| Eigenes | ja | ja, mit meinem Zustand | ja | – |
+| Mitglied | nach `useItemPermissions` | ja, neutral bis zur eigenen Aktion | ja | Space-Badge außerhalb des Space |
+| Nur lesen | nein | nein | nein | Nur-lesen-Hinweis im Slot `note` |
+| Eingefroren | „Bearbeiten" für den Inhalt entfällt; das Menü bleibt, „Löschen" erscheint, wenn der Schreibweg es erlaubt | ja | ja | Hinweis an der Stelle der Liste mit Aktion |
+
+Regeln:
+
+1. Selbstaktionen (C2, C4) sind auch ohne Bearbeitungsrecht am Item möglich, wenn Schreibrecht im Space besteht. Ohne Schreibrecht entfällt die Aktionszeile ganz.
+2. Im Modus „Nur lesen" sagt der Hinweis, warum das Item nicht bearbeitbar ist.
+3. „Eingefroren" gilt, solange der Inhalt eines Items nach [08 → Einfrieren](../08-relation-records.md#inhaltsgebundene-bezugnahme-und-einfrieren) nicht mehr geändert werden darf. Es kommt zu „Eigenes" oder „Mitglied" hinzu. Es entfällt nur „Bearbeiten" für den Inhalt. Alles andere bietet die UI an, wenn der Schreibweg es technisch erlaubt: Löschen, und was außerhalb des Inhalts liegt (etwa Tags).
+4. Der Hinweis „Wortlaut eingefroren" steht an der Stelle der Liste, deren Aktion eine neue Fassung anlegt, zusammen mit dieser Aktion (Statement: „+ Variante" an `family`). Hat der Typ keine solche Liste, steht er im Slot `note`.
+5. Menüaktionen des Typs (`menuActions`, [06 → Feld- und Kantenregister](../06-schema-composition.md#feld--und-kantenregister)) stehen im ⋮-Menü neben Bearbeiten, Teilen und Löschen und folgen denselben Sichtbarkeitsregeln wie [`ItemDetailActions`](#itemdetailactions).
+6. Die Modi gespiegelter Items (Spiegel mit und ohne Schreibrecht, Herkunfts-Badge) sind nicht Teil dieses Entwurfs. Sie folgen mit [09](../09-mirror-bridge.md) und [12](../12-profile.md).
+
+### Edit-Regeln
+
+1. Bearbeiten tauscht die Slots `meta` bis `comments` in derselben Card gegen die Schreibformen. Kommentarliste und Kommentar-Eingabe entfallen. Das ✕ bleibt.
+2. Das Formular hat diese Reihenfolge: Kopf (Typ, Space) → Titel → Beschreibung → Felder in der Reihenfolge der Meta-Zeilen → Tags. Die Beschreibung ist als „+ Beschreibung" eingeklappt, wenn sie leer ist; ohne Titelfeld (Beitrag) ist sie der Inhalt und nie eingeklappt. Lesen bleibt Titel → Meta-Box → Beschreibung: Titel und Text schreibt man in einem Zug, beim Lesen stehen die Fakten zuerst.
+3. Typ und Space stehen im Kopf als kompakte Auswahlfelder. Der Space steht oben, weil er Sichtbarkeit sowie Personen- und Tag-Vorschläge bestimmt. Beim Erstellen sind Typ und Space wählbar. Beim Bearbeiten steht der Typ fest; der Space ist wählbar, wenn der Connector Items verschieben kann (`moveItemToGroup`), sonst steht er fest da. Was der Space im Formular bestimmt und wann er Pflicht ist, regelt [Space des Formulars](#space-des-formulars).
+4. Die Fußzeile klebt am Ende der Card. Sie hat Löschen links (nur mit Recht, hinter Bestätigung) und Abbrechen und Speichern rechts. Speichern schließt nur bei Erfolg. Ein Fehler erscheint inline, die Eingaben bleiben. Beim Schließen mit ungespeicherten Änderungen fragt ein Unsaved-Guard nach.
+5. Position, Reihenfolge und System-Felder (`pos: "module"` und `pos: "system"` im Register) erscheinen nicht im Formular.
+6. Ein Qualifier-Chip wechselt beim Antippen zum nächsten Wert, den das Register für die Kante deklariert. Einen unbekannten Wert schreibt das Formular unverändert zurück, bis jemand den Chip antippt.
+7. Eine Item-Relation (C3) wird über eine `@`-Suche über die Items des Formular-Space gesetzt ([Space des Formulars](#space-des-formulars)). Der zweite Weg ist der Modul-Pick (Brett-Klick, Marker-Klick); ihn liefert das Modul.
+8. Es gibt keinen zweiten Editor neben dem Item-Edit.
+9. Ein Feld mit `edit: "fixed"` erscheint fest: sichtbar, nicht bearbeitbar, mit einem Symbol dafür. Beispiele: „Variante von" (Chip) und „Space" im Formular einer Variante.
+
+### Space des Formulars
+
+Das Formular führt den Space als eigenen Zustand, den **Formular-Space**. Er ist der Space, in dem das Item nach dem Speichern liegt. Er gilt für Erstellen und Bearbeiten gleich.
+
+Regeln:
+
+1. **Vorauswahl.** Beim Erstellen ist der Formular-Space der geöffnete Space. Ist keiner geöffnet (Übersicht), ist er „Privat" (`getPersonalGroupId()`). Hat der Connector keinen persönlichen Space, ist der einzige mögliche Space vorausgewählt; gibt es mehrere, ist keiner gesetzt. Ein Kontext DARF ihn fest vorgeben (Varianten, [Edit-Regeln](#edit-regeln), Regel 9). Beim Bearbeiten ist er der Space des Items (`getItemGroupId()`).
+2. **Eine Quelle.** Nach dem Öffnen DARF das Formular den Space nur aus dem Formular-Space lesen, nie aus dem geöffneten Space (`getCurrentGroup()`). Nur die Auswahl im Kopf ändert ihn. Wechselt die App den geöffneten Space, während das Formular offen ist, bleibt der Formular-Space.
+3. **Weitergabe.** Jeder Teil des Formulars, der vom Space abhängt, bekommt den Formular-Space:
+
+    | Teil | Verwendung des Formular-Space |
+    |---|---|
+    | `@`-Suche einer Item-Kante (C3) | `ItemFilter.group` ([02 → Lesen in einem bestimmten Space](../02-data-interface.md#lesen-in-einem-bestimmten-space-group)) |
+    | Personen-Vorschläge (C1) | Mitglieder dieses Space (`observeMembers(space)`) |
+    | Tag-Vorschläge (B14) | Tags dieses Space |
+    | Prüfung einer Verknüpfung (Suche, Modul-Pick, gewählte Chips) | Das Ziel liegt in diesem Space; ein `item:`-Target ist space-lokal ([04 → Target-Konventionen](../04-items-relations-groups-spaces.md#target-konventionen)) |
+    | Speichern | Das Item liegt danach in diesem Space |
+
+4. **Wechsel im Formular.** Wechselt der Formular-Space, gelten Suche, Vorschläge und Prüfung sofort für den neuen Space. Personen-Kanten und Tags sind nicht betroffen; ihr Ziel ist nicht space-lokal.
+5. **Ein Item mit Beziehungen bleibt in seinem Space.** Hat ein Item Beziehungen, ist die Space-Auswahl im Kopf deaktiviert: feste Anzeige wie beim festen Space einer Variante ([Edit-Regeln](#edit-regeln), Regel 9), ohne Rand und Chevron, gedämpft, mit einem kurzen Grund als Tooltip („Hat Verknüpfungen, Stimmen oder Zusagen – bleibt in diesem Space“). Das Formular zeigt keinen weiteren Hinweis und sperrt Speichern nicht. Als Beziehung zählen:
+
+    - Item-Kanten (C3) in beiden Richtungen, eingebettet wie als Record (etwa `blocks`, `partOf`);
+    - feste Item-Verweise (B15 `item-ref`) in beiden Richtungen: eine Variante mit `variantOf` und eine Aussage, auf die Varianten zeigen. Das Ziel von `variantOf` MUSS im selben Space liegen ([resonance.md → Varianten](resonance.md#varianten), Regel 2);
+    - Records von Personen, die sich auf das Item beziehen, auch eigene und stellvertretend eingetragene: Stimmen (`votesOn`), Zusagen (`attends`), Kommentare und Reaktionen (C7).
+
+    Eingebettete Personen-Kanten (`assignedTo`, `invited`) und Tags zählen nicht; sie gehören zum Item und ziehen mit um. Beim Anlegen ist die Space-Auswahl fest, sobald eine Item-Kante gewählt ist, und wieder wählbar, wenn sie entfernt ist. Begründung: Ein Verweis zwischen Spaces zeigt ins Leere, und Mitglieder des neuen Space sehen Items des alten nicht. Fremde Aussagen mitzunehmen würde sie ohne Einwilligung ihres Autors einem neuen Kreis zeigen (im WoT für einen Kreis signiert). Ein Item, das den Space nur halb wechselt, gibt es nicht. Wer ein solches Item woanders braucht, legt es dort neu an (später als Spiegel, [09](../09-mirror-bridge.md)).
+6. **Anlegen in einem Schritt.** Das Formular legt ein neues Item mit `createItem(item, { group })` direkt im Formular-Space an ([02 → Anlegen in einem bestimmten Space](../02-data-interface.md#anlegen-in-einem-bestimmten-space)), nie durch Anlegen und Verschieben. Ohne `hasGroupScope()` bietet es beim Erstellen nur den Space an, in dem der Connector ohne `group` anlegt. Beim Bearbeiten verschiebt ein Wechsel des Space das Item (`moveItemToGroup`).
+7. **Kein Vortäuschen.** Kann der Connector nicht im Formular-Space lesen (`hasGroupScope()` fehlt) und ist dieser nicht der geöffnete Space, sagt die Suche das, statt leer zu bleiben oder Items des geöffneten Space anzubieten. Dasselbe gilt für Personen- und Tag-Vorschläge.
+8. **Pflicht nur beim Anlegen.** Hat der Connector Spaces und ist beim Erstellen keiner gesetzt, ist das Feld markiert und Speichern gesperrt. `composer.groupRequired` gilt nur beim Erstellen. Beim Bearbeiten ist der Space nie Pflicht: Ein Item ohne bekannten Space bleibt speicherbar.
+
 ## Hooks
 
 Reine Item-Ableitungen, von beliebigen Komponenten benutzbar.
@@ -665,10 +843,15 @@ Pure Hooks, die Item-Felder normalisiert ausliefern. Module benutzen sie statt m
 |---|---|---|
 | `useItemAuthor` | `(item, users) => User \| undefined` | Resolved `createdBy` gegen User-Liste |
 | `useItemTags` | `(item) => readonly string[]` | Normalisierte Tag-Liste; stabile Identity (Spec [07-tags.md](../07-tags.md)) |
-| `useItemDateHint` | `(item) => ItemDateHint` | Strukturiertes `data.start`/`data.end` (Spec [event/v1](../schemas/vocab/event/v1/schema.json)) |
-| `useItemPosition` | `(item) => ItemPosition` | GeoJSON-Position; isPlace + Point (Spec [place/v1](../schemas/vocab/place/v1/schema.json)) |
 
-Plus der Default-Formatter `formatItemDateHint(hint)` für eine kompakte Date-Anzeige.
+`useItemDateHint`, `useItemPosition` und `formatItemDateHint` gab es hier bis zum
+19.09.2026. Sie wurden entfernt (real-life-stack#400), weil keine Fläche sie las:
+Zeit und Ort werden dort gebraucht, wo sie angezeigt werden, und das ist
+`ItemMetaRow` (Spec [event/v1](../schemas/vocab/event/v1/schema.json) und
+[place/v1](../schemas/vocab/place/v1/schema.json)). Wer die rohen Werte selbst
+braucht, nimmt die reinen Funktionen: `isAllDayDate`, `parseEventDate`, `formatDay`
+und `formatClock` aus `lib/date-utils`, `isPoint` und `latLngFromPoint` aus `lib/geo`.
+Sie sind keine Hooks, weil daran nichts reaktiv ist.
 
 ### `useOpenProfile` + `OpenProfileProvider`
 
@@ -698,7 +881,7 @@ function useOpenProfile(): OpenProfile  // no-op fallback ohne Provider
 Module nutzen mehrere shared Components zusammen. Die Verträge sind so geschnitten, dass Komposition direkt funktioniert — keine impliziten Annahmen über Render-Reihenfolge oder DOM-Struktur:
 
 - **Detail mit Edit-Modus:** `ItemDetailPanel` mit `ContentComposer` als `children`, `useItemEditor` für Submit-Routing.
-- **Preview mit Adornments:** `ItemPreview` (Phase 2) mit Modul-Adornments und `useItemAuthor`/`useItemTags`/`useItemDateHint` als Datenquelle.
+- **Preview mit Adornments:** `ItemPreview` (Phase 2) mit Modul-Adornments, `useItemAuthor`/`useItemTags` als Datenquelle und `ItemMetaRow` für Zeit und Ort.
 - **Filter:** Module nutzen `useItemTags` für die verfügbare Tag-Aggregation und übergeben das an die `FilterBar` (Phase 3).
 
 ## Nicht-Ziele

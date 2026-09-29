@@ -1,3 +1,4 @@
+import { isAggregateVisibleItemType } from "@real-life-stack/data-interface"
 "use client"
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode, type TouchEvent, type TransitionEvent } from "react"
@@ -20,6 +21,8 @@ import {
 } from "../primitives/dropdown-menu"
 import { ModuleToolbar } from "../layout/module-toolbar"
 import { cn, getItemColor, getReadableTextColor } from "../../lib/utils"
+import { itemTitle } from "@/lib/item-text"
+import { getSpacePrimaryColor } from "@/lib/utils"
 import { isAllDayDate, parseEventDate } from "../../lib/date-utils"
 import {
   addDays,
@@ -38,9 +41,7 @@ import { ItemPreview } from "../preview/item-preview"
 import { ItemTypeBadge } from "../preview/item-type-badge"
 import { ItemTimeRange } from "../preview/item-time-range"
 import { FilterSection, FilterToggle, FilterMultiSelect } from "../filter/filter-building-blocks"
-import { ModuleSurfaceScope } from "../layout/module-surface-scope"
-import type { FilterTypeOption } from "../filter/types"
-import { useModuleFilteredItems } from "../../hooks/use-filterable-items"
+import { ModuleSurfaceScope, useSurfaceItems } from "../layout/module-surface-scope"
 import type { Item } from "@real-life-stack/data-interface"
 
 const WEEKDAYS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
@@ -58,7 +59,8 @@ const TIME_SLOTS = Array.from({ length: 18 }, (_, index) => index + 6)
  *  created in (origin group), which is what makes the aggregate ("Mein Netzwerk")
  *  view show per-group colours instead of one active-group colour. */
 type GroupColorResolver = (item: Item) => string
-const CalendarGroupColorContext = createContext<GroupColorResolver>(() => "#2563eb")
+// Kein fester Blauwert: dieselbe Palette wie Karte und Vorschau (map-lens macht es vor).
+const CalendarGroupColorContext = createContext<GroupColorResolver>((item) => getSpacePrimaryColor(item.id))
 
 /** Id of the item currently open in the shared panel, so its pill/card is
  *  highlighted across the calendar (and stays in sync with map/feed/kanban). */
@@ -181,7 +183,7 @@ function toCalendarEvent(item: Item): CalendarEvent | null {
     start,
     end,
     allDay,
-    title: String(item.data.title ?? item.data.displayName ?? item.data.name ?? "Ohne Titel"),
+    title: itemTitle(item),
     description: typeof description === "string" ? description : undefined,
     location: getLocationLabel(item.data.locationName, item.data.address),
     tags: item.tags ?? [],
@@ -190,7 +192,7 @@ function toCalendarEvent(item: Item): CalendarEvent | null {
 
 /** Calendar filters only expose items that can become an event in this view. */
 export function calendarFilterItems(events: readonly Item[]): Item[] {
-  return events.filter((item) => item.type !== "relation" && toCalendarEvent(item) !== null)
+  return events.filter((item) => isAggregateVisibleItemType(item.type) && toCalendarEvent(item) !== null)
 }
 
 function compareEvents(a: CalendarEvent, b: CalendarEvent): number {
@@ -304,16 +306,6 @@ function getHeaderLabel(date: Date, viewMode: CalendarViewMode): string {
   return `${MONTH_NAMES[date.getMonth()]} ${date.getFullYear()}`
 }
 
-function getTypeLabel(type: string): string {
-  const labels: Record<string, string> = {
-    event: "Events",
-    project: "Projekte",
-    offer: "Angebote",
-    task: "Tasks",
-    quest: "Quests",
-  }
-  return labels[type] ?? type
-}
 
 function formatTime(date: Date): string {
   return date.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })
@@ -324,7 +316,9 @@ function formatDayLabel(date: Date): string {
 }
 
 export interface CalendarViewProps {
-  events: Item[]
+  /** Die Items, die der Kalender zeigt. Heißt wie in jeder anderen Linse `items`
+   *  (bis 19.09.2026 `events`); der Kalender ist keine Sonderform. */
+  items: Item[]
   initialDate?: Date | string
   /** Initial period only. Unlike initialDate, it never changes the "today" highlight. */
   initialVisibleDate?: Date | string
@@ -340,7 +334,8 @@ export interface CalendarViewProps {
   /** One-way: jump the visible period to this date when it changes (e.g. to reveal
    *  a URL-focused event's month). Doesn't fight the user's manual navigation. */
   focusDate?: Date
-  onEventClick?: (event: Item) => void
+  /** Klick auf ein Item. Heißt wie in jeder anderen Linse `onItemClick`. */
+  onItemClick?: (item: Item) => void
   onCreateEvent?: (date: Date) => void
   className?: string
 }
@@ -355,23 +350,22 @@ export interface CalendarViewProps {
  */
 export function CalendarView(props: CalendarViewProps) {
   return (
-    <ModuleSurfaceScope maxWidth="max-w-5xl">
+    <ModuleSurfaceScope maxWidth="max-w-5xl" items={props.items}>
       <CalendarViewInner {...props} />
     </ModuleSurfaceScope>
   )
 }
 
 function CalendarViewInner({
-  events,
   initialDate,
   initialVisibleDate,
   initialViewMode = "month",
   currentUserId,
-  groupColor = "#2563eb",
+  groupColor,
   resolveItemGroupColor,
   activeItemId,
   focusDate,
-  onEventClick,
+  onItemClick,
   onCreateEvent,
   className,
 }: CalendarViewProps) {
@@ -407,25 +401,16 @@ function CalendarViewInner({
     setSelectedDate(focusDate)
   }, [focusDate])
 
-  const calendarItems = useMemo(() => calendarFilterItems(events), [events])
-  const eventsAfterBar = useModuleFilteredItems(calendarItems)
+  // Gefiltert von der Flaeche (Suche, Tags, Typen); hier nur noch die
+  // Kalender-Regel, was ein Termin ist.
+  const gefiltert = useSurfaceItems()
+  const eventsAfterBar = useMemo(() => calendarFilterItems(gefiltert), [gefiltert])
 
   const calendarEvents = useMemo(
     () => toCalendarEvents(eventsAfterBar),
     [eventsAfterBar],
   )
 
-  const availableTags = useMemo(() => {
-    const seen = new Set<string>()
-    for (const event of calendarItems) for (const tag of event.tags ?? []) seen.add(tag)
-    return Array.from(seen).sort()
-  }, [calendarItems])
-
-  const availableTypes = useMemo<FilterTypeOption[]>(() => {
-    const seen = new Set<string>()
-    for (const event of calendarItems) seen.add(event.type)
-    return Array.from(seen).sort().map((id) => ({ id, label: getTypeLabel(id) }))
-  }, [calendarItems])
 
   const filteredEvents = useMemo(() => {
     // Nur noch die Extras des Kalenders: Tag-, Typ- und Textsuche haben die
@@ -619,7 +604,7 @@ function CalendarViewInner({
             setVisibleDate(d)
             setViewMode("day")
           }}
-          onEventClick={onEventClick}
+          onItemClick={onItemClick}
           onCreateEvent={onCreateEvent}
         />
       )
@@ -635,7 +620,7 @@ function CalendarViewInner({
             setVisibleDate(d)
             setViewMode("day")
           }}
-          onEventClick={onEventClick}
+          onItemClick={onItemClick}
           onCreateEvent={onCreateEvent}
         />
       )
@@ -645,7 +630,7 @@ function CalendarViewInner({
         <DayCalendar
           visibleDate={date}
           eventsByDay={eventsByDay}
-          onEventClick={onEventClick}
+          onItemClick={onItemClick}
           onCreateEvent={onCreateEvent}
         />
       )
@@ -653,20 +638,20 @@ function CalendarViewInner({
     return (
       <EventList
         events={getPeriodEvents(filteredEvents, date, viewMode).sort(compareEvents)}
-        onEventClick={onEventClick}
+        onItemClick={onItemClick}
       />
     )
   }
 
-  const resolveGroupColor = resolveItemGroupColor ?? (() => groupColor)
+  // Ohne Angabe die Palettenfarbe des Items — wie in der Karte und der Vorschau.
+  const resolveGroupColor: GroupColorResolver =
+    resolveItemGroupColor ?? ((item) => getSpacePrimaryColor(item.id, groupColor))
 
   return (
     <CalendarGroupColorContext.Provider value={resolveGroupColor}>
     <CalendarActiveItemContext.Provider value={activeItemId}>
     <div className={cn("w-full space-y-3", className)}>
       <ModuleToolbar
-        availableTags={availableTags}
-        availableTypes={availableTypes}
         trailingActions={
           <Button variant="outline" size="sm" className="shrink-0" onClick={goToday}>
             Heute
@@ -838,7 +823,7 @@ interface MonthCalendarProps {
   eventsByDay: Map<string, CalendarEvent[]>
   onSelectDate: (date: Date) => void
   onOpenDay: (date: Date) => void
-  onEventClick?: (event: Item) => void
+  onItemClick?: (item: Item) => void
   onCreateEvent?: (date: Date) => void
 }
 
@@ -849,7 +834,7 @@ function MonthCalendar({
   eventsByDay,
   onSelectDate,
   onOpenDay,
-  onEventClick,
+  onItemClick,
   onCreateEvent,
 }: MonthCalendarProps) {
   const days = useMemo(
@@ -958,7 +943,7 @@ function MonthCalendar({
                     gridRow: bar.lane + 1,
                   }}
                 >
-                  <EventPill event={bar.event} bar={bar} compact onClick={onEventClick} />
+                  <EventPill event={bar.event} bar={bar} compact onClick={onItemClick} />
                 </div>
               ))}
               {overflowing &&
@@ -972,7 +957,7 @@ function MonthCalendar({
                       <DayEventsMenu
                         date={rowDays[col].date}
                         events={rowDays[col].events}
-                        onEventClick={onEventClick}
+                        onItemClick={onItemClick}
                       >
                         <button
                           type="button"
@@ -1028,12 +1013,12 @@ export function monthWeekLayout(
 function DayEventsMenu({
   date,
   events,
-  onEventClick,
+  onItemClick,
   children,
 }: {
   date: Date
   events: CalendarEvent[]
-  onEventClick?: (event: Item) => void
+  onItemClick?: (item: Item) => void
   children: ReactNode
 }) {
   const resolveGroupColor = useContext(CalendarGroupColorContext)
@@ -1047,7 +1032,7 @@ function DayEventsMenu({
         {events.map((event) => (
           <DropdownMenuItem
             key={event.item.id}
-            onSelect={() => onEventClick?.(event.item)}
+            onSelect={() => onItemClick?.(event.item)}
             className="gap-2"
           >
             <span
@@ -1094,7 +1079,7 @@ interface WeekCalendarProps {
   /** Full filtered list — needed for all-day/multi-day spanning across the week. */
   events: CalendarEvent[]
   onSelectDate: (date: Date) => void
-  onEventClick?: (event: Item) => void
+  onItemClick?: (item: Item) => void
   onCreateEvent?: (date: Date) => void
 }
 
@@ -1103,7 +1088,7 @@ function WeekCalendar({
   eventsByDay,
   events,
   onSelectDate,
-  onEventClick,
+  onItemClick,
   onCreateEvent,
 }: WeekCalendarProps) {
   const weekStart = startOfWeek(visibleDate)
@@ -1159,7 +1144,7 @@ function WeekCalendar({
               // +2: column 1 is the time gutter.
               style={{ gridColumn: `${bar.startCol + 2} / span ${bar.span}`, gridRow: bar.lane + 1 }}
             >
-              <EventPill event={bar.event} bar={bar} onClick={onEventClick} />
+              <EventPill event={bar.event} bar={bar} onClick={onItemClick} />
             </div>
           ))}
         </div>
@@ -1192,7 +1177,7 @@ function WeekCalendar({
                       <EventPill
                         key={event.item.id}
                         event={event}
-                        onClick={onEventClick}
+                        onClick={onItemClick}
                       />
                     ))}
                   </div>
@@ -1209,11 +1194,11 @@ function WeekCalendar({
 interface DayCalendarProps {
   visibleDate: Date
   eventsByDay: Map<string, CalendarEvent[]>
-  onEventClick?: (event: Item) => void
+  onItemClick?: (item: Item) => void
   onCreateEvent?: (date: Date) => void
 }
 
-function DayCalendar({ visibleDate, eventsByDay, onEventClick, onCreateEvent }: DayCalendarProps) {
+function DayCalendar({ visibleDate, eventsByDay, onItemClick, onCreateEvent }: DayCalendarProps) {
   const dayEvents = getEventsForDay(eventsByDay, visibleDate)
   // All-day and multi-day events have no hour to sit in on this day: an all-day
   // event starts below the 06:00 first slot, and on the second day of a
@@ -1258,7 +1243,7 @@ function DayCalendar({ visibleDate, eventsByDay, onEventClick, onCreateEvent }: 
                 key={event.item.id}
                 ref={event.item.id === activeItemId ? activeCardRef : undefined}
               >
-                <EventCard event={event} onClick={onEventClick} />
+                <EventCard event={event} onClick={onItemClick} />
               </div>
             ))}
           </div>
@@ -1287,7 +1272,7 @@ function DayCalendar({ visibleDate, eventsByDay, onEventClick, onCreateEvent }: 
                     key={event.item.id}
                     ref={event.item.id === activeItemId ? activeCardRef : undefined}
                   >
-                    <EventCard event={event} onClick={onEventClick} />
+                    <EventCard event={event} onClick={onItemClick} />
                   </div>
                 ))}
               </div>
@@ -1301,10 +1286,10 @@ function DayCalendar({ visibleDate, eventsByDay, onEventClick, onCreateEvent }: 
 
 interface EventListProps {
   events: CalendarEvent[]
-  onEventClick?: (event: Item) => void
+  onItemClick?: (item: Item) => void
 }
 
-function EventList({ events, onEventClick }: EventListProps) {
+function EventList({ events, onItemClick }: EventListProps) {
   const groups = useMemo(() => groupEventsByDay(events), [events])
 
   if (events.length === 0) {
@@ -1331,7 +1316,7 @@ function EventList({ events, onEventClick }: EventListProps) {
               <EventCard
                 key={event.item.id}
                 event={event}
-                onClick={onEventClick}
+                onClick={onItemClick}
               />
             ))}
           </div>

@@ -21,6 +21,9 @@ import { emptyFilterBarValue, type FilterBarValue } from "./types"
  *
  * Modul-Extras (`chipsExtra`/`drawerExtra` — „Nur meine", Ort, Zuweisung)
  * bleiben BEIM MODUL (Spec, Regel 2). Sie bedeuten je Modul etwas anderes.
+ * Sie leben aber so lange wie der geteilte Filter: je Modul ein eigener
+ * Bereich in diesem Besitzer (`moduleFilters`, gelesen ueber
+ * `useModuleFilter`). Kein anderes Modul liest ihn.
  */
 export interface SharedFilterValue {
   value: FilterBarValue
@@ -29,6 +32,9 @@ export interface SharedFilterValue {
   setSearchText(next: string): void
   /** Filter und Suchtext gemeinsam zuruecksetzen. */
   clear(): void
+  /** Modul-eigene Filterwerte, je `<modul>:<schluessel>` (Spec, Regel 2). */
+  moduleFilters: Readonly<Record<string, unknown>>
+  setModuleFilter(key: string, value: unknown): void
 }
 
 const FilterContext = createContext<SharedFilterValue | null>(null)
@@ -42,17 +48,25 @@ export function FilterProvider({ children }: { children: ReactNode }) {
 function useFilterValue(): SharedFilterValue {
   const [value, setValue] = useState<FilterBarValue>(emptyFilterBarValue)
   const [searchText, setSearchText] = useState("")
+  const [moduleFilters, setModuleFilters] = useState<Readonly<Record<string, unknown>>>({})
   const clear = useCallback(() => {
     setValue(emptyFilterBarValue)
     setSearchText("")
   }, [])
+  const setModuleFilter = useCallback((key: string, next: unknown) => {
+    // Presence, not the value, marks a set filter: `undefined` is a value a
+    // module may set on purpose (#517).
+    setModuleFilters((current) => (key in current && Object.is(current[key], next) ? current : { ...current, [key]: next }))
+  }, [])
   return useMemo(
-    () => ({ value, setValue, searchText, setSearchText, clear }),
-    [value, searchText, clear],
+    () => ({ value, setValue, searchText, setSearchText, clear, moduleFilters, setModuleFilter }),
+    [value, searchText, clear, moduleFilters, setModuleFilter],
   )
 }
 
 /**
+ * The app-wide filter that survives the module switch.
+ *
  * Der geteilte Filter. Wirft ohne Provider — wie `useModulePanel`.
  *
  * Bewusst KEIN stiller Rueckfall auf lokalen Zustand: Jeder Aufrufer bekaeme
@@ -60,6 +74,12 @@ function useFilterValue(): SharedFilterValue {
  * passiert — die Leiste schrieb in ihren, der Inhalt las einen anderen; im
  * Suchfeld stand „Garten", gefiltert wurde nichts. Wer ohne App-Shell rendert,
  * setzt einen `FilterScope` an die Wurzel seiner Flaeche.
+ *
+ * @answers `{value, searchText, setSearchText, clear}`
+ * @without throws on render
+ * @group host
+ * @see story rls-foundations-hooks--surfaces
+ * @see spec docs/spec/01-app-composition.md
  */
 export function useSharedFilter(): SharedFilterValue {
   const ctx = useContext(FilterContext)
@@ -69,10 +89,21 @@ export function useSharedFilter(): SharedFilterValue {
   return ctx
 }
 
-/** Weiche Variante — `null` ohne Provider. */
+/**
+ * Derselbe Zustand, aber `null` statt einer Ausnahme, wenn es keinen Besitzer
+ * gibt.
+ *
+ * Genau eine Stelle braucht das: die Modulflaeche. Sie rendert die Suche
+ * selbst (Spec 01, Regel 2), und eine Flaeche ohne Filter-Besitzer — ein
+ * nackter `ModuleFrame` in einem Test — hat eben keine Suche, statt beim
+ * Rendern zu werfen. Alle anderen bestehen weiter auf dem Besitzer: Wer
+ * filtert, ohne dass jemand den Filter haelt, hat einen Fehler und soll ihn
+ * frueh sehen.
+ */
 export function useOptionalSharedFilter(): SharedFilterValue | null {
   return useContext(FilterContext)
 }
+
 
 /**
  * Der Besitzer fuer eine Flaeche, die auch AUSSERHALB der App laeuft.

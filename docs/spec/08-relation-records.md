@@ -103,7 +103,7 @@ Regeln:
    `claim` (s. „Autorbindung: SignedClaims“) sind reserviert; neue
    Vertragsfelder kommen nur mit einer neuen Vokabular-Version
    (`relation/v2`), nie still in `v1`.
-7. Ein RelationRecord SOLL im selben Space liegen wie sein `from`-Ziel.
+7. Ein RelationRecord SOLLTE im selben Space liegen wie sein `from`-Ziel.
    Endpunkte in anderen Spaces werden über `space:{id}/item:` adressiert.
 8. Records mit nicht auflösbaren oder fehlerhaften Endpunkten (kein oder
    mehr als ein `from`-/`to`-Eintrag) MÜSSEN von Leseflächen ignoriert
@@ -117,7 +117,7 @@ Regeln:
    anderen Autor als das Trägeritem haben. Feste Beziehungen DÜRFEN
    ebenfalls als Records geführt werden (die Netzwerk-App tut das für alle
    Relationsarten, auch `takesPlaceAt`).
-10. Relation-Items SOLLEN das Vokabular `relation/v1` deklarieren
+10. Relation-Items SOLLTEN das Vokabular `relation/v1` deklarieren
     (`@context`, s. [06-schema-composition.md](06-schema-composition.md));
     die Schema-Definition folgt in `schemas/vocab/relation/v1/` (validiert
     u. a. genau einen `from`- und einen `to`-Eintrag, die ID-Regel und die
@@ -140,6 +140,9 @@ interface RelationRecord {
   claim?: string
   createdBy: string
   createdAt: string
+  /** updatedAt des Relation-Items, wo der Connector es setzt — nur Lesen,
+      nie im Claim-Payload; Zeitpunkt ohne Claim unter one-per-subject */
+  updatedAt?: string
 }
 
 interface RelationRecordInput {
@@ -248,6 +251,62 @@ Regeln:
    zieht (im CRDT-Space kann jedes Mitglied technisch schreiben), ist die
    Vertraulichkeits-Grenze die Space-Wahl — s. Trust-Bindung Regel 6.
 
+## Qualifier an Kanten
+
+**Status:** Normativer Entwurf (S0, 26.09.2026).
+
+Ein Qualifier präzisiert eine Kante mit einem Wert aus einer festen Menge. Er ist kein zweites Prädikat. Jede Kante DARF Qualifier tragen: Person → Item und Item → Item, eingebettet oder als Record.
+
+Einordnung der bestehenden Fälle:
+
+| Kante | Ablage | Qualifier | Werte |
+|---|---|---|---|
+| `votesOn` (Person → Statement) | Record | `fields.value` | `green` · `yellow` · `red` ([modules/resonance.md](modules/resonance.md)) |
+| `attends` (Person → Event) | Record | `fields.role`, dazu `fields.tense` | `going` · `maybe` · `declined`; `coming` · `currently` · `has-been` |
+| `assignedTo` (Item → Person) | eingebettet | `meta.role` | keine im Kern; nichtnormatives Beispiel: `can` · `learns` aus der Schicht der Karabirrdt-App ([06, Regel 20](06-schema-composition.md#feld--und-kantenregister)) |
+
+Nichtnormative Beispiele für Item → Item, hier nicht eingeführt: `blocks` mit „zwingend" oder „hilfreich", `partOf` mit einer Rolle im Projekt.
+
+Werte sind feste englische Ids. Die Anzeigewörter (etwa „zugesagt", „lernt") kommen über die Intl-Schicht.
+
+Regeln:
+
+1. Der Qualifier lebt an der Kante. Aus einem Qualifier wird kein eigenes Prädikat (nicht `assignedTo` und `wantsToLearn` für dieselbe Zuweisung).
+2. **Eingebettete Kante:** Der Qualifier liegt in `meta` der Relation, als `meta.role` oder unter einem anderen benannten Schlüssel (`{ predicate: "assignedTo", target: "global:…", meta: { role: "…" } }`). `meta` ersetzt das Ziel nicht (04, Regel 3).
+3. **Eigener Datensatz:** Bei Records liegt der Qualifier als Feld in `data` des Records, also in `fields` der Projektion. Neue Qualifier heißen `role`, passend zu `meta.role`. `votesOn` behält seinen Schlüssel `value`: Die Stimme ist nach dieser Einordnung ein Qualifier, ihre Regeln stehen weiter eigenständig in [modules/resonance.md](modules/resonance.md).
+4. Schlüssel und erlaubte Werte deklariert das Darstellungs-Register je Kante (`EdgeEntry.qualifier`, [06 → Feld- und Kantenregister](06-schema-composition.md#feld--und-kantenregister)). Gespeichert wird die `id` des Werts, nie seine Beschriftung.
+5. Eine Kante ohne Qualifier ist gültig und wird ohne Qualifier gezeigt.
+6. Leseflächen zeigen den Qualifier klein hinter dem Chip, gleich ob das Ziel eine Person oder ein Item ist.
+7. Jedes Mitglied darf den Qualifier einer eingebetteten Kante setzen und ändern, auch für andere. Es schreibt dafür das Trägeritem nach dessen Rechten.
+8. **Aussagen über andere sind erlaubt.** Ein Record DARF einen anderen Gegenstand als `from` tragen als seinen Autor: `createdBy` ist der Sprecher, der ihn signiert, `from` der Gegenstand, über den er spricht. Weil die `id` `createdBy` enthält (Regel 4 in „RelationRecord als Item"), ist die Aussage eines anderen ein eigener Record neben dem des Gegenstands. Ändern und löschen darf jeder nur seine eigenen Records (Fassaden-Regel 7, creator-owns). Ein Prädikat DARF Aussagen über andere ausschließen; `votesOn` tut das (`from` MUSS `global:<createdBy>` sein, [modules/resonance.md](modules/resonance.md)).
+9. Leseflächen MÜSSEN eine Aussage über andere als solche zeigen: „Timo zugesagt · eingetragen von Anton" (Beispiel für `going`). Sie DÜRFEN sie nicht als Selbstaussage ausgeben.
+10. **Zählregel.** Wie mehrere Records zum selben Gegenstand und demselben Ziel zusammenwirken, deklariert das Register je Record-Kante (`EdgeEntry.count`):
+    - `one-per-subject` („eine je Gegenstand, eigene gewinnt"): Je Sprecher und Gegenstand gibt es eine Aussage. Ist der Gegenstand eine Person, gilt ihre Selbstaussage (`createdBy` = Identität von `from`); fehlt sie, oder ist der Gegenstand keine Person, gilt die jüngste Aussage. Die Person überstimmt jede fremde Aussage durch eine eigene, auch durch eine ablehnende (`declined`). Löscht sie ihren eigenen Record, hat sie keine Aussage mehr, und es gilt wieder die jüngste fremde. Form für Zusagen, die in der Zukunft liegen. Die Auswahl regelt „Gewinner unter `one-per-subject`" unten.
+    - `collect-accepted` („sammeln, Person nimmt an"): Die Aussagen addieren sich, keine überstimmt eine andere. Öffentlich angezeigt wird eine Aussage über eine Person erst, wenn diese sie angenommen hat ([05 → UI-Regeln](05-confirmations-and-trust.md#ui-regeln), Regel 5, `isAccepted`). Die Regel ist nur für Personen als Gegenstand definiert. Sie ist die Form für spätere Teilnahme-Bestätigungen („war dabei, bestätigt von Maria und Jonas"); Bestätigungen selbst regelt 05, nicht dieser Abschnitt.
+11. Wer Kanten neu schreibt (Composer-Mapper), MUSS `meta` jeder Kante erhalten, die bestehen bleibt ([shared-components.md → Personenfelder](modules/shared-components.md#personenfelder-people), Regel 6).
+
+### Gewinner unter `one-per-subject`
+
+Für einen Gegenstand und ein Ziel bestimmen alle Clients denselben Record:
+
+1. Es nehmen nur Records teil, die nach dieser Spec gelten: nach Leseregel L1 gezählt (`valid` oder `trusted`), nicht `invalid` (L2), mit genau einem `from` und `to` (Regel 8 in „RelationRecord als Item").
+2. Je Sprecher und Gegenstand gibt es höchstens einen Record, weil die `id` aus (`createdBy`, `predicate`, `from`, `to`) folgt (Regel 4 in „RelationRecord als Item"). Das gilt auch für `attends`: `to` ist das Event, `from` die Person, `createdBy` der Sprecher.
+3. Ist der Gegenstand eine Person, gewinnt ihre Selbstaussage (`createdBy` = Identität von `from`) immer, unabhängig von jedem Zeitpunkt.
+4. Sonst gewinnt die Aussage mit dem jüngsten Zeitpunkt. Der Zeitpunkt ist `createdAt` aus dem Payload des verifizierten Claims (`relation-authorial` bindet `createdAt`; ein Feld für den Änderungszeitpunkt hat das Payload nicht). Ohne Claim (Modus `authoritative`) gilt `updatedAt` des Relation-Items, fehlt es, `createdAt`.
+5. Bei gleichem Zeitpunkt gewinnt der Record mit der lexikographisch größten `id` (Vergleich nach UTF-16-Codeeinheiten wie in JCS). Das Ergebnis MUSS auf allen Clients gleich sein und DARF nicht von Lade- oder Sync-Reihenfolge abhängen.
+6. Grenze: Zeitstempel sind Angaben des Sprechers und beweisen keine Reihenfolge. Die Regel sichert gleiche Ergebnisse auf allen Clients, nicht die Wahrheit über die Reihenfolge. Weil das Claim-Payload nur `createdAt` bindet, verschiebt eine spätere Änderung der `role` durch den Sprecher den Zeitpunkt seiner Aussage im Modus `signed` nicht.
+
+Testvektor (nichtnormativ): Anton und Jonas sagen über Timo aus, Timo selbst nicht. Anton: `role: "going"`, `id: "rel-3f…"`; Jonas: `role: "declined"`, `id: "rel-a1…"`; beide mit `createdAt: "2026-09-27T10:00:00.000Z"`. Gewinner ist Jonas' Record (`"rel-a1…" > "rel-3f…"`), die Zeile zeigt Timo nicht (`declined`, siehe „Teilnahme am Event"). Sagt Timo danach selbst `maybe`, gewinnt seine Aussage, gleich wann sie entstand.
+
+### Teilnahme am Event: `attends` und `invited`
+
+1. Eine Zusage ist ein RelationRecord `attends` von der Person (`from`) zum Event (`to`), Zählregel `one-per-subject`.
+2. `fields.role` trägt den Qualifier: `going`, `maybe` oder `declined` (angezeigt etwa als „zugesagt", „vielleicht", „abgesagt"). `fields.tense` trägt die Zeitform wie in der Netzwerk-App ([netzwerk-app.md](netzwerk-app.md)): `coming`, `currently`, `has-been`.
+3. „Absagen" schreibt `role: "declined"` in den eigenen Record; der Record bleibt. `declined` ist eine eigene Aussage und stärker als keine: Unter `one-per-subject` gewinnt sie dauerhaft über fremde Einträge zur selben Person. Den eigenen Record zu löschen heißt dagegen „keine Aussage mehr" (Regel 10).
+4. „Eingeladen" ist die eingebettete Kante `invited` am Event (Event → Person). Sie bleibt, wie sie ist; Mitglieder setzen sie nach Regel 7.
+5. Das Event zeigt `invited` und `attends` in **einer** Menschen-Zeile. Hat eine Person eine gültige `attends`-Aussage, zeigt die Zeile deren Qualifier statt „eingeladen". Eine Person mit geltendem `declined` erscheint nicht in der Menschen-Zeile, nur in der vollständigen Liste („Alle").
+6. `attends` ist im Claim-Katalog `authorial` (siehe „Zwei Profile"): Der Sprecher signiert, nur er ändert.
+
 ## Trust-Bindung
 
 `knows(verified)` trägt keine eigene Kryptografie. Der Nachweis lebt bei den
@@ -298,7 +357,7 @@ zentrale Autoritätsprüfung mutieren. Der Vertrag ist deshalb
 | Modus | wer | Pflichten |
 |---|---|---|
 | `signed` | Multi-Writer-Sync ohne zentrale Autorität (WoT/shared CRDT) | MUSS `authorial`-Claims schreiben, re-signieren und verifizieren |
-| `authoritative` | Backends mit erzwungener Autorbindung | `trusted` DARF ein Connector NUR beanspruchen, wenn **jeder Ingress-Pfad** seines Stores (`createItem`, Update, Import, Mirror/Bridge) `createdBy` verbindlich an die authentifizierte Identität bindet — das ist MUSS, nicht SOLL. Privilegierte Fixture-/Seed-Pfade sind ausgenommen, MÜSSEN aber als solche gekennzeichnet und im Produktionspfad unerreichbar sein (analog Fassaden-Regel 3). |
+| `authoritative` | Backends mit erzwungener Autorbindung | `trusted` DARF ein Connector NUR beanspruchen, wenn **jeder Ingress-Pfad** seines Stores (`createItem`, Update, Import, Mirror/Bridge) `createdBy` verbindlich an die authentifizierte Identität bindet — das ist MUSS, nicht SOLLTE. Privilegierte Fixture-/Seed-Pfade sind ausgenommen, MÜSSEN aber als solche gekennzeichnet und im Produktionspfad unerreichbar sein (analog Fassaden-Regel 3). |
 
 Ein Connector, der keinen der beiden Modi erfüllt (z. B. ein GraphQL-Server,
 dessen Store client-gesetztes `createdBy` akzeptiert), hat KEINEN Claim-Modus:
@@ -413,15 +472,17 @@ Typ-Register, 06).
 
 | Profil | Payload | Mutation | Katalog v0.1 |
 |---|---|---|---|
-| `authorial` | `relation-authorial` (Identität **+ Inhalt** inkl. `fields` und `confirmationRef`) | nur der Autor; jedes `updateRelationRecord` (auch `confirmationRef`-Änderung) MUSS re-signieren | `votesOn`, `knows`, `connectedWith`, `takesPlaceAt` |
-| `structural` | kein Record-Claim; als eigenständiges Relation-Item trägt der Record den **Item-Herkunfts-Claim** (unten) | kollaborativ | — (heute keine Record-Prädikate; eingebettete `assignedTo`/`invited`/`blocks`/`childOf` deckt der Herkunfts-Claim des Trägeritems) |
+| `authorial` | `relation-authorial` (Identität **+ Inhalt** inkl. `fields` und `confirmationRef`) | nur der Autor; jedes `updateRelationRecord` (auch `confirmationRef`-Änderung) MUSS re-signieren | `votesOn`, `knows`, `connectedWith`, `takesPlaceAt`, `attends` |
+| `structural` | kein Record-Claim; als eigenständiges Relation-Item trägt der Record den **Item-Herkunfts-Claim** (unten) | kollaborativ | — (heute keine Record-Prädikate; eingebettete `assignedTo`/`invited`/`blocks`/`childOf`/`partOf` deckt der Herkunfts-Claim des Trägeritems) |
+| `item-authorial` | Item-Claim über Identität **+ Inhalt** einer Aussage einer Person (unten) | nur die Autorin; jede Änderung des Inhalts MUSS neu signieren | Items der Typen `statement`, `comment`, `reaction` |
 
 **Exklusivität (ein Claim pro Datensatz):** `data.claim` trägt genau EINEN
 Claim — kein Array, keine parallelen Felder. Ein `authorial`-Record trägt
 ausschließlich `relation-authorial`; er ERSETZT den Herkunfts-Claim, dessen
 unveränderliche Felder (`id`, `createdBy`, `createdAt`) er bereits mitbindet.
-`structural`-Records und alle übrigen Items tragen (mit dem
-Item-Provenance-Slice) `item-provenance`. Verifier dispatchen anhand
+Items eines Typs aus dem Katalog der Aussagen einer Person tragen
+ausschließlich `item-authorial` (unten). `structural`-Records und alle übrigen
+Items tragen (mit dem Item-Provenance-Slice) `item-provenance`. Verifier dispatchen anhand
 `payload.profile`; ein Profil, das nicht zur Datensatz-Klasse passt
 (`item-provenance` auf einem Katalog-`authorial`-Record oder
 `relation-authorial` außerhalb von Relation-Records), ist `invalid`.
@@ -436,9 +497,173 @@ kollaborative Objekte, Umsetzung separat): Payload
 `{ "v": "rls-claim/1", "profile": "item-provenance", "id", "type", "createdBy", "createdAt" }` —
 nur die unveränderlichen Felder. Beglaubigt die Herkunft, überlebt jeden
 legitimen Fremd-Edit (zwei parallel gemergte Edits hätten keinen Zustand, den
-je jemand signiert hat). Er gilt für ALLE Items — Relation-Items
-eingeschlossen, wodurch auch eigenständige `structural`-Records eine
-Herkunftsbindung bekommen.
+je jemand signiert hat). Er gilt für alle Items, die kein anderes Profil
+tragen: nicht für Katalog-`authorial`-Relation-Records (`relation-authorial`)
+und nicht für Items eines Katalogtyps der Aussagen einer Person
+(`item-authorial`). Eigenständige `structural`-Records bekommen so eine
+Herkunftsbindung.
+
+### Aussagen einer Person: `item-authorial`
+
+**Status:** Normativer Entwurf. Manche Items sind die Aussage einer Person:
+Was drinsteht, hat jemand gesagt, und nur diese Person darf es ändern. Für
+diese Typen signiert die Autorin den Inhalt, so wie bei `relation-authorial`.
+Alle anderen Items sind kollaborativ und tragen den Herkunfts-Claim.
+
+**Katalog (geschlossen, v0.1).** Welche Typen Aussagen einer Person sind und
+was ihren Inhalt bildet, steht ausschließlich hier und nie in Space-Daten,
+damit kein Client einen Typ anders einstufen kann. Zum Inhalt gehören
+**Inhaltsfelder** aus `data` und **Inhaltsrelationen**: eingebettete
+Relationen (`item.relations`), deren Ziel zur Aussage gehört, etwa worauf
+sich ein Kommentar bezieht.
+
+| Typ | Inhaltsfelder | Inhaltsrelationen | Beleg erforderlich |
+|---|---|---|---|
+| `statement` | `title`, `description`, `variantOf` ([modules/resonance.md](modules/resonance.md)) | — | ja |
+| `comment` | `content`, `replyTo`, `replyToComment` | `commentOn` | vorerst nein |
+| `reaction` | `emoji` | `reactsTo` | vorerst nein |
+
+`post` ist nicht im Katalog und bleibt gemeinsam bearbeitbar (rls#263). Wird
+die Einstufung später je Space oder Item konfigurierbar, MUSS sie so gebunden
+sein, dass kein Client einen Typ nachträglich zwischen „Aussage einer Person"
+und „kollaborativ" umstufen kann.
+
+**Inhalt und Inhalts-Hash.** Der Inhalt eines Items ist das Objekt
+`{ "data": …, "relations": … }`:
+
+- `data` enthält die Inhaltsfelder des Typs, jedes aus `data`, fehlende als
+  `null`.
+- `relations` enthält für jedes Prädikat der Inhaltsrelationen des Typs die
+  Liste der Ziele (`target`) aller eingebetteten Relationen mit diesem
+  Prädikat, sortiert nach UTF-16-Codeeinheiten wie die Schlüssel in JCS,
+  ohne `meta`. Gibt es keine, ist die Liste leer. Ein Typ ohne
+  Inhaltsrelationen hat `"relations": {}`.
+
+Alles andere gehört nicht zum Inhalt, insbesondere vom Connector gepflegte
+Zählungen wie `reactions`, `myReaction` und `commentCount`, Relationen mit
+anderen Prädikaten, `tags` und Vertragsfelder wie `data.claim`. Der Inhalts-Hash ist
+`"sha256:" + hex(SHA-256(UTF-8(JCS(Inhalt))))`, Hex in Kleinbuchstaben. Es wird
+nicht normalisiert: Editoren DÜRFEN NICHT den Inhalt beim Öffnen
+normalisiert zurückschreiben, denn jede Byte-Änderung ändert den Hash.
+
+```json
+{
+  "v": "rls-claim/1",
+  "profile": "item-authorial",
+  "id": "…",
+  "type": "comment",
+  "createdBy": "did:key:…",
+  "createdAt": "2026-09-25T15:00:00.000Z",
+  "content": {
+    "data": { "content": "…", "replyTo": null, "replyToComment": null },
+    "relations": { "commentOn": ["item:…"] }
+  }
+}
+```
+
+1. Alle Member sind IMMER präsent. `content.data` enthält genau die
+   Inhaltsfelder des Typs, fehlende als `null`; `content.relations` enthält
+   genau die Prädikate seiner Inhaltsrelationen. Damit ist auch gebunden,
+   worauf sich eine Aussage bezieht: Wird ein Kommentar oder eine Reaktion
+   an ein anderes Ziel gehängt, ist der Claim ungültig.
+2. Das Profil ist nur auf Items eines Katalogtyps gültig, und `type` im
+   Payload MUSS dem Item entsprechen. Sonst ist es `invalid`.
+3. Der Claim ersetzt für Katalogtypen den Herkunfts-Claim, dessen
+   unveränderliche Felder er mitbindet (Exklusivität wie oben). Gespeichert
+   wird er als Vertragsfeld `data.claim`.
+4. Verifier prüfen wie bei `relation-authorial`: Schlüssel aus `kid`,
+   `kid === "<createdBy>#sig-0"`, jedes Payload-Member gleich dem
+   gespeicherten Item, `content` gleich dem gespeicherten Inhalt. Abweichung
+   ist `invalid`.
+5. Den Inhalt, also Inhaltsfelder und Inhaltsrelationen, ändert nur die
+   Autorin, und jede Änderung MUSS neu signiert werden. Alles außerhalb des
+   Inhalts darf nach den allgemeinen Item-Regeln geschrieben werden; der
+   Claim bleibt dabei gültig.
+6. Claim-Modi wie oben: `signed`-Connectoren MÜSSEN den Claim schreiben und
+   prüfen; ein Item eines Katalogtyps ohne Claim ist dort `invalid`.
+   `authoritative`-Connectoren schreiben keinen Claim; `trusted` DÜRFEN sie
+   nur beanspruchen, wenn jeder Ingress-Pfad die Autorbindung erzwingt und
+   Änderungen am Inhalt auf die Autorin beschränkt. Ohne Claim-Modus
+   ist ein solches Item unverifiziert.
+7. Leseregeln analog L1/L2: Ein Item mit `invalid`-Claim zählt in keiner
+   Auswertung, Bezugnahmen darauf ebenso wenig. Anzeigeflächen DÜRFEN es mit
+   Kennzeichnung („verändert") zeigen. Die Abwesenheit eines Claims beweist
+   keine Herkunft und kann in einem Multi-Writer-Store jederzeit hergestellt
+   werden. Ob ein Item ohne Claim trotzdem angezeigt wird und zählt, regelt
+   allein die Spalte „Beleg erforderlich" (unten); eine Ausnahme nach Datum
+   oder Herkunft gibt es nicht.
+8. Kanonische **Testvektoren** liegen unter
+   `schemas/claims/vectors/item-authorial-1.json` und sind für
+   Implementierungen verbindlich.
+
+**Beleg erforderlich.** Die Spalte im Katalog legt fest, was mit einem Item
+ohne Claim geschieht. Für jedes Item eines Katalogtyps gilt, in dieser
+Reihenfolge:
+
+1. Verdikt `valid` oder `trusted`: Das Item ist **belegt**. Es wird angezeigt
+   und zählt in Auswertungen.
+2. Kein Claim (`data.claim` fehlt) und der Typ verlangt **keinen** Beleg: Das
+   Item ist **unsigniert**. Es wird angezeigt und zählt in Auswertungen.
+   Anzeigeflächen SOLLTEN es dezent als unsigniert kennzeichnen, nicht als
+   Warnung.
+3. Sonst ist es **ungültig** und zählt in keiner Auswertung. Trägt es einen
+   Claim, der nicht passt, DÜRFEN Anzeigeflächen es mit Kennzeichnung
+   („verändert") zeigen.
+
+Für `comment` und `reaction` ist die Belegpflicht **vorerst aus**. Diese
+Typen gab es schon, bevor sie signiert wurden, und ihr Bestand soll sichtbar
+bleiben. Die Belegpflicht wird später eingeschaltet. Ab dann sind
+unsignierte Kommentare und Reaktionen ungültig. Das Einschalten ist eine
+Änderung dieses Katalogs mit einem Release, kein Laufzeitschalter und nichts,
+was ein Client oder Space-Daten ändern können.
+
+Solange die Belegpflicht aus ist, gilt für diese Typen: Ein unsigniertes Item
+ist unbelegt. `createdBy` und `createdAt` sind ohne Claim frei schreibbar, und
+wer bei einem signierten Kommentar den Claim entfernt, macht ihn zu einem
+unsignierten. Die Kennzeichnung als unsigniert macht das sichtbar. Ein
+automatisches Nachsignieren findet nicht statt, weil es untergeschobene
+Items beglaubigen würde.
+
+Die Gruppe `standing` in `item-authorial-1.json` legt die drei Ergebnisse
+fest.
+
+**Schreibweg.** Den Claim verwaltet der Connector im allgemeinen Schreibweg,
+gesteuert allein durch den Katalog:
+
+1. Connectoren DÜRFEN dafür keine typspezifische Logik enthalten. Sie lesen
+   aus dem Katalog, ob ein Typ eine Aussage einer Person ist und welche
+   Inhaltsfelder und Inhaltsrelationen seinen Inhalt bilden.
+2. Beim regulären Anlegen und Ändern wird ein vom Aufrufer mitgegebenes
+   `data.claim` ignoriert. Pfade, die ein bestehendes Item unverändert
+   übernehmen (Sync, Snapshot, Mirror/Bridge), übernehmen seinen Claim
+   unverändert und signieren nie im Namen der Autorin.
+3. **Anlegen:** Im Modus `signed` signiert der Connector mit der
+   angemeldeten Identität; ohne Identität lehnt er ab und schreibt nie
+   unsigniert.
+4. **Ändern:** Bleibt der Inhalt gleich, behält der Connector den bestehenden
+   Claim, auch wenn `updateItem` `data` vollständig ersetzt. Ändert sich der
+   Inhalt, MUSS der Connector prüfen, dass die angemeldete Identität die
+   Autorin ist und das Item nicht eingefroren ist, und neu signieren. Sonst
+   lehnt er ab.
+
+### Inhaltsgebundene Bezugnahme und Einfrieren
+
+1. Ein Relation Record, dessen `to` auf ein Item eines Katalogtyps zeigt,
+   DARF `fields.contentHash` tragen: den Inhalts-Hash des Ziels, auf den
+   sich die Bezugnahme bezieht. Sie gilt dann nur für genau diesen Inhalt.
+   Stimmt der Hash nicht mit dem gespeicherten Inhalt überein, bezieht sie
+   sich auf eine andere Fassung und gilt nicht. In `relation-authorial` ist
+   `fields` mitsigniert, die Autorin der Bezugnahme bezeugt also genau
+   diesen Inhalt.
+2. Welche Prädikate inhaltsgebunden sein MÜSSEN, legt die Spec des Prädikats
+   oder Moduls fest. `votesOn` MUSS inhaltsgebunden sein (Resonanzmodul).
+3. **Einfrieren:** Existiert zu einem Item eine inhaltsgebundene Bezugnahme
+   einer anderen Person, ist es eingefroren, und sein Inhalt DARF nicht mehr
+   geändert werden. Clients und Connectoren MÜSSEN solche
+   Änderungen ablehnen. Gegen manipulierte Clients schützt Regel 1: Eine
+   spätere Änderung lässt die Bezugnahmen nicht mehr gelten.
+4. Wie ein eingefrorenes Item neu gefasst wird, regelt sein Typ. Beim
+   Statement sind es Varianten ([modules/resonance.md](modules/resonance.md#varianten)).
 
 ### Schreibregeln (Fassade)
 

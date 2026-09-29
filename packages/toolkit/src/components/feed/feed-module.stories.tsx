@@ -1,202 +1,40 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import type { Item, User } from "@real-life-stack/data-interface"
-import { useMemo, useState } from "react"
-import { ContentComposer, type ContentComposerSubmitData } from "../composer/content-composer"
-import { FeedComposerTrigger } from "./feed-composer-trigger"
-import {
-  ItemPreview,
-  ItemTypeBadge,
-  ItemMetaRow,
-  ItemCommentCount,
-} from "../preview"
 
-const now = new Date()
+import { HostWorld } from "../../story-support/host-world"
 
-type FeedEntry = {
-  item: Item
-  author: User
-  comments?: number
-  reactions?: Array<{ emoji: string; count: number }>
-}
-
-const currentUser = {
-  id: "user-1",
-  name: "Anna Schmidt",
-  avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-}
-
-const initialItems: FeedEntry[] = [
-  {
-    item: {
-      id: "post-1",
-      type: "post",
-      createdAt: new Date(now.getTime() - 1000 * 60 * 35).toISOString(),
-      createdBy: "user-1",
-      data: {
-        title: "Gemeinschaftsgarten: Samstagstreffen",
-        content: "Wir treffen uns am Samstag zum Beete vorbereiten und planen die nächsten Schritte."
-      }, tags: ["garten", "planung"],
-    },
-    author: { id: currentUser.id, displayName: currentUser.name, avatarUrl: currentUser.avatar },
-    comments: 4,
-    reactions: [
-      { emoji: "❤️", count: 5 },
-      { emoji: "👍", count: 3 },
-    ],
-  },
-  {
-    item: {
-      id: "event-1",
-      type: "event",
-      createdAt: new Date(now.getTime() - 1000 * 60 * 90).toISOString(),
-      createdBy: "user-2",
-      data: {
-        title: "Workshop: Kompost richtig anlegen",
-        content: "Kurzer Praxisworkshop mit Materialliste und offener Fragerunde.",
-        start: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 3).toISOString(),
-        address: "Gemeinschaftsgarten Nord"
-      }, tags: ["workshop"],
-    },
-    author: { id: "user-2", displayName: "Max Mustermann", avatarUrl: "https://randomuser.me/api/portraits/men/32.jpg" },
-    comments: 2,
-    reactions: [{ emoji: "👍", count: 6 }],
-  },
-  {
-    item: {
-      id: "task-1",
-      type: "task",
-      createdAt: new Date(now.getTime() - 1000 * 60 * 140).toISOString(),
-      createdBy: "user-3",
-      data: {
-        title: "Wasserschlauch reparieren",
-        description: "Leck am Verbindungsstück abdichten und Materialbedarf dokumentieren.",
-        status: "in-progress"
-      }, tags: ["infrastruktur"],
-    },
-    author: { id: "user-3", displayName: "Thomas Müller", avatarUrl: "https://randomuser.me/api/portraits/men/67.jpg" },
-    comments: 1,
-  },
-]
-
-function getStringArray(value: unknown): string[] {
-  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : []
-}
-
-function StaticReactionSlot({ reactions }: { reactions: Array<{ emoji: string; count: number }> }) {
-  return (
-    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-      {reactions.map((reaction) => (
-        <span key={reaction.emoji} className="rounded-full border bg-muted/50 px-2 py-0.5">
-          {reaction.emoji} {reaction.count}
-        </span>
-      ))}
-    </div>
-  )
-}
-
+/**
+ * **The feed** is the aggregating view of a space: everything that stands as a
+ * card of its own — posts, events, tasks, places — newest first, with comments
+ * and reactions on the card. It is a toolkit module and runs inside the module
+ * host (spec 01): this story contains no line of feed wiring.
+ *
+ * What is the feed's own: the sort order and the **pill** at the top, the entry
+ * into writing. While the pill is in view, the host's plus button steps back;
+ * once it is scrolled away, the plus button takes its place. Create opens
+ * fullscreen (`options.createShell`) with "Beitrag" (post) suggested — all
+ * types stay selectable.
+ *
+ * Without a write capability the pill and the plus button are gone; the feed
+ * still reads. Without relations there are no comments and reactions; the
+ * cards still show.
+ *
+ * Where next: the card is [ItemPreview](?path=/story/rls-items-item-preview--bare),
+ * the detail on click [Detail view](?path=/story/rls-items-detail-body--event),
+ * the host behind it [The module host](?path=/docs/rls-app-03-module-host--docs).
+ */
 function FeedModuleOverview() {
-  const [feedItems, setFeedItems] = useState(initialItems)
-  const sortedItems = useMemo(
-    () => [...feedItems].sort((a, b) => Date.parse(b.item.createdAt) - Date.parse(a.item.createdAt)),
-    [feedItems],
-  )
-
-  const handleCreatePost = (submitData: ContentComposerSubmitData) => {
-    const text = typeof submitData.data.text === "string" ? submitData.data.text.trim() : ""
-    const title = typeof submitData.data.title === "string" ? submitData.data.title.trim() : ""
-    const tags = getStringArray(submitData.data.tags)
-
-    if (!text && !title) return
-
-    const item: Item = {
-      id: `post-${Date.now()}`,
-      type: submitData.contentType,
-      createdAt: new Date().toISOString(),
-      createdBy: currentUser.id,
-      data: {
-        title,
-        content: text,
-      },
-      ...(tags.length > 0 ? { tags } : {}),
-    }
-
-    setFeedItems((current) => [
-      {
-        item,
-        author: { id: currentUser.id, displayName: currentUser.name, avatarUrl: currentUser.avatar },
-        comments: 0,
-      },
-      ...current,
-    ])
-  }
-
-  return (
-    <div className="mx-auto max-w-2xl space-y-3">
-      <FeedComposerTrigger
-        userName={currentUser.name}
-        userAvatar={currentUser.avatar}
-        placeholder="Was gibt es Neues im Gemeinschaftsgarten?"
-      >
-        {({ onClose, initialText }) => (
-          <div className="p-4 sm:p-6">
-            <ContentComposer
-              contentTypes={[
-                {
-                  id: "post",
-                  label: "Post",
-                  defaultWidgets: ["text", "tags"],
-                  submitLabel: "Posten",
-                },
-              ]}
-              initialData={{ text: initialText ?? "" }}
-              showPreview={false}
-              showVisibility={false}
-              tagQuickSuggestions={["garten", "planung", "infrastruktur", "workshop"]}
-              onSubmit={(data) => {
-                handleCreatePost(data)
-                onClose()
-              }}
-              onCancel={onClose}
-            />
-          </div>
-        )}
-      </FeedComposerTrigger>
-
-      {sortedItems.map(({ item, author, comments, reactions }) => (
-        <ItemPreview
-          key={item.id}
-          item={item}
-          author={author}
-          headerAdornment={<ItemTypeBadge type={item.type} />}
-          metaAdornment={<ItemMetaRow item={item} />}
-          footerAdornment={
-            reactions || (comments && comments > 0) ? (
-              <>
-                {reactions && <StaticReactionSlot reactions={reactions} />}
-                {comments && comments > 0 ? (
-                  <div className="ml-auto">
-                    <ItemCommentCount count={comments} />
-                  </div>
-                ) : null}
-              </>
-            ) : undefined
-          }
-        />
-      ))}
-    </div>
-  )
+  return <HostWorld module="feed" />
 }
 
 const meta: Meta<typeof FeedModuleOverview> = {
-  title: "RLS/Space Modules/Feed/Overview",
+  id: "rls-modules-feed",
+  title: "RLS/Modules/Feed/Overview",
   component: FeedModuleOverview,
   tags: ["autodocs"],
-  parameters: {
-    layout: "padded",
-  },
+  parameters: { layout: "fullscreen" },
 }
 
 export default meta
 type Story = StoryObj<typeof FeedModuleOverview>
 
-export const Default: Story = {}
+export const Default: Story = { name: "Feed inside the host" }

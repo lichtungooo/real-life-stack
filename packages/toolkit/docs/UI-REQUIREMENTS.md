@@ -153,6 +153,41 @@ Entwurf: Claude-Design-Projekt „RLS System Design", Datei `Space Menu.dc.html`
 
 ---
 
+## Modulkopf
+
+Der Kopf der Modulfläche, normativ in [`docs/spec/01-app-composition.md`](../../../docs/spec/01-app-composition.md) Regeln 2, 2a und 4.
+
+- [x] **shared-belongs-to-surface**: Was sich Module teilen können, gehört der Fläche. Prüfsatz: aus den Items des Space oder dem geteilten Filterzustand ableitbar ⇒ geteilt. Geteilt sind Suche, Vokabular (Tags und Typen), Filterkarte und die Chips der aktiven Filter; dem Modul gehören seine Steuerelemente, `chipsExtra` und `drawerExtra`
+- [x] **vocabulary-from-one-derivation**: Welche Tags und Typen es gibt, leitet `useGroupVocabulary` einmal ab — Tags alphabetisch, Systemtypen weg, Beschriftung und Farbe aus dem Typ-Register. Kein Modul leitet es selbst ab
+- [x] **head-search-belongs-to-surface**: Die Suche gehört der Fläche, nicht dem Modul. `ModuleFrame` rendert sie genau einmal, bevor irgendein Modul etwas beiträgt; kein Modul bringt sie mit und keines schaltet sie ab. Sie zieht sich ausnahmslos durch alle Module (Anton, 19.09.2026)
+- [x] **head-search-label-names-the-space**: Die Beschriftung des Suchfelds nennt den Space, nicht das Modul („In Gemeinschaftsgarten suchen") — was sie durchsucht, wechselt beim Modulwechsel nicht
+- [x] **head-module-actions-beside-search**: Die eigenen Steuerelemente eines Moduls (Ansichtswechsel, „Heute", Ortung) stehen rechtsbündig in **derselben Zeile** wie die Suche, nicht darunter; sie kommen über `ModuleToolbar` in den Platz neben ihr
+- [x] **head-chips-below**: Die aktiven Filter stehen als entfernbare Chips in einer zweiten Zeile unter der Suche
+- [x] **head-single-search-even-with-two-toolbars**: Reichen zwei Leisten in denselben Kopf, gibt es trotzdem genau ein Suchfeld. Vorher brachte jedes Modul die Suche mit, und im Kalender standen zwei untereinander
+- [x] **head-hidden-without-filter-owner**: Ohne Besitzer des Filters gibt es keine Suche; trägt dann auch das Modul nichts bei, verschwindet der Kopf statt eine leere Zeile zu zeigen
+- [x] **head-top-left-clearance-independent**: Führt ein Modul die Ecke oben links selbst (Zoom-Knöpfe der Karte), rückt die schwebende Kopfzeile daneben — **unabhängig davon, ob das Modul gerade etwas in den Kopf reicht**. Eine Karte ohne Ortungsknopf und ohne aktive Filter behält den Abstand, weil die Suche trotzdem steht (Codex-Review zu rls#405)
+
+---
+
+## Modul-Host
+
+Normativ in [`docs/spec/01-app-composition.md`](../../../docs/spec/01-app-composition.md) „Der Modul-Host" und „Der Ladevertrag".
+
+- [x] **host-owns-shared-wiring**: Items, Space-Kontext, Detail, Erstellen und Plusknopf stellt der `ModuleHost` einmal je Modul aus dem Registereintrag her; keine Ansicht registriert selbst (rls#414)
+- [x] **host-loads-by-contract**: Der Host lädt nach `presents` über die Hinweis-Tabelle; ohne Hinweis alles (aggregierende Module), bei mehreren die Vereinigung, bei `loads: "module"` gar nicht (Karte lädt nach Ausschnitt)
+- [x] **host-services**: Autor-Auflösung (`resolveAuthor`), das aktive Item (`activeItemId`), `filterActive` für den leeren Zustand, das Scrollen zur fokussierten Karte (`registerItemElement`) und die Regel „steht als eigene Karte" für aggregierende Module kommen vom Host über `useModuleHost()`; kein Modul baut sie nach (Anton, 21.09.2026)
+- [x] **items-arrive-filtered**: Die Items eines Moduls sind bereits nach Suche, Tags und Typen gefiltert, wenn es sie sieht — vom Host (`items`) oder von der Fläche (`useSurfaceItems`). Kein Modul und keine Lens wendet den geteilten Filter selbst an; der Wächter meldet `useModuleFilteredItems` außerhalb der zwei Stellen (Anton, 21.09.2026). Öffentlich ist der Hook seit dem 29.09.2026 nur für eine Fläche außerhalb des Modul-Hosts (rls#558); eine solche Fläche in diesem Repo steht namentlich in der Ausnahmeliste des Wächters
+- [x] **apps-share-the-shell**: Was jede App mit Router gleich tut, liegt im Unterpfad `/router` (`useWorkspaceRouting`, `notificationRoute`, `UnsavedChangesGuard`) und im Toolkit (`ActivityPanelController`). Die Netzwerk-App läuft seit rls#429 so — mit einem eigenen Modul (Marktplatz über Hinweis `resource`) und `replaces: ["options"]` für Karte und Kalender
+- [x] **app-frame**: Eine App setzt ihre Shell nicht zusammen. `AppFrame` (Toolkit) bzw. `RoutedAppFrame` (`/router`) stellt Provider, Panel, Kopfzeile mit Space-Verwaltung und Menü nach Connector-Fähigkeiten, die vier Controller, die drei Navigationsregeln und den Outlet — Apps und `HostWorld` sind derselbe Rahmen. Eine App stellt Connector, Router, Register, Karten-Engine und Extras (`navbarEnd`, Kinder) (Anton, 21.09.2026, nach rls#429)
+- [x] **create-offers-all-types**: Der Plusknopf bietet in jedem Modul alle Inhaltstypen; ein Modul schlägt über `options.suggestType` einen vor und schränkt nie ein (Anton, 20.09.2026)
+- [x] **create-fab-uniform**: Der Plusknopf heißt überall „Erstellen", weicht dem Orts-Pick auf der Karte, fehlt ohne Schreibrecht, und tritt hinter einen vom Modul gemeldeten eigenen Einstieg zurück, solange der im Bild ist (Feed-Pille, `setCreateAnchor`)
+- [x] **detail-backdrop-follows-panelfit**: Der Hintergrund-Schleier des Detail-Panels folgt aus `panelFit`; über `overlay`-Flächen (Karte, Graph) keiner
+- [x] **tag-suggestions-from-vocabulary**: Tag-Vorschläge im Composer kommen aus dem Vokabular des Space — für Erstellen und Bearbeiten, in jedem Modul (vorher nur im Kanban)
+- [x] **focus-in-url-by-default**: Offenes Item, Bearbeiten und Erstellen stehen in der URL (`UrlFocusProvider` aus `/router`); ohne Router hält `MemoryFocusProvider` denselben Vertrag
+- [x] **app-may-replace-a-view-explicitly**: Eine App ersetzt eine Toolkit-Fläche nur mit `replaces: ["view"]` am Fragment; ohne die Nennung bleibt es ein Konflikt (Anton, 21.09.2026)
+
+---
+
 ## Linsen
 
 - [x] **lens-no-local-filter-toolbar**: List-, Grid- und read-only-Kanban-Linsen bringen keine eigene Filter-Toolbar mit

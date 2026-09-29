@@ -274,16 +274,28 @@ describe("matchesFilter", () => {
   })
 })
 
-describe("moduleHintsFor — hasStatement schema hint", () => {
-  it("derives hasStatement from the statement/v1 vocabulary, not the type", () => {
-    const withSchema = {
+describe("moduleHintsFor — hasStatement kommt von der Klasse, nicht vom Schema (Spec 06, 21.09.2026)", () => {
+  it("aktiviert über die Klasse mit der Affordanz votesOn — mit oder ohne statement/v1 in @context", () => {
+    const mitSchema = {
       id: "s1", type: "statement", createdAt: "t", createdBy: "u",
       "@context": ["https://real-life-stack.org/vocab/base/v1", "https://real-life-stack.org/vocab/statement/v1"],
       data: { title: "These" },
     } as never
-    const withoutSchema = { id: "s2", type: "statement", createdAt: "t", createdBy: "u", data: { title: "Alt" } } as never
-    expect(moduleHintsFor(withSchema).hasStatement).toBe(true)
-    expect(moduleHintsFor(withoutSchema).hasStatement).toBe(false)
+    const ohneSchema = { id: "s2", type: "statement", createdAt: "t", createdBy: "u", data: { title: "Alt" } } as never
+    expect(moduleHintsFor(mitSchema).hasStatement).toBe(true)
+    // Bis zum 21.09.2026 war das false: Das „Marker-Vokabular" entschied.
+    // Jetzt entscheidet die Klasse — ein Vokabular in @context ist kein
+    // zweiter Ort für dieselbe Aussage.
+    expect(moduleHintsFor(ohneSchema).hasStatement).toBe(true)
+  })
+
+  it("aktiviert nicht über das Schema allein — ein Post mit statement/v1 im @context ist keine Aussage", () => {
+    const nurSchema = {
+      id: "s3", type: "post", createdAt: "t", createdBy: "u",
+      "@context": ["https://real-life-stack.org/vocab/base/v1", "https://real-life-stack.org/vocab/statement/v1"],
+      data: { title: "Post" },
+    } as never
+    expect(moduleHintsFor(nurSchema).hasStatement).toBe(false)
   })
 
   it("passes persisted hints through unchanged (older entries without the field stay undefined)", () => {

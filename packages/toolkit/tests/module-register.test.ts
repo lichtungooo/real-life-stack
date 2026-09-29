@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach } from "vitest"
+import { describe, it, expect, beforeEach, afterEach } from "vitest"
+import { registerModuleHint, resetModuleHints, type Item } from "@real-life-stack/data-interface"
 import {
-  CORE_MODULES,
-  CORE_MODULE_LAYER,
+  TOOLKIT_MODULES,
+  TOOLKIT_DEFINITION,
   composeModules,
   setModuleRegistry,
   getModules,
@@ -12,6 +13,7 @@ import {
   isKnownModule,
   resetModuleRegistryForTests,
   findModulePresenting,
+  modulePresentsItem,
 } from "../src/lib/module-register"
 
 const Dummy = () => null
@@ -20,7 +22,7 @@ describe("Modul-Register", () => {
   beforeEach(() => resetModuleRegistryForTests())
 
   it("ships the core modules", () => {
-    expect(moduleIds()).toEqual(CORE_MODULES.map((m) => m.id))
+    expect(moduleIds()).toEqual(TOOLKIT_MODULES.map((m) => m.id))
   })
 
   it("gives every core module a label and an icon", () => {
@@ -39,7 +41,7 @@ describe("Modul-Register", () => {
 
   it("lets a layer add a new module", () => {
     setModuleRegistry(
-      composeModules([CORE_MODULE_LAYER, { name: "app", definitions: [{ id: "garten", label: "Garten", icon: Dummy }] }]),
+      composeModules([TOOLKIT_DEFINITION, { name: "app", definitions: [{ id: "garten", label: "Garten", icon: Dummy }] }]),
     )
     expect(moduleIds()).toContain("garten")
     expect(getModule("garten")?.label).toBe("Garten")
@@ -47,17 +49,17 @@ describe("Modul-Register", () => {
 
   it("keeps composition order — the tab order follows it", () => {
     setModuleRegistry(
-      composeModules([CORE_MODULE_LAYER, { name: "app", definitions: [{ id: "garten", label: "Garten", icon: Dummy }] }]),
+      composeModules([TOOLKIT_DEFINITION, { name: "app", definitions: [{ id: "garten", label: "Garten", icon: Dummy }] }]),
     )
     expect(moduleIds().at(-1)).toBe("garten")
   })
 
-  it("lets an app attach its view to a core id", () => {
+  it("laesst eine App eine Toolkit-Flaeche ausdruecklich ersetzen — der Rest des Eintrags bleibt", () => {
     setModuleRegistry(
-      composeModules([CORE_MODULE_LAYER, { name: "app", extensions: [{ id: "feed", view: Dummy }] }]),
+      composeModules([TOOLKIT_DEFINITION, { name: "app", extensions: [{ id: "kanban", view: Dummy, replaces: ["view"] }] }]),
     )
-    expect(getModule("feed")?.view).toBe(Dummy)
-    expect(getModule("feed")?.label).toBe(CORE_MODULES.find((m) => m.id === "feed")!.label)
+    expect(getModule("kanban")?.view).toBe(Dummy)
+    expect(getModule("kanban")?.label).toBe(TOOLKIT_MODULES.find((m) => m.id === "kanban")!.label)
   })
 })
 
@@ -66,7 +68,7 @@ describe("Konflikte werden abgelehnt, nicht aufgeloest (Review #277)", () => {
 
   it("rejects a duplicate id across layers", () => {
     expect(() =>
-      composeModules([CORE_MODULE_LAYER, { name: "app", definitions: [{ id: "feed", label: "Anderer Feed", icon: Dummy }] }]),
+      composeModules([TOOLKIT_DEFINITION, { name: "app", definitions: [{ id: "feed", label: "Anderer Feed", icon: Dummy }] }]),
     ).toThrow(/feed/)
   })
 
@@ -84,45 +86,46 @@ describe("Konflikte werden abgelehnt, nicht aufgeloest (Review #277)", () => {
   it("rejects two layers setting the same field on one module", () => {
     expect(() =>
       composeModules([
-        CORE_MODULE_LAYER,
-        { name: "app", extensions: [{ id: "feed", view: Dummy }] },
-        { name: "space", extensions: [{ id: "feed", view: Dummy }] },
+        TOOLKIT_DEFINITION,
+        { name: "app", extensions: [{ id: "kanban", view: Dummy }] },
+        { name: "space", extensions: [{ id: "kanban", view: Dummy }] },
       ]),
-    ).toThrow(/feed/)
+    ).toThrow(/kanban/)
   })
 
   it("rejects two fragments in the SAME layer setting the same field", () => {
     expect(() =>
       composeModules([
-        CORE_MODULE_LAYER,
-        { name: "app", extensions: [{ id: "feed", view: Dummy }, { id: "feed", view: Dummy }] },
+        TOOLKIT_DEFINITION,
+        { name: "app", extensions: [{ id: "kanban", view: Dummy }, { id: "kanban", view: Dummy }] },
       ]),
-    ).toThrow(/feed/)
+    ).toThrow(/kanban/)
   })
 
   it("rejects a fragment that would overwrite a field the base sets", () => {
     expect(() =>
-      composeModules([CORE_MODULE_LAYER, { name: "app", extensions: [{ id: "feed", label: "Umbenannt" }] }]),
+      composeModules([TOOLKIT_DEFINITION, { name: "app", extensions: [{ id: "feed", label: "Umbenannt" }] }]),
     ).toThrow(/feed/)
   })
 
   it("refuses to extend an unknown id", () => {
     expect(() =>
-      composeModules([CORE_MODULE_LAYER, { name: "app", extensions: [{ id: "gibtsnicht", view: Dummy }] }]),
+      composeModules([TOOLKIT_DEFINITION, { name: "app", extensions: [{ id: "gibtsnicht", view: Dummy }] }]),
     ).toThrow(/gibtsnicht/)
   })
 
   it("names both the field and the layers in the message", () => {
     try {
       composeModules([
-        CORE_MODULE_LAYER,
-        { name: "app", extensions: [{ id: "feed", view: Dummy }] },
-        { name: "space:garten", extensions: [{ id: "feed", view: Dummy }] },
+        TOOLKIT_DEFINITION,
+        { name: "app", definitions: [{ id: "quests", label: "Quests", icon: Dummy }] },
+        { name: "plugin", extensions: [{ id: "quests", view: Dummy }] },
+        { name: "space:garten", extensions: [{ id: "quests", view: Dummy }] },
       ])
       throw new Error("kein Konflikt gemeldet")
     } catch (e) {
       expect(String(e)).toContain("view")
-      expect(String(e)).toContain("app")
+      expect(String(e)).toContain("plugin")
       expect(String(e)).toContain("space:garten")
     }
   })
@@ -132,28 +135,28 @@ describe("Das Register ist unveraenderlich (Review #277)", () => {
   beforeEach(() => resetModuleRegistryForTests())
 
   it("freezes the registry and its entries", () => {
-    const reg = composeModules([CORE_MODULE_LAYER])
+    const reg = composeModules([TOOLKIT_DEFINITION])
     expect(Object.isFrozen(reg)).toBe(true)
     expect(Object.isFrozen(reg[0])).toBe(true)
   })
 
   it("does not leak the composed entries into a later composition", () => {
-    const a = composeModules([CORE_MODULE_LAYER, { name: "app", extensions: [{ id: "feed", view: Dummy }] }])
-    const b = composeModules([CORE_MODULE_LAYER])
-    expect(a.find((m) => m.id === "feed")?.view).toBe(Dummy)
+    const a = composeModules([TOOLKIT_DEFINITION, { name: "app", extensions: [{ id: "kanban", view: Dummy, replaces: ["view"] }] }])
+    const b = composeModules([TOOLKIT_DEFINITION])
+    expect(a.find((m) => m.id === "kanban")?.view).toBe(Dummy)
     // Die zweite Komposition darf von der ersten nichts wissen.
-    expect(b.find((m) => m.id === "feed")?.view).toBeUndefined()
+    expect(b.find((m) => m.id === "kanban")?.view).not.toBe(Dummy)
   })
 
   it("refuses a second, different binding", () => {
-    const a = composeModules([CORE_MODULE_LAYER])
-    const b = composeModules([CORE_MODULE_LAYER, { name: "app", definitions: [{ id: "garten", label: "Garten", icon: Dummy }] }])
+    const a = composeModules([TOOLKIT_DEFINITION])
+    const b = composeModules([TOOLKIT_DEFINITION, { name: "app", definitions: [{ id: "garten", label: "Garten", icon: Dummy }] }])
     setModuleRegistry(a)
     expect(() => setModuleRegistry(b)).toThrow(/bereits gebunden/)
   })
 
   it("tolerates binding the very same registry twice", () => {
-    const a = composeModules([CORE_MODULE_LAYER])
+    const a = composeModules([TOOLKIT_DEFINITION])
     setModuleRegistry(a)
     expect(() => setModuleRegistry(a)).not.toThrow()
   })
@@ -170,7 +173,7 @@ describe("Das Register ist unveraenderlich (Review #277)", () => {
   it("sees a registry bound AFTER the first read — no import-time snapshot", () => {
     expect(isKnownModule("garten")).toBe(false)
     setModuleRegistry(
-      composeModules([CORE_MODULE_LAYER, { name: "app", definitions: [{ id: "garten", label: "Garten", icon: Dummy }] }]),
+      composeModules([TOOLKIT_DEFINITION, { name: "app", definitions: [{ id: "garten", label: "Garten", icon: Dummy }] }]),
     )
     // Wer moduleIds() beim Import festhaelt, sieht das hier nicht.
     expect(isKnownModule("garten")).toBe(true)
@@ -304,10 +307,89 @@ describe("Welches Modul stellt ein Feld dar", () => {
 
   it("laesst eine App-Schicht ein Feld nachtragen", () => {
     setModuleRegistry(composeModules([
-      CORE_MODULE_LAYER,
+      TOOLKIT_DEFINITION,
       { definitions: [{ id: "gallery", label: "Galerie", icon: Dummy, presents: ["image"] }] },
     ]))
 
     expect(findModulePresenting("image")?.id).toBe("gallery")
+  })
+})
+
+describe("Der Modul-Host: was der Eintrag traegt (Spec 01, B0 Schritt 5a)", () => {
+  it("liefert Kalender und Karte samt Flaeche aus dem Toolkit — ohne eine Zeile in der App", () => {
+    const reg = composeModules([TOOLKIT_DEFINITION])
+    expect(reg.find((m) => m.id === "calendar")?.view).toBeTypeOf("function")
+    expect(reg.find((m) => m.id === "map")?.view).toBeTypeOf("function")
+  })
+
+  it("meldet, dass die Karte selbst laedt — der Host stellt dann keine Abfrage", () => {
+    const reg = composeModules([TOOLKIT_DEFINITION])
+    expect(reg.find((m) => m.id === "map")?.loads).toBe("module")
+    expect(reg.find((m) => m.id === "calendar")?.loads).toBeUndefined()
+  })
+
+  it("laesst eine Erweiterung `options` setzen, wo das Toolkit schweigt", () => {
+    const reg = composeModules([
+      TOOLKIT_DEFINITION,
+      { name: "app", extensions: [{ id: "collection", options: { suggestType: "place" } }] },
+    ])
+    expect(reg.find((m) => m.id === "collection")?.options).toEqual({ suggestType: "place" })
+  })
+
+  // Anton, 21.09.2026: Eine App DARF eine Toolkit-Flaeche ersetzen — aber nur
+  // ausdruecklich (Spec 01, Regel 2). Ohne die Nennung bleibt es der Konflikt.
+  it("laesst eine Erweiterung eine Flaeche ERSETZEN, wenn sie es sagt", () => {
+    const Andere = () => null
+    const reg = composeModules([
+      TOOLKIT_DEFINITION,
+      { name: "app", extensions: [{ id: "calendar", view: Andere, replaces: ["view"] }] },
+    ])
+    expect(reg.find((m) => m.id === "calendar")?.view).toBe(Andere)
+  })
+
+  it("lehnt denselben Ersatz ohne Nennung ab und nennt den Weg", () => {
+    expect(() =>
+      composeModules([TOOLKIT_DEFINITION, { name: "app", extensions: [{ id: "calendar", view: Dummy }] }]),
+    ).toThrow(/replaces: \["view"\]/)
+  })
+
+  it("`replaces` gilt nur fuer die genannten Felder", () => {
+    expect(() =>
+      composeModules([
+        TOOLKIT_DEFINITION,
+        { name: "app", extensions: [{ id: "calendar", view: Dummy, presents: ["end"], replaces: ["view"] }] },
+      ]),
+    ).toThrow(/"presents"/)
+  })
+
+  it("nennt die Quelle Beitrag statt Schicht, wenn eine Erweiterung ueberschreiben will", () => {
+    expect(() =>
+      composeModules([TOOLKIT_DEFINITION, { name: "app", extensions: [{ id: "map", loads: "host" }] }]),
+    ).toThrow(/Beitrag "app" wuerde es ueberschreiben/)
+  })
+})
+
+describe("eigener Hinweis einer App (Spec 01, Ladevertrag Punkt 1)", () => {
+  beforeEach(() => resetModuleRegistryForTests())
+  afterEach(() => resetModuleHints())
+
+  const resource = { id: "r1", type: "resource", createdAt: "2026-09-21T10:00:00.000Z", createdBy: "u1", data: { title: "Beamer" } } as Item
+  const task = { id: "t1", type: "task", createdAt: "2026-09-21T10:00:00.000Z", createdBy: "u1", data: { title: "Aufbau", status: "open" } } as Item
+
+  it("findet ein App-Modul ueber seinen eigenen Hinweis — ohne has-Praefix", () => {
+    // Ein eigener Hinweis heisst wie er selbst (`resource`), die vier des
+    // Toolkits aus Kompatibilitaet `has…`. Das Register darf den Schluessel
+    // nicht raten: Bis zum 21.09.2026 fragte es `hasResource` und fand nichts.
+    registerModuleHint("resource", {
+      test: (item) => item.type === "resource",
+      filter: () => ({ type: ["resource"] }),
+    })
+    setModuleRegistry(composeModules([
+      TOOLKIT_DEFINITION,
+      { name: "app", definitions: [{ id: "marketplace", label: "Marktplatz", icon: Dummy, presents: ["resource"], view: Dummy }] },
+    ]))
+    expect(modulePresentsItem("marketplace", resource)).toBe(true)
+    expect(modulePresentsItem("marketplace", task)).toBe(false)
+    expect(findModulePresenting("resource")?.id).toBe("marketplace")
   })
 })

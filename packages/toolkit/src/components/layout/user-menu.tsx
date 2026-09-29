@@ -1,6 +1,9 @@
 "use client"
 
-import { LogOut, QrCode, Settings, User, Users } from "lucide-react"
+import type { User } from "@real-life-stack/data-interface"
+import { useState } from "react"
+import { formatBuild, type BuildInfo } from "../../lib/build-info"
+import { LogOut, QrCode, Settings, User as UserIcon, Users } from "lucide-react"
 
 import {
   DropdownMenu,
@@ -12,32 +15,66 @@ import {
 } from "@/components/primitives/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/primitives/avatar"
 
-export interface UserData {
-  id: string
-  name: string
-  email?: string
-  avatar?: string
-}
+/**
+ * Das Menü sprach lange eine eigene Personenform (`name`, `avatar`), während
+ * das Datenmodell überall `User` benutzt (`displayName`, `avatarUrl`). Beide
+ * Apps rechneten sie deshalb von Hand um. Jetzt nimmt es `User`; `subtitle`
+ * ersetzt das frühere `email` und lässt die App sagen, was unter dem Namen
+ * stehen soll.
+ */
+export type UserData = User
 
 interface UserMenuProps {
-  user: UserData
+  user: User
+  /** Zweite Zeile unter dem Namen, z. B. eine Kennung oder eine Rolle. */
+  subtitle?: string
   onProfile?: () => void
   onContacts?: () => void
   contactCount?: number
   onVerify?: () => void
   onSettings?: () => void
   onLogout?: () => void
+  /** Welcher Stand laeuft — als stille Zeile ganz unten (lib/build-info). */
+  build?: BuildInfo
+}
+
+/**
+ * Die Build-Zeile: gedaempft, klein, ohne Rahmen; ein Tipp kopiert sie, damit
+ * sie in eine Fehlermeldung wandern kann. Ohne Angaben rendert sie nichts.
+ */
+export function BuildLine({ build }: { build?: BuildInfo }) {
+  const [copied, setCopied] = useState(false)
+  const text = formatBuild(build)
+  if (!text) return null
+  const copy = async () => {
+    try { await navigator.clipboard?.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1200) } catch { /* kein Zugriff auf die Zwischenablage — der Text bleibt markierbar */ }
+  }
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      title="Version · Commit · Kanal — antippen kopiert"
+      aria-label={`Build ${text}, antippen kopiert`}
+      data-testid="build-line"
+      className="block w-full select-all px-2 py-1 text-left font-mono text-[10px] leading-4 text-muted-foreground/60 hover:text-muted-foreground focus-visible:outline-none"
+    >
+      {copied ? "kopiert" : text}
+    </button>
+  )
 }
 
 export function UserMenu({
   user,
+  subtitle,
   onProfile,
   onContacts,
   contactCount,
   onVerify,
   onSettings,
   onLogout,
+  build,
 }: UserMenuProps) {
+  const displayName = user.displayName ?? user.id
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -51,23 +88,23 @@ export function UserMenu({
     <DropdownMenu>
       <DropdownMenuTrigger className="flex items-center gap-2 rounded-full" data-testid="user-menu-trigger">
         <Avatar className="h-8 w-8">
-          <AvatarImage src={user.avatar} alt={user.name} />
-          <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+          <AvatarImage src={user.avatarUrl} alt={displayName} />
+          <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium">{user.name}</p>
-            {user.email && (
-              <p className="text-xs text-muted-foreground">{user.email}</p>
+            <p className="text-sm font-medium">{displayName}</p>
+            {subtitle && (
+              <p className="text-xs text-muted-foreground">{subtitle}</p>
             )}
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {onProfile && (
           <DropdownMenuItem onClick={onProfile} className="flex items-center gap-2">
-            <User className="h-4 w-4" />
+            <UserIcon className="h-4 w-4" />
             <span>Profil</span>
           </DropdownMenuItem>
         )}
@@ -99,6 +136,12 @@ export function UserMenu({
               <LogOut className="h-4 w-4" />
               <span>Abmelden</span>
             </DropdownMenuItem>
+          </>
+        )}
+        {formatBuild(build) && (
+          <>
+            <DropdownMenuSeparator />
+            <BuildLine build={build} />
           </>
         )}
       </DropdownMenuContent>

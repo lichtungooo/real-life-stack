@@ -1,19 +1,26 @@
 // Utilities
-export { cn, getTagColor, getTagAccentColor, getSpacePrimaryColor, getReadableTextColor, getItemColor, getActivePanelGlow, resolveAssetUrl } from "./lib/utils"
+export { formatBuild, type BuildInfo } from "./lib/build-info"
+export { cn, getTagColor, getTagAccentColor, getSpacePrimaryColor, getUserColor, getReadableTextColor, getItemColor, resolveAssetUrl } from "./lib/utils"
 export {
   focusActiveItemOnce,
   focusVirtualItemOnce,
-  focusActiveItemInVisibleAreaOnce,
   selectionFocusScrollMarginBlockEnd,
   type SelectionFocusVisibleArea,
   type SelectionFocusVirtualizer,
 } from "./lib/selection-focus"
-export { applyItemListFilter, type ItemListFilter } from "./lib/item-filter"
+export { filterByAssignee, assigneeIds, type AssigneeFilter } from "./lib/item-filter"
 export {
   observeColorScheme,
   resolveColorScheme,
   type ColorScheme,
   type ColorSchemePreference,
+  STORAGE_KEY_THEME,
+  storedColorScheme,
+  initialDarkMode,
+  applyInitialColorScheme,
+  applyColorScheme,
+  followSystemColorScheme,
+  rememberColorScheme,
 } from "./lib/color-scheme"
 export {
   loadRuntimeConfig,
@@ -52,8 +59,8 @@ export {
   type ThemeTokens,
 } from "./lib/theme-tokens"
 export {
-  CORE_MODULES,
-  CORE_MODULE_LAYER,
+  TOOLKIT_MODULES,
+  TOOLKIT_DEFINITION,
   composeModules,
   setModuleRegistry,
   isKnownModule,
@@ -67,11 +74,17 @@ export {
   findModulePresenting,
   type ModuleEntry,
   type ModuleFragment,
-  type ModuleLayer,
+  type ModuleExtension,
+  type ModuleHostOptions,
+  type ModuleScalar,
   type ModuleRegistry,
   type ModuleViewProps,
   type ModuleFill,
+  moduleForItem,
+  modulePresentsItem,
+  PRESENT_PRIORITY,
 } from "./lib/module-register"
+export { notificationTarget, resolveDefaultModule, type NotificationTarget } from "./lib/notification-target"
 export {
   resolveIcon,
   registerIcon,
@@ -94,6 +107,7 @@ export {
 } from "./lib/geocode"
 
 // Components
+export { itemTitle, itemText } from "./lib/item-text"
 export * from "./components"
 
 // Hooks
@@ -101,3 +115,8 @@ export * from "./hooks"
 export * from "./components/navigation"
 export { readRadius, readSurfaces, readGray, layoutTokens, RADIUS_ORDER, RADIUS_STEPS, SURFACES } from "./lib/space-theme"
 export type { GrayChoice, RadiusStep, Surfaces } from "./lib/space-theme"
+export { aggregateVoteStats, sortStatements, type ResonanceSortMode, type StatementVoteStats } from "./lib/resonance-sort"
+
+// Der Modul-Host: Detail und Erstellen ueber alle Module (Spec 01)
+export * from "./components/host"
+export { useModuleFilter } from "./hooks/use-module-filter"

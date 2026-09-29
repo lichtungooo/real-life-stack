@@ -5,6 +5,8 @@ import type {
   ContactInfo,
   IncomingEvent,
   CreateItemInput,
+  CreateItemOptions,
+  GroupScopeCapable,
   DataInterface,
   Group,
   Item,
@@ -27,6 +29,7 @@ import {
   createObservable,
   createRelationRecordWith,
   deriveContext,
+  withoutAuthoredClaim,
 } from "@real-life-stack/data-interface"
 import type {
   AuthSessionLike,
@@ -68,9 +71,10 @@ function throwOnError<T>(result: SupabaseResult<T>, action: string): T {
  * postgres_changes for WoT-grade reactivity. The authoritative claim mode's
  * security rests on the RLS policies in supabase/migrations/0001 — insert
  * WITH CHECK binds created_by to auth.uid(), the immutability trigger closes
- * the update path — NOT on this client code.
+ * the update path, 0012 keeps the content of authorial items (spec 08
+ * catalog) with their author — NOT on this client code.
  */
-export class SupabaseConnector implements DataInterface, ItemWriter {
+export class SupabaseConnector implements DataInterface, ItemWriter, GroupScopeCapable {
   private readonly client: SupabaseClientLike
   private readonly allowFixtureAuthors: boolean
 
@@ -87,7 +91,8 @@ export class SupabaseConnector implements DataInterface, ItemWriter {
   private currentUser: User | null = null
   private authUnsubscribe: (() => void) | null = null
 
-  private itemObservables = new Map<string, { observable: ItemsObservable; filter: ItemFilter }>()
+  /** `gen`: nur die Antwort der jüngsten Abfrage gilt (eine verspätete aus einem früheren Berechtigungsstand wird verworfen). */
+  private itemObservables = new Map<string, { observable: ItemsObservable; filter: ItemFilter; gen: number }>()
   private singleItemObservables = new Map<string, ReturnType<typeof createObservable<Item | null>>>()
   private channels: ChannelLike[] = []
   private itemsRefreshScheduled = false
@@ -99,6 +104,14 @@ export class SupabaseConnector implements DataInterface, ItemWriter {
    * constructor so `hasClaimVerification()` reflects the trust boundary.
    */
   verifyRecordClaim?: (record: RelationRecord) => Promise<ClaimVerdict>
+
+  /**
+   * Verdict for authorial items (spec 08 → Aussagen einer Person): the store
+   * binds createdBy on insert and restricts content changes to the author,
+   * refusing them once the item is frozen (supabase/migrations/0012). It
+   * writes no claims and answers "trusted". Absent on the fixture path.
+   */
+  verifyItemClaim?: (item: Item) => Promise<ClaimVerdict>
 
   /** Sichtbare Zustellung (EventListenerCapable): Kontaktanfragen und
       Gruppen-Einladungen poppen als Dialog auf statt still in Listen zu
@@ -119,6 +132,7 @@ export class SupabaseConnector implements DataInterface, ItemWriter {
     this.allowFixtureAuthors = options?.allowFixtureAuthors === true
     if (!this.allowFixtureAuthors) {
       this.verifyRecordClaim = async () => "trusted"
+      this.verifyItemClaim = async () => "trusted"
     }
   }
 
@@ -161,6 +175,9 @@ export class SupabaseConnector implements DataInterface, ItemWriter {
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "group_members" }, (payload) => {
         this.scheduleGroupsRefresh()
+        // Mitgliedschaft entscheidet, welche Items lesbar sind — auch für
+        // Abfragen mit `group` (02, Lesen Regel 5; Codex R1/4).
+        this.scheduleItemsRefresh()
         const inserted = payload.eventType === "INSERT" ? payload.new as { group_id?: string; user_id?: string; invited_by?: string } | null : null
         if (inserted?.user_id === this.sessionUserId && inserted.invited_by
           && inserted.invited_by !== this.sessionUserId && inserted.group_id) {
@@ -246,8 +263,8 @@ export class SupabaseConnector implements DataInterface, ItemWriter {
     return this.currentGroupId
   }
 
-  private applyGroupScope<Q extends FilterBuilderLike>(query: Q): Q {
-    const groupId = this.currentReadScopeGroupId()
+  private applyGroupScope<Q extends FilterBuilderLike>(query: Q, explicitGroup?: string): Q {
+    const groupId = explicitGroup ?? this.currentReadScopeGroupId()
     if (groupId === null) return query
     if (!SupabaseConnector.SAFE_SCOPE_ID.test(groupId)) {
       throw new Error(`[SupabaseConnector] unsupported group id for server-side scoping: ${JSON.stringify(groupId)}`)
@@ -260,7 +277,23 @@ export class SupabaseConnector implements DataInterface, ItemWriter {
   /** PostgREST caps unbounded queries at max_rows (config.toml: 1000). */
   private static readonly SERVER_PAGE = 1000
 
+  /**
+   * Ist der angemeldete Nutzer Mitglied von `groupId`? Für `group` (02,
+   * Lesen Regel 2 / Anlegen Regel 3): Ein Space ohne Mitgliedschaft ergibt
+   * nichts — RLS verbirgt seine Zeilen, aber globale feature-Items
+   * (group_id IS NULL) sähe man sonst trotzdem.
+   */
+  private async isMemberOf(groupId: string): Promise<boolean> {
+    const userId = this.sessionUserId ?? (await this.getCurrentUser())?.id
+    if (!userId || !SupabaseConnector.SAFE_SCOPE_ID.test(groupId)) return false
+    const result = await this.client.from("group_members").select("group_id").eq("group_id", groupId).eq("user_id", userId).maybeSingle()
+    return throwOnError(result, "group scope") !== null
+  }
+
   async getItems(filter?: ItemFilter): Promise<Item[]> {
+    // 02 → Lesen in einem bestimmten Space: ein fremder Space ergibt nichts.
+    const group = filter?.group
+    if (group !== undefined && !(await this.isMemberOf(group))) return []
     // Page past the server's silent max_rows cap in EVERY case: unbounded
     // reads fetch everything, and an explicit limit above the cap is honored
     // window by window — never quietly truncated to the first 1000.
@@ -272,7 +305,7 @@ export class SupabaseConnector implements DataInterface, ItemWriter {
         ? SupabaseConnector.SERVER_PAGE
         : Math.min(SupabaseConnector.SERVER_PAGE, target - results.length)
       if (window <= 0) break
-      const query = applyItemFilter(this.applyGroupScope(this.client.from("items").select("*")), {
+      const query = applyItemFilter(this.applyGroupScope(this.client.from("items").select("*"), group), {
         ...(filter ?? {}),
         limit: window,
         offset,
@@ -313,11 +346,13 @@ export class SupabaseConnector implements DataInterface, ItemWriter {
     // Starts unloaded; markLoaded() once the first fetch settles so consumers
     // can tell "still loading" from "loaded, empty".
     const observable = createObservable<Item[]>([], false)
-    this.itemObservables.set(key, { observable, filter })
+    const entry = { observable, filter, gen: 0 }
+    this.itemObservables.set(key, entry)
     void this.getItems(filter)
-      .then((items) => observable.set(items))
+      .then((items) => { if (entry.gen === 0) observable.set(items) })
       .catch((error) => console.error("[SupabaseConnector] observe initial load failed", error))
-      .finally(() => observable.markLoaded())
+      // Hat eine jüngere Abfrage übernommen, meldet sie „geladen“.
+      .finally(() => { if (entry.gen === 0) observable.markLoaded() })
     return observable
   }
 
@@ -340,10 +375,18 @@ export class SupabaseConnector implements DataInterface, ItemWriter {
     this.itemsRefreshScheduled = true
     queueMicrotask(() => {
       this.itemsRefreshScheduled = false
-      for (const { observable, filter } of this.itemObservables.values()) {
-        void this.getItems(filter)
-          .then((items) => observable.set(items))
-          .catch((error) => console.error("[SupabaseConnector] observe refresh failed", error))
+      for (const entry of this.itemObservables.values()) {
+        const gen = ++entry.gen
+        void this.getItems(entry.filter)
+          .then((items) => {
+            if (entry.gen !== gen) return
+            entry.observable.set(items)
+            entry.observable.markLoaded()
+          })
+          .catch((error) => {
+            console.error("[SupabaseConnector] observe refresh failed", error)
+            if (entry.gen === gen) entry.observable.markLoaded()
+          })
       }
       for (const [id, observable] of this.singleItemObservables) {
         void this.getItem(id)
@@ -353,8 +396,17 @@ export class SupabaseConnector implements DataInterface, ItemWriter {
     })
   }
 
-  async createItem(item: CreateItemInput): Promise<Item> {
-    return this.createItemInGroup(item, this.currentGroupId)
+  /** 02 → Lesen/Anlegen in einem bestimmten Space. */
+  readonly groupScope = true as const
+
+  async createItem(item: CreateItemInput, options?: CreateItemOptions): Promise<Item> {
+    const target = options?.group
+    if (target === undefined) return this.createItemInGroup(item, this.currentGroupId)
+    // EIN Insert mit group_id — atomar, nie anlegen und verschieben. Die
+    // Insert-Policy (0003) prüft die Mitgliedschaft ohnehin; die Prüfung hier
+    // gibt einen klaren Fehler, bevor etwas gesendet wird.
+    if (!(await this.isMemberOf(target))) throw new Error(`[SupabaseConnector] createItem: not a member of space ${target}`)
+    return this.createItemInGroup(item, target)
   }
 
   private async createItemInGroup(item: CreateItemInput, groupId: string | null): Promise<Item> {
@@ -368,7 +420,8 @@ export class SupabaseConnector implements DataInterface, ItemWriter {
     // items.id has NO db-side default (canonical relation-record ids are
     // caller-supplied) — generate here when the caller brings none.
     const id = item.id ?? crypto.randomUUID()
-    const row = itemToInsertRow({ ...item, id, createdBy }, groupId)
+    // Authoritative stores write no claim (spec 08); the server drops it too.
+    const row = itemToInsertRow(withoutAuthoredClaim({ ...item, id, createdBy }), groupId)
     const result = await this.client.from("items").insert(row).select().single()
     const created = rowToItem(throwOnError(result, "createItem"))
     this.scheduleItemsRefresh()

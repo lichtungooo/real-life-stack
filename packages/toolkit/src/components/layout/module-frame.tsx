@@ -8,6 +8,13 @@ import {
   type ReactNode,
 } from "react"
 
+import type { Item } from "@real-life-stack/data-interface"
+
+import { FilterPill } from "../filter/filter-pill"
+import { useOptionalSharedFilter } from "../filter/filter-store"
+import { ModuleFilterChips } from "../filter/module-filter-chips"
+import { ModuleSearchBar } from "../filter/module-search-bar"
+import { useGroupVocabulary } from "../../hooks/use-group-vocabulary"
 import { getModule, type ModuleFill, type ModulePanelFit } from "../../lib/module-register"
 import { cn } from "../../lib/utils"
 import { PanelSafeArea } from "./panel-safe-area"
@@ -95,24 +102,45 @@ function moduleHeadClass(layout: ModuleLayout): string {
  */
 const ModuleLayoutContext = createContext<ModuleLayout | null>(null)
 
+/**
+ * Which geometry does the module surface prescribe?
+ *
+ * @answers `ModuleLayout | null`
+ * @without null
+ * @group surface
+ * @see story rls-foundations-hooks--surfaces
+ * @see spec docs/spec/01-app-composition.md
+ */
 export function useModuleLayout(): ModuleLayout | null {
   return useContext(ModuleLayoutContext)
 }
 
 /**
+ * In which width does the content stand?
+ *
  * Die Breite, in der der Inhalt dieser Flaeche steht.
  *
  * Fuer Lenses: Sie zentrieren ihre Eintraege damit auf dieselbe Kante wie der
  * Kopf darueber. Ohne Flaeche gilt die Vorgabe — dann bestimmt die Lens ihre
  * Breite selbst, weil niemand sonst es tut.
+ *
+ * @answers `string`
+ * @without value — default
+ * @group surface
+ * @see story rls-foundations-hooks--surfaces
+ * @see spec docs/spec/01-app-composition.md
  */
 export function useModuleContentClass(): string {
   return moduleBleedContentClass(useModuleLayout() ?? {})
 }
 
 /**
- * Die zwei Slots, in die ein Modul seine Steuerung reicht: die Zeile OBEN
- * (Suche, Modul-Aktionen) und die schwebende Ecke UNTEN LINKS (Filter-Pille).
+ * Die Slots, in die ein Modul seine Steuerung reicht: rechts NEBEN der Suche
+ * (eigene Knoepfe), darunter die Chip-Zeile, und die schwebende Ecke UNTEN
+ * LINKS (Filter-Pille).
+ *
+ * Die Suche selbst ist KEIN Slot — sie gehoert der Flaeche und wird von ihr
+ * gerendert (Anton, 19.09.2026).
  *
  * Beide Elemente werden immer gerendert, auch leer: Sie sind die Portal-Ziele,
  * und ein Ziel, das erst entsteht, wenn jemand hineinportalt, gibt es nie.
@@ -120,23 +148,62 @@ export function useModuleContentClass(): string {
  * nicht daran, sie steht auch ueber einer Flaeche ohne Kopf.
  */
 interface ModuleHeadValue {
+  /** Die Chip-Zeile unter der Suche. */
   element: HTMLElement | null
+  /**
+   * Der rechtsbuendige Platz NEBEN der Suche, fuer die Steuerelemente des
+   * Moduls (Ansichtswechsel, „Heute", Ortungsknopf).
+   *
+   * Die Suche selbst gehoert der Flaeche und steht links davon; das Modul
+   * portalt nur seine eigenen Knoepfe hierher.
+   */
+  actionsElement: HTMLElement | null
+  /** Eigene Chips des Moduls, rechts neben den aktiven Filtern. */
+  chipsElement: HTMLElement | null
+  /** Eigene Abschnitte des Moduls in der Filterkarte. */
+  drawerElement: HTMLElement | null
   /** Die schwebende Ecke unten links. */
   controlsElement: HTMLElement | null
   /**
-   * Meldet einen Kopf-Beitrag an; die Rueckgabe meldet ihn wieder ab.
+   * Hat die FLAECHE einen Filter-Besitzer ueber sich?
    *
-   * `raeumtObenLinks`: Das Modul hat dort eigene Bedienelemente (die
-   * Zoom-Knoepfe der Karte). Die schwebende Kopfzeile rueckt dann daneben,
-   * statt sie zu verdecken — als Angabe des Moduls, nicht als zweite Fassung
-   * des Kopfes.
+   * Nicht dasselbe wie „sieht das Modul einen": Steht ein `FilterScope`
+   * innerhalb des Frames, hat das Modul einen und die Flaeche keinen — dann
+   * fehlen Suche, Chips und Pille, und die `ModuleToolbar` meldet die
+   * Fehlverschachtelung (rls#570).
    */
-  anmelden(optionen?: { raeumtObenLinks?: boolean }): () => void
+  hatFilterBesitzer: boolean
+  /** Meldet einen Kopf-Beitrag an; die Rueckgabe meldet ihn wieder ab. */
+  anmelden(): () => void
+  /**
+   * Meldet an, dass das Modul die Ecke OBEN LINKS selbst belegt (die
+   * Zoom-Knoepfe der Karte); die Rueckgabe gibt sie wieder frei. Die
+   * schwebende Kopfzeile rueckt dann daneben, statt sie zu verdecken.
+   *
+   * **Unabhaengig vom Kopf-Beitrag.** Ob das Modul dort Knoepfe hat, ist eine
+   * Aussage ueber seine eigene Flaeche und hat nichts damit zu tun, ob es
+   * gerade etwas in den Kopf reicht. Bis zum 20.09.2026 hing beides an einer
+   * Anmeldung: Seit die Suche der Flaeche gehoert und nicht mehr als
+   * Kopf-Beitrag zaehlt, blieb bei einer Karte ohne Ortungsknopf und ohne
+   * aktive Filter die Anmeldung aus — und die Suche lag auf den Zoom-Knoepfen
+   * (Codex-Review zu #405).
+   */
+  raeumeObenLinks(): () => void
 }
 
 const ModuleHeadContext = createContext<ModuleHeadValue | null>(null)
 
-/** Der Kopf der umgebenden Modulflaeche — `null`, wenn es keine gibt. */
+/**
+ * Where does a module portal its toolbar?
+ *
+ * Der Kopf der umgebenden Modulflaeche — `null`, wenn es keine gibt.
+ *
+ * @answers `… | null`
+ * @without null
+ * @group surface
+ * @see story rls-foundations-hooks--surfaces
+ * @see spec docs/spec/01-app-composition.md
+ */
 export function useOptionalModuleHead(): ModuleHeadValue | null {
   return useContext(ModuleHeadContext)
 }
@@ -148,6 +215,20 @@ export interface ModuleFrameProps extends Partial<ModuleLayout> {
    * keine Id und gibt `fill`/`panelFit`/`maxWidth` direkt an.
    */
   moduleId?: string
+  /**
+   * Beschriftung des Suchfelds — sie benennt, was die Suche durchsucht.
+   *
+   * Nicht das Modul, sondern die Flaeche: Die Suche zieht sich durch alle
+   * Module, also heisst sie sinnvollerweise nach dem Space und nicht nach dem
+   * Modul, in dem man gerade steht.
+   */
+  searchLabel?: string
+  /**
+   * Items, aus denen das Vokabular abgeleitet wird, wenn es **keinen**
+   * Connector gibt — der Fall einer freistehenden Ansicht (Story,
+   * eingebetteter Kalender). Unter einem Connector gilt der ganze Space.
+   */
+  fallbackItems?: readonly Item[]
   children: ReactNode
 }
 
@@ -169,35 +250,101 @@ export interface ModuleFrameProps extends Partial<ModuleLayout> {
  * die volle Breite und der Inhalt auf die um die Leiste verminderte — die
  * halbe Leistenbreite Versatz, sichtbar an jeder Kartenkante.
  */
-export function ModuleFrame({ moduleId, children, ...vorgaben }: ModuleFrameProps) {
+export function ModuleFrame({ moduleId, searchLabel, fallbackItems, children, ...vorgaben }: ModuleFrameProps) {
   const layout = resolveModuleLayout({ moduleId, ...vorgaben })
   const bleed = layout.fill === "bleed"
   const overlay = layout.panelFit === "overlay"
   const geometrie = moduleContainerClass(layout)
 
   const [kopfElement, setKopfElement] = useState<HTMLElement | null>(null)
+  const [actionsElement, setActionsElement] = useState<HTMLElement | null>(null)
+  const [chipsElement, setChipsElement] = useState<HTMLElement | null>(null)
+  const [drawerElement, setDrawerElement] = useState<HTMLElement | null>(null)
   const [controlsElement, setControlsElement] = useState<HTMLElement | null>(null)
   const [leisten, setLeisten] = useState(0)
-  const [raeumtObenLinks, setRaeumtObenLinks] = useState(false)
+  // Zaehler, kein Schalter: Sonst bliebe der Versatz stehen, wenn das Modul
+  // mit den Knoepfen verschwindet.
+  const [obenLinks, setObenLinks] = useState(0)
+  // Der Kopf steht, sobald es die Suche gibt — sie zieht sich ausnahmslos
+  // durch alle Module (Anton, 19.09.2026). Ohne Filter-Besitzer rendert die
+  // Suche nichts; dann entscheiden wieder allein die Beitraege der Module, ob
+  // der Kopf ueberhaupt eine Zeile bekommt (Spec 01, Regel 4).
+  const hatSuche = !!useOptionalSharedFilter()
   const kopf = useMemo<ModuleHeadValue>(
     () => ({
+      hatFilterBesitzer: hatSuche,
       element: kopfElement,
+      actionsElement,
+      chipsElement,
+      drawerElement,
       controlsElement,
-      anmelden(optionen) {
+      anmelden() {
         setLeisten((n) => n + 1)
-        if (optionen?.raeumtObenLinks) setRaeumtObenLinks(true)
         return () => setLeisten((n) => n - 1)
       },
+      raeumeObenLinks() {
+        setObenLinks((n) => n + 1)
+        return () => setObenLinks((n) => n - 1)
+      },
     }),
-    [kopfElement, controlsElement],
+    [hatSuche, kopfElement, actionsElement, chipsElement, drawerElement, controlsElement],
   )
 
-  const hatKopf = leisten > 0
+  // Tags und Typen des Space: eine Ableitung fuer alle Module (Spec 01,
+  // Regel 2a). Vorher leitete sie jedes Modul selbst ab, siebenmal fuer Tags
+  // und viermal fuer Typen, mit auseinanderlaufenden Ergebnissen.
+  const vokabular = useGroupVocabulary(fallbackItems)
+  const hatKopf = hatSuche || leisten > 0
+  const raeumtObenLinks = obenLinks > 0
 
+  // Der Platz fuer die Steuerelemente des Moduls (`trailingActions`). Er
+  // haengt NICHT an der Suche: Mit Besitzer steht er rechts neben ihr, ohne
+  // allein (rls#570, Spec 01, Regel 3).
+  const aktionsPlatz = (
+    <div
+      data-module-head-actions
+      ref={setActionsElement}
+      className="ml-auto flex shrink-0 items-center gap-2 empty:hidden"
+    />
+  )
   const kopfSlot = (klasse?: string) => (
-    <div data-module-head-slot ref={setKopfElement} className={cn(klasse)} />
+    <div data-module-head-content className={cn("flex flex-col gap-2", klasse)}>
+      {hatSuche ? (
+        <ModuleSearchBar searchLabel={searchLabel} trailing={aktionsPlatz} />
+      ) : (
+        // Ohne Besitzer gibt es keine Suche, der Platz fuer die Aktionen des
+        // Moduls steht trotzdem: rechtsbuendig in einer eigenen Zeile. Er war
+        // bis rls#570 das `trailing` der Suche und verschwand mit ihr — die
+        // Aktionen gingen still verloren, der Kopf blieb angemeldet und leer.
+        <div className="flex items-center gap-2 has-[>:empty]:hidden">{aktionsPlatz}</div>
+      )}
+      <div data-module-head-slot ref={setKopfElement}>
+        {/* Die Chips lesen den geteilten Filter — ohne Besitzer gibt es sie
+            nicht, genau wie die Suche. Der Platz des Moduls bleibt trotzdem
+            stehen: Er ist das Portal-Ziel und muss existieren, bevor jemand
+            hineinreicht. */}
+        {hatSuche ? (
+          <ModuleFilterChips
+            availableTypes={vokabular.types}
+            chipsExtra={<span data-module-head-chips ref={setChipsElement} className="contents" />}
+          />
+        ) : (
+          <span data-module-head-chips ref={setChipsElement} className="contents" />
+        )}
+      </div>
+    </div>
   )
-  const controlsSlot = <div data-module-controls ref={setControlsElement} />
+  const controlsSlot = (
+    <div data-module-controls ref={setControlsElement}>
+      {hatSuche && (
+        <FilterPill
+          availableTags={vokabular.tags}
+          availableTypes={vokabular.types}
+          drawerExtra={<span data-module-drawer ref={setDrawerElement} className="contents" />}
+        />
+      )}
+    </div>
+  )
 
   // Ueberlagerte Flaechen tragen DIESELBE Steuerung, nur schwebend (Spec 01,
   // Regel 5): Die Flaeche IST hier der Inhalt — ein Kopf im Fluss naehme der
@@ -281,7 +428,11 @@ export function ModuleFrame({ moduleId, children, ...vorgaben }: ModuleFrameProp
             weicht dem Panel aus (PanelSafeArea) und liegt ueber dem Inhalt,
             statt ihm eine Zeile wegzunehmen. Unten polstert sie so weit wie
             der Erstellen-Knopf gegenueber. */}
-        <ModuleControls>{controlsSlot}</ModuleControls>
+        {/* Dieselbe Grundlinie wie der Plusknopf (5.25rem + Schutzzone ueber
+            der Bottom-Nav): die Shell polstert schon 5rem, also nur noch 0.25rem.
+            Mit p-4 stand der Filter 12px hoeher als der Plusknopf. Ab md gibt es
+            keine Bottom-Nav, dort gilt wieder der normale Rand. */}
+        <ModuleControls className="pb-1 md:pb-4">{controlsSlot}</ModuleControls>
       </div>
     </ModuleHeadContext.Provider>
     </ModuleLayoutContext.Provider>

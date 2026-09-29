@@ -3,10 +3,7 @@ import { act, createElement } from "react"
 import { createRoot } from "react-dom/client"
 import { beforeEach, describe, expect, it } from "vitest"
 import { MockConnector } from "@real-life-stack/mock-connector"
-import { ConnectorProvider } from "@real-life-stack/toolkit"
-
-import { ItemDetailRead } from "./detail-host"
-import { feedFooter, selectFeedItems } from "./views/feed-view"
+import { ConnectorProvider, ItemDetailRead, feedFooter, selectFeedItems } from "@real-life-stack/toolkit"
 
 ;(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true
 
@@ -23,7 +20,10 @@ const SPACE_B = "space-b"
 
 async function connectorWith(task: Record<string, unknown>) {
   const connector = new MockConnector({
-    items: [],
+    // The statement lives in the store: the vote bar reads its wording from
+    // there and votes only on a verified, counting wording (resonance.md,
+    // vote rule 5) — an item that exists only in props has none.
+    items: [statement()],
     groups: [
       { id: SPACE_A, name: "Space A", data: {} },
       { id: SPACE_B, name: "Space B", data: {} },
@@ -33,7 +33,7 @@ async function connectorWith(task: Record<string, unknown>) {
       { id: MATE, displayName: "Kollegin" },
     ],
     groupMembers: { [SPACE_A]: [MATE], [SPACE_B]: [MATE] },
-    groupItems: {},
+    groupItems: { [SPACE_A]: ["statement-1"] },
   } as never)
   await connector.init()
   return { connector, task }
@@ -60,10 +60,11 @@ async function readWith(
       }),
     )
   })
-  await act(async () => { await Promise.resolve() })
+  await settle()
   const text = container.textContent ?? ""
   const reactionButtons = container.querySelectorAll('[aria-label="Add reaction"]').length
-  const voteButtons = container.querySelectorAll('[aria-label^="Zustimmung"]').length
+  // Seit S2 steht die Stimme im Detail im Slot `actions` (Pills und Balken, C4).
+  const voteButtons = container.querySelectorAll('[data-slot="actions"] [data-vote-actions]').length
   await act(async () => { root.unmount() })
   container.remove()
   return { text, reactionButtons, voteButtons }
@@ -82,14 +83,24 @@ const task = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 })
 
-const statement = (overrides: Record<string, unknown> = {}) => ({
-  id: "statement-1",
-  type: "statement",
-  createdBy: MATE,
-  createdAt: "2026-08-01T10:00:00.000Z",
-  data: { title: "Wir brauchen einen zweiten Brunnen" },
-  ...overrides,
-})
+function statement(overrides: Record<string, unknown> = {}) {
+  return {
+    id: "statement-1",
+    type: "statement",
+    createdBy: MATE,
+    createdAt: "2026-08-01T10:00:00.000Z",
+    data: { title: "Wir brauchen einen zweiten Brunnen" },
+    ...overrides,
+  }
+}
+
+/** Verification and the content hash settle asynchronously (fail closed
+    until then): flush a few macrotasks inside act. */
+async function settle() {
+  for (let round = 0; round < 5; round++) {
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)) })
+  }
+}
 
 describe("shared detail read view", () => {
   let connector: MockConnector
@@ -210,7 +221,7 @@ describe("feed card footer", () => {
         }),
       )
     })
-    await act(async () => { await Promise.resolve() })
+    await settle()
     expect(container.querySelectorAll('[aria-label^="Zustimmung"]').length).toBe(1)
     // Reactions stay available alongside the votes.
     expect(container.querySelectorAll('[aria-label="Add reaction"]').length).toBe(1)
@@ -221,15 +232,16 @@ describe("feed card footer", () => {
 
 describe("feed selection", () => {
   const post = { id: "p1", type: "post", createdAt: "2026-08-01T10:00:00.000Z", createdBy: ME, data: { content: "Hallo" } }
-  const comment = { id: "c1", type: "comment", createdAt: "2026-08-01T11:00:00.000Z", createdBy: ME, data: { content: "Antwort" } }
 
   it("includes statements — polls surface in the feed", () => {
     const selected = selectFeedItems([post as never, statement() as never])
     expect(selected.map((item) => item.id).sort()).toEqual(["p1", "statement-1"])
   })
 
-  it("still excludes comments, which carry data.content like a post", () => {
-    expect(selectFeedItems([post as never, comment as never]).map((item) => item.id)).toEqual(["p1"])
+  it("sorts newest first — which items stand as a card decides the host (modul-host.test.tsx)", () => {
+    const aelter = { ...post, createdAt: "2026-08-01T10:00:00.000Z" }
+    const neuer = { ...statement(), createdAt: "2026-08-17T10:00:00.000Z" }
+    expect(selectFeedItems([aelter as never, neuer as never]).map((item) => item.id)).toEqual([neuer.id, "p1"])
   })
 })
 

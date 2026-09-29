@@ -54,9 +54,9 @@ const DOT_CLASSES: Record<VoteValue, string> = {
  * Sits in ItemPreview's footerAdornment, so all interactions stop propagation.
  */
 export function VoteBar({ statementId, className }: VoteBarProps) {
-  const { summary, vote, canVote } = useVotes(statementId)
+  const { data: summary, vote, canVote } = useVotes(statementId)
   // Votes are transparent: the tooltip names who voted how (resonance.md).
-  const { users: voters } = useVoteUsers(statementId, summary.total > 0)
+  const { data: voters } = useVoteUsers(statementId, summary.total > 0)
 
   const tooltipFor = useCallback(
     (value: VoteValue, isMine: boolean) => {
@@ -75,7 +75,10 @@ export function VoteBar({ statementId, className }: VoteBarProps) {
     [canVote, vote],
   )
 
-  if (summary.total === 0 && !canVote) return null
+  // Nothing to show only when there are no votes, no own vote AND no known
+  // non-participation: „N ohne Stimme" is evaluation information in its own
+  // right, also for readers without voting rights (resonance.md → Auswertung).
+  if (summary.total === 0 && !canVote && !(summary.noVote && summary.noVote > 0)) return null
 
   return (
     // Voting is its own interaction — it must never bubble into the card's
@@ -128,8 +131,39 @@ export function VoteBar({ statementId, className }: VoteBarProps) {
         })}
         <span className="pl-1 text-xs text-muted-foreground tabular-nums">
           {summary.total === 1 ? "1 Stimme" : `${summary.total} Stimmen`}
+          {summary.noVote !== undefined && summary.noVote > 0 && ` · ${summary.noVote} ohne Stimme`}
         </span>
       </div>
+
+      {summary.myVoteOtherVersion && (
+        // Vote rule 5 (resonance.md): the voter must see that their vote
+        // was cast on an earlier wording and no longer counts.
+        <p className="text-xs text-muted-foreground">
+          Deine Stimme ({VOTE_LABELS[summary.myVoteOtherVersion]}) galt einer früheren Fassung und zählt nicht mehr. Stimme neu ab, damit sie zählt.
+        </p>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Die kleine Stimmleiste einer Zeile (shared-components, Detail-Anatomie
+ * Regel 8: „je Zeile … eine kleine Stimmleiste"): nur der Balken, ohne
+ * Knöpfe. Abgestimmt wird im Detail der Fassung. Nichts ohne Stimmen.
+ */
+export function VoteMiniBar({ statementId, className }: VoteBarProps) {
+  const { data: summary } = useVotes(statementId)
+  if (summary.total === 0) return null
+  return (
+    <div
+      data-vote-mini
+      className={cn("flex h-1.5 w-full overflow-hidden rounded-full bg-muted", className)}
+      role="img"
+      aria-label={VOTE_ORDER.map((value) => `${VOTE_LABELS[value]}: ${summary[value]}`).join(", ")}
+    >
+      {VOTE_ORDER.map((value) =>
+        summary[value] > 0 ? <div key={value} className={SEGMENT_CLASSES[value]} style={{ flexGrow: summary[value] }} /> : null,
+      )}
     </div>
   )
 }

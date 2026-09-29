@@ -14,8 +14,9 @@ Code-Referenzen:
 - `packages/toolkit/src/components/detail/` — modul-agnostisches Detail-Panel
 - `packages/toolkit/src/hooks/`
 - `apps/reference/src/App.tsx` — Komposition: Provider, AuthGate, App Shell
-- `apps/reference/src/views/` — ein File pro Space Module + `module-outlet.tsx` (Dispatch)
-- `apps/reference/src/hooks/use-workspace-routing.ts` — Space/Module-Auflösung aus URL
+- `apps/network/src/App.tsx` — dieselbe Komposition, kleiner: Rahmen plus eigenes Modul im Register
+- `packages/toolkit/src/components/frame/app-frame.tsx` — der Rahmen einer App (Provider, Panel, Kopfzeile, Controller, Outlet)
+- `packages/toolkit/src/components/router/` — Fokus in der URL, Space/Modul-Auflösung aus URL, Route einer Benachrichtigung (`@real-life-stack/toolkit/router`)
 
 ## Grundstruktur
 
@@ -31,12 +32,12 @@ App
 └─ Current Space
    └─ Space Modules
       ├─ Feed
-      ├─ Map
-      ├─ Calendar
       ├─ Kanban
-      ├─ Marketplace
-      ├─ Quests
-      └─ Campaign View
+      ├─ Calendar
+      ├─ Map
+      ├─ Resonance
+      ├─ Collection
+      └─ Graph
 ```
 
 Jedes Space Module kann aus Module Components zusammengesetzt sein.
@@ -95,10 +96,10 @@ Overlays folgen einem Drei-Ebenen-Modell. Pro Ebene gibt es höchstens **eine** 
 | Ebene | Fläche | Form | Inhalt |
 |---|---|---|---|
 | 1 Content-Panel | eine app-weite Instanz | Sidebar (Desktop) ↔ Drawer (Mobile) | Item-Detail, Composer, Filter — Content wird getauscht, nie gestapelt |
-
-Der **Drawer endet oben an der Schutzzone** des Geräts (Statusleiste, Notch): Ganz aufgezogen reicht er bis an sie heran, nicht bis an den Fensterrand, und ein Zug darüber hinaus wird geklemmt. Sonst liegen Griff und Schließen darunter, und das Blatt lässt sich nicht mehr verkleinern (randlose Android-Geräte). Die Zone hat **eine Quelle** (`--safe-top`): Was die Plattform meldet, gilt — auf Android schreibt Capacitor sie in die Wurzel, weil `env()` dort nichts liefert; sonst löst `env(safe-area-inset-top)` sie auf. Ein fester Wert wäre auf dem nächsten Gerät falsch.
 | 2 Dialog | eine Instanz | zentriertes Modal + Backdrop (Desktop) / Sheet (Mobile) | fokussierte Tasks: Kontakte, Verifizieren, Gruppe, Profil |
 | 3 Notification | nicht-destruktiver Hinweis | Banner / Toast | zeitkritische Interrupts: eingehende Verifizierung, Space-Einladung |
+
+Der **Drawer endet oben an der Schutzzone** des Geräts (Statusleiste, Notch): Ganz aufgezogen reicht er bis an sie heran, nicht bis an den Fensterrand, und ein Zug darüber hinaus wird geklemmt. Sonst liegen Griff und Schließen darunter, und das Blatt lässt sich nicht mehr verkleinern (randlose Android-Geräte). Die Zone hat **eine Quelle** (`--safe-top`): Was die Plattform meldet, gilt — auf Android schreibt Capacitor sie in die Wurzel, weil `env()` dort nichts liefert; sonst löst `env(safe-area-inset-top)` sie auf. Ein fester Wert wäre auf dem nächsten Gerät falsch.
 
 Regeln:
 
@@ -132,9 +133,18 @@ Ein fester **Kopf**, darunter der **Scrollbereich**. Was scrollt, ist der Inhalt
 Regeln:
 
 1. Die Fläche weicht dem Panel per **Margin** aus, nicht per Padding. Nur so endet der Scrollbereich dort, wo der Platz endet, und die Leiste sitzt links vom Panel.
-2. Die **Steuerleiste eines Moduls** (Suche, Ansichtswechsel, aktive Filter) gehört in den Kopf, nicht in den Scrollbereich. Module reichen sie über `ModuleToolbar` hinein; die Fläche besitzt den Kopf. Es `sticky` im Modul zu lösen wäre billiger — dann löst es aber jedes Modul selbst, und die Lösungen driften auseinander.
+2. Die **Steuerelemente eines Moduls** (Ansichtswechsel, „Heute", Ortung, aktive Filter) gehören in den Kopf, nicht in den Scrollbereich. Module reichen sie über `ModuleToolbar` hinein; die Fläche besitzt den Kopf. Es `sticky` im Modul zu lösen wäre billiger — dann löst es aber jedes Modul selbst, und die Lösungen driften auseinander.
+2a. **Was sich Module teilen können, gehört der Fläche — nicht dem Modul.** Das ist die allgemeine Regel; die Suche ist ihr erster Fall. Der Prüfsatz: Lässt sich etwas aus den Items des Space oder aus dem geteilten Filterzustand ableiten, dann ist es geteilt und die Fläche stellt es genau einmal her. Dem Modul gehört nur, was ohne seinen eigenen Zustand nicht zu beantworten wäre.
+
+    Geteilt sind heute: die **Suche**, das **Vokabular** (welche Tags und Typen es im Space gibt), die **Filterkarte**, die **Chips der aktiven Filter** — und das **Anwenden** des Filters auf die Items. Ein Modul MUSS sie über die Fläche beziehen (`useGroupVocabulary`) und DARF sie nicht selbst ableiten. Die Items eines Moduls sind **bereits gefiltert**, wenn es sie sieht: vom Host (`items` in den `ModuleViewProps`) oder von der Fläche (`useSurfaceItems`). Ein Modul, das den Filter selbst anwenden müsste, könnte ihn auch vergessen — die freistehende Liste suchte so ins Leere (Anton, 21.09.2026). Einzige Ausnahme sind Module mit `loads: "module"`: Sie laden selbst und filtern selbst.
+
+    Dem Modul gehören: seine **Steuerelemente** (Ansichtswechsel, „Heute", Ortung), seine **eigenen Chips** (`chipsExtra`) und seine **eigenen Abschnitte in der Filterkarte** (`drawerExtra`).
+
+    Der Grund ist nicht Sparsamkeit, sondern Konsistenz: `availableTags` stand siebenmal im Code und `availableTypes` viermal, und die Kopien liefen auseinander — Kanban sortierte nicht, der Kalender gab weder Symbol noch Farbe mit, und die Karte nannte einen Typ anders als das Typ-Register. Niemand meldet so etwas, weil es keinen Test bricht (Anton, 19.09.2026).
+
+2b. Die **Suche gehört der Fläche, nicht dem Modul.** Sie zieht sich ausnahmslos durch alle Module und Linsen, hat mit dem `FilterProvider` ohnehin schon einen flächenweiten Zustand, und die `ModuleFrame` rendert sie deshalb genau einmal — bevor irgendein Modul etwas beiträgt. Ein Modul DARF sie weder mitbringen noch abschalten; seine eigenen Steuerelemente stehen rechts daneben, in derselben Zeile. Ihre Beschriftung nennt den Space, nicht das Modul: Was sie durchsucht, wechselt beim Modulwechsel nicht. Vorher brachte jedes Modul sie mit, und wo zwei Beiträge in denselben Kopf portalten — einer vom Modul, einer von der Linse — standen zwei Suchfelder untereinander (Anton, 19.09.2026).
 3. Eine Fläche, die **außerhalb der App** läuft (Story, Test, eingebettete Ansicht), bringt ihre Modulfläche selbst mit (`ModuleSurfaceScope` — zusammen mit dem Besitzer des Filters, siehe [modules/shared-components.md](modules/shared-components.md)); ein vorhandener Kopf wird durchgereicht, ein zweiter nie angelegt. Nur die **nackte Steuerleiste** ohne jede Fläche darüber rendert an Ort und Stelle, statt spurlos zu verschwinden — sonst stünde ihre Filter-Pille dort, wo gerade Platz ist, statt unten links.
-4. Ein Modul ohne Steuerleiste bekommt **keine leere Zeile**: Der Kopf verschwindet, wenn nichts darin landet.
+4. Ein Kopf, in dem nichts steht, bekommt **keine leere Zeile**: Er verschwindet. Da die Suche immer steht (Regel 2a), tritt das nur ohne Besitzer des Filters ein — außerhalb der App, in einem nackten Rahmen.
 5. Für `panelFit: "overlay"` schwebt derselbe Kopf-Inhalt **über** der Fläche statt über ihr zu stehen (oben links, in der `PanelSafeArea`; Feld und Chips auf eigener Fläche, weil eine Karte keinen ruhigen Untergrund hat). Gehostet wird er weiterhin von der **Fläche**: Zwei Wirte für dieselben Bausteine laufen auseinander — im Graphen fehlte darum die Chip-Zeile. Ein Modul, das dort eigene Bedienelemente führt (Zoom der Karte), sagt das als Beitrag (`clearsTopLeft`), statt sich einen zweiten Kopf zu bauen.
 6. Das **Öffnen des Filters** gehört NICHT in den Kopf, sondern zu den schwebenden Bedienelementen: eine Pille unten links der Fläche (`FilterPill` in der `PanelSafeArea`, siehe [modules/shared-components.md → `FilterPill`](modules/shared-components.md)). Sie ist ein Werkzeug, kein Zustand, und nimmt der Fläche darum eine Ecke statt einer Zeile. Was gerade **filtert**, bleibt oben im Kopf — in Blickrichtung des Inhalts, den es beschneidet. Auch überlagerte Module führen sie, dort schwebend wie ihr Kopf.
 
@@ -178,12 +188,12 @@ Beispiele:
 | Space Module | Aufgabe | Grundlage |
 |---|---|---|
 | Feed | Aktivität, Posts, Events, Dokumentation, Kommentare, Reaktionen | Items und Relations |
-| Map | räumliche Ansicht auf Orte, Events, Ressourcen oder Quests | Items mit `location` |
-| Calendar | zeitliche Monats-, Wochen-, Tages- oder Listenansicht auf Events, Quests oder Campaign-Phasen | Items mit `start` / `end` |
+| Map | räumliche Ansicht auf Orte, Events und Ressourcen | Items mit `position` |
+| Calendar | zeitliche Monats-, Wochen-, Tages- oder Listenansicht | Items mit `start` / `end` |
 | Kanban / Tasks | Aufgaben- und Workflow-Ansicht | Items mit `status` |
-| Marketplace | Angebote, Bedürfnisse, Ressourcen und mögliche Matches | Items, Profilfelder, Tags oder Relations |
-| Quests | Quest-Übersicht, Questlog, QuestRuns, Evidence und Completion-Status | RLNP-Items und Confirmations |
-| Campaign View | Adventures, Campaigns und World State | Game-Projektionen über Items, Relations und Confirmations |
+| Resonance | Zustimmung und Vorbehalt zu Aussagen | Items einer Klasse, die die Affordanz `votesOn` deklariert (Spec 06, „Klassen haben IRIs") — der erklärten Fähigkeit, Stellungnahmen zu tragen; die Stimmen selbst sind Relation Records. Nie die Stimmen: Eine frisch eingebrachte Aussage hat noch keine und muss trotzdem dort erscheinen, wo man sie bewertet |
+| Collection | Liste oder Raster über alles, was der Space hält | alle Items, die in einer aggregierenden Ansicht erscheinen |
+| Graph | Items und ihre Beziehungen als Netz | Items und Relations |
 
 ## Modul-Register
 
@@ -205,21 +215,97 @@ Das Muster folgt dem Typ-Register aus [06-schema-composition.md](06-schema-compo
 | `maxWidth` | Breite des Inhalts: bei `fill: "container"` die des Containers, bei `fill: "bleed"` die, an der sich **Kopf und Inhalt** ausrichten — die Lens liest sie aus der Fläche (`useModuleContentClass`), statt eine eigene zu führen, sonst stehen Kopf und Einträge nicht mehr bündig |
 | `keepMounted` | Fläche im Baum halten statt beim Wechsel abzubauen — für Module, deren Aufbau teuer ist (Map: WebGL-Kontext, Worker, entfernter Style) |
 | `panelFit` | ob ein offenes Panel die Fläche einrückt (`inset`, Standard) oder sich darüber legt (`overlay`) — siehe Content-Bereich |
-| `presents` | Item-Felder, die dieses Modul darstellen kann (Karte: `position`, Kalender: `start`) — siehe „Ein Feld führt zu seiner Sicht" |
-| `view` | die Fläche selbst; wird von der App beigesteuert, nicht vom Toolkit |
+| `presents` | **Aktivierungshinweise**: was dieses Modul darstellen kann (Karte: `position`, Kalender: `start`, Kanban: `status`, Resonanz: `statement`). Ein Hinweis ist ein Feld **oder** eine Klasse mit deklarierter Affordanz (Spec 06); welches von beiden, weiß `data-interface`, nicht der Eintrag — siehe „Der Ladevertrag" und „Ein Feld führt zu seiner Sicht" |
+| `loads` | wer die Items des Moduls lädt: `host` (Standard — aus `presents`) oder `module`. `module` sagt die Karte, die nach Kartenausschnitt lädt; der Host stellt dann **keine** eigene Abfrage. *Aus rls#411: das eine Feld, das der Host wirklich braucht; umgesetzt in rls#414* |
+| `options` | modulspezifische Konfiguration: was in den Ladevertrag eingeht (Kanban: `statusField`, Standard `status`) und was der Host liest — `suggestType` (der Vorschlag des Plusknopfs) und `createShell` (`sheet`, Standard, oder `fullscreen` für den Feed). Heute statisch im Eintrag; sobald Module je Space konfigurierbar sind, kommt derselbe Wert aus dem Space. *Umgesetzt in rls#414* |
+| `view` | die Fläche selbst. Für die Toolkit-Module liefert sie das **Toolkit** — vollständig, lauffähig ohne eine Zeile in der App (siehe „Der Modul-Host"). Eine App DARF sie in ihrer Erweiterung **ersetzen** — ausdrücklich, mit `replaces: ["view"]` am Fragment (Regel 2; Anton, 21.09.2026) — oder ein eigenes Modul mit eigener Fläche hinzufügen. *Bis zum 21.09.2026 steuerte die App jede Fläche bei; die Verdrahtung darum stand deshalb siebenmal in der Referenz-App.* |
 
 ### Regeln
 
 1. Das Register MUSS die **einzige** Quelle für die Frage sein, welche Module es gibt. Jede Fläche, die Module aufzählt, anbietet, benennt oder anzeigt, MUSS ihre Liste daraus ableiten. Eine zweite Aufzählung von Modul-Ids ist ein Fehler in dieser Spec.
-2. Ein Modul wird durch genau **einen** Registereintrag eingeführt. Schichten werden in der Reihenfolge **Core → App** zusammengesetzt, jede Schicht vollständig (erst ihre Definitionen, dann ihre Erweiterungen), bevor die nächste an der Reihe ist — sonst könnte eine frühere Schicht ergänzen, was erst eine spätere einführt; eine bereits vergebene `id` ist ein Konflikt und MUSS abgelehnt werden — auch innerhalb derselben Schicht. Ein Erweiterungsfragment ergänzt einen vorhandenen Eintrag additiv; ein Feld, das eine frühere Schicht bereits gesetzt hat, DARF ein Fragment nicht überschreiben. Auch das ist ein Konflikt und MUSS die Zusammensetzung abbrechen, mit Nennung des Feldes und beider Schichten. Es gibt kein Shadowing, still oder ausdrücklich.
+2. Ein Modul wird durch genau **einen** Registereintrag eingeführt; eine bereits vergebene `id` ist ein Konflikt und MUSS abgelehnt werden. Das Toolkit **definiert** das Register (seine Module vollständig, samt Fläche), eine App **erweitert** es mit eigenen Modulen oder mit Ergänzungen an vorhandenen — **Definition vor Erweiterung**, ergänzt werden kann nur, was schon eingeführt ist. Eine Erweiterung ist additiv: Ein Feld, das die Definition schon gesetzt hat, DARF sie nur ersetzen, wenn sie den Ersatz ausdrücklich benennt (`replaces: ["view"]`). Alles andere ist ein Konflikt, der die Zusammensetzung mit Feld und beiden Quellen abbricht; es gibt kein Shadowing.
 
-3. **Lebenszyklus: einmal zusammensetzen, dann unveränderlich.** Das Register wird vor dem ersten Render aus seinen Schichten komponiert, **genau einmal** gebunden und danach nicht mehr verändert; das Ergebnis ist eingefroren. Ein zweites Binden mit einem **anderen** Register MUSS abgelehnt werden — sonst liefen Flächen mit unterschiedlichen Registern weiter, je nachdem, wann sie zuletzt gelesen haben. Dasselbe Register erneut zu binden ist **folgenlos erlaubt**: Der Vorgang ist idempotent, damit ein zweiter Import derselben Bindung nicht bestraft wird. Er wiederholt das Einfrieren dabei ausdrücklich NICHT — eine zwischenzeitliche Änderung an der Quelle darf nicht doch noch durchschlagen. Eine Fläche DARF das Register NICHT beim Import in eine Konstante schreiben — ein solcher Schnappschuss sieht eine später gebundene Schicht nicht, und der Fehler zeigt sich nur bei bestimmter Importreihenfolge. Jede Abfrage liest den aktuellen Stand.
-4. **Ein Space ist keine Registerschicht.** Das Register ist ein globaler Katalog, der vor dem ersten Render feststeht; der aktive Space wechselt dagegen zur Laufzeit. Ein Space *definiert* darum keine Module, er **wählt** aus dem Katalog: `Group.data.modules` ist eine Auswahl, kein Beitrag. Das Register sagt, was es gibt und was ein neuer Space voreingestellt bekommt — nicht, was ein bestehender Space zeigt. (Ein späteres Plugin-Konzept, das Module zur Laufzeit nachlädt, wäre eine eigene Sache mit eigenen Regeln und nicht diese Schicht.)
+    *Bis zum 21.09.2026 hieß das hier „Schichten in der Reihenfolge Core → App". Das Wort versprach eine Architektur, die es nicht gibt: Es waren genau zwei Eingaben, und die zweite trug nur `view` nach — was mit dem Modul-Host entfällt. „Schicht" gehört Spec 00 (UI-Flächen, Hooks, DataInterface, Connector, Datenquelle); hier hat es nichts zu suchen. Und „Core" ist kein Wort für den Stack: RLS hat keinen Kern, es hat ein `DataInterface` mit einem Pflichtteil und Fähigkeiten darüber (Anton, 21.09.2026). Dass Spec 00 und 02 diesen Pflichtteil bisher „Core" nennen, ist ein eigener Befund; hier heißen die Module, die das Toolkit definiert, jedenfalls Toolkit-Module. Der Mechanismus bleibt, seine Namen nicht.*
+
+3. **Lebenszyklus: eine beobachtbare Quelle, Änderungen atomar.** Es gibt genau ein Register, und jede Fläche liest es aus derselben Quelle. Ändert es sich, geschieht das **in einem Schritt** — Definition und Erweiterungen werden zusammengesetzt, geprüft (Regel 2) und dann als Ganzes gebunden; keine Fläche sieht einen halb zusammengesetzten Stand — und **alle Flächen erfahren es**, so wie sie jede andere Änderung im Stack erfahren: über eine Beobachtung, nicht über einen Schnappschuss. Eine Fläche DARF das Register darum NICHT beim Import in eine Konstante schreiben — ein solcher Schnappschuss sieht eine spätere Erweiterung nicht, und der Fehler zeigt sich nur bei bestimmter Importreihenfolge. Jede Abfrage liest den aktuellen Stand; wer über Zeit richtig bleiben will, abonniert.
+
+    Heute ändert sich das Register nach dem ersten Render nicht — es wird einmal gebunden und dann eingefroren. Das ist der **Sonderfall**, nicht die Regel: das billigste Mittel für Konsistenz, solange nichts nachgeladen wird. Ein Marktplatz, der Module zur Laufzeit installiert, ändert daran nur den Zeitpunkt, nicht den Vertrag; er ersetzt das Einfrieren durch die atomare Neubindung oben (Anton, 21.09.2026). Dasselbe Register erneut zu binden bleibt **folgenlos erlaubt**: idempotent, damit ein zweiter Import derselben Bindung nicht bestraft wird.
+
+4. **Ein Space erweitert das Register nicht.** Das Register ist ein globaler Katalog, der vor dem ersten Render feststeht; der aktive Space wechselt dagegen zur Laufzeit. Ein Space *definiert* darum keine Module, er **wählt** aus dem Katalog: `Group.data.modules` ist eine Auswahl, kein Beitrag. Das Register sagt, was es gibt und was ein neuer Space voreingestellt bekommt — nicht, was ein bestehender Space zeigt. Der Grund dahinter trägt auch dann noch, wenn Module aus einem Marktplatz kommen: **Daten ja, Code nein.** Ein Space bringt sein Domänenmodell als Daten mit — welche Module er führt, künftig auch welche Typen und Filter — und das teilt sich mit dem Space. Ein Modul ist dagegen **Code, der im Client jedes Mitglieds läuft**; könnte ein Space ihn einbringen, würde der Beitritt zu einem Space zur Ausführung fremden Codes. Das ist eine andere Vertrauensfrage als das Teilen von Daten. Ein Marktplatz installiert Module deshalb auf **App- oder Instanz-Ebene**, wie eine Browser-Erweiterung, und Spaces wählen aus dem, was installiert ist (Anton, 21.09.2026). Regel 6 macht den Rest: Ein Space DARF auf ein Modul verweisen, das dieser Client nicht hat — die Id bleibt erhalten, der Tab bleibt weg. Fremde Module tragen ihren Anbieter in der Id (Domain oder DID), damit zwei „Kalender" zweier Anbieter kein Konflikt nach Regel 2 sind, sondern zwei Module.
 
 5. **Die Auswahl gehört ebenfalls an eine Stelle.** Aus einer gespeicherten Liste eine benutzbare zu machen und daraus ein aktives Modul zu wählen, sind zwei Operationen, die das Register anbietet und die jede Fläche benutzt — Routing, Tabs, Space-Wechsel und Benachrichtigungen. Sie selbst zusammenzusetzen ist derselbe Fehler wie eine zweite Modul-Liste: Es hat bereits dazu geführt, dass ein Sprung aus einer Benachrichtigung im Feed statt auf der Karte landete, weil eine Aufrufstelle den Leer-Fall anders behandelte als die andere.
 6. Eine `id` in `Group.data.modules` ohne Registereintrag ist **kein Fehler**: Sie stammt aus einer anderen App-Version oder einem Modul, das diese App nicht kennt. Sie MUSS erhalten bleiben (nie stillschweigend entfernt) und DARF NICHT dargestellt werden. Zählungen, Garantien — etwa „mindestens ein Modul bleibt aktiv" — **und jede Auswahl eines aktiven Moduls** MÜSSEN die darstellbaren Einträge nehmen, nie die rohe Liste: Sonst bestimmt eine fremde Id das Routing, und der Nutzer landet auf einem Tab ohne Fläche. Bleibt nach dem Filtern nichts übrig, greift der volle Satz — ein Space ganz ohne Tab wäre schlimmer als einer mit den Vorgaben.
 7. Ein Registereintrag ohne `view` MUSS sichtbar degradieren (Hinweis statt leerer Fläche). Ein Modul, das im Tab erscheint und dann nichts zeigt, ist schlimmer als eines, das fehlt.
-8. Das Register trägt **keine Aktivierungsregel**: Welche Items ein Modul zeigt, entscheidet Feld-Präsenz (siehe [06-schema-composition.md](06-schema-composition.md)), nie ein Eintrag hier.
+8. Das Register trägt **keine Aktivierungsregel**: Welche Items ein Modul zeigt, entscheidet Feld-Präsenz (siehe [06-schema-composition.md](06-schema-composition.md)), nie ein Eintrag hier. `presents` ist keine Ausnahme davon, sondern ihre Anwendung: Es nennt die Felder, und der Host leitet daraus den Filter ab — dieselbe Regel, die auch „Ein Feld führt zu seiner Sicht" trägt. Ein Modul ohne `presents` zeigt alles, was in einer aggregierenden Ansicht erscheint. Und die Präsenz ist die des **Feldes**, nie die des Typs — auch nicht als Abkürzung davor: `hasStatus` prüfte bis zum 21.09.2026 zuerst `type === "task"`, und ein Task ohne Status wurde in ein Kanban geleitet, das ihn nicht zeigte.
+
+### Der Modul-Host
+
+**Status: umgesetzt, rls#414 (B0, 21.09.2026).** `ModuleHost` in `packages/toolkit/src/components/host/module-host.tsx`; das Outlet rendert jede Fläche darin. Alle sieben Toolkit-Module — Feed, Kanban, Kalender, Karte, Resonanz, Liste, Graph — laufen ohne eine Zeile in der App (B1–B5, 21.09.2026); die Referenz-App erweitert das Register nicht mehr.
+
+Der Registereintrag beantwortet, *was folgt daraus, dass ein Space dieses Modul führt*. Der Host ist die Stelle, die aus der Antwort eine laufende Fläche macht — **einmal**, für alle Module.
+
+**Befund, der ihn nötig macht.** In der Referenz-App taten alle sieben Modul-Ansichten dieselben sieben Dinge in derselben Reihenfolge: Items mit dem Modulfilter laden, Mitglieder laden (mit dem Aggregat-Sonderfall, siebenmal abgeschrieben), die geteilte Bearbeitungs-Konfiguration bauen, Detail registrieren, Erstellen registrieren, den Fokus verdrahten, die Ansicht rendern. Die Detail-Blöcke von Kalender und Karte waren wörtlich gleich. Was sich je Modul unterschied, waren die Ansicht und der Filter — und der Filter stand bereits als `presents` im Register. Die Netzwerk-App hat dieselben sieben Dinge nicht übernommen, sondern ohne Fokus-Politik und ohne Erstellen-Host neu erfunden. Das ist die Regel aus Abschnitt 2a eine Ebene höher: Was sich Module teilen können, gehört nicht ins Modul — und was sich Apps teilen können, gehört nicht in die App.
+
+**Was der Host aus einem Eintrag herstellt.** Jedes Modul bekommt alles davon; kein Modul baut es selbst:
+
+| Der Host … | … und woher er es weiß |
+|---|---|
+| stellt die **Fläche** (Kopf, Suche, Vokabular, Filterkarte, Chips, schwebende Ecke) | `fill`, `panelFit`, `maxWidth` — wie heute |
+| lädt die **Items** des Moduls und wendet den **geteilten Filter** an | nach dem **Ladevertrag** unten: aus `presents` und `options` einen Connector-Filter je Hinweis, bei mehreren Hinweisen die Vereinigung; darauf Suche, Tags und Typen des Kopfes (Regel 2a). Bei `loads: "module"` stellt der Host **keine** Abfrage — die Karte lädt nach Ausschnitt selbst und filtert selbst |
+| löst den **Space-Kontext** auf: Mitglieder, Autoren, Gruppenfarben, das Aggregat „Mein Netzwerk" | aus dem aktiven Space; die Ausnahme `__overview__` gibt es damit an genau einer Stelle. `resolveAuthor`: Mitglied, sonst ich selbst, sonst über die Kontakte nachgeschlagen — vorher in Feed und Resonanz je einmal, im Kanban halb, im Detail ein viertes Mal |
+| begrenzt ein **aggregierendes** Modul (ohne `presents`) auf das, was als **eigene Karte** steht | `isAggregateVisibleItemType` (Spec 06, Modul-Konsequenzen) — vorher in Feed, Liste und Graph je einzeln |
+| nennt das **aktive Item** und ob ein **Filter aktiv** ist | aus Panel und Fokus (`activeItemId`) und dem geteilten Filterzustand (`filterActive`) — vorher rechnete es jedes Modul selbst, in drei Varianten |
+| **scrollt** die Karte des fokussierten Items in den Blick | `registerItemElement(id, el)` als `ref` an der Karte; der Host zeigt sie beim Fokuswechsel, auch wenn sie erst später gerendert wird — vorher in Feed und Resonanz kopiert |
+| registriert das **Detail** (Lesen ↔ Bearbeiten im geteilten Panel) | aus der geteilten Bearbeitungs-Konfiguration: alle Inhaltstypen, der Composer-Mapper, die Vorbelegung. Der Hintergrund-Schleier folgt aus `panelFit`: `overlay` bleibt ohne, damit die Karte bewegbar bleibt |
+| registriert das **Erstellen** | mit **allen** Inhaltstypen des Space — der Plusknopf bietet immer alles an, das Modul schränkt nicht ein (Anton, 20.09.2026). Ein Modul DARF einen **Vorschlag** machen: Ein Klick auf einen leeren Kalendertag öffnet den Composer mit „Termin" vorgewählt und dem Datum vorbelegt. Ein Vorschlag ist eine Voreinstellung, kein Zaun — das Typmenü bleibt offen |
+| hält den **Fokus** (welches Item offen ist, ob es bearbeitet wird, ob gerade erstellt wird) | in der **URL**, als Voreinstellung: `/{scope}/{modul}/{itemId}`, `?edit`, `?compose=`. Zurück im Browser schließt das Panel; ein Link führt zum Item. Das ist keine Wahl der App, sondern Teil des Moduls |
+
+**Was beim Modul bleibt.** Die Ansicht, ihre eigenen Steuerelemente (Regel 2), ihr Vorschlag beim Erstellen, und — wo es das gibt — eigene Logik (Kanban: Spalten, Verschieben, Zuweisung). Das ist alles.
+
+**Was bei der App bleibt.** Der Router selbst und die Entscheidung, welche Module ihr Register führt. Die URL-Fokus-Politik braucht einen Router; sie liegt darum in einem eigenen Unterpfad des Toolkits (`@real-life-stack/toolkit/router`, nach dem Muster von `/maplibre`), damit der Kern routerfrei bleibt. Dort liegt seit rls#429 auch, was jede App mit Router gleich tut: Space, Modul und Item aus der URL auflösen (`useWorkspaceRouting`; den Rückfall ohne Feld wählt die App) aus einer Benachrichtigung eine Route machen (`notificationRoute`) und vor dem Verlust ungespeicherter Eingaben warnen (`UnsavedChangesGuard`, braucht `useBlocker`). *Bis dahin stand beides in der Referenz-App und ein zweites Mal, anders, in der Netzwerk-App.*
+
+Und eine App schreibt ihre Shell nicht selbst zusammen. Der **Rahmen** (`AppFrame` im Toolkit, `RoutedAppFrame` im Unterpfad `/router`) stellt Provider, das geteilte Panel, die Kopfzeile mit Space-Verwaltung, die vier Controller, die drei Navigationsregeln und den Outlet einmal — für jede App und für jede Story gleich (`HostWorld` ist derselbe Rahmen unter dem Speicher-Fokus). Eine App stellt Connector, Router, Register, die Karten-Engine und ihre Extras (ein Slot in der Kopfzeile, Kinder im Baum). *Bis rls#430 zählten Referenz-App, Netzwerk-App und Story-Hülle denselben Stapel von Hand auf, zehn Provider und vier Controller in drei Fassungen; was in einer fehlte, fiel nicht auf, bis es fehlte (Anton, 21.09.2026).* Ohne Router — in einer Story, einem Test, einer Einbettung ohne eigene Adresse — hält der Host den Fokus im Speicher, mit demselben Vertrag. Eine App, die einen Router hat, MUSS die URL-Politik nehmen. Der Fokus im Speicher ist der Rückfall für den Fall ohne Router, keine zweite gleichwertige Betriebsart.
+
+Regeln:
+
+1. Ein Toolkit-Modul MUSS **ohne eine Zeile in der App** laufen: Register binden, Host rendern, fertig. Alles, was die Referenz-App heute je Modul verdrahtet, ist entweder Sache des Hosts oder Sache des Moduls im Toolkit.
+2. Ein Modul DARF **nicht** selbst laden, registrieren oder den Fokus verdrahten, was der Host aus dem Eintrag herstellt. Die Tabelle oben ist die Liste; wer etwas davon im Modul wiederfindet, hat einen Fehler gegen diese Spec vor sich.
+3. Das Erstellen bietet in jedem Modul **dieselben** Typen an. Eine je Modul verschiedene Liste ist eine zweite Typ-Liste und damit ein Verstoß gegen Regel 1 des Typ-Registers. Ein Modul DARF einen Typ **vorschlagen** und Felder **vorbelegen**; es DARF die Auswahl nicht **einschränken**.
+4. Der Fokus lebt in der URL, wo es eine gibt. Eine App mit Router, die den Fokus anders hält, weicht von der Spec ab und MUSS das im Pull Request begründen.
+5. Der Host ist **eine** Komponente im Toolkit. Eine zweite Fassung davon in einer App — auch eine teilweise, auch eine „vorläufige" — ist derselbe Fehler wie eine zweite Modul-Liste. *Die Netzwerk-App hatte eine; seit rls#429 ist sie eine Shell um den Host: Register mit eigenem Modul (Marktplatz, über einen eigenen Hinweis `resource`), Konfiguration von Karte und Kalender per `replaces: ["options"]`, sonst nichts.*
+
+Was ein Eintrag dafür **nicht** braucht: kein `items`-Feld (folgt aus `presents`), kein `backdrop` (folgt aus `panelFit`), keine Liste der Erstell-Typen (es sind alle), kein `createLabel` (der Knopf heißt „Erstellen", das Modul schlägt höchstens einen Typ vor). Was er braucht, sind zwei kleine Felder, die nichts anderes herleiten kann: `loads`, weil nur das Modul weiß, ob es selbst lädt, und `options`, weil nur die Konfiguration weiß, welches Feld die Kanban-Spalte trägt. *Der erste Entwurf behauptete, der Eintrag werde gar nicht länger; rls#411 hat gezeigt, dass das die Übergabe an den Host verschwieg.*
+
+### Der Ladevertrag
+
+**Status: umgesetzt, rls#414.** Die Tabelle lebt in `packages/data-interface/src/module-hints.ts` (`registerModuleHint`, `filterForHint`, `moduleHintsFor`); der Host leitet seinen Filter mit `hostFiltersFor` daraus ab — je Hinweis eine Abfrage, zusammen die Vereinigung. Aus rls#411: vier Dinge, die der erste Entwurf offenließ.
+
+**1. Ein Hinweis ist ein Feld oder eine Klasse mit deklarierter Affordanz — und `data-interface` kennt beide Richtungen in einer Tabelle.** Bis rls#414 gab es nur die Richtung Item → Hinweise (`moduleHintsFor`); der Host braucht die Umkehrung Hinweis → Connector-Filter. Beide MÜSSEN aus **derselben** Tabelle kommen, sonst driften Routing und Laden auseinander — genau so, wie es bei `hasStatus` passiert ist (Typ-Abkürzung im Hinweis, Feldfilter in der Ansicht). Und die Tabelle ist **offen, nicht geschlossen**: Ein Registereintrag DARF einen eigenen Hinweis samt beiden Richtungen eintragen. Ein Modul, das ein Feld darstellt, das das Toolkit nicht kennt — ein fremdes Modul aus einem Marktplatz, oder ein eigenes der App — bringt seinen Hinweis mit, statt auf eine Änderung in `data-interface` zu warten. Für B0 heißt das: eine Tabelle, in die man einträgt, kein fester `switch` über vier Namen (Anton, 21.09.2026). Die Zeilen, die das Toolkit einträgt, Stand heute:
+
+| Hinweis | Item → Hinweis | Hinweis → Filter | Art |
+|---|---|---|---|
+| `position` | `data.position.coordinates` ist ein Array | `hasField: ["position"]` | Feld |
+| `start` | `data.start` ist ein nichtleerer String | `hasField: ["start"]` | Feld |
+| `status` | `data[statusField]` ist ein String mit Spaltenwert | `hasField: [statusField]` | Feld, **konfiguriert** über `options.statusField` (Standard `status`) |
+| `statement` | eine Klasse des Items deklariert die Affordanz `votesOn` (eingehend) | `type: [Klassen mit votesOn]` — Kurzname oder IRI, als Menge | Klasse (Spec 06, „Klassen haben IRIs"). *Bis rls#412 ein Marker-Vokabular `statement/v1` im `@context`; das entfiel, weil `type` per `base/v1` schon `@type` ist und eine interne Regel die JSON-LD-Interoperabilität nicht einschränken darf (Anton, 21.09.2026)* |
+
+Abnahmefall: Ein Resonanz-Item ohne `data.statement` wird geladen — es gibt dieses Feld nicht, die Klasse entscheidet.
+
+**2. Grob lädt der Connector, fein entscheidet das Modul.** Der Connector-Filter prüft **Präsenz** (Feld da, Vokabular da); er prüft keine Werte, denn Connectoren filtern nicht nach Aufzählungen. Ob ein Wert einer Spalte entspricht (`open`, `done` …), prüft das Kanban selbst auf dem geladenen Bestand — wie heute (Spec 06: „plus Spaltenwert-Prüfung"). Der **Hinweis** für Routing und Benachrichtigungen DARF die Wertprüfung enthalten, weil er die Frage „würde dieses Modul das Item zeigen?" beantwortet; er MUSS dafür dieselbe Konfiguration nehmen wie der Filter. Bis Module je Space konfigurierbar sind, gelten die Standardwerte.
+
+Abnahmefall: Ein Kanban mit `options.statusField: "kind"` lädt `hasField: ["kind"]`, und der Hinweis prüft `data.kind`, nicht `data.status`.
+
+**3. Mehrere Hinweise sind eine Vereinigung.** `presents` beantwortet „was kann dieses Modul zeigen"; zwei Hinweise heißen also *das eine oder das andere*. `ItemFilter.hasField` ist dagegen ein Und. Der Host stellt darum **je Hinweis eine Abfrage** und vereinigt die Ergebnisse nach `id`. Ein Hinweis ist der schnelle Normalfall und heute der einzige; der Vertrag steht trotzdem, damit ihn niemand später als Und implementiert.
+
+**4. Wer selbst lädt, sagt es — und der Host schweigt dann.** `loads: "module"` ist die Anmeldung. Der Host stellt keine Standardabfrage, hängt aber alles andere unverändert an: Fläche, Space-Kontext, Detail, Erstellen, Fokus. Das Modul bekommt vom Host, was es zum Laden braucht (den aktiven Space), und liefert seine Items an die Fläche zurück (`fallbackItems`-Pfad des Vokabulars entfällt damit; unter einem Connector gilt ohnehin der Space).
+
+Abnahmefall: Die Karte mit `viewportMode: "bbox-module"` löst **keine** zweite Vollbestandsabfrage aus; im Netzwerk gibt es genau eine Abfrage je Ausschnitt.
+
+Was der Implementierer damit **nicht** erfinden muss: keinen Schalter über Modul-Ids im Host, keine zweite Abfrage neben der des Moduls, keine eigene Tabelle Hinweis → Filter.
+
+
+
+**Offen, bewusst.** Sobald Filter und Typen je Space konfigurierbar sind (angekündigt 20.09.2026), heißt „alle Typen" „alle, die dieser Space führt", und der Host liest sie aus der Space-Konfiguration statt aus dem Typ-Register. Dass es dann genau eine Stelle umzustellen gibt, ist der Grund, sie jetzt zusammenzuführen.
 
 ### Ein Feld führt zu seiner Sicht
 
@@ -283,7 +369,7 @@ Nicht jedes sichtbare UI-Element ist ein Space Module.
 | AppShell, Navbar, BottomNav, ModuleTabs | App Shell / Layout |
 | WorkspaceSwitcher | App Shell |
 | UserMenu | App Shell |
-| ProfileDialog | App Shell, kann in Modulen referenziert werden |
+| ProfilePanelContent | App Shell, kann in Modulen referenziert werden |
 | ContactsDialog | App Shell |
 | VerificationDialog | App Shell |
 | RelayStatusBadge | App Shell / Connector-Status |
@@ -315,14 +401,12 @@ Aktuell:
 - [modules/feed.md](modules/feed.md)
 - [modules/kanban.md](modules/kanban.md)
 - [modules/calendar.md](modules/calendar.md)
+- [modules/map.md](modules/map.md)
+- [modules/resonance.md](modules/resonance.md)
+- [modules/shared-components.md](modules/shared-components.md)
 
 ## Offene Punkte
 
 Diese Spec definiert die Taxonomie. Detail-Specs für weitere Space Modules können später folgen.
 
-Mögliche spätere Dokumente:
-
-- `modules/map.md`,
-- `modules/marketplace.md`,
-- `modules/quests.md`,
-- `modules/campaign-view.md`.
+Ohne Detail-Spec sind bisher die registrierten Module `collection` und `graph`.

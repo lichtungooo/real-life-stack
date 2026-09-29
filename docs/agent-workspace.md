@@ -16,7 +16,8 @@ Kernidee: App Shell und Space Modules (Kanban, Kalender, Karte, Feed) arbeiten g
 
 ```text
 apps/reference/          → Showcase-App (alle Module, MockConnector + LocalConnector)
-apps/landing/            → Landing Page
+apps/network/            → Netzwerk-App: Shell um den Modul-Host, eigenes Modul Marktplatz, DWeb-Camp-Seed
+apps/site/               → real-life-stack.de: Landing + Handbuch (Astro/Starlight), Handbuchtext in docs/handbook/
 packages/toolkit/        → UI-Komponenten (shadcn/ui, Storybook) + Hooks + ConnectorProvider
 packages/data-interface/ → TypeScript-Typen, Interfaces, BaseConnector, Shared Helpers
 packages/mock-connector/ → In-Memory-Implementierung
@@ -111,7 +112,7 @@ Feature-Items (`type: "feature"`) können weiterhin als Demo-, Konfigurations- o
 
 - Connector liefert ein Item mit `id: "capabilities"`, `type: "feature"`, `createdBy: "system"`
 - `data` enthält einen verschachtelten Objektbaum: truthy = unterstützt, falsy = nicht unterstützt
-- Hooks: `useFeatures()` gibt den ganzen Baum, `useFeature("kanban.dragDrop")` prüft einen Pfad
+- Hooks dafür gibt es im Toolkit nicht: `useFeatures`/`useFeature` waren ein Entwurf und wurden am 19.09.2026 entfernt (real-life-stack#400). Eine App, die den Baum braucht, liest ihn selbst über `useItems({ type: "feature" })`
 - UI blendet Features dynamisch ein/aus basierend auf dem Feature-Baum
 - **Feature-Items gehören in die Demo-Daten** (`data/items.json`), nicht hardcoded in Connectors
 - Normativer Einstieg: `docs/spec/README.md` und `docs/spec/00-architecture.md`
@@ -155,8 +156,8 @@ Relation-Targets nutzen Scope-Prefixe:
 
 - UI-Komponenten basierend auf shadcn/ui (Radix + Tailwind)
 - Layout: AppShell, Navbar, WorkspaceSwitcher, ModuleTabs, BottomNav, UserMenu
-- Content: PostCard, StatCard, ActionCard, SimplePostWidget, KanbanBoard
-- Hooks: useItems, useItem, useCreateItem, useUpdateItem, useDeleteItem, useGroups, useMembers, useAuthState, useCurrentUser, useFeatures, useFeature
+- Content: ItemPreview, ItemDetailBody, KanbanBoard, CalendarView, MapView, GraphView
+- Hooks: useItems, useItem, useCreateItem, useUpdateItem, useDeleteItem, useGroups, useMembers, useCurrentUser, useOptionalCurrentUser, useComments, useReactions, useVotes, useItemPermissions — die vollständige Liste steht im Storybook unter „Alle Hooks"
 - ConnectorProvider für React Context
 - Storybook für Komponentenentwicklung (`pnpm storybook`)
 
@@ -227,6 +228,24 @@ RLS unterscheidet:
 
 Profile, Contacts, Verification und Auth sind App-Shell-Flächen, keine Space Modules. Sie können in Space Modules sichtbar werden, werden aber nicht pro Space als Modul aktiviert.
 
+### Der Modul-Host
+
+Normativ in `docs/spec/01-app-composition.md` → „Der Modul-Host" und „Der Ladevertrag"; Code in `packages/toolkit/src/components/host/`.
+
+- **Ein Modul ist ein Registereintrag plus eine Ansicht.** `ModuleOutlet` rendert jede Ansicht in einem `ModuleHost`, der aus dem Eintrag herstellt, was sich alle Module teilen: Items (nach `presents` über die Hinweis-Tabelle `module-hints.ts`; `loads: "module"` = keine Abfrage), Space-Kontext (`useModuleHost()`: Mitglieder, Gruppen, `currentSpace`, Gruppenfarben, `resolveAuthor`, `activeItemId`, `filterActive`, `registerItemElement`; aggregierende Module sehen nur, was als eigene Karte steht), Detail (Lesen ↔ Bearbeiten im geteilten Panel), Erstellen mit **allen** Typen und den Plusknopf mit dem Vorschlag aus `options.suggestType`.
+- **Eine Ansicht registriert NICHTS selbst.** Kein `useRegisterDetail`, kein `useRegisterCreate`, kein eigener `CreateFab`, kein eigenes `useItems` für den Modulbestand, kein eigenes Filtern — die Items kommen als `items`/`itemsLoading` in den `ModuleViewProps`, **bereits gefiltert** nach Suche, Tags und Typen; eine freistehende Lens liest sie gefiltert über `useSurfaceItems()`. Der Wächter `scripts/check-shared-derivations.py` meldet Registrierungen außerhalb von `components/host/`.
+- **Fokus in der URL ist die Voreinstellung.** Der Vertrag `useItemFocus()` (offenes Item, Bearbeiten, Kommentieren, Erstellen) lebt im Toolkit; die URL-Politik `UrlFocusProvider` im Unterpfad `@real-life-stack/toolkit/router` (react-router-dom als optionaler Peer). Ohne Router: `MemoryFocusProvider`, derselbe Vertrag.
+- **Alle sieben Toolkit-Module laufen ohne eine Zeile in der App** (seit 21.09.2026, B0–B5): Feed, Kanban, Kalender, Karte, Resonanz, Liste, Graph in `packages/toolkit/src/modules/`. Die Referenz-App erweitert das Register nicht mehr; eine App darf eigene Module einführen oder eine Fläche ersetzen — ausdrücklich, mit `replaces: ["view"]` am Fragment. Muster für ein neues Modul: eine Datei in `modules/`, ein Registereintrag, eine Story mit `HostWorld`. Muster für eine neue App: Connector, Router, Register, `MapLibreAdapterProvider`, `RoutedAppFrame` — sonst nichts (Spec 01, „Was bei der App bleibt").
+- **Der Plusknopf bietet immer alle Typen.** Ein Modul schlägt vor (`suggestType`), belegt vor (Kalendertag), schränkt nie ein.
+
+### Hooks dokumentieren
+
+Jeder Hook, den `packages/toolkit/src/index.ts` oder `router.tsx` exportiert, trägt direkt über dem Export einen Dokumentationskommentar mit festen Feldern (Plan D2, 22.09.2026): erster Absatz = die Frage, die er beantwortet (Englisch, ein Satz), `@answers` (Form der Antwort), `@without` (was ohne die Fähigkeit passiert: `—`, `empty`, `null`, `value`, `no-op`, `throws on call`, `throws on render`, optional `— Notiz`), `@group` (`read`, `write`, `groups`, `people`, `relations`, `permissions`, `host`, `environment`, `item`), optional `@see story <id>` und `@see spec <pfad>`. Weiterer Fließtext darunter bleibt Deutsch wie alle Code-Kommentare. Daraus entsteht die Storybook-Seite „All hooks“ (`pnpm docs:hooks` → `src/hooks/all-hooks.json`); `pnpm check:hooks` und `pnpm test:hooks` laufen in CI und fallen bei fehlendem Feld, unbekannter Story-Id, fehlender Spec-Datei oder veralteter Datei. Neuer Hook = Block schreiben, `pnpm docs:hooks`, beides committen.
+
+**Öffentlich oder intern (seit 23.09.2026).** Öffentlich ist, was ein Modul oder eine App fragt: Items lesen und schreiben, Gruppen und Mitglieder, Menschen, Beziehungen, Rechte, was der Host gibt (`useModuleHost`, `useItemFocus`, `useCreate`, `useModulePanel`, `useSharedFilter`), Umgebung. Das steht in `hooks/index.ts` bzw. den Komponenten-Barrels und damit in Referenz, Storybook und `llms.txt`. **Intern** ist die Verdrahtung von Host, Rahmen und Panel (`useRegisterDetail`, `useRegisterCreate`, `useModuleContentClass`, `usePanelEdges`, `useItemComposerProps`, `useItemDetailEdit`, `useFilterableItems`, `useBeforeUnloadWarning`, `useModuleLayout`, `useOptionalModuleHead`, `useOptionalModuleHost`, `useLocationPick`, `useFieldLink`/`useCommentLink`/`useTagLink`, `useWorkspaceRouting`, `useItemAuthor`): innerhalb des Toolkits per relativem Import, nicht aus dem Paket. Was ein Item über sich sagt (Herkunftsgruppe, Farbe, privat), beantwortet **ein** Hook, `useItemPresentation(item)`; die drei Resolver davor sind Geschichte. Ein Modul, das eines davon braucht, hat einen Fehler gegen Spec 01 vor sich. Seit dem 29.09.2026 öffentlich (real-life-stack#558): `useModuleFilteredItems(items)` und `useSurfaceItems()`, für eine Fläche **außerhalb** des Modul-Hosts (ein app-eigenes Brett), die den geteilten Filter sonst selbst zusammensetzen müsste; ein Modul unter dem Host bekommt seine Items weiter gefiltert und ruft beide nicht. `scripts/check-shared-derivations.py` meldet `useModuleFilteredItems` außerhalb seiner Ausnahmeliste; eine Fläche außerhalb des Hosts in diesem Repo wird dort namentlich eingetragen. Namen sprechen vom Datenmodell: **Group**, nicht Space (`useGroups`, `useGroupVocabulary`); „Space" ist das Wort der Oberfläche.
+
+**Rückgabeformen (seit 23.09.2026).** Ein Hook, der Daten liest, antwortet `{data, isLoading}` — auch wenn er dazu Aktionen mitgibt (`useComments` → `{data, isLoading, canComment, createComment}`, `useReactions` → `{data, isLoading, react, canReact}`, `useVotes` → `{data, isLoading, vote, canVote}`). `supported` steht nur dort, wo eine Fläche „nicht unterstützt" von „leer" unterscheiden muss (`useActivity`, `useRelationRecords`, `useNotifications`, `useVerification`). Ein Hook, der schreibt, gibt **die Funktion selbst** zurück (`const createItem = useCreateItem()`), nie ein `{mutate}`. Zustandsobjekte (`useInitialSync`, `useRelayStatus`, `useContacts`, `useIncomingEvents`) tragen benannte Felder. Reine Ableitungen ohne Laden (`useItemTags`, `useCommentCount`, `useItemPermissions`) geben den Wert nackt zurück.
+
 ## Reaktivität & Relations (WICHTIG — vor jedem reaktiven Feature lesen!)
 
 Ausführliche Spezifikation in `docs/spec/reaktivitaet.md`. Die wichtigsten Regeln:
@@ -234,8 +253,8 @@ Ausführliche Spezifikation in `docs/spec/reaktivitaet.md`. Die wichtigsten Rege
 - **Datenfluss:** wot-core (Subscribable) → Connector (Observable) → Hooks (React State) → UI. Keine Schicht überspringen.
 - **createdAt ist ein ISO-String** (`"2026-03-17T14:30:00.000Z"`), KEIN Date-Objekt. Bei Bedarf: `new Date(item.createdAt)`.
 - **Kommentare/Reaktionen** sind eigene Items mit `commentOn`-Relation, NICHT eingebettet in `data`.
-- **Related Items:** `useRelatedItems(postId, "commentOn", { direction: "to" })` in der Kind-Komponente. KEIN manueller Reverse-Lookup, KEIN `_included`.
-- **`_included` existiert NICHT MEHR.** Nutze `useRelatedItems` / `observeRelatedItems` stattdessen.
+- **Related Items:** den Hook der jeweiligen Beziehungsart in der Kind-Komponente — `useComments(postId)`, `useReactions`, `useVotes`, `useRelationRecords`. KEIN manueller Reverse-Lookup, KEIN `_included`. Einen allgemeinen `useRelatedItems` gibt es seit dem 19.09.2026 nicht mehr; für eine Beziehungsart ohne Hook ist `connector.observeRelatedItems()` der Weg.
+- **`_included` existiert NICHT MEHR.** Nutze die Beziehungs-Hooks bzw. `observeRelatedItems` stattdessen.
 - **Shared Helper:** `findRelatedItems()` aus data-interface nutzen, NICHT eigene Implementierung in Connectors.
 - **Anti-Patterns:** Kein Polling, kein direkter wot-core Import in UI, kein forceUpdate, keine eigene Datenhaltung in Hooks.
 
@@ -261,6 +280,7 @@ Ausführliche Spezifikation in `docs/spec/reaktivitaet.md`. Die wichtigsten Rege
 - `packages/toolkit/src/hooks/connector-context.tsx` — ConnectorProvider + useConnector
 - `packages/toolkit/docs/UI-REQUIREMENTS.md` — UI/UX Anforderungen
 - `packages/toolkit/src/styles/globals.css` — Theme & CSS-Variablen
-- `apps/reference/src/App.tsx` — Reference App: Komposition (Provider, AuthGate, App Shell)
-- `apps/reference/src/views/` — Space-Module-Views (feed, kanban, calendar, map) + `module-outlet.tsx` (Dispatch)
-- `apps/reference/src/hooks/use-workspace-routing.ts` — Space/Module-Auflösung aus URL (localStorage-Fallback, No-Access-Fall)
+- `packages/toolkit/src/components/frame/app-frame.tsx` — der Rahmen einer App: Provider, Panel, Kopfzeile mit Space-Verwaltung, Controller, Outlet — einmal für Apps und Stories (`RoutedAppFrame` in `/router` legt Fokus, Routen, Guard darum)
+- `apps/reference/src/App.tsx` — Reference App: AuthGate, Connector-Wahl, Rahmen + App-Eigenes (Profil-Overlay, WoT-Dialoge, Relay-Status)
+- `apps/network/src/App.tsx` + `module-register.tsx` — Netzwerk-App: Rahmen + Register mit Marktplatz
+- `packages/toolkit/src/components/router/` — `UrlFocusProvider`, `useWorkspaceRouting` (Space/Modul-Auflösung aus URL, localStorage-Fallback, No-Access-Fall), `notificationRoute` — Unterpfad `/router`

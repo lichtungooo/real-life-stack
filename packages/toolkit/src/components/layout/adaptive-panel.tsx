@@ -26,6 +26,13 @@ import {
  */
 export type PanelMode = "modal" | "sidebar" | "drawer" | "floating"
 
+/**
+ * Der Standard des Stacks: die schwebende Karte auf breiten Schirmen, der
+ * Drawer auf schmalen. Wer die Sidebar oder ein Modal will, sagt es per
+ * `allowedModes`.
+ */
+export const DEFAULT_PANEL_MODES: readonly PanelMode[] = ["floating", "drawer"]
+
 export interface DrawerSnapConfig {
   /** Lower snap point as fraction of viewport height (default 0.2) — below this minus zone → close */
   lower?: number
@@ -39,6 +46,7 @@ export interface AdaptivePanelProps {
   children: ReactNode
   open: boolean
   onClose: () => void
+  /** Which forms the panel may take; default `DEFAULT_PANEL_MODES` (floating card, drawer). */
   allowedModes?: PanelMode[]
   side?: "left" | "right"
   sidebarWidth?: string
@@ -250,7 +258,7 @@ export function AdaptivePanel({
   children,
   open,
   onClose,
-  allowedModes = ["modal", "sidebar", "drawer"],
+  allowedModes = DEFAULT_PANEL_MODES as PanelMode[],
   side = "right",
   sidebarWidth: sidebarWidthProp = "400px",
   sidebarMinWidth = "280px",
@@ -811,11 +819,12 @@ export function AdaptivePanel({
               "flex-1 flex flex-col overflow-hidden",
               isLeft ? "border-r" : "border-l",
             ),
-            // Drawer styling
-            // Die Glasflaeche der App-Huelle (Achse `surfaces`): deckend oder
-            // durchscheinend, wie Navbar und Bottom-Nav. Radix nennt genau das
-            // `panelBackground` — Panels sind die Flaechen, um die es geht.
-            mode === "drawer" && "surface-glass rounded-t-xl shadow-xl flex flex-col",
+            // Drawer: deckende Karte wie der Modal. Ueber dem abgedunkelten
+            // Hintergrund (bg-black/50) wuerde die Glasflaeche zu 80 % Weiss auf
+            // Dunkel, also Grau — und der Kommentar-Fuss (surface-glass-inner)
+            // haebe sich als hellerer Kasten davon ab. Glas bleibt dort, wo
+            // nichts abgedunkelt wird: Sidebar und schwebende Karte.
+            mode === "drawer" && "bg-card rounded-t-xl shadow-xl flex flex-col",
             // Schwebende Karte: eigene Huelle mit Rand und Schatten; Kopf und
             // Fuss bleiben stehen, der Body scrollt darin (flex + overflow).
             mode === "floating" && cn(

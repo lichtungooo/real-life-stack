@@ -141,6 +141,7 @@ interface ItemFilter {
   hasTag?: string[]
   createdBy?: string
   source?: string
+  group?: string
   bbox?: [number, number, number, number]
   limit?: number
   offset?: number
@@ -156,12 +157,46 @@ Mindestbedeutung:
 | `hasTag` | Nur Items, deren top-level `tags` alle genannten Strings enthält (AND, leeres Array matched alle) — siehe [07-tags.md](07-tags.md) |
 | `createdBy` | Nur Items dieser Autor-ID |
 | `source` | Optionaler Quellenfilter, wenn ein Connector mehrere Quellen unterscheidet |
-| `bbox` | Nur Items mit Position innerhalb der Bounding-Box `[west, south, east, north]` (GeoJSON-Längen-/Breitengrade). Viewport-begrenzte Abfrage (v.a. Karte); ein Connector ohne Geo-Index DARF clientseitig filtern, ein backend-gestützter Connector SOLL serverseitig einschränken. |
+| `group` | Nur Items dieses Space, unabhängig vom geöffneten Space; siehe [Lesen in einem bestimmten Space](#lesen-in-einem-bestimmten-space-group) |
+| `bbox` | Nur Items mit Position innerhalb der Bounding-Box `[west, south, east, north]` (GeoJSON-Längen-/Breitengrade). Viewport-begrenzte Abfrage (v.a. Karte); ein Connector ohne Geo-Index DARF clientseitig filtern, ein backend-gestützter Connector SOLLTE serverseitig einschränken. |
 | `limit` / `offset` | UI-Paginierung über eine bereits geladene oder beobachtbare Menge |
 
 `limit` und `offset` sind UI-Optimierungen. Sie ersetzen keine Trust-, Sichtbarkeits- oder Berechtigungslogik.
 
 `bbox` ist der Daten-Seam für skalierende Karten: dieselbe Abfrage liefert lokal (voller Satz, clientseitig gefiltert) wie später backend-gestützt (z.B. GraphQL, serverseitig eingeschränkt) nur die Items im sichtbaren Ausschnitt. Serverseitiges **Clustering** bei sehr großen Mengen (Rückgabe aggregierter Cluster statt Einzel-Items) ist eine **zukünftige, separate Query** und nicht Teil von `ItemFilter` (der `Item[]` zurückgibt) — siehe [modules/map.md](modules/map.md) → Datenquelle.
+
+### Lesen in einem bestimmten Space (`group`)
+
+Ohne `group` liest ein Connector im Scope des geöffneten Space: im Space von `GroupManager.getCurrentGroup()`; ist keiner geöffnet (Übersicht) oder trägt der geöffnete Space `scope: "aggregate"`, in allen zugänglichen Spaces. `group` setzt den Space für eine einzelne Abfrage ausdrücklich. Wer die Menge des geöffneten Space nachträglich nach `getItemGroupId()` filtert, findet in einem anderen Space nichts; das ersetzt `group` nicht.
+
+Regeln:
+
+1. Mit `group` liefern `getItems()` und `observe()` die Items, die im Space `group` liegen und die der Nutzer lesen darf. Das gilt unabhängig davon, welcher Space geöffnet ist und ob einer geöffnet ist. Die übrigen Filterfelder gelten zusätzlich.
+2. `group` ist die Id einer Group aus `GroupManager.getGroups()` oder die Id des persönlichen Space (`ItemGroupCapable.getPersonalGroupId()`, „Privat"). Ein unbekannter oder nicht zugänglicher Space ergibt eine leere Menge, nie Items eines anderen Space.
+3. Items ohne Space, die ein Connector jedem Space zurechnet (etwa globale `feature`-Items), rechnet er mit `group` genauso zu wie im geöffneten Space.
+4. Eine Abfrage mit `group` DARF den geöffneten Space NICHT wechseln (`setCurrentGroup`) und keinen anderen App-Zustand ändern.
+5. `observe({ group, … })` MUSS Änderungen in diesem Space melden, auch solange er nicht geöffnet ist. `loaded` gilt wie in [Observable](#observable), Regel 3.
+6. `group` versteht nur ein Connector, der es zusagt: `GroupScopeCapable` mit Type Guard `hasGroupScope()` ([03](03-capabilities.md)). Dieselbe Zusage deckt das Anlegen in einem Space ([Anlegen in einem bestimmten Space](#anlegen-in-einem-bestimmten-space)). Ein Connector übergeht unbekannte Filterfelder; ohne die Zusage würde er die Items des geöffneten Space liefern, als wären es die des angefragten. Eine Fläche DARF `group` darum NICHT an einen Connector ohne `hasGroupScope()` geben. Sie zeigt stattdessen, dass sie in diesem Space nicht lesen kann ([shared-components → Space des Formulars](modules/shared-components.md#space-des-formulars)).
+7. `hasGroupScope()` und `hasItemGroups()` sind unabhängig. `ItemGroupCapable` beantwortet für ein bekanntes Item, in welchem Space es liegt, und verschiebt es; `GroupScopeCapable` liest die Items eines Space und legt in ihm an. Ein Connector mit `GroupManager` SOLLTE `GroupScopeCapable` erfüllen.
+
+### Anlegen in einem bestimmten Space
+
+```ts
+interface GroupScopeCapable {
+  readonly groupScope: true
+  createItem(item: CreateItemInput, options?: { group?: string }): Promise<Item>
+}
+```
+
+`ItemWriter.createItem(item)` legt im geöffneten Space an; ist keiner geöffnet, bestimmt der Connector den Space (etwa „Privat"). `options.group` nennt den Space ausdrücklich.
+
+Regeln:
+
+1. Mit `options.group` MUSS der Connector das Item unmittelbar im Space `group` anlegen. Das Anlegen ist atomar: Das Item liegt zu keinem Zeitpunkt in einem anderen Space und ist dort für niemanden sichtbar. Scheitert es, gibt es kein Item.
+2. Anlegen und anschließendes `moveItemToGroup` erfüllt Regel 1 nicht und DARF NICHT als Anlegen mit `group` gelten.
+3. `group` ist eine Id wie in [Lesen in einem bestimmten Space](#lesen-in-einem-bestimmten-space-group), Regel 2. Ist der Space unbekannt oder darf der Nutzer dort nicht schreiben, lehnt der Connector mit einem Fehler ab und legt nirgends an.
+4. Das Anlegen mit `group` DARF den geöffneten Space NICHT wechseln.
+5. Eine Fläche DARF `options.group` nur an einen Connector mit `hasGroupScope()` geben. Ein Connector ohne Zusage übergeht das zweite Argument und legte das Item im falschen Space an.
 
 ## Nicht-Ziele
 

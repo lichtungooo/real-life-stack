@@ -121,15 +121,26 @@ const SEED: Item[] = [
   comment("c3", "user-1", "Super, dann bis Samstag.", "c1"),
 ]
 
+/**
+ * **ItemDetailPanel** is the detail as a whole: a top slot for the reading
+ * view and, underneath, the discussion — comments with replies and the input.
+ * The panel owns the comment wiring (`useComments`); what goes into the top
+ * slot is decided by the surface, in the app always `ItemDetailBody`.
+ *
+ * Without relations there is no discussion; the top slot still shows. Without
+ * a write capability the input is gone; the comments still read.
+ */
 const meta: Meta<typeof ItemDetailPanel> = {
-  title: "RLS/Module Components/Detail/ItemDetailPanel",
+  tags: ["autodocs"],
+  id: "rls-items-detail-panel",
+  title: "RLS/Items/Detail view/Content and discussion",
   component: ItemDetailPanel,
   parameters: {
     layout: "fullscreen",
     docs: {
       description: {
         component:
-          "Modul-agnostisches Detail-Panel: Top-Slot (children) + Kommentarliste + unten gepinnter CommentInput. Das Modul entscheidet, was \"Detail\" bedeutet — der Feed rendert eine read-only Item-Card, Kanban einen Edit-Composer. Das Framing (AdaptivePanel, Dialog, Route) bleibt beim Consumer. Die Story nutzt einen In-Memory-Connector: Kommentieren und Antworten funktionieren live.",
+          "Der innere Baustein der Detailansicht: Top-Slot (children) plus Kommentarliste plus unten gepinnte Eingabe. Die Apps benutzen ihn nicht direkt, sondern über `ItemDetailView`, das Lesen und Bearbeiten umschaltet und das ⋮-Menü einsetzt — zu sehen unter „App Shell → Die Modulfläche\". Was im Top-Slot steht, folgt dem ITEM, nicht dem Modul: ein Task ist ein Task, ob aus dem Kanban oder aus der Sammlung geöffnet (die frühere Regel je Modul hat #183 und #196 ausgelöst). Kommentieren und Antworten funktionieren hier live.",
       },
     },
   },
@@ -147,8 +158,9 @@ const meta: Meta<typeof ItemDetailPanel> = {
 export default meta
 type Story = StoryObj<typeof ItemDetailPanel>
 
-/** Feed-Variante: read-only ItemPreview als Top-Slot, Kommentare darunter. */
+/** Feed variant: a read-only ItemPreview as top slot, comments underneath. */
 export const FeedDetail: Story = {
+  name: "Feed detail with discussion",
   render: () => (
     <ItemDetailPanel itemId={POST.id}>
       <div className="p-4">
@@ -163,8 +175,14 @@ export const FeedDetail: Story = {
   ),
 }
 
-/** Beliebiger Top-Slot — das Panel besitzt nur das Kommentar-Wiring. */
+/**
+ * The top slot is technically free — the panel only owns the comment wiring.
+ * In an app it always holds `ItemDetailBody`, filled by the item's type. This
+ * story shows the limit of the building block, not an invitation to render
+ * something different per module.
+ */
 export const CustomTopSlot: Story = {
+  name: "The top slot is free (limit, not invitation)",
   render: () => (
     <ItemDetailPanel itemId={POST.id}>
       <div className="p-6 space-y-2">

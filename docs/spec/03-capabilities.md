@@ -39,6 +39,7 @@ if (isWritable(connector)) {
 | `ProfileCapable` | `hasProfile()` | eigenes Profil, öffentliche Profile, Profil-Sync und Profil-Freigaben je Space (`observeProfileShares`, `acceptSpace`, `declineSpace`, `shareProfile`, `revokeProfileShare`; [12-profile.md](12-profile.md) Regel 14) |
 | `EventListenerCapable` | `hasEventListener()` | eingehende Connector-Ereignisse abonnieren |
 | `ItemGroupCapable` | `hasItemGroups()` | Item-zu-Group-Zuordnung lesen oder verschieben |
+| `GroupScopeCapable` | `hasGroupScope()` | Items eines bestimmten Space lesen und in ihm anlegen, ohne ihn zu öffnen (`ItemFilter.group`, `createItem(item, { group })`, [02 → Lesen in einem bestimmten Space](02-data-interface.md#lesen-in-einem-bestimmten-space-group)) |
 | `AuthorizationCapable` | `hasAuthorization()` | per-Resource-Autorisierung (UCAN/RLS) für Create/Edit/Delete |
 | `MirrorCapable` | `hasMirrors()` | Items in weitere Spaces freigeben und Freigaben beobachten/widerrufen ([09-mirror-bridge.md → §Capability-Vertrag](09-mirror-bridge.md)) |
 | `ActivityLogCapable` | `hasActivityLog()` | best-effort Änderungsverlauf eines Space lesen und beobachten |
@@ -91,10 +92,10 @@ Regeln:
 1. `can` ist **synchron** und löst nur aus bereits geladenem Zustand auf (gehaltene UCANs, per-Row-Permission-Flags, owner-Spalte) — nie ein Netzwerk-Roundtrip. So kann die UI pro Item in einer Liste gaten, ohne N Aufrufe.
 2. Die Resource ist, **worauf die Aktion zielt:** das Item bei `item/edit`/`item/delete`, der Space (+ optional Typ) bei `item/create`. `Item` hat kein Top-Level-`space` → `"space" in resource` diskriminiert.
 3. **Durchsetzung** liegt im Backend/Protokoll (Relay/Peer lehnt nicht-autorisierte Writes ab; RLS lehnt ab). `can` ist eine **UI-Affordance**, keine Sicherheitsgrenze.
-4. Connectors ohne Autorisierungsmodell lassen die Capability weg (`hasAuthorization()` ⇒ `false`). Die UI fällt dann über `useItemPermissions`/`useCanCreate` auf einen **creator-owns**-Default zurück (eigenes Item editier-/löschbar; jeder schreibfähige Connector darf erstellen).
+4. Connectors ohne Autorisierungsmodell lassen die Capability weg (`hasAuthorization()` ⇒ `false`). Die UI fällt dann über `useItemPermissions` auf den Default in `resolveItemPermissions` zurück. Ob erstellt werden darf, entscheidet allein `isWritable(connector)` — dafür gibt es keinen eigenen Hook mehr (`useCanCreate` am 19.09.2026 entfernt, real-life-stack#400).
 5. `!isWritable()` ⇒ keine Edit/Delete/Create-Rechte.
 
-Konzept + UX: [concepts/item-edit-delete-2026-06.md](../concepts/item-edit-delete-2026-06.md). Hooks: toolkit `useItemPermissions(item)` → `{ canEdit, canDelete }`, `useCanCreate(space, type?)`.
+Konzept + UX: [concepts/item-edit-delete-2026-06.md](../concepts/item-edit-delete-2026-06.md). Hooks: toolkit `useItemPermissions(item)` → `{ canEdit, canDelete }`. Für das Erstellen: `isWritable(connector)`.
 
 ## FullConnector
 

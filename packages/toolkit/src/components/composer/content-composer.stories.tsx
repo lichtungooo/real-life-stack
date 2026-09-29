@@ -8,8 +8,23 @@ import {
   Megaphone,
 } from "lucide-react"
 
+/**
+ * **ContentComposer** is the form for creating and editing an item. It offers
+ * the content types it is given — in the app all types of the space, from the
+ * type register (spec 06) — and for each type the widgets that type declares:
+ * title, text, date, place, status, people, tags, media. Create strips empty
+ * defaults; edit starts from the existing data and treats an emptied field as
+ * an intentional clear.
+ *
+ * In the app the composer is opened by the create host (sheet or fullscreen)
+ * and by the detail's edit; here it stands alone so its modes and widgets can
+ * be compared. What you submit here goes nowhere.
+ *
+ * Where next: how the host opens it under [Focus, panel, create](?path=/docs/rls-app-05-focus-panel-create--docs).
+ */
 const meta: Meta<typeof ContentComposer> = {
-  title: "RLS/Module Components/ContentComposer",
+  id: "rls-items-content-composer",
+  title: "RLS/Items/Create and edit/ContentComposer",
   component: ContentComposer,
   tags: ["autodocs"],
   decorators: [
@@ -76,7 +91,7 @@ const taskType: ContentTypeConfig = {
   defaultGroup: "g1",
 }
 
-/** Zwei Personenfelder je Typ: „Kann ich" und „Will lernen" (peopleRelations). */
+/** Two people fields per type: "can do" and "wants to learn" (peopleRelations). */
 const skillTaskType: ContentTypeConfig = {
   id: "skill-task",
   label: "Aufgabe mit Lernwunsch",
@@ -140,8 +155,8 @@ const action =
 
 // ── Stories ──────────────────────────────────────────────────────────────
 
-export const MultiTyp: Story = {
-  name: "Multi-Typ (alle Typen)",
+export const AllTypes: Story = {
+  name: "All types",
   args: {
     contentTypes: allTypes,
     onSubmit: action("onSubmit"),
@@ -151,7 +166,7 @@ export const MultiTyp: Story = {
 }
 
 export const PostOnly: Story = {
-  name: "Nur Post",
+  name: "Post only",
   args: {
     contentTypes: [postType],
     onSubmit: action("onSubmit"),
@@ -159,8 +174,8 @@ export const PostOnly: Story = {
   },
 }
 
-export const EventVorausgefuellt: Story = {
-  name: "Event (vorausgefuellt)",
+export const EventPrefilled: Story = {
+  name: "Event, prefilled",
   args: {
     contentTypes: allTypes,
     initialContentType: "event",
@@ -173,8 +188,8 @@ export const EventVorausgefuellt: Story = {
   },
 }
 
-export const TaskEinzelTyp: Story = {
-  name: "Task (Einzel-Typ-Modus)",
+export const TaskSingleType: Story = {
+  name: "Task, single-type mode",
   args: {
     contentTypes: [taskType],
     mode: "task",
@@ -188,8 +203,8 @@ export const TaskEinzelTyp: Story = {
   },
 }
 
-export const EditModus: Story = {
-  name: "Edit-Modus",
+export const EditMode: Story = {
+  name: "Edit mode",
   args: {
     contentTypes: [taskType],
     mode: "task",
@@ -213,8 +228,8 @@ export const EditModus: Story = {
   },
 }
 
-export const MitAbbrechen: Story = {
-  name: "Mit Abbrechen-Button",
+export const WithCancel: Story = {
+  name: "With cancel button",
   args: {
     contentTypes: [postType],
     onSubmit: action("onSubmit"),
@@ -223,8 +238,8 @@ export const MitAbbrechen: Story = {
   },
 }
 
-export const OhneVorschau: Story = {
-  name: "Ohne Vorschau + Sichtbarkeit",
+export const WithoutPreview: Story = {
+  name: "Without preview, with visibility",
   args: {
     contentTypes: [postType],
     showVisibility: false,
@@ -233,8 +248,8 @@ export const OhneVorschau: Story = {
   },
 }
 
-export const ProjektMitMedien: Story = {
-  name: "Projekt (mit Media-Widget)",
+export const ProjectWithMedia: Story = {
+  name: "Project with media widget",
   args: {
     contentTypes: [
       {
@@ -248,8 +263,8 @@ export const ProjektMitMedien: Story = {
   },
 }
 
-export const MitQuickSuggestions: Story = {
-  name: "Quick-Suggestions (Tags + People)",
+export const QuickSuggestions: Story = {
+  name: "Quick suggestions: tags and people",
   args: {
     contentTypes: [taskType],
     mode: "task",
@@ -267,8 +282,8 @@ export const MitQuickSuggestions: Story = {
   },
 }
 
-export const ZweiPersonenfelder: Story = {
-  name: "Zwei Personenfelder (Kann ich / Will lernen)",
+export const TwoPeopleFields: Story = {
+  name: "Two people fields",
   args: {
     contentTypes: [skillTaskType],
     mode: "skill-task",
@@ -282,5 +297,45 @@ export const ZweiPersonenfelder: Story = {
     onSubmit: action("onSubmit"),
     peopleOptions,
     peopleQuickSuggestions: peopleOptions,
+  },
+}
+
+/**
+ * Saving failed: a banner under the form head („Konnte nicht gespeichert
+ * werden. Deine Eingaben bleiben erhalten.") with the connector's reason and
+ * „Erneut". The form stays open, the input stays. Click „Speichern" to see it.
+ */
+export const SaveError: Story = {
+  name: "Save error",
+  args: {
+    ...EditMode.args,
+    onSubmit: async () => {
+      throw new Error("Speichern fehlgeschlagen.", { cause: new Error("Item not found: task-7") })
+    },
+  },
+}
+
+/**
+ * The space in the form head is fixed as soon as the item has relationships
+ * (shared-components → „Space des Formulars", rule 5): here an item edge
+ * („Ermöglicht") is chosen, so the space pill turns into a muted fixed
+ * display with the reason as tooltip. Remove the chip and the space is
+ * choosable again. Saving is not blocked.
+ */
+export const SpaceFixedByRelations: Story = {
+  name: "Space fixed by relationships",
+  args: {
+    contentTypes: [
+      {
+        ...taskType,
+        defaultWidgets: [...taskType.defaultWidgets, "item-relation"],
+        itemRelations: [{ predicate: "blocks", label: "Ermöglicht", placeholder: "@ Aufgabe suchen…", targetType: "task" }],
+        defaultGroup: "g1",
+      },
+    ],
+    mode: "task",
+    initialData: { group: "g1", title: "Beete umgraben", "relation:blocks": ["item:t-kompost"] },
+    showPreview: false,
+    onSubmit: action("onSubmit"),
   },
 }

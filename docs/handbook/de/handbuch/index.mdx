@@ -1,0 +1,26 @@
+---
+title: Handbuch
+description: Real Life Stack verstehen und damit bauen — vier Wege, je nachdem, was du vorhast.
+sidebar:
+  label: Überblick
+sources:
+  - docs/spec/01-app-composition.md
+  - llms.txt
+---
+
+import { LinkCard, CardGrid } from '@site/components/cards'
+
+**Real Life Stack ist ein modularer Baukasten für Community-Apps.** Eine App besteht aus einem Connector zu ihren Daten, einem Register ihrer Module und dem Rahmen aus dem Toolkit; Karte, Kalender, Kanban, Feed, Liste, Graph und Resonanz kommen fertig mit. Dieses Handbuch führt dorthin auf vier Wegen. Du brauchst nur den, den du vorhast.
+
+<CardGrid>
+  <LinkCard title="Eine Instanz betreiben" description="Die fertige App unter eigenem Namen und eigener Domain: Image, Konfiguration, Branding, Updates." href="/handbuch/instanz/" />
+  <LinkCard title="Eine eigene App bauen" description="In zehn Minuten eine eigene App auf dem Rahmen: Connector, Router, Rahmen, fertig." href="/handbuch/erste-app/" />
+  <LinkCard title="Den Stack erweitern" description="Entwicklungsumgebung starten, erste Änderung, Prüfungen, der Weg zum PR und zum Release." href="/handbuch/entwickeln/" />
+  <LinkCard title="Mit Agenten arbeiten" description="Einstiege, Auftragsform, Regeln und Prüfungen für Coding-Agents." href="/handbuch/agenten/" />
+</CardGrid>
+
+## Wo die Wahrheit steht
+
+Die [Spezifikation](https://github.com/real-life-org/real-life-stack/blob/master/docs/spec/README.md) ist normativ; bei Widerspruch gewinnt sie. Dieses Handbuch erklärt und verweist, es legt nichts fest. Für Agenten gibt es dieselben Seiten als Markdown unter [/llms.txt](/llms.txt).
+
+[Referenz-App](https://real-life-stack.de/app/) · [Storybook](https://real-life-stack.de/storybook/) · [Quelltext](https://github.com/real-life-org/real-life-stack)

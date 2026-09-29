@@ -1,8 +1,8 @@
 import { useMemo } from "react"
 import type { DataInterface, Item } from "@real-life-stack/data-interface"
-import { SYSTEM_ITEM_TYPES, hasAuthorization, isWritable } from "@real-life-stack/data-interface"
+import { hasAuthorization, isAuthoredItemType, isWritable } from "@real-life-stack/data-interface"
 import { useConnector } from "./connector-context"
-import { useCurrentUser } from "./use-auth"
+import { useOptionalCurrentUser } from "./use-auth"
 
 export interface ItemPermissions {
   canEdit: boolean
@@ -23,16 +23,17 @@ const NONE: ItemPermissions = { canEdit: false, canDelete: false }
  * the button, promising a protection that did not exist while withholding an
  * edit that was already permitted.
  *
- * The exception are the three SYSTEM types, which carry a visible statement
- * BY someone: editing a foreign comment puts words in their mouth, editing a
- * reaction or a vote (a relation record) casts a ballot for them.
+ * The exception are authored items (`isAuthoredItemType`: the item-authorial
+ * catalog of spec 08 — statement, comment, reaction — plus relation records),
+ * which carry a visible statement BY someone: editing a foreign statement or
+ * comment puts words in their mouth, editing a reaction or a vote casts a
+ * ballot for them.
  *
  * This hook is UX, never a boundary — it only decides whether a button is
- * shown. The rule is enforced at the write ingress
- * (`assertMayMutateAuthoredItem`) and, where a server exists, by the backend:
- * Supabase RLS (migration 0009) and the GraphQL store reject it outright. In
- * WoT it cannot be enforced at all — every member holds the space key — so
- * there it stays a convention among honest clients.
+ * shown. The rule is enforced at the write ingress (`planAuthoredUpdate`,
+ * `assertMayMutateAuthoredItem`), in WoT additionally by the item claim (a
+ * foreign content change invalidates it), and by the backend where one
+ * exists: Supabase (migrations 0009 and 0012) and the GraphQL store.
  */
 export function resolveItemPermissions(
   connector: DataInterface,
@@ -48,13 +49,13 @@ export function resolveItemPermissions(
   }
   if (!currentUserId) return NONE
   const mine = item.createdBy === currentUserId
-  const speaksForSomeone = (SYSTEM_ITEM_TYPES as readonly string[]).includes(item.type)
+  const speaksForSomeone = isAuthoredItemType(item.type)
   const allowed = mine || !speaksForSomeone
   return { canEdit: allowed, canDelete: allowed }
 }
 
 /**
- * Pure resolver behind {@link useCanCreate}. A non-writable connector can't
+ * Pure resolver for „may I create here". A non-writable connector can't
  * create; a connector with an authorization model decides; otherwise any
  * writable connector may create (space membership is enforced backend-side).
  */
@@ -75,22 +76,26 @@ export function resolveCanCreate(
 }
 
 /**
+ * May I show the ⋮ menu here?
+ *
  * Whether the current user may edit / delete a given item — drives the detail
  * action menu (⋮). UI affordance only; the backend/protocol enforces. See
  * `AuthorizationCapable` in data-interface and the concept doc
  * `docs/concepts/item-edit-delete-2026-06.md`.
+ *
+ * @answers `{canEdit, canDelete}`
+ * @without value — both `false`
+ * @group permissions
+ * @see story rls-foundations-hooks--permissions
+ * @see spec docs/spec/03-capabilities.md
  */
 export function useItemPermissions(item: Item | null | undefined): ItemPermissions {
   const connector = useConnector()
-  const { data: currentUser } = useCurrentUser()
+  // A read-only connector has no sign-in; the resolver then grants nothing anyway.
+  const { data: currentUser } = useOptionalCurrentUser()
   return useMemo(
     () => resolveItemPermissions(connector, item, currentUser?.id),
     [connector, item, currentUser?.id],
   )
 }
 
-/** Whether the current user may create an item in a space (optionally typed). */
-export function useCanCreate(spaceId: string | null | undefined, type?: string): boolean {
-  const connector = useConnector()
-  return useMemo(() => resolveCanCreate(connector, spaceId, type), [connector, spaceId, type])
-}

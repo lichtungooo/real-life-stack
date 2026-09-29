@@ -9,10 +9,27 @@ const items: Item[] = [
   { id: "resource-loetstation", type: "resource", createdAt: "2026-07-08T10:02:00.000Z", createdBy: "seed", data: { title: "Lötstation", kind: "tool" } },
 ]
 
+/**
+ * **CollectionView** is the view underneath the list module: one collection
+ * with a session-local density toggle — a compact list or a masonry grid — and
+ * a virtualised scroller that stays smooth at a thousand items. Both densities
+ * render `ItemPreview` cards with the shared type adornments; nothing in here
+ * knows a type by name.
+ *
+ * Items arrive already filtered from the surface (`useSurfaceItems`); the view
+ * applies no filter of its own. Standalone, as here, it shows what it is given.
+ *
+ * Where next: the module around it under [Overview](?path=/docs/rls-modules-list--docs);
+ * the card under [ItemPreview](?path=/story/rls-items-item-preview--bare).
+ */
 const meta: Meta<typeof CollectionView> = {
-  title: "RLS/Module Components/Lenses/CollectionView",
+  id: "rls-modules-collection-view",
+  title: "RLS/Modules/Shared views/Collection view",
   component: CollectionView,
   tags: ["autodocs"],
+  // Die Modulflaeche ist eine Spalte mit fester Hoehe; ohne sie faellt der
+  // Rahmen zusammen und die schwebende Filter-Pille landet auf der ersten Karte.
+  decorators: [(Story) => <div className="h-[36rem]"><Story /></div>],
   parameters: {
     docs: {
       description: {
@@ -25,8 +42,8 @@ const meta: Meta<typeof CollectionView> = {
 export default meta
 type Story = StoryObj<typeof CollectionView>
 
-export const List: Story = { args: { items, defaultLayout: "list" } }
-export const Grid: Story = { args: { items, defaultLayout: "grid" } }
+export const List: Story = { name: "Compact list", args: { items, defaultLayout: "list" } }
+export const Grid: Story = { name: "Masonry grid", args: { items, defaultLayout: "grid" } }
 
 const thousandItems: Item[] = Array.from({ length: 1000 }, (_, index) => ({
   id: `virtual-item-${index}`,
@@ -41,7 +58,4 @@ const thousandItems: Item[] = Array.from({ length: 1000 }, (_, index) => ({
 }))
 
 /** Deterministic large fixture with uneven cards for the order-stable masonry grid. */
-export const ThousandItems: Story = {
-  args: { items: thousandItems },
-  decorators: [(Story) => <div className="h-[36rem]"><Story /></div>],
-}
+export const ThousandItems: Story = { name: "A thousand items", args: { items: thousandItems } }

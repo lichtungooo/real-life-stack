@@ -3,8 +3,15 @@ import { useState } from 'react'
 import { BottomNav, type NavItem } from './bottom-nav'
 import { Home, Map, Calendar, User, List, Grid2X2, KanbanSquare } from 'lucide-react'
 
+/**
+ * **BottomNav** is the module navigation on narrow screens: the same modules
+ * as the tabs in the header, as a bar at the bottom. The frame renders both
+ * from the same list; which one is visible is decided by the width, never by
+ * the app. More than five items overflow into a "more" entry.
+ */
 const meta: Meta<typeof BottomNav> = {
-  title: 'RLS/App Shell/Layout/BottomNav',
+  id: "rls-app-shell-bottom-nav",
+  title: "RLS/App shell/Navigation/BottomNav",
   component: BottomNav,
   tags: ['autodocs'],
   parameters: {
@@ -32,6 +39,7 @@ const extendedItems: NavItem[] = [
 ]
 
 export const Default: Story = {
+  name: "Three modules",
   args: {
     items: defaultItems,
     activeItem: 'feed',
@@ -39,6 +47,7 @@ export const Default: Story = {
 }
 
 export const FourItems: Story = {
+  name: "Four modules",
   args: {
     items: extendedItems,
     activeItem: 'home',
@@ -46,6 +55,7 @@ export const FourItems: Story = {
 }
 
 export const Overflow: Story = {
+  name: "Overflow",
   args: {
     items: [
       ...extendedItems,
@@ -58,6 +68,7 @@ export const Overflow: Story = {
 }
 
 export const Interactive: Story = {
+  name: "Interactive",
   render: function InteractiveNav() {
     const [active, setActive] = useState('feed')
     return (

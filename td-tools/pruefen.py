@@ -89,7 +89,10 @@ def lauf(*args, cwd=None):
 if SCHNELL:
     tor("Typen", None, "uebersprungen (--schnell)")
 else:
-    r = lauf("pnpm", "build")
+    # Antons Webseite `apps/site` baut unter Windows nicht: `scripts/site/lib.mjs`
+    # erwartet LF-Zeilenenden, git liefert CRLF (29.09.2026). Sie gehoert nicht
+    # zum Prototyp und bleibt draussen.
+    r = lauf("pnpm", "turbo", "run", "build", "--filter=!@real-life-stack/site")
     if r.returncode == 0:
         tor("Typen", True, "pnpm build laeuft durch")
     else:

@@ -23,7 +23,7 @@ Es unterstützt:
 |---|---|
 | Space Module? | Ja |
 | App-Shell-Fläche? | Nein |
-| Module Components | CalendarView, CalendarHeader, CalendarFilters, MonthView, WeekView, DayView, ListView; geteilt: ItemPreview + Adornments (ItemTypeBadge, ItemTimeRange) für die Listen-Card |
+| Module Components | CalendarView mit den internen Teilen MonthCalendar, WeekCalendar, DayCalendar und EventList (alle in `calendar-view.tsx`); geteilt: FilterBar, ItemPreview + Adornments (ItemTypeBadge, ItemTimeRange) für die Listen-Card |
 | Primäre Datenbasis | Items |
 | Externe Semantik | optional RLNP/Game/WoT-Projektionen, aber nicht durch Calendar definiert |
 
@@ -104,10 +104,10 @@ Mutationen laufen über Hooks oder Capability-Interfaces. Das Calendar Module da
 Diese Regeln gelten für die mobile Darstellung (kein `md`-Breakpoint) von `MonthView` (`MonthCalendar`) und `WeekView` (`WeekCalendar`). Heute rendert die mobile Monatsansicht Events nur als farbige Punkte ohne Text und ohne eigenen Tap-Handler; zudem gibt es mobil keinen Overflow-Indikator (es werden bis zu vier Punkte via `slice(0, 4)` gezeigt, weitere Events fallen still weg). Die Regeln behandeln das als zu behebenden Zustand.
 
 1. In mobiler Monats- **und** Wochenansicht MÜSSEN Events einzeln per Tap anklickbar sein.
-2. Ein Tap auf ein Event MUSS dieselbe Detail-Route auslösen wie auf Desktop: `onEventClick(item)`, das in der Reference App den geteilten `ItemDetailView`-Host (read↔edit + Aktionsmenü, intern `ItemDetailPanel`) im **Ebene-1-Content-Panel** öffnet (`useModulePanel().open({ kind: "detail" })`, siehe [01-app-composition.md](../01-app-composition.md)). Ein Event-Tap DARF KEINEN eigenen Dialog oder eine zweite gleichartige Fläche öffnen.
+2. Ein Tap auf ein Event MUSS dieselbe Detail-Route auslösen wie auf Desktop: `onItemClick(item)`, das in der Reference App den geteilten `ItemDetailView`-Host (read↔edit + Aktionsmenü, intern `ItemDetailPanel`) im **Ebene-1-Content-Panel** öffnet (`useModulePanel().open({ kind: "detail" })`, siehe [01-app-composition.md](../01-app-composition.md)). Ein Event-Tap DARF KEINEN eigenen Dialog oder eine zweite gleichartige Fläche öffnen.
 3. Ein mobiles Event-Element MUSS mindestens den Titel-Anfang zeigen (Titel-Truncate über eine Zeile). Eine reine Punkt- oder farblose Pill-Darstellung ohne Text erfüllt diese Regel nicht.
-4. Bei mehr als der pro Tag darstellbaren Anzahl SOLL ein `+N weitere`-Element den Tag öffnen (mobil bevorzugt die Tagesansicht), analog zum Desktop-Verhalten der Monatsansicht.
-5. Das Tap-Target SOLL mindestens etwa 44px in der Höhe der Touch-Trefferfläche erreichen; die sichtbare Event-Pill SOLL mindestens 24px hoch sein. Liegt die sichtbare Höhe darunter, SOLL die Trefferfläche über Padding auf das Mindestmaß vergrößert werden.
+4. Bei mehr als der pro Tag darstellbaren Anzahl SOLLTE ein `+N weitere`-Element den Tag öffnen (mobil bevorzugt die Tagesansicht), analog zum Desktop-Verhalten der Monatsansicht.
+5. Das Tap-Target SOLLTE mindestens etwa 44px in der Höhe der Touch-Trefferfläche erreichen; die sichtbare Event-Pill SOLLTE mindestens 24px hoch sein. Liegt die sichtbare Höhe darunter, SOLLTE die Trefferfläche über Padding auf das Mindestmaß vergrößert werden.
 6. Die Event-Pill (`EventPill`) bleibt die geteilte Darstellung; Mobil unterscheidet sich nur in Dichte und Truncate, nicht in einem eigenen Komponenten-Pfad. Die Pill-Farbe folgt der einheitlichen Item-Farblogik (siehe unten). In der Wochenansicht steht die Uhrzeit bereits in der Zeit-Spalte, darum zeigt die Pill dort nur den Titel — identisch zu den Monats-Pills; ein Uhrzeit-Präfix entfällt.
 
 ## Wochenansicht ohne horizontalen Scroll
@@ -173,11 +173,12 @@ Die konkrete Navigation ist App- oder Shell-Verantwortung.
 |---|---|---|
 | `CalendarView` | Container für Zeitraum, Ansicht, Filter und Projektion | ja |
 | `CalendarHeader` / DateNavigation | Wechsel zwischen Zeitraum und Ansicht | ja |
-| `CalendarFilters` | Filter nach Typ, Ort und eigenen Items | ja |
-| `MonthView` | Monatsraster mit Event-Pills pro Tag | ja |
-| `WeekView` | Wochenraster mit Zeitslots | ja |
-| `DayView` | Tagesraster mit Zeitslots | ja |
-| `ListView` | gruppierte Terminliste im sichtbaren Zeitraum | ja |
+| Filterteil in `calendar-view.tsx` | Ort- und „Nur meine"-Filter; Typ, Tag und Text kommen aus der geteilten Filterleiste | nein, Teil von `CalendarView` |
+| `MonthCalendar` | Monatsraster mit Event-Pills pro Tag | nein, intern in `calendar-view.tsx` |
+| `WeekCalendar` | Wochenraster mit Zeitslots | nein, intern in `calendar-view.tsx` |
+| `DayCalendar` | Tagesraster mit Zeitslots | nein, intern in `calendar-view.tsx` |
+| `EventList` | gruppierte Terminliste im sichtbaren Zeitraum | nein, intern in `calendar-view.tsx` |
+| `ListView` (`components/lens/list-view.tsx`) | generische Listen-Linse, nicht kalenderspezifisch | ja, modulübergreifend |
 | `EventPreview` | kompakte Darstellung eines zeitgebundenen Items | ja |
 | `ContentComposer` | Event-Erstellung oder Bearbeitung | ja, aber als Shell-/Composer-Integration |
 
@@ -207,6 +208,6 @@ Das Calendar Module definiert nicht:
 
 1. Wo liegt langfristig die Calendar-Konfiguration: App-Konfiguration, `Group.data.modules` oder eigenes Item?
 2. Wie werden Teilnehmer, Zusagen und bestätigte Teilnahme backend-agnostisch angezeigt?
-3. Wie werden Zeitzonen und ganztägige Events modelliert?
+3. ~~Wie werden Zeitzonen und ganztägige Events modelliert?~~ Entschieden 2026-09-19, siehe `06-schema-composition.md` (`event/v1`): Zeitpunkt mit UTC-Offset des Autors, ganztägig als Datum ohne Zone. Offen bleibt nur die Zonenangabe für Wiederholungen über Zeitumstellungen.
 4. Welche Item-Typen sollen in der Reference App standardmäßig calendar-fähig sein?
 5. Welche Calendar-Filter gehören ins Modul selbst und welche in die App Shell?

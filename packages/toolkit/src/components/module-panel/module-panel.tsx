@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react"
-import { AdaptivePanel, type PanelMode } from "../layout/adaptive-panel"
+import { AdaptivePanel, DEFAULT_PANEL_MODES, type PanelMode } from "../layout/adaptive-panel"
 
 /**
  * Identifies what's currently rendered inside the shared module panel.
@@ -57,7 +57,7 @@ export interface ModulePanelProviderProps {
   children: ReactNode
   /** Side for sidebar mode. Defaults to "right" — convention for module detail. */
   side?: "left" | "right"
-  /** Allowed AdaptivePanel modes. Defaults to sidebar (desktop) + drawer (mobile). */
+  /** Allowed AdaptivePanel modes. Defaults to the stack's standard: floating card (desktop) + drawer (mobile). */
   allowedModes?: PanelMode[]
   sidebarWidth?: string
   sidebarMinWidth?: string
@@ -84,7 +84,7 @@ export interface ModulePanelProviderProps {
 export function ModulePanelProvider({
   children,
   side = "right",
-  allowedModes = ["sidebar", "drawer"],
+  allowedModes = DEFAULT_PANEL_MODES as PanelMode[],
   sidebarWidth = "420px",
   sidebarMinWidth,
   sidebarMaxWidth,
@@ -141,6 +141,15 @@ export function ModulePanelProvider({
   )
 }
 
+/**
+ * Open a panel beside the module. There is only one.
+ *
+ * @answers `{current, open, close}`
+ * @without throws on render
+ * @group host
+ * @see story rls-foundations-hooks--surfaces
+ * @see spec docs/spec/01-app-composition.md
+ */
 export function useModulePanel(): ModulePanelContextValue {
   const ctx = useContext(ModulePanelContext)
   if (!ctx) {
@@ -151,11 +160,8 @@ export function useModulePanel(): ModulePanelContextValue {
   return ctx
 }
 
-/**
- * Soft variant — returns null when no provider is present. Use only in
- * components that have to work both inside and outside the provider
- * (e.g. shared components rendered in Storybook decorators).
- */
+/** Wie {@link useModulePanel}, aber `null` ohne Provider — fuer den Modul-Host in Story und Test. */
 export function useOptionalModulePanel(): ModulePanelContextValue | null {
   return useContext(ModulePanelContext)
 }
+

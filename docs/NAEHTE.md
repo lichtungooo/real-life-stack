@@ -1,6 +1,6 @@
 # Nähte
 
-**Stand:** 20.09.2026, gemessen gegen Antons `f9c56fff`
+**Stand:** 29.09.2026, zusammengeführt mit Antons `bb8487b1` (92 Commits, Modul-Host B0 bis B5)
 **Regeln:** [ARCHITEKTUR.md, Teil 4](ARCHITEKTUR.md)
 
 Eine **Naht** ist eine Stelle, an der wir Antons Code ändern, weil kein Haken dafür da ist. Nähte sind erlaubt. Unbenannte Nähte sind es nicht.
@@ -18,6 +18,22 @@ Diese Datei ist vollständig. Wer Antons Code ändert, trägt hier ein.
 Die sieben Datennähte sind vollständig weg. Die beiden großen (A1, A2) stehen noch: Sie sind genau die Arbeit, die als **PR #379** bei Anton liegt. Sie jetzt umzubauen wäre Arbeit, die bei seiner Übernahme wegfällt.
 
 Gemessen wird nicht von Hand: `python td-tools/anton-stand.py`.
+
+## Nachtrag 29.09.2026: Update auf `bb8487b1`
+
+Anton hat den **Modul-Host** gebaut. Kopfleiste, Space-Umschalter, Space-Dialog, Routing und Detailansicht sind aus der Referenz-App in das Toolkit gewandert (`RoutedAppFrame`, `AppFrame`, `workspace-routing.tsx`, `host/detail-host.tsx`). Die App ist schlank geworden. Was das für unsere Nähte heißt:
+
+| Stelle | Vorher | Jetzt |
+|---|---|---|
+| Profil statt Meta-Box eines Ortes | Naht in `apps/reference/src/detail-host.tsx` (+24) | **Keine Naht mehr.** Über Antons Haken `registerTypePresentation` (Erweiterung `place`, Slot `detail`) in `apps/reference/src/type-register.tsx`. Ein Ort ohne Profil behält die Meta-Box des Toolkits |
+| Module `baukasten`, `companion` | App-Schicht plus Views für alle Toolkit-Module | Nur noch unsere Schicht `trustdonation` mit eigener `view`. Antons Module bringen ihre Flächen selbst mit |
+| Netzwerk-Felder und Ordnung der Spaces | `apps/reference/src/hooks/use-workspace-routing.ts` (unsere Datei) | **Naht** in `packages/toolkit/src/components/router/workspace-routing.tsx` (Ordnung, rund 25 Zeilen) und in `workspaceOf` in `workspace-switcher.tsx` (fünf Felder). Teil von PR #379 |
+| Netzwerke im Space-Dialog, `activeNetworkId` im Umschalter, Anlegen mit Netzwerk und Art, Überschrift erster Ordnung, Reiterleiste `min-w-0` | `apps/reference/src/App.tsx` | **Neue Naht** in `packages/toolkit/src/components/frame/app-frame.tsx` (rund 55 Zeilen). `spaceLink` kommt als neuer Prop von der App, weil nur sie ihren Basispfad kennt. Teil von PR #379, der Reiterleisten-Fix als eigener Wunsch |
+| Beispieldaten-Hinweis, Profil-Taste, Profil-Panel, Stiftungs-Import | `App.tsx` im Kopf und Körper | `App.tsx` über die Haken `navbarEnd` und `children` des Rahmens. Space aus der URL (`useParams`) |
+| Musterdaten | `App.tsx` | unverändert als Seed-Parameter der Connectoren, `SEED_VERSION` und `MUSTERDATEN_VERSION` auf 16 |
+| `apps/reference/package.json`, `pnpm-lock.yaml` | ungenannt | zwei Einträge `@trustdonation/core` und `@trustdonation/ui`, die Sperrdatei folgt ihnen. Ruhig |
+
+**Ausgeklammert:** Antons neue Webseite `apps/site` baut unter Windows nicht (`scripts/site/lib.mjs` erwartet LF-Zeilenenden, git liefert CRLF). Betrifft den Prototyp nicht; gebaut wird mit `--filter=!@real-life-stack/site`.
 
 ---
 

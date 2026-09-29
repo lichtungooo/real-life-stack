@@ -22,7 +22,7 @@ Diese Doppelrolle führt zu Konflikten: User legen viele Layer an, um Themen abz
 RLS trennt diese Aspekte:
 
 - **Struktur** ergibt sich aus den **`@context`-Schemas**, die ein Item komponiert (mehrere parallel möglich) — Gegenstand dieser Spec.
-- **Art** (als was ein Item erstellt wurde) trägt **`type`** — genau eine pro Item, steuert Template und User-Filter, siehe „Die Rolle von `type`".
+- **Klasse** trägt **`type`** — JSON-LDs `@type`, eine **ungeordnete Menge**; die Vorlage beim Erstellen und der User-Filter hängen daran, siehe „Die Rolle von `type`".
 - **Kategorisierung** läuft über **Tags** (frei oder URN-basiert, optional in einem Kategoriebaum strukturierbar) — siehe [07-tags.md](07-tags.md).
 - **Modul-Sichtbarkeit** folgt aus den Feldern — siehe „Verhältnis zwischen Schema- und Feldfiltern".
 - **Thematische Klammer** ist der **Space** selbst — verschiedene Communities haben verschiedene Spaces mit eigenen Schwerpunkten.
@@ -37,7 +37,7 @@ Ein RLS-Item trägt eine `@context`-Liste, die festlegt, welche Vokabulare seine
 interface Item {
   id: string
   '@context': string[]            // ordered list of vocabulary URLs
-  type?: string | string[]         // Art des Items (Template + User-Filter), siehe „Die Rolle von `type`"
+  type?: string | string[]         // Klasse(n) = @type, ungeordnete Menge; siehe „Die Rolle von `type`"
   createdAt: string
   createdBy: string
   data: Record<string, unknown>
@@ -52,7 +52,7 @@ Regeln:
 2. Weitere Einträge erweitern das Vokabular und damit die in `data` zulässigen Felder.
 3. **Property-Namen MÜSSEN über alle Vokabularien eindeutig sein.** JSON-LD's last-wins-Verhalten gilt nur für reine Property-Identifier-Auflösung; die JSON-Schema-Validierung läuft über `allOf` (Schnittmenge) und kennt keine Überschreibung. Vocabulary-Autoren vermeiden Kollisionen aktiv: gleiche Semantik → gleicher Name (Konvention), unterschiedliche Semantik → unterschiedlicher Name. Validator-Verhalten bei einer Kollision ist undefined und gilt als Vokabular-Bug.
 4. Semantisch gleiche Properties aus verschiedenen Vokabularen tragen denselben Namen (z.B. `start` für Beginn-Zeitpunkt, egal ob Event oder Task).
-5. `type` benennt die Art eines Items (siehe „Die Rolle von `type`") und steuert **nie die Modul-Aktivierung** — welche Items ein Modul zeigt, entscheidet Feld-Präsenz oder (zukünftig) `hasSchema`.
+5. `type` ist per `base/v1` ein Alias für JSON-LDs **`@type`** — es benennt die **Klasse** eines Items, und jede Klasse hat eine IRI (siehe „Klassen haben IRIs"). Welche Items ein Modul zeigt, entscheidet **Feld-Präsenz** oder eine **im Manifest deklarierte Affordanz der Klasse** — nie der Typ-Name als freier String (siehe „Die Rolle von `type`").
 
 ### Beispiel: Workshop in der Markthalle
 
@@ -80,6 +80,30 @@ Regeln:
 
 Dieses Item erscheint **gleichzeitig auf der Map** (wegen `place`-Schema → `position`-Feld) und **im Calendar** (wegen `event`-Schema → `start`-Feld). Keines der Module muss vom anderen wissen.
 
+### Klassen haben IRIs
+
+**Status: umgesetzt, rls#414 (21.09.2026).** Klassen-IRIs in den Kontexten, `normalizeItemType`/`itemTypes`/`hasItemType`/`typeSpellings` und die Eingangsregel `canonicalItem` in `data-interface`; jeder Connector normalisiert an seinem Trichter (Regel 7), die Darstellung wählt über die normalisierte Klassenmenge (Regel 9). Anton: JSON-LD sichert unsere Dateninteroperabilität — eine interne Regel darf sie nicht einschränken.
+
+`base/v1` definiert `"type": "@type"`. Damit ist unser `type` kein RLS-eigenes Feld, sondern JSON-LDs Klassen-Slot: `"type": "event"` heißt für jeden JSON-LD-Prozessor *dieses Item ist ein Event*. Bis zum 21.09.2026 fehlte die zweite Hälfte — kein Kontext definierte einen Klassenbegriff, `event` wurde zu keiner IRI, und ein fremder Prozessor sah eine Klasse ohne Identität. JSON-LD der Form, nicht der Wirkung nach.
+
+Regeln:
+
+1. Jedes Vokabular, das eine Klasse einführt, definiert in seinem Kontext den **Klassenbegriff in der Schreibweise der Items**: `"event": "rls:Event"`, `"place": "rls:Place"`, `"statement": "rls:Statement"`. Die Kleinschreibung ist der Begriff, die IRI trägt die Klasse. Bestehende Items brauchen dafür keine Änderung — das ist der Grund für die Kleinschreibung, nicht Geschmack.
+2. Klassen ohne eigenes Vokabular stehen in `base/v1`: `post`, `comment`, `reaction`, `feature`.
+3. Der Typ-Manifest-Eintrag nennt die IRI seiner Klasse; das Manifest bleibt die einzige Quelle für Typ-Identität (siehe Typ-Register).
+4. Ein Vokabular besteht aus Begriffen. Ein Vokabular **ohne** Begriffe, das nur in `@context` steht, um etwas zu markieren, gibt es nicht mehr — die Klasse steht in `@type`, wo JSON-LD sie erwartet. `statement/v1` war das einzige und ist jetzt ein Vokabular mit genau einem Begriff, seiner Klasse.
+5. Sobald Typen je Space konfigurierbar sind, bringt ein Space eigene Klassen mit eigenen IRIs in seinem eigenen Namensraum mit — nicht in `rls:`. Regel 1 ist das Gerüst dafür.
+
+**Normalisierung — der Vertrag an der Grenze** (rls#413, 21.09.2026). Ein JSON-LD-Prozessor darf dieselbe Klasse als Kontextbegriff (`statement`) oder als volle IRI (`https://real-life-stack.org/vocab/statement/v1#Statement`) liefern, und `@type` ist eine ungeordnete Menge. RLS MUSS beides so behandeln, dass keine Semantik davon abhängt:
+
+6. **Identität ist die IRI.** Zwei Klassen sind gleich, wenn ihre über den Kontext expandierten IRIs gleich sind. Der Kurzname ist eine Schreibweise, keine zweite Identität.
+7. **Kanonische Form im Stack ist der Kurzname** — die Schreibweise der Items und des Manifests. An der **Eingangsgrenze** (Connector liest, Import, Sync) MUSS eine volle IRI, die ein bekanntes Vokabular der Registry auflöst, auf ihren Kurznamen normalisiert werden. Eine IRI, die kein bekanntes Vokabular auflöst, bleibt **unverändert** als volle IRI stehen: Sie ist eine fremde Klasse und wird weder verworfen noch umgedeutet.
+8. **Alle Klassen zählen für Affordanzen.** Ob ein Item die Affordanz `votesOn` hat, entscheidet die **Vereinigung** der Affordanzen aller Klassen, die es trägt. `["post","statement"]` und `["statement","post"]` sind dieselbe Menge und haben dieselben Affordanzen. Filter (`type` im `ItemFilter`), Hinweise (`moduleHintsFor`) und der Host-Filter aus dem Ladevertrag vergleichen **Mengen auf Kurznamen nach Normalisierung**, nie Strings in Reihenfolge.
+9. **Die Vorlage ist eine UI-Wahl, keine Klassensemantik.** Der Composer braucht beim Erstellen genau eine Vorlage und beim Bearbeiten genau eine, um die Widgets zu bestimmen. Er nimmt die **erste Klasse, für die das Darstellungs-Register eine Vorlage kennt**; sind es mehrere, ist die Wahl eine Konvention der Fläche und DARF keine andere Aussage über das Item tragen. Wer einen Filter, eine Aktivierung oder eine Affordanz an „die erste Klasse" hängt, hat einen Fehler gegen Regel 8 vor sich.
+10. **Unbekannte Klassen** aktivieren kein Modul, tragen keine Affordanz und bekommen die generische Darstellung — sie bleiben am Item erhalten (Regel 7) und laufen beim Sync unverändert weiter.
+
+Abnahmefälle: (a) `type: "statement"` und `type: "https://real-life-stack.org/vocab/statement/v1#Statement"` unter demselben `@context` erscheinen beide in der Resonanz; (b) Vertauschen zweier Klassen ändert weder Affordanzen noch Modul-Zugehörigkeit; (c) eine fremde IRI bleibt nach Lesen und Zurückschreiben byteweise erhalten; (d) `matchesFilter({ type: "statement" })` trifft beide Schreibweisen aus (a). JSON-Schema-Tests prüfen das nicht; es braucht Tests gegen `matchesFilter` und `moduleHintsFor`, mit B0.
+
 ### Überlagerung statt Konflikt
 
 Wenn zwei `@context`-Schemas dieselbe Semantik treffen (z.B. `start` für Beginn), wird das Feld **geteilt**, nicht dupliziert. Beispiel: ein Item, das gleichzeitig Event und Task ist, hat ein gemeinsames `start`. Strukturelle Überlagerung ist beabsichtigt.
@@ -88,9 +112,15 @@ Wenn semantisch unterschiedliche Konzepte denselben Property-Namen tragen würde
 
 ### Die Rolle von `type`
 
-`type` benennt die **Art**, als die ein Item erstellt wurde (`post`, `event`, `task`) — die Intention beim Erstellen. Aus ihr wählt der Composer ein **Template** (Widget-Set beim Erstellen, Karten-Darstellung beim Anzeigen); sie bleibt am Item, damit Module und User sich darauf beziehen können. `type` ist genau eine pro Item; bei mehreren Werten zählt die erste. Pro `type` gehört **ein** Template (Erstellen-Widgets und Anzeige-Karte zusammen); heute als `ContentTypeConfig` je Modul-View definiert; das kanonische, modulübergreifend geteilte **Typ-Register** (nächster Abschnitt) löst diese Streuung ab.
+`type` benennt die **Art**, als die ein Item erstellt wurde (`post`, `event`, `task`) — die Intention beim Erstellen. Aus ihr wählt der Composer ein **Template** (Widget-Set beim Erstellen, Karten-Darstellung beim Anzeigen); sie bleibt am Item, damit Module und User sich darauf beziehen können. `type` ist eine **Menge** von Klassen, meist mit einem Element. Sie ist **ungeordnet** — JSON-LD gibt `@type` keine Reihenfolge, und keine Regel dieser Spec DARF von einer abhängen (siehe „Klassen haben IRIs", Normalisierung). Pro Klasse gehört **ein** Template (Erstellen-Widgets und Anzeige-Karte zusammen); heute als `ContentTypeConfig` je Modul-View definiert; das kanonische, modulübergreifend geteilte **Typ-Register** (nächster Abschnitt) löst diese Streuung ab.
 
-`type` darf tragen: die Composer-Vorlage, die Karten-Wahl in aggregierenden Sichten (Feed, Suche) und **User-Filter** („zeig mir nur Veranstaltungen"). Es darf **nicht** die **Modul-Aktivierung** steuern: ob ein Item im Calendar erscheint, entscheidet `data.start`, nie `type` — sonst verschwände ein Task mit Fälligkeitsdatum zu Unrecht. Der Unterschied ist prinzipiell: Modul-Aktivierung ist eine System-Frage und immer feldbasiert; ein User-Filter ist eine Mensch-Frage und darf die Intention nutzen, die nur in `type` steht (ein Task mit Deadline und ein Event tragen beide `start` — „die Veranstaltungen" sind aus Feldern allein nicht herauszufiltern).
+`type` darf tragen: die Composer-Vorlage, die Karten-Wahl in aggregierenden Sichten (Feed, Suche) und **User-Filter** („zeig mir nur Veranstaltungen"). Für die **Modul-Aktivierung** gilt eine zweiteilige Regel:
+
+- **Ein Feld aktiviert das Modul, das es darstellt.** Ob ein Item im Calendar erscheint, entscheidet `data.start`, nie der Typ-Name — sonst verschwände ein Task mit Fälligkeitsdatum zu Unrecht. Ein Task mit Deadline und ein Event tragen beide `start`; „die Veranstaltungen" sind aus Feldern allein nicht herauszufiltern, das ist der User-Filter.
+- **Eine Klasse aktiviert das Modul, dessen Affordanz sie im Manifest deklariert.** Was eine Aussage zur Aussage macht, ist kein Feld, sondern dass sie Stellungnahmen entgegennimmt — im Manifest: `relations: [{ predicate: "votesOn", itemRole: "to" }]`. Die Resonanz zeigt Items, deren Klasse diese Affordanz deklariert. Das ist keine Aktivierung über den Typ-**Namen**, sondern über eine Angabe im Register — dieselbe Art Angabe wie `presents` am Modul (Spec 01).
+- **Der Typ-Name als freier String aktiviert nichts.** Ein Composer kann ihn setzen, wie er will; eine Fläche, die darauf schaltet, verwechselt eine Vorlage mit einer Wahrheit über das Item.
+
+*Bis zum 21.09.2026 hieß es hier nur: „`type` aktiviert nie." Der Satz war für Felder richtig und für Klassen falsch; um ihn nicht zu brechen, gab es das „Marker-Vokabular" `statement/v1` — eine zweite Aussage derselben Klasse in `@context`. Das war eine Umgehung, und sie hat die Interoperabilität gekostet, für die `@context` da ist.*
 
 ### Typ-Register
 
@@ -98,7 +128,7 @@ Das Typ-Register löst die oben genannte Ausbaustufe ein: **ein** kanonischer Ei
 
 Motivation aus der Praxis: dieselbe Frage wurde bisher an vier Stellen unabhängig beantwortet (Typ-Guards in `data-interface`, `ContentTypeConfig` je App-View, `ItemTypeBadge`, `getItemPreviewAdornments`). Die vier Listen kennen unterschiedliche Typ-Mengen — `project` und `resource` haben eine Preview-Darstellung, aber keinen Composer-Eintrag; `post` das Umgekehrte — und sind nachweislich auseinandergelaufen (Kalender-Detail mit abweichender Meta-Komponente; Task-Assignees nur im Kanban sichtbar).
 
-**Begriff:** Ein **Core-Typ** ist ein Typ, dessen Register-Einträge RLS selbst mitliefert — in v0.1: `post`, `event`, `place`, `task`, `person`, `project`, `resource`. Systemtypen ohne eigenständige Karte (`reaction`, `comment`, `relation`) brauchen keinen Registereintrag; sie erscheinen ausschließlich über ihre Flächen (ReactionBar, Kommentarliste, Graph).
+**Begriff:** Ein **Toolkit-Typ** ist ein Typ, dessen Register-Einträge das Toolkit mitliefert — in v0.1: `post`, `event`, `place`, `task`, `person`, `project`, `resource`, `statement`. *(Bis zum 21.09.2026 „Core-Typ"; „Core" hieß im Stack schon `wot-core` und den Pflichtteil des `DataInterface`, und RLS hat keinen Kern.)* Systemtypen ohne eigenständige Karte (`reaction`, `comment`, `relation`) brauchen keinen Registereintrag; sie erscheinen ausschließlich über ihre Flächen (ReactionBar, Kommentarliste, Graph).
 
 #### Zwei Schichten, eine Identitätsquelle
 
@@ -107,7 +137,7 @@ Das Register besteht aus zwei Schichten entlang der Paketgrenze. Die Abhängigke
 | Schicht | Paket | hält | ändert sich wenn |
 |---|---|---|---|
 | **Typ-Manifest** | `data-interface` (UI-frei) | `id`, Vokabular-Bindung, `relations` | die Datensemantik eines Typs sich ändert |
-| **Darstellungs-Register** | `toolkit` | `label`, `icon`, `composerWidgets`, `preview`/`detail`/`footer` | die Darstellung sich ändert |
+| **Darstellungs-Register** | `toolkit` | `label`, `icon`, `badge`, `fields`, `edges`, `composer`, `preview` | die Darstellung sich ändert |
 
 Das Manifest ist die **einzige Quelle für Typ-Identität**: die Typ-Guards und `KnownItemType` in `data-interface` werden aus ihm abgeleitet, nicht daneben gepflegt. Das Darstellungs-Register hängt seine Einträge an Manifest-Ids an und DARF KEINE Typen einführen. Konsumenten lesen nur ihre Schicht: ein Connector oder Validator braucht das Manifest und zieht keine React-Abhängigkeit; eine Fläche liest die Slots.
 
@@ -120,30 +150,171 @@ Das Manifest ist die **einzige Quelle für Typ-Identität**: die Typ-Guards und 
 | `relations` | Manifest | welche Kanten der Typ eingehen kann: `{ predicate, itemRole, otherKind }`, keyed by (`predicate`, `itemRole`), siehe „Verhältnis zu Relations" |
 | `label` | Darstellung | Anzeigename (Badge, Composer-Auswahl, User-Filter); Anzeigename und Lokalisierung sind Darstellungsgründe, darum nicht im Manifest |
 | `icon` | Darstellung | Typ-Icon |
-| `composerWidgets` | Darstellung | Widget-Set beim Erstellen (heute `ContentTypeConfig.defaultWidgets`) |
-| `relationWidgets` | Darstellung | welches Composer-Widget eine deklarierte Kante bedient, keyed by (`predicate`, `itemRole`) — Widgets sind UI und gehören darum nicht ins Manifest |
-| `preview` | Darstellung | knappe Darstellung für Karten und Zeilen (heute `getItemPreviewAdornments`) |
-| `detail` | Darstellung | ausführliche Darstellung für das Detail-Panel |
-| `footer` | Darstellung | typ-eigene Fußzeile zusätzlich zur Fläche (Task → Assignees) |
+| `badge` | Darstellung | Icon und Farbe des Typ-Badges; zugleich die Typfarbe der Item-Chips |
+| `fields` | Darstellung | Feldliste (`FieldEntry[]`), siehe „Feld- und Kantenregister" |
+| `edges` | Darstellung | Kantenliste (`EdgeEntry[]`), keyed by (`predicate`, `itemRole`), siehe „Feld- und Kantenregister"; Widgets sind UI und gehören darum nicht ins Manifest |
+| `lists` | Darstellung | Rückwärts-Listen über eine benannte Abfrage (`ListEntry[]`), keyed by `query` |
+| `menuActions` | Darstellung | zusätzliche Aktionen im ⋮-Menü (`MenuActionEntry[]`), keyed by `id` |
+| `composer` | Darstellung | was nur der Composer braucht und kein Feld ist: `submitLabel`, `groupRequired` |
+| `composerWidgets` | Darstellung | abgeleitet aus `fields` und `edges`; nur noch für Typen ohne Feldliste gesetzt |
+| `preview` | Darstellung | knappe Darstellung für Karten und Zeilen; abgeleitet aus `fields` und `edges`, eigener Slot nur als Ausnahme |
 
-`preview`/`detail`/`footer` liefern Slot-Inhalte für die geteilte `ItemPreview`-Hülle — keine eigenen Karten. Karten-Markup bleibt Sache der Fläche.
+`preview` liefert Slot-Inhalte für die geteilte `ItemPreview`-Hülle, keine eigene Karte. Karten-Markup bleibt Sache der Fläche.
+
+*Bis zum Entwurf S0 (26.09.2026) hatte der Eintrag vier Slots (`composerWidgets`, `preview`, `detail`, `footer`) und `relationWidgets`. `relationWidgets` geht in `edges` auf. `detail` und `footer` entfallen: Meta-Box, Aktionszeile und Rückwärts-Listen leiten sich aus `fields` und `edges` ab. `statusOptions` und `widgetLabels` wandern aus `composer` in die Feldeinträge (`options`, `label`).*
 
 #### Regeln
 
-1. Das Typ-Manifest MUSS in `data-interface` leben und UI-frei sein; das Darstellungs-Register MUSS im Toolkit leben und ist über die Typ-Id an das Manifest gebunden. Apps DÜRFEN Einträge ergänzen und app-spezifische Felder (Gruppen-Optionen, Submit-Labels) über registrierte Einträge legen. Das Ersetzen bestehender Einträge ist in v0.1 nicht vorgesehen — siehe „Erweiterung und Merge".
+1. Das Typ-Manifest MUSS in `data-interface` leben und UI-frei sein; das Darstellungs-Register MUSS im Toolkit leben und ist über die Typ-Id an das Manifest gebunden. Apps DÜRFEN Einträge ergänzen und app-spezifische Felder (Gruppen-Optionen, Submit-Labels) über registrierte Einträge legen. Das Ersetzen bestehender Einträge ist in v0.1 nicht vorgesehen, außer für die Selbstaktion einer Kante (Feld- und Kantenregister, Regel 20) — siehe „Erweiterung und Merge".
 2. Jede Fläche, die ein Item darstellt, MUSS ihre typabhängigen Anteile aus dem Register beziehen. Flächen steuern **Dichte und Rahmen** bei (`compact`/`comfortable`, Karte/Panel/Zeile). Der Typ sagt *was*, die Fläche sagt *wieviel*.
 3. Module DÜRFEN KEINE eigene Typ-Verzweigung besitzen: kein `if (type === …)` in Modul-Code, keine typabhängige Komponentenwahl am Register vorbei. Modul-eigene **Mechanik** (Drag im Kanban, Pins auf der Karte, Zeitraster im Kalender) bleibt Modulsache — sie verzweigt über Felder und Capabilities, nie über `type`.
-4. Das Register DARF NICHT die Modul-Aktivierung tragen (kein `showIn`-Feld). Die bleibt feldbasiert, siehe „Die Rolle von `type`". Ebenso wenig trägt es Capabilities oder Rechte: ob eine Interaktion (Reagieren, Bearbeiten, Kommentieren) verfügbar ist, entscheiden Connector-Capability und Autorisierung — nicht der Typ. Reaktionen insbesondere sind nicht typabhängig.
+4. Das Register DARF NICHT die Modul-Aktivierung tragen (kein `showIn`-Feld). Die bleibt feldbasiert, siehe „Die Rolle von `type`". Ebenso wenig trägt es Capabilities oder Rechte: ob eine Interaktion (Reagieren, Bearbeiten, Kommentieren) verfügbar ist, entscheiden Connector-Capability und Autorisierung — nicht der Typ. Einzige Ausnahme: Ein Typ DARF Reaktionen und Kommentare für sich ausschließen (`person`: ein Profil trägt keine Kommentare und Reaktionen). Er DARF sie nicht einschalten, wo Capability oder Autorisierung fehlen.
 5. Ein unbekannter `type` — und ebenso ein Manifest-Eintrag ohne Darstellungs-Eintrag — MUSS auf einen generischen Eintrag zurückfallen (Titel, Beschreibung, `base/v1`-Felder, neutrales Badge). Jeder Registereintrag MUSS auf jeder Fläche darstellbar sein; ein Eintrag, der nur auf einer Fläche funktioniert, ist ungültig. Ein Item ohne Registereintrag darf nie unsichtbar oder kaputt sein — sonst bestraft das Register die Erweiterbarkeit, die es ermöglichen soll.
 6. Ein neuer Typ wird durch genau **einen Manifest-Eintrag** eingeführt. Andere Schichten hängen Einträge an dessen Id an; fehlt einer, greift Regel 5 — sichtbar generisch, nie kaputt. Wenn die Einführung eines Typs die Pflege einer zweiten **unabhängigen** Liste erfordert (eine, die Typen einführen oder widersprechen kann), ist das ein Fehler in dieser Spec.
+
+#### Feld- und Kantenregister
+
+**Status:** Normativer Entwurf (S0, 26.09.2026). Erweitert das Darstellungs-Register um eine Feld- und eine Kantenliste je Typ. Daraus leiten sich Composer-Defaults (`ContentTypeConfig`), Meta-Box, Aktionszeile, Rückwärts-Listen und Karte ab ([shared-components.md → Item-Detail aus dem Register](modules/shared-components.md#item-detail-aus-dem-register)).
+
+```ts
+type WidgetId =
+  | "title" | "text" | "date" | "location" | "media" | "status" | "number"
+  | "select" | "url" | "chips" | "avatar" | "contact" | "group" | "tags"   // B1–B14
+  | "item-ref"                                                             // B15
+
+type Tone = "neutral" | "warning" | "success" | "danger" | "info"   // semantisch, nie eine Farbe (B6, B8)
+
+interface FieldEntry {
+  key: string                    // data-Schlüssel, z. B. "start", "hours"
+  widget: WidgetId
+  pos: "head" | "meta" | "content" | "tags" | "badge" | "system" | "module"
+  label?: string                 // Intl-Schlüssel
+  required?: boolean
+  unit?: string                  // number (B7)
+  min?: number                   // number (B7): kleinster erlaubter Wert
+  max?: number                   // number (B7): größter erlaubter Wert
+  options?: { id: string; label: string; tone?: Tone; role?: "open" | "active" | "done" }[]
+                                 // status (B6), select (B8); role nur an status-Feldern (Regel 18)
+  edit?: false | "fixed"         // false: nie im Formular; "fixed": sichtbar, nicht bearbeitbar
+  ref?: { type: string; missing: string }   // item-ref (B15): Zieltyp, Intl-Schlüssel für ein fehlendes Ziel
+}
+
+interface EdgeEntry {
+  predicate: string              // zusammen mit itemRole: Schlüssel einer Manifest-Kante
+  itemRole: "from" | "to" | "either"
+  storage: "embedded" | "record"
+  widget: "people" | "item-relation" | "membership" | "vote" | "origin" | "confirmations" | "activity"
+  pos: "meta" | "actions" | "list" | "badge"
+  label: string                  // Intl-Schlüssel: „Braucht", „Teil von", „Findet hier statt"
+  qualifier?: { key: string; values: { id: string; label: string; tone?: Tone; action?: string }[]; default?: string }
+                                 // action: Beschriftung der Pill, die den Wert setzt („Zusagen" für going)
+                                 // default: der Wert, als der ein fehlender Qualifier gilt (optional)
+  selfAction?: {                 // C2
+    label: string; mine: string; qualifiers?: string[]
+    join?: { label: string; mine: string; release: string }
+                                 // „Mitmachen", „Dabei", „Nicht mehr mitmachen", wenn andere an der Kante stehen
+    followUps?: {                // Folgeaktion nach der Selbstaktion, nur für eine Person an der Kante
+      field: string              // key eines status-Felds mit Rollen open und done (Regel 18)
+      complete: { label: string }  // Aktion „Erledigt", danach Zustand „✓ Erledigt"
+      release: string            // Rücknahme meines Zustands für Screenreader („Übernahme zurückgeben")
+    }
+  }
+  add?: string                   // Intl-Schlüssel des Hinzufügen-Felds im Formular (C1): „Einladen…", „Zuweisen…"
+  joins?: string                 // nur Personen-Kanten: Prädikat der Kante, deren Menschen-Zeile und Formularfeld diese Kante teilt
+  list?: {                       // für itemRole "to", pos "list" (Regeln 10, 22)
+    filter?: "open" | "upcoming"
+    sort?: string
+    trailing?: string            // key eines Felds des Zeilen-Items: sein Wert rechts in der Zeile
+    group?: string               // key eines Felds des Zeilen-Items: Gruppen nach seinem Wert
+  }
+  count?: "one-per-subject" | "collect-accepted"                        // nur storage "record"
+}
+
+interface ListEntry {
+  query: string                  // Name einer Abfrage, z. B. "family"
+  label: string                  // Intl-Schlüssel: „Fassungen"
+  action?: { id: string; label: string }   // im Listenkopf, z. B. "create-variant"
+  covers?: string[]              // Feld-Keys, deren Herkunft die Liste zeigt, z. B. ["variantOf"]
+}
+
+interface MenuActionEntry {
+  id: string
+  label: string                  // Intl-Schlüssel
+}
+```
+
+Regeln:
+
+1. Jeder `EdgeEntry` MUSS eine Kante adressieren, die das Manifest für den Typ deklariert, über denselben Schlüssel (`predicate`, `itemRole`). Was am anderen Endpunkt steht, sagt das Manifest (`otherKind`); der Eintrag wiederholt es nicht.
+2. `relationWidgets` geht in `edges` auf. Das Widget einer Kante ist `EdgeEntry.widget`.
+3. Es gibt ein Widget je Datentyp, nicht je Fachfeld. Beschriftung, Einheit und Optionen stehen im Eintrag, nicht im Widget.
+4. `pos: "module"` (z. B. `order`, `stage`) und `pos: "system"` (z. B. `did`, `id`, `createdBy`) erscheinen nie im Formular. `system` erscheint als Fußnote im Kopf.
+5. Die Body-Feld-Regel ist ein Feldeintrag, kein `if`: `post` führt `content` als `text @content`, die anderen Typen `description`.
+6. `storage` hält fest, wo die Kante liegt. Der Wert MUSS den Regeln aus [04](04-items-relations-groups-spaces.md) und [08, Regel 9](08-relation-records.md#relationrecord-als-item) folgen; das Register wählt den Mechanismus nicht frei. Lese- und Schreibform lesen und schreiben dort.
+7. Jede Kante DARF einen Qualifier deklarieren, gleich ob ihr Ziel eine Person oder ein Item ist. Er liegt bei `storage: "embedded"` in `meta` der Relation (`meta.role` oder `meta[qualifier.key]`), bei `storage: "record"` als Feld `qualifier.key` am Record. `qualifier.values` ist die Menge der erlaubten Werte ([08 → Qualifier an Kanten](08-relation-records.md#qualifier-an-kanten)). Der Qualifier ist optional: Ein fehlender Wert gilt als `qualifier.default`, wenn der Eintrag einen nennt; die Leseform zeigt ihn dann nicht. Den Standard DARF auch die Register-Schicht eines Moduls oder einer App setzen (Regel 20). Ein Wert, den das Register nicht kennt, bleibt erhalten und erscheint ohne Zustandstext.
+8. `count` deklariert für Record-Kanten, wie mehrere Aussagen über denselben Gegenstand zusammenwirken ([08 → Qualifier an Kanten](08-relation-records.md#qualifier-an-kanten), Regel 10). Eine Record-Kante mit Qualifier MUSS `count` setzen. Welcher Record unter `one-per-subject` gilt, bestimmt 08 deterministisch ([Gewinner unter `one-per-subject`](08-relation-records.md#gewinner-unter-one-per-subject)). Eine Personen-Kante mit `collect-accepted` lehnt das Toolkit vorerst ab, bis die Annahmeprüfung aus [05](05-confirmations-and-trust.md) angebunden ist.
+9. Eine Kante mit `selfAction` erscheint im Slot `actions` als Pill-Zeile. `qualifiers` nennt die Werte, die die Pills setzen; `mine` ist die Beschriftung meines Zustands. Die Pill meines Zustands ist ein Umschalter: Der zweite Klick nimmt meine Aussage zurück. Sie trägt `aria-pressed`; gedrückt nennt ihre Beschriftung die Rücknahme (`release`). **Mitmachen** (`join`): Stehen andere Personen an der Kante und ich nicht, heißt die Pill `join.label` („Mitmachen") statt `label`. Stehe ich mit anderen an der Kante, heißt mein Zustand `join.mine` („Dabei"), seine Rücknahme `join.release`. Stehe ich allein an der Kante, gilt `mine` („Übernommen"). Maßgeblich ist der Stand der Kante, nicht, wer zuerst da war. An der Kante steht jede Person mit einer Kante dieses Prädikats, gleich welcher Qualifier (an `assignedTo` auch `learns`). `join` gilt auch an einer Kante mit Qualifier. **Folgeaktion** (`followUps`): Nach meinem Zustand steht in derselben Zeile die Aktion `complete.label` („Erledigt"), nur für eine Person an der Kante und nur mit Schreibrecht am Item. Sie schreibt in `field` die erste Option mit Rolle `done`. Hat der Status die Rolle `done`, zeigt die Zeile nur Zustände, keine Aktionen (Regel 19). `field` MUSS ein `status`-Feld desselben Typs mit mindestens einer Option der Rolle `open` und einer der Rolle `done` sein. Welchen Status Selbstaktion und Folgeaktion schreiben, regelt Regel 19. Vor dem Schreiben prüft die Fläche den geltenden Stand frisch (wer an der Kante steht, welche Rolle der Status hat); passt er nicht mehr zum Auslöser, schreibt sie nichts.
+10. Rückwärts-Listen (`itemRole: "to"`, `pos: "list"`) deklariert der Typ, dessen Detail sie zeigt, mit Filter und Sortierung, optional mit Zusatz und Gruppen (Regel 22). Es werden alle Einträge gezeigt.
+11. **Feld mit Item-Verweis (B15 `item-ref`):** Ein Datenfeld, dessen Wert ein Item-Target ist (`item:<id>`), ist ein Feld und keine Kante, wenn es zum Inhalt des Items gehört (etwa zum signierten Wortlaut, 08). Lesend erscheint es wie C3 als Chip in der Farbe des Zieltyps: auf der Karte immer, im Detail als Meta-Zeile nur, wenn keine Liste des Typs es in `covers` führt. Ein nicht auflösbares Ziel erscheint als Text (`ref.missing`), nie als Fehler. Schreibbar ist es nur, soweit `edit` es erlaubt.
+12. **Liste über benannte Abfrage:** Statt einer direkten eingehenden Kante DARF ein Typ eine Rückwärts-Liste über eine benannte Abfrage deklarieren (`lists`). Das Register nennt nur den Namen; was die Abfrage liefert, definiert die Spec des Typs oder Moduls. Die Liste zeigt alle Einträge, jeden einmal. Eine Liste DARF eine Aktion tragen (`action`), die in ihrem Kopf steht; hat die Liste keinen Eintrag außer dem Item selbst, steht die Aktion allein an ihrer Stelle. Was die Aktion tut, definiert die Spec des Typs oder Moduls. Sichtbar ist sie nur, wenn Capability und Autorisierung sie erlauben (Typ-Register, Regeln, Regel 4).
+13. **Menüaktionen des Typs:** Ein Typ DARF zusätzliche Aktionen im ⋮-Menü deklarieren (`menuActions`). Was die Aktion tut, definiert die Spec des Typs oder Moduls. Sichtbar ist sie nur, wenn Capability und Autorisierung sie erlauben (Typ-Register, Regeln, Regel 4). Aktionen, die zu einer Liste gehören (etwa eine neue Fassung anlegen), stehen an der Liste (Regel 12), nicht im Menü.
+14. **Feste Anzeige im Formular (`edit: "fixed"`):** Ein unveränderliches oder vom Kontext gesetztes Feld erscheint im Formular sichtbar, nicht bearbeitbar und mit einem Symbol dafür. Das gilt nach dem Anlegen für ein unveränderliches Feld und beim Anlegen für einen Wert, den der Kontext vorgibt (etwa eine Listenaktion). Ein Kontext DARF weitere Felder beim Anlegen fest vorgeben, wenn die Spec des Typs es verlangt (etwa den Space einer Variante, [modules/resonance.md → Varianten](modules/resonance.md#varianten), Regel 2).
+15. Apps liefern Einträge, keine Mappings. Die Abbildung Composer ↔ Item (`composer-mapping.ts`) und die Detail-Leseansicht liegen im Toolkit und lesen nur das Register.
+16. `ContentTypeConfig` wird abgeleitet: `defaultWidgets` aus den Feldern und Kanten mit `pos` `head`, `meta`, `content`, `tags` oder `badge` und ohne `edit: false`, in der Reihenfolge des Formulars (`head` → `content` → `meta` in der Reihenfolge der Meta-Box → `tags` → `badge`, [shared-components → Edit-Regeln](modules/shared-components.md#edit-regeln), Regel 2); `peopleRelations` aus den Kanten mit `widget: "people"` und `pos: "meta"`; `statusOptions` aus `options` des `status`-Feldes; `widgetLabels` aus `label`.
+17. **Übergang:** In S1 lesen die Flächen `detail` und `footer` noch für Typen ohne Feldliste. Mit S6 entfallen beide. Der Übergangs-Slot `detail` steht dort, wo der Typ ihn hinlegt (`detailSlot`); Standard ist `meta`. Bis dahin DARF ein Typ sie weiter setzen; die Stimmleiste zieht mit S2 von `footer` nach `actions`. Die Aussage braucht `detail` seit S3 nicht mehr: Fassungen und „+ Variante" sind ihre Liste `family` (Regel 12), „Variante von" ihr Feld `variantOf` (Regel 11).
+18. **Rollen der Status-Optionen:** Eine Option eines `status`-Felds DARF eine Rolle tragen: `open` (offen, nicht begonnen), `active` (in Arbeit) oder `done` (erledigt). Mehrere Optionen DÜRFEN dieselbe Rolle tragen. Schreibt ein Übergang eine Rolle, schreibt er die erste Option dieser Rolle in der Reihenfolge des Registers. Eine Option ohne Rolle (etwa `archived` aus `task/v1`) ist Ausgangspunkt keines Übergangs. Folgeaktionen, Übergänge (Regel 19) und die Leseform von Item-Kanten (Ziele mit Status der Rolle `done` durchgestrichen, [shared-components → Widget-Paare](modules/shared-components.md#widget-paare), C3) lesen die Rolle, nie die Id einer Option. Die Spalten eines Kanban sind je App verschieden und sagen sie nicht. `role` ersetzt die Markierung `done: true` aus S3; `role: "done"` hat deren Bedeutung.
+19. **Übergänge der Selbstaktion mit Folgeaktion.** Eine Selbstaktion mit `followUps` ändert beim Dazukommen und Abgeben auch den Status in `field`. „Ich komme dazu" ist der Klick auf `label` oder `join.label`, „ich gebe ab" der zweite Klick auf meinen Zustand.
+
+    | Auslöser | Rolle des Status vorher | Status danach | Kante |
+    |---|---|---|---|
+    | ich komme dazu | `open` | erste Option `active`; hat das Feld keine, unverändert | ich stehe an der Kante |
+    | ich komme dazu | `active` oder keine Rolle | unverändert | ich stehe an der Kante |
+    | ich gebe ab, danach steht niemand mehr an der Kante | `active` | erste Option `open` | ich stehe nicht mehr an der Kante |
+    | ich gebe ab, danach steht niemand mehr an der Kante | `open` oder keine Rolle | unverändert | ich stehe nicht mehr an der Kante |
+    | ich gebe ab, andere bleiben an der Kante | nicht `done` | unverändert | ich stehe nicht mehr an der Kante |
+    | „Erledigt" | `open` oder `active` | erste Option `done` | unverändert |
+    | Bearbeiten (Formular) oder Modul (Kanban) | beliebig | frei gewählt | unverändert |
+
+    **Erledigt:** Hat der Status die Rolle `done`, zeigt die Zeile der Selbstaktion nur Zustände, keine Aktionen: stehe ich an der Kante, mein Zustand („✓ Übernommen", „✓ Dabei") und „✓ Erledigt", sonst nur „✓ Erledigt"; beides ist Anzeige, als Status lesbar. Kein Dazukommen, kein Abgeben. Wieder öffnen geht nur über Bearbeiten oder das Modul; danach gelten die Aktionen wieder. Das gilt für jede Selbstaktion mit `followUps`, auch eine App-Ersetzung (Regel 20); ohne `followUps` kennt die Selbstaktion kein Status-Feld.
+
+    Liegt die Kante eingebettet (`storage: "embedded"`), MUSS die Fläche Kante und Status in einem `updateItem` schreiben. Ob nach dem Abgeben noch jemand an der Kante steht, entscheidet der frisch gelesene Stand (Regel 9), nicht der Render. Bearbeiten und Modul ändern den Status frei und lassen die Kante stehen; eine Zuweisung im Formular (C1) ändert den Status nicht. Ein Typ ohne Option der Rolle `active` (die Karabirrdt-Karte: Offen · Erledigt) bleibt beim Dazukommen `open`, und Abgeben ändert seinen Status nicht.
+
+20. **Daten gemeinsam; Bedeutung und Bedienung kommen mit der Schicht des Moduls.** Prädikat und Speicherort einer Kante und ob sie einen Qualifier trägt (`qualifier.key`) stehen im Register des Toolkit-Typs und gelten für jede App. Die Werte samt Anzeige (Bedeutung) und eigene Pills (Bedienung) DARF die Register-Schicht eines Moduls oder einer App für eine Kante des Toolkit-Registers mitbringen: Werte als Erweiterung, vereinigt nach Wert-Id ([Erweiterung und Merge](#erweiterung-und-merge), Punkt 2); denselben Wert deklarieren zwei Schichten nicht, auch nicht mit gleicher Anzeige — das ist ein Konflikt. Die Pills ersetzen die Selbstaktion (`selfAction`) der Kante, schreiben nur Werte, die der Kern oder dieselbe Schicht deklariert (so hängt das Register nicht von der Reihenfolge der Schichten ab), und kommen je Kante aus höchstens einer Schicht; das ist die einzige Ausnahme von „kein Override" (Punkt 3). Prädikat, `storage` und `qualifier.key` DARF keine Schicht ändern. **Standardwert:** Mit ihren Werten DARF eine Schicht für die Kante `default` nennen (Regel 7). Er MUSS ein Wert sein, den der Kern oder dieselbe Schicht deklariert. Je Kante setzt höchstens eine Quelle den Standard: Nennt ihn der Kern, DARF ihn keine Schicht setzen; nennen ihn zwei Schichten, ist das ein Konflikt, auch mit demselben Wert ([Erweiterung und Merge](#erweiterung-und-merge), Punkt 2). Der Standard gilt im zusammengesetzten Register der App; ohne die Schicht bleibt eine Kante ohne Wert ohne Qualifier. Wer eine Bedeutung über Apps hinweg braucht, schreibt den Wert aus. Es gilt das zusammengesetzte Register der App für alle ihre Flächen. Der Kern bewahrt Unbekanntes: Einen Wert, den keine geladene Schicht kennt, liest und speichert jede Fläche unverändert und zeigt ihn ohne Zustandstext. Für das Zustandsmodell (Regel 19) steht jede Person an der Kante, gleich welcher Wert. Beispiel (nichtnormativ): Das Toolkit erlaubt `role` an `assignedTo` ohne Werte; das Kanban bietet „Übernehmen"/„Mitmachen" und schreibt die Kante ohne `role`. Die Schicht der Karabirrdt-App bringt `can` („kann") und `learns` („lernt") mit und die Pills „Kann ich"/„Will lernen". Ist sie in derselben App geladen, zeigt auch das Kanban „Timo lernt", sonst „Timo".
+
+21. **Ton einer Option (B6, B8):** `options[].tone` ist semantisch (`Tone`), nie eine Farbe; die Flächen malen ihn über Theme-Tokens der Instanz (`--muted-foreground`, `--warning`, `--success`, `--destructive`, `--info`), in hell und dunkel. Ohne `tone` gilt beim Status die Rolle (`open` neutral, `active` warning, `done` success), sonst die Typfarbe des Items. Ein Wert, den das Register nicht kennt, ist neutral. Beispiel (nichtnormativ): „Blockiert" `danger`; Priorität Hoch · Mittel · Niedrig `danger` · `warning` · `info`.
+
+22. **Zusatz und Gruppen einer Rückwärts-Liste.** `list.trailing` und `list.group` nennen je den `key` eines Felds. Die Definition des Felds (Widget, Optionen, Label, Einheit) kommt aus dem zusammengesetzten Register des Typs am anderen Endpunkt (`otherKind` der Manifest-Kante, Regel 1) und MUSS dort bestehen; sie gilt für alle Einträge der Liste. Der Wert kommt aus `data[key]` des Eintrags, gleich welchen Typs er ist. Zulässig sind Felder mit Widget `status`, `select` oder `number`, auch mit `pos: "module"` (etwa die Stufe eines Bretts), nicht mit `pos: "system"`. Beide DÜRFEN dasselbe Feld nennen. Beide gehören zum `EdgeEntry` und kommen von der Schicht, die die Kante deklariert; eine andere Schicht rüstet sie nicht nach ([Erweiterung und Merge](#erweiterung-und-merge), Punkte 2 und 3).
+    - **Zusatz (`trailing`):** Der Wert steht rechts in der Zeile, an derselben Stelle und in derselben Größe wie der Zusatz einer benannten Abfrage (Regel 12; `ItemPreview` in der Dichte `row`, [shared-components → ItemPreview](modules/shared-components.md#itempreview)). Er erscheint in der Leseform seines Widgets: eine Option als Wort in ihrem Ton (Regel 21), eine Zahl mit Einheit. Das Label des Felds, sofern es eines hat, ist sein zugänglicher Name und steht nicht sichtbar da. Hat der Eintrag keinen Wert, steht dort nichts.
+    - **Gruppen (`group`):** Die Liste gliedert ihre Einträge nach dem Wert des Felds, nachdem `filter` gewirkt hat. Jede Gruppe hat eine Zwischenüberschrift mit dem Wert in der Leseform (bei `number` mit Label, sofern das Feld eines hat: „Stufe 3") und ihrer Anzahl; der Listenkopf behält die Gesamtzahl. Die Reihenfolge der Gruppen: bei `status` und `select` die der Optionen im Register, danach Werte, die das Register nicht kennt, nach Id und ohne Zustandstext; bei `number` aufsteigend. Einträge ohne Wert (fehlend, `null`, leer) bilden die letzte Gruppe („Ohne Angabe", Intl-Schlüssel). Leere Gruppen entstehen nicht. Hat kein Eintrag einen Wert, entfällt die Gliederung.
+    - **Sortierung:** `sort` ordnet die Einträge innerhalb jeder Gruppe; die Reihenfolge der Gruppen bestimmt allein `group`.
+    - Gruppen kappen nicht und klappen nicht zu: Es werden alle Einträge gezeigt, jeder einmal (Regel 10).
+
+    Beispiel (nichtnormativ): Die Karabirrdt-App deklariert am Ziel (`project`) die Liste „Karten" (`partOf`, `itemRole: "to"`). Mit `list: { trailing: "stage" }` steht rechts in jeder Zeile die Stufe der Karte; mit `list: { group: "stage" }` stehen die Karten nach Stufe gegliedert („1", „2", …, zuletzt „Ohne Angabe").
+
+**Register je Typ (nichtnormativ).** So sehen die Einträge der Toolkit-Typen und eines App-Typs aus. Schreibweise: Feld `key` Widget @`pos`; Kante `predicate` (→ `from`, ← `to`) Widget @`pos`.
+
+| Typ | Felder | Kanten | Selbstaktion | Rückwärts-Listen |
+|---|---|---|---|---|
+| `post` | content B2 @content · media B5 @content · tags B14 | reactsTo/commentOn C7 @bar | – | – |
+| `event` | title B1 · description B2 · start/end/rrule B3 @meta · meetingLink B9 @meta · group B13 @badge · tags B14 | →locatedAt place C3 @meta · →invited person C1 @meta (eingebettet, angezeigt „eingeladen") und ←attends person C1 @meta (Record, `role` `going` · `maybe` · `declined`, `tense`, `count: one-per-subject`) in einer Zeile | attends: `going` · `maybe` · `declined` (Zusagen · Vielleicht · Absagen) | – |
+| `place` | title · description · address/position B4 @meta · tags | ←locatedAt C3 @list | – | „Findet hier statt" (Events, upcoming) |
+| `task` | title · description · status B6 @meta (To Do `open` · In Arbeit `active` · Erledigt `done`) · start B3 @meta („Fällig") · tags · order @module | →assignedTo person C1 @meta (`meta.role` erlaubt, Werte bringt eine Modul-Schicht, Regel 20) · →partOf project C3 @meta („Teil von") · →blocks task C3 @meta („Ermöglicht") · ←blocks task C3 @meta („Braucht") | assignedTo: Übernehmen, mit anderen an der Kante Mitmachen; danach ✓ Übernommen (allein) oder ✓ Dabei (mit anderen) · Erledigt, erledigt · ✓ Erledigt; mein Zustand Umschalter, „✓ Erledigt" Zustand (`followUps` am Feld `status`, Übergänge Regel 19) | – |
+| `person` | displayName B1 @head · avatarUrl B11 @head · bio B2 · address/position B4 @meta · skills/offers/needs B10 @meta („Kann", „Bietet", „Sucht") · phone/email B12 @meta · did @system | keine Kommentare, keine Reaktionen | – | „Nächste Termine" (upcoming) · „Aufgaben" (←assignedTo, open) |
+| `project` | title · description · website/repo B9 @meta · address/position B4 @meta · tags | ←partOf C3 @list | – | „Offene Aufgaben" (←partOf task, open) · „Nächste Termine" (←partOf event, upcoming) |
+| `resource` | title · description · kind B8 @meta · availability B8 oder B2 @meta · tags | – | – | – |
+| `statement` | title B1 („Aussage") · description B2 („Begründung") · variantOf B15 @meta (Ziel `statement`, `edit: "fixed"`, „Variante von …", fehlend „nicht verfügbare Aussage"; Chip auf der Karte, im Detail durch `family` abgedeckt) · group B13 (bei Varianten `fixed`) · tags | ←votesOn person C4 @actions, Qualifier `value`: `green` · `yellow` · `red` | votesOn: Dafür · Skeptisch · Dagegen | Liste `family` („Fassungen", `covers: ["variantOf"]`, Aktion `create-variant` „+ Variante") |
+| App: Karabirrdt-Karte (`task`) | title · description · status B6 @meta (Offen `open` · Erledigt `done`, keine Option `active`) · hours/euros B7 @meta („Aufwand") · stage @module · tags | →assignedTo person C1 @meta (`role`-Werte `can` · `learns` aus der Schicht der App, Regel 20) · ←blocks task C3 @meta („Braucht") · →partOf project C3 @meta („Führt zu") | assignedTo: Kann ich (`can`) · Will lernen (`learns`), ersetzt die Selbstaktion des Toolkits (Regel 20) | – |
+| App: Karabirrdt-Ziel (`project`) | title · description („Traumsatz") · priority B8 @meta (Hoch · Mittel · Niedrig) · order @module | ←partOf C3 @list, je Stufe gruppiert | – | „Karten" (←partOf task, je Stufe) |
+
+Hinweise zur Tabelle: Die Kanban-Aufgabe bietet nur „Übernehmen"/„Mitmachen"; Werte `can`/`learns` samt Anzeige und die Pills „Kann ich"/„Will lernen" bringt die Register-Schicht der Karabirrdt-App (nichtnormatives Beispiel, Regel 20). Qualifier-Werte sind englische Ids; deutsche Wörter in Klammern sind Anzeigebeispiele. `project` hat keine Selbstaktion „Beitreten". Mitgliedschaft (`memberOf`, C5), Verifizieren (C6) und Herkunft (C8) folgen später. Die Teilnahme am Event regelt [08 → Teilnahme am Event](08-relation-records.md#teilnahme-am-event-attends-und-invited). Typ-Ids und Code-Namen bleiben Englisch; deutsche Beschriftungen kommen über die Intl-Schicht. Neue Prädikate kommen erst mit ihrer Relation-Typ-Definition ins Manifest (Verhältnis zu Relations, Regel 3). Seit S3 führt die Aufgabe `partOf` (→ Projekt) und `blocks` (beide Rollen), beide gerichtet und eingebettet; die Definitionen der Toolkit-Prädikate stehen bis zur RelationTypeDefinition im Space als Katalog neben dem Manifest (`TOOLKIT_RELATION_PREDICATES`). `locatedAt` am Event folgt mit dem Ort-Widget (S4). Das Event führt `attends` mit `joins: "invited"`: eine Menschen-Zeile und ein Personenfeld „Wer“, dessen Chip „eingeladen“ oder den Qualifier der geltenden Zusage zeigt; Antippen schreibt die eigene Aussage über die Person (für mich die Selbstaussage), der Grundzustand nimmt sie zurück ([08 → Qualifier an Kanten](08-relation-records.md#qualifier-an-kanten), Regel 8). `attends` steht seit S2 im Manifest des Events (`{ attends, to, person }`), gerichtet, mit Claim-Profil `authorial` ([08 → Zwei Profile](08-relation-records.md#zwei-profile)). Die Frist einer Aufgabe liegt in `start`, wie das Datums-Widget sie schreibt ([Die Rolle von `type`](#die-rolle-von-type)).
 
 #### Erweiterung und Merge
 
 Register-Einträge werden in deterministischer Reihenfolge zusammengesetzt: **Core → App → Space.** Eine Schicht liefert Beiträge in genau einer von zwei Formen:
 
 1. **Typdefinition** — führt eine neue `id` ein. Eine bereits vergebene `id` ist ein **Konflikt** und MUSS abgelehnt werden.
-2. **Erweiterungsfragment** — adressiert eine vorhandene `id` und ergänzt sie additiv. Mengen-Felder (Kanten keyed by (`predicate`, `itemRole`), Vokabular-Bindung als Menge) werden vereinigt; neue Keys/Member sind erlaubt, das Entfernen oder Umdefinieren vorhandener ist ein Konflikt. Skalare Felder (`label`, `icon`, Slots) DARF ein Fragment nur setzen, wenn die Basis sie nicht setzt — sonst Konflikt.
-3. **Override** ist in v0.1 nicht vorgesehen: Konflikte werden abgelehnt, nicht aufgelöst. Eine spätere Version KANN eine explizite Override-Operation mit Ziel-Key und Prioritätsregel einführen; bis dahin gibt es kein Shadowing, still oder ausdrücklich.
+2. **Erweiterungsfragment** — adressiert eine vorhandene `id` und ergänzt sie additiv. Mengen-Felder (Kanten keyed by (`predicate`, `itemRole`), Vokabular-Bindung als Menge, `fields` keyed by `key`, `edges` keyed by (`predicate`, `itemRole`), Qualifier-Werte einer Kante keyed by Wert-Id, Regel 20) werden vereinigt; neue Keys/Member sind erlaubt, das Entfernen oder Umdefinieren vorhandener ist ein Konflikt. Skalare Felder (`label`, `icon`, Slots, der Standardwert eines Qualifiers, Regel 20) DARF ein Fragment nur setzen, wenn die Basis sie nicht setzt — sonst Konflikt.
+3. **Override** ist in v0.1 nicht vorgesehen, außer für die Selbstaktion einer Kante ([Feld- und Kantenregister](#feld--und-kantenregister), Regel 20): Konflikte werden abgelehnt, nicht aufgelöst. Eine spätere Version KANN eine explizite Override-Operation mit Ziel-Key und Prioritätsregel einführen; bis dahin gibt es kein Shadowing, still oder ausdrücklich.
 
 Die zusammengesetzte Sicht ist pro Space deterministisch: gleiche Schichten, gleiches Ergebnis, unabhängig von Lade- oder Registrierungsreihenfolge — Vereinigung und Konfliktprüfung sind ordnungsunabhängig definiert.
 
@@ -167,11 +338,11 @@ Regeln:
    - `"from"` / `"to"` für gerichtete Kanten — welche Rolle **dieses Item** hat. Beide Rollen desselben Prädikats DÜRFEN am selben Typ koexistieren: `task` deklariert `{ blocks, from, task }` **und** `{ blocks, to, task }`, denn ein Task kann blockieren und blockiert werden.
    - `"either"` für symmetrische Prädikate — `person` → `{ knows, either, person }`. Eine symmetrische Kante hat keine Richtung; 08 kanonisiert ihre Endpunkte gerade deshalb. `"either"` und `"from"`/`"to"` schließen sich für dasselbe Prädikat am selben Typ aus (Konflikt), und `itemRole` MUSS zur Symmetrie-Deklaration der Relation-Typ-Definition passen: symmetrisch ⇒ `"either"`, gerichtet ⇒ `"from"`/`"to"`.
 
-   Beispiele, nichtnormativ: `task` → `{ assignedTo, from, person }`; `statement` → `{ votesOn, to, person }` (eingehende Stimmen; der `footer`-Slot weiß darüber, dass er Records **zu** diesem Item abfragt). Welches Composer-Widget eine Kante bedient, deklariert das Darstellungs-Register (`relationWidgets`, gleicher Schlüssel) — Kanten ohne Widget entstehen anderswo, z.B. per Karten-Pick oder Modul-Interaktion. Normativ wird ein Prädikat erst durch seine Relation-Typ-Definition.
+   Beispiele, nichtnormativ: `task` → `{ assignedTo, from, person }`; `statement` → `{ votesOn, to, person }` (eingehende Stimmen; das `vote`-Widget weiß darüber, dass es Records **zu** diesem Item abfragt). Welches Widget eine Kante bedient, deklariert das Darstellungs-Register (`edges`, gleicher Schlüssel) — Kanten ohne Widget entstehen anderswo, z.B. per Karten-Pick oder Modul-Interaktion. Normativ wird ein Prädikat erst durch seine Relation-Typ-Definition.
 2. `otherKind` bindet an die Target-Konventionen aus 04: `person` persistiert als `global:`-Target (User-Id oder DID), item-artige Kinds (`place`, `project`, …) als `item:` bzw. `space:{id}/item:`. Composer und Abfrage leiten die Target-Form der Gegenstelle aus `otherKind` ab, nie umgekehrt.
 3. Das Typ-Register definiert **keine** Prädikat-Semantik. Gerichtetheit, Symmetrie und Sichtbarkeit eines Prädikats gehören in die Relation-Typ-Definition (08, Regel 3) — heute App-Konfiguration, Ziel ist die versionierte RelationTypeDefinition im Space. Ein Prädikat, das im Typ-Register auftaucht, MUSS dort definiert sein.
-4. Ob eine Kante eingebettet (`item.relations[]`) oder als Relation-Record persistiert wird, entscheiden die Forward/Reverse-Regeln aus 04 — nicht das Typ-Register. Es deklariert die Möglichkeit, nicht den Mechanismus.
-5. Personen-Kanten sind ein Fall unter vielen, kein Sonderfall: `peopleRelation` aus `ContentTypeConfig` geht auf in einem Manifest-Eintrag `{ assignedTo, from, person }` plus der `relationWidgets`-Zuordnung `people` im Darstellungs-Register. Ein Typ KANN mehrere Personen-Kanten führen (`peopleRelations`, siehe [shared-components.md → Personenfelder](modules/shared-components.md)) — je Kante ein eigenes Feld, alle über dieselbe Widget-Zuordnung.
+4. Ob eine Kante eingebettet (`item.relations[]`) oder als Relation-Record persistiert wird, entscheiden die Forward/Reverse-Regeln aus 04 und 08 (Regel 9) — nicht das Typ-Register. Das Manifest deklariert die Möglichkeit; `EdgeEntry.storage` hält den Mechanismus fest, den diese Regeln vorgeben, damit Lese- und Schreibform wissen, wo die Kante liegt.
+5. Personen-Kanten sind ein Fall unter vielen, kein Sonderfall: `peopleRelation` aus `ContentTypeConfig` geht auf in einem Manifest-Eintrag `{ assignedTo, from, person }` plus einem `EdgeEntry` mit `widget: "people"` im Darstellungs-Register. Ein Typ KANN mehrere Personen-Kanten führen (`peopleRelations`, siehe [shared-components.md → Personenfelder](modules/shared-components.md)) — je Kante ein eigenes Feld, alle über dieselbe Widget-Zuordnung.
 
 #### Nicht-Ziele des Registers
 
@@ -195,7 +366,7 @@ RLS-Vokabulare sind als JSON-LD und JSON-Schema unter `https://real-life-stack.o
 - `https://real-life-stack.org/vocab/relation/v1` — eigenständige RelationRecords
 - `https://real-life-stack.org/vocab/project/v1` — Projekt-Felder
 - `https://real-life-stack.org/vocab/resource/v1` — Ressourcen-Felder
-- `https://real-life-stack.org/vocab/statement/v1` — Marker: Aussage zur Gruppen-Stellungnahme (Resonance); keine eigenen Felder, verlangt `base/v1 title`
+- `https://real-life-stack.org/vocab/statement/v1` — Klasse `statement`: Aussage zur Gruppen-Stellungnahme (Resonance); keine eigenen Felder, verlangt `base/v1 title`; aktiviert über die Affordanz `votesOn` im Manifest, nicht über `@context`
 
 Jede Vocabulary-URL liefert:
 
@@ -236,8 +407,10 @@ Aktivierung durch Map-Modul: Items mit `data.position` werden auf der Map gerend
 
 ### `event/v1`
 
-- `start` (ISO-8601-DateTime oder -Date) — Beginn
-- `end` (ISO-8601-DateTime oder -Date, optional) — Ende
+- `start` (ISO-8601-DateTime **mit UTC-Offset**, z. B. `2026-09-19T14:00:00+02:00`, oder -Date `2026-09-19` für ganztägig) — Beginn
+- `end` (gleiche Form, optional) — Ende
+
+Ein Zeitpunkt trägt den Offset des Autors: jeder Leser sieht denselben Augenblick, die Wanduhrzeit des Autors bleibt ablesbar. Ein Datum ohne Uhrzeit ist ganztägig und ohne Zone. Werte ohne Offset aus älteren Items werden in der Zone des Lesers gedeutet und beim nächsten Speichern mit Offset geschrieben. (Entschieden 2026-09-19; eine eigene Zonenangabe für Wiederholungen über Zeitumstellungen hinweg bleibt offen.)
 - `duration` (ISO-8601-Duration, optional; gegenseitig exklusiv mit `end`)
 - `rrule` (RFC 5545 RRULE-String, optional)
 - `meetingLink` (URL, optional) — siehe Discussion zur Frage „wohin gehört Online-Treffen"
@@ -246,7 +419,7 @@ Aktivierung durch Calendar-Modul.
 
 ### `task/v1`
 
-- `status` (Enum: `open` | `in-progress` | `done` | `archived`)
+- `status` (Enum: `open` | `in-progress` | `done` | `archived`); Rollen im Register der Toolkit-Aufgabe ([Regel 18](#feld--und-kantenregister)): `open` → `open`, `in-progress` → `active`, `done` → `done`, `archived` ohne Rolle
 - `assignee` (Identifier wie `createdBy`, optional; Einzelwert oder Array für mehrere)
 - `dueAt` (ISO-8601-DateTime, optional)
 - `priority` (Integer ≥ 0, optional)
@@ -295,7 +468,9 @@ Module aktivieren ein Item primär **feldbasiert** (das benötigte Feld ist in `
 
 Für Vokabulare mit eigenem Feld gilt: Da `@context`-Konsistenz nicht erzwingbar ist, **müssen Module den Feldfilter verwenden** und dürfen `hasSchema` nur als zusätzliche Optimierung anbieten.
 
-**Marker-Vokabulare** sind die definierte Ausnahme: ein Vokabular, das kein eigenes Feld einführt, sondern eine Intention markiert und dabei nur Basis-Felder verlangt (z.B. `statement/v1` — verlangt `base/v1 title`). Für sie existiert kein äquivalenter Feldfilter, darum ist `hasSchema` ihr **primärer und einziger** Aktivierungsfilter. Voraussetzungen: der Composer MUSS das Vokabular beim Erstellen setzen (`deriveContext`), und das Vokabular MUSS in der Registry mit Schema und Context ausgewiesen sein. Ein Item ohne das Marker-Vokabular erscheint nicht in dessen Modulen — auch wenn sein `type` gleich heißt; `type` aktiviert nie (s.o.).
+**Klassen ohne eigenes Feld** aktivieren über ihre im Manifest deklarierte **Affordanz**, nicht über `hasSchema` (siehe „Die Rolle von `type`" und „Klassen haben IRIs"). Der Connector-Filter dafür ist `type`, verglichen gegen die Klassen, deren Manifest die Affordanz trägt — der Host leitet die Liste aus dem Manifest ab (Spec 01, Ladevertrag), kein Modul zählt sie auf. `hasSchema` bleibt, was es für alle anderen ist: ein schnellerer Vorfilter, nie die einzige Wahrheit.
+
+*Bis zum 21.09.2026 stand hier die Ausnahme „Marker-Vokabular": ein Vokabular ohne eigene Begriffe, das nur in `@context` stand, um eine Intention zu markieren, mit `hasSchema` als einzigem Filter. Es gab genau eines, `statement/v1`. Es ist entfallen — die Klasse steht in `@type`.*
 
 > **Status:** `hasSchema` ist implementiert: `matchesFilter` in `data-interface` prüft, dass alle gelisteten Vokabulare in `@context` aktiv sind; die lokal filternden Connectoren (Local, Mock, WoT) erben das, der GraphQL-Pfad transportiert Filter und `@context` end-to-end.
 
@@ -307,7 +482,7 @@ Für Vokabulare mit eigenem Feld gilt: Da `@context`-Konsistenz nicht erzwingbar
 | Calendar | `hasField: ['start']` | `hasSchema: ['…/event/v1']` | alles zeitlich Darstellbares |
 | Kanban | konfiguriertes `hasField: [statusField]` (Default: `['status']`) plus Spaltenwert-Prüfung | bei Default `hasSchema: ['…/task/v1']`; bei anderem Feld keine Task-Vokabular-Annahme | Nicht-Relation-Items mit verwertbarem konfiguriertem Spaltenfeld; `archived` nur bei expliziter Spalte |
 | Feed | kein Feldfilter — jedes Item mit eigener Karte | — | alles Neue im Space |
-| Resonance | `hasSchema: ['…/statement/v1']` (Marker-Vokabular, s.o.) | — | Aussagen zur Gruppen-Stellungnahme |
+| Resonance | `type` in den Klassen, deren Manifest `votesOn` deklariert (heute: `statement`) | `hasSchema: ['…/statement/v1']` | Aussagen zur Gruppen-Stellungnahme |
 | Contacts | `hasSchema: ['…/person/v1']` | — | Personen-Profile |
 
 Ein Item mit mehreren Schemas erscheint in jedem zuständigen Modul gleichzeitig. Jedes Modul rendert nur den Schema-Anteil, den es kennt.

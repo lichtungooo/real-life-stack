@@ -3,6 +3,7 @@ export * from "./primitives"
 
 // Layout
 export * from "./layout"
+export * from "./frame"
 
 // Auth primitives
 export * from "./auth"
@@ -16,7 +17,6 @@ export * from "./debug"
 // Space modules
 export * from "./feed"
 export * from "./kanban"
-export * from "./dashboard"
 export * from "./calendar"
 export * from "./map"
 

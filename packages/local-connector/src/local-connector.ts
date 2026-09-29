@@ -1,5 +1,7 @@
 import type {
   CreateItemInput,
+  CreateItemOptions,
+  GroupScopeCapable,
   FullConnector,
   Item,
   ItemFilter,
@@ -23,7 +25,7 @@ import type {
   RelationRecordUpdate,
   Source,
 } from "@real-life-stack/data-interface"
-import { applyGroupDataPatch, withEditStamp, stripEditStamp, assertMayMutateAuthoredItem, assertAuthoredTypeUnchanged, createObservable, createDefaultRelationStore, createRelationRecordWith, matchesFilter, findRelatedItems, applyPagination, deriveActivitySummary, itemDisplayTitle, moduleHintsFor, applyNotificationStatePatch, cloneNotificationState } from "@real-life-stack/data-interface"
+import { applyGroupDataPatch, withEditStamp, stripEditStamp, assertMayMutateAuthoredItem, assertAuthoredTypeUnchanged, authoredUpdateAuthoritative, isFrozen, withoutAuthoredClaim, createObservable, createDefaultRelationStore, createRelationRecordWith, canonicalItem, matchesFilter, findRelatedItems, applyPagination, deriveActivitySummary, itemDisplayTitle, moduleHintsFor, applyNotificationStatePatch, cloneNotificationState } from "@real-life-stack/data-interface"
 import { get, set, del, createStore, update as updateStoredValue } from "idb-keyval"
 
 // --- Types ---
@@ -37,7 +39,7 @@ import { get, set, del, createStore, update as updateStoredValue } from "idb-key
  * — a re-seed throws away anything created locally, which is fine for
  * the local-only dev/test connector.
  */
-export const SEED_VERSION = 15
+export const SEED_VERSION = 16
 
 interface StoredState {
   items: Item[]
@@ -97,9 +99,56 @@ function appendActivity(
   return next
 }
 
+// --- Identity per tab (testing multi-user stories in one browser) ---
+
+/** Fixed names for tab identities, in order; beyond the list a number is appended. */
+export const TAB_IDENTITY_NAMES: readonly string[] = [
+  "Anna", "Bert", "Carla", "David", "Emma", "Finn", "Greta", "Hannes", "Ida", "Jonas",
+  "Klara", "Lukas", "Mia", "Noah", "Paula", "Quirin", "Rosa", "Samuel", "Tara", "Ulf",
+]
+const TAB_IDENTITY_KEY = "rls-local-connector:tab-identity"
+const TAB_USER_PREFIX = "tab-"
+
+interface TabIdentity {
+  userId: string
+  groupId: string | null
+}
+
+/** The next free name: the first list name no tab identity uses yet. */
+function nextTabName(users: readonly User[]): string {
+  const taken = new Set(users.filter((u) => u.id.startsWith(TAB_USER_PREFIX)).map((u) => u.displayName))
+  const free = TAB_IDENTITY_NAMES.find((name) => !taken.has(name))
+  if (free) return free
+  let round = 2
+  for (;;) {
+    const numbered = TAB_IDENTITY_NAMES.find((name) => !taken.has(`${name} ${round}`))
+    if (numbered) return `${numbered} ${round}`
+    round++
+  }
+}
+
+/**
+ * How long a tab waits for its saved person's lock. A reload gets it at once
+ * (or as soon as the old page is gone); a copied sessionStorage whose origin
+ * tab still lives never gets it and becomes a new person.
+ */
+const TAB_IDENTITY_CLAIM_MS = 300
+
+/**
+ * A tab's claim on its person, shared by every connector instance of the page
+ * (React StrictMode mounts two, and discards the first without disposing it).
+ * Keyed by the tab's storage; released when the last holder disposes.
+ */
+interface TabClaim {
+  userId: Promise<string>
+  holders: number
+  release: () => void
+}
+const tabClaims = new WeakMap<object, TabClaim>()
+
 // --- LocalConnector ---
 
-export class LocalConnector implements FullConnector, ActivityLogCapable, ScopedActivityLogCapable, NotificationStateCapable {
+export class LocalConnector implements FullConnector, GroupScopeCapable, ActivityLogCapable, ScopedActivityLogCapable, NotificationStateCapable {
   private items: Item[] = []
   private notifyScheduled = false
   private groups: Group[] = []
@@ -125,6 +174,11 @@ export class LocalConnector implements FullConnector, ActivityLogCapable, Scoped
   private relatedObservables = new Map<string, ReturnType<typeof createObservable<Item[]>>>()
   private relatedObservableParams = new Map<string, { itemId: string; predicate?: string; options?: RelatedItemsOptions }>()
 
+  /** `per-tab`: every browser tab is its own person (sessionStorage). */
+  private readonly identityMode: "shared" | "per-tab"
+  private readonly identityStorage: Pick<Storage, "getItem" | "setItem"> | null
+  private readonly identityLocks: Pick<LockManager, "request"> | null
+  private tabClaim: TabClaim | null = null
   private channel: BroadcastChannel | null = null
   private readonly instanceId = crypto.randomUUID()
   private store = createStore("rls-local-connector", "state")
@@ -139,6 +193,14 @@ export class LocalConnector implements FullConnector, ActivityLogCapable, Scoped
    */
   verifyRecordClaim?: (record: RelationRecord) => Promise<"trusted">
 
+  /**
+   * Verdict for authorial items (spec 08 → Aussagen einer Person): the Local
+   * store is `authoritative` — every regular ingress binds createdBy and
+   * restricts content changes to the author (`authoredUpdateAuthoritative`),
+   * so it writes no claims and answers "trusted". Absent in FIXTURE mode.
+   */
+  verifyItemClaim?: (item: Item) => Promise<"trusted">
+
   constructor(seed?: {
     items: Item[]
     groups: Group[]
@@ -152,10 +214,34 @@ export class LocalConnector implements FullConnector, ActivityLogCapable, Scoped
      * and demos. Disables the authoritative claim verdict.
      */
     allowFixtureAuthors?: boolean
+    /**
+     * `per-tab`: every browser tab gets its own person — for testing
+     * multi-user stories (votes, variants, freezing) in one browser. The
+     * person and the current space live in the tab's sessionStorage; data
+     * stays shared across tabs as before. A new tab creates the next person
+     * from {@link TAB_IDENTITY_NAMES} and makes it a member of every space;
+     * a reload keeps it. A tab holds its person with a Web Lock: a copied
+     * sessionStorage (window opened with `opener`, duplicated tab) whose
+     * origin tab still lives becomes a new person. Default `shared`: one
+     * person for all tabs.
+     */
+    identity?: "shared" | "per-tab"
+    /** Where the tab identity lives; defaults to `sessionStorage` (tests inject one). */
+    identityStorage?: Pick<Storage, "getItem" | "setItem">
+    /** Locks that tell live tabs apart; defaults to `navigator.locks` (tests inject one). */
+    identityLocks?: Pick<LockManager, "request">
   }) {
     this.allowFixtureAuthors = options?.allowFixtureAuthors === true
+    this.identityMode = options?.identity ?? "shared"
+    this.identityStorage = this.identityMode === "per-tab"
+      ? options?.identityStorage ?? (typeof sessionStorage !== "undefined" ? sessionStorage : null)
+      : null
+    this.identityLocks = this.identityMode === "per-tab"
+      ? options?.identityLocks ?? (typeof navigator !== "undefined" && navigator.locks ? navigator.locks : null)
+      : null
     if (!this.allowFixtureAuthors) {
       this.verifyRecordClaim = async () => "trusted"
+      this.verifyItemClaim = async () => "trusted"
     }
     this.seedData = seed
       ? {
@@ -197,7 +283,7 @@ export class LocalConnector implements FullConnector, ActivityLogCapable, Scoped
     )
 
     if (shouldSeed) {
-      this.items = this.seedData!.items.map(i => ({ ...i }))
+      this.items = this.seedData!.items.map((i) => canonicalItem({ ...i }))
       this.groups = [...this.seedData!.groups]
       this.users = [...this.seedData!.users]
       this.groupMembers = { ...this.seedData!.groupMembers }
@@ -211,7 +297,7 @@ export class LocalConnector implements FullConnector, ActivityLogCapable, Scoped
         : null
       await this.persist({ replaceItemState: true })
     } else if (stored) {
-      this.items = stored.items.map(i => ({ ...i }))
+      this.items = stored.items.map((i) => canonicalItem({ ...i }))
       this.groups = stored.groups
       this.users = stored.users
       this.groupMembers = stored.groupMembers
@@ -227,6 +313,8 @@ export class LocalConnector implements FullConnector, ActivityLogCapable, Scoped
         ? this.groups.find((g) => g.id === stored.currentGroupId) ?? null
         : null
     }
+
+    if (this.identityMode === "per-tab") await this.ensureTabIdentity()
 
     this.currentUserObs.set(this.currentUser)
     this.authState.set(
@@ -251,11 +339,14 @@ export class LocalConnector implements FullConnector, ActivityLogCapable, Scoped
       if (event.data.senderId === this.instanceId) return
       this.handleBroadcast(event.data)
     }
+    // The tab's person was added before the channel existed: tell the others now.
+    if (this.identityMode === "per-tab") this.broadcast({ type: "groups-changed" })
   }
 
   async dispose(): Promise<void> {
     this.channel?.close()
     this.channel = null
+    this.releaseTabClaim()
     for (const obs of this.itemObservables.values()) obs.destroy()
     for (const obs of this.singleItemObservables.values()) obs.destroy()
     for (const obs of this.relatedObservables.values()) obs.destroy()
@@ -294,6 +385,7 @@ export class LocalConnector implements FullConnector, ActivityLogCapable, Scoped
   }
 
   setCurrentGroup(id: string | null): void {
+    this.rememberTabGroup(id)
     if (id === null) {
       if (this.currentGroup === null) return
       this.currentGroup = null
@@ -315,7 +407,8 @@ export class LocalConnector implements FullConnector, ActivityLogCapable, Scoped
   async createGroup(name: string, data?: Record<string, unknown>): Promise<Group> {
     const group: Group = { id: `group-${Date.now()}`, name, data }
     this.groups.push(group)
-    this.groupMembers[group.id] = this.currentUser ? [this.currentUser.id] : []
+    const creator = this.currentUser?.id
+    await this.commitMembers((members) => ({ ...members, [group.id]: creator ? [creator] : [] }))
     this.notifyGroupObservers()
     await this.persist()
     this.broadcast({ type: "groups-changed" })
@@ -363,7 +456,7 @@ export class LocalConnector implements FullConnector, ActivityLogCapable, Scoped
 
   async deleteGroup(id: string): Promise<void> {
     this.groups = this.groups.filter((g) => g.id !== id)
-    delete this.groupMembers[id]
+    await this.commitMembers(({ [id]: _removed, ...members }) => members)
     if (this.currentGroup?.id === id) {
       this.currentGroup = this.groups[0] ?? null
       this.currentGroupObs.set(this.currentGroup)
@@ -391,48 +484,75 @@ export class LocalConnector implements FullConnector, ActivityLogCapable, Scoped
     return this.memberObservables.get(groupId)!
   }
 
-  private notifyMemberObservers(groupId: string): void {
-    const obs = this.memberObservables.get(groupId)
-    if (obs) {
-      const memberIds = this.groupMembers[groupId] ?? []
-      obs.set(this.users.filter((u) => memberIds.includes(u.id)))
+  /** Refresh the member observables: all of them, or only one space's. */
+  private notifyMemberObservers(groupId?: string): void {
+    for (const [key, obs] of this.memberObservables) {
+      if (groupId !== undefined && key !== groupId) continue
+      const memberIds = key === null ? null : this.groupMembers[key] ?? []
+      obs.set(memberIds === null ? [...this.users] : this.users.filter((u) => memberIds.includes(u.id)))
     }
+  }
+
+  /**
+   * A membership change as an ATOMIC operation on the stored memberships,
+   * never a write-back of this instance's copy: another tab may just have
+   * changed other memberships (or added its person). The result is adopted.
+   */
+  private async commitMembers(change: (members: Record<string, string[]>) => Record<string, string[]>): Promise<void> {
+    let committed: Record<string, string[]> | undefined
+    await updateStoredValue<StoredState>("state", (stored) => {
+      const base = stored ?? this.createStoredState()
+      committed = change({ ...base.groupMembers })
+      return { ...base, groupMembers: committed }
+    }, this.store)
+    if (committed) this.groupMembers = committed
+    this.notifyMemberObservers()
   }
 
   async inviteMember(groupId: string, userId: string): Promise<void> {
-    if (!this.groupMembers[groupId]) this.groupMembers[groupId] = []
-    if (!this.groupMembers[groupId].includes(userId)) {
-      this.groupMembers[groupId].push(userId)
-    }
-    this.notifyMemberObservers(groupId)
-    await this.persist()
+    await this.commitMembers((members) => {
+      const current = members[groupId] ?? []
+      return current.includes(userId) ? members : { ...members, [groupId]: [...current, userId] }
+    })
+    this.broadcast({ type: "groups-changed" })
   }
 
   async removeMember(groupId: string, userId: string): Promise<void> {
-    if (this.groupMembers[groupId]) {
-      this.groupMembers[groupId] = this.groupMembers[groupId].filter((id) => id !== userId)
-    }
-    this.notifyMemberObservers(groupId)
-    await this.persist()
+    await this.commitMembers((members) =>
+      members[groupId] ? { ...members, [groupId]: members[groupId].filter((id) => id !== userId) } : members,
+    )
+    this.broadcast({ type: "groups-changed" })
   }
 
   // --- Items ---
 
-  private getScopedItems(): Item[] {
+  /**
+   * Die Items eines Space (02 → Lesen in einem bestimmten Space): ohne
+   * `group` der geöffnete Space (Übersicht/Aggregat: alle), mit `group`
+   * genau dieser — ein unbekannter ergibt nichts.
+   */
+  private getScopedItems(group?: string): Item[] {
+    if (group !== undefined) {
+      if (!this.groups.some((g) => g.id === group)) return []
+      return this.itemsInGroup(group)
+    }
     const groupId = this.currentGroup?.id
     const scope = (this.currentGroup?.data?.scope as string) ?? "group"
 
     if (!groupId || scope === "aggregate") {
       return this.items
     }
+    return this.itemsInGroup(groupId)
+  }
 
+  private itemsInGroup(groupId: string): Item[] {
     const itemIds = this.groupItems[groupId]
     if (!itemIds) return this.items.filter((i) => i.type === "feature")
     return this.items.filter((i) => itemIds.includes(i.id) || i.type === "feature")
   }
 
   async getItems(filter?: ItemFilter): Promise<Item[]> {
-    const scoped = this.getScopedItems()
+    const scoped = this.getScopedItems(filter?.group)
     if (!filter) return scoped
     const filtered = scoped.filter((item) => matchesFilter(item, filter))
     return applyPagination(filtered, filter.limit, filter.offset)
@@ -445,7 +565,7 @@ export class LocalConnector implements FullConnector, ActivityLogCapable, Scoped
   observe(filter: ItemFilter): Observable<Item[]> {
     const key = JSON.stringify(filter)
     if (!this.itemObservables.has(key)) {
-      const scoped = this.getScopedItems()
+      const scoped = this.getScopedItems(filter.group)
       const filtered = scoped.filter((item) => matchesFilter(item, filter))
       this.itemObservables.set(key, createObservable(applyPagination(filtered, filter.limit, filter.offset)))
     }
@@ -460,10 +580,20 @@ export class LocalConnector implements FullConnector, ActivityLogCapable, Scoped
     return this.singleItemObservables.get(id)!
   }
 
-  async createItem(item: CreateItemInput): Promise<Item> {
+  /** 02 → Lesen/Anlegen in einem bestimmten Space. */
+  readonly groupScope = true as const
+
+  async createItem(item: CreateItemInput, options?: CreateItemOptions): Promise<Item> {
+    const target = options?.group
+    // Ein unbekannter Space lehnt ab, bevor irgendetwas angelegt ist (02,
+    // Anlegen Regel 3). Mit Ziel legt EINE Transaktion das Item samt
+    // Zuordnung an — nie anlegen und danach verschieben (Regel 2).
+    if (target !== undefined && !this.groups.some((g) => g.id === target)) {
+      throw new Error(`Space not found: ${target}`)
+    }
     // A fresh item was never edited — a caller-supplied stamp is a forgery.
     item = stripEditStamp(item)
-    return this.createItemInGroup(item, this.currentGroup?.id ?? null)
+    return this.createItemInGroup(item, target ?? this.currentGroup?.id ?? null)
   }
 
   private allowFixtureAuthors = false
@@ -472,7 +602,9 @@ export class LocalConnector implements FullConnector, ActivityLogCapable, Scoped
     const actor = this.requireCurrentUser().id
     // Authoritative ingress binding (spec 08): createdBy comes from the
     // session, never the caller — except in the marked fixture mode.
-    const boundItem: CreateItemInput = this.allowFixtureAuthors ? item : { ...item, createdBy: actor }
+    // Authoritative store (spec 08): the connector owns data.claim of
+    // authorial items and writes none — a caller-supplied one is dropped.
+    const boundItem: CreateItemInput = withoutAuthoredClaim(this.allowFixtureAuthors ? item : { ...item, createdBy: actor })
     let result: Item | undefined
     let committedState: StoredState | undefined
     let created = false
@@ -554,7 +686,11 @@ export class LocalConnector implements FullConnector, ActivityLogCapable, Scoped
       // haben, eine RAM-Pruefung davor waere ein Rennen (rls#244-Muster).
       assertMayMutateAuthoredItem(current.items[idx], actor, "update")
       assertAuthoredTypeUnchanged(current.items[idx], updates)
-      result = { ...current.items[idx], ...updates, id }
+      // Content of an authorial item is the author's alone and frozen once
+      // someone else bound a reference to it (spec 08) — checked here,
+      // against the same atomically read state.
+      const allowed = authoredUpdateAuthoritative(current.items[idx], updates, actor, isFrozen(current.items[idx], current.items))
+      result = { ...current.items[idx], ...allowed, id }
       const items = [...current.items]
       items[idx] = result
       const ownerScope = Object.entries(current.groupItems).find(([, ids]) => ids.includes(id))?.[0] ?? null
@@ -619,7 +755,9 @@ export class LocalConnector implements FullConnector, ActivityLogCapable, Scoped
       // Guard wie update/delete, vor dem ersten Effekt.
       if (item) assertMayMutateAuthoredItem(item, actor, "delete")
       const sourceGroupId = Object.entries(current.groupItems).find(([, ids]) => ids.includes(itemId))?.[0] ?? null
-      if (!item || !sourceGroupId) throw new Error(`Item not found: ${itemId}`)
+      // Ein Item ohne Space (in der Übersicht angelegt oder ohne Zuordnung
+      // geseedet) ist persönlich; der Move setzt dann erstmals einen Space.
+      if (!item) throw new Error(`Item not found: ${itemId}`)
       if (this.currentGroup && sourceGroupId !== this.currentGroup.id) throw new Error(`Item not found: ${itemId}`)
       if (sourceGroupId === targetGroupId) { committedState = current; return current }
       const groupItems = cloneGroupItems(current.groupItems)
@@ -801,6 +939,13 @@ export class LocalConnector implements FullConnector, ActivityLogCapable, Scoped
   }
 
   async authenticate(_method: string, _credentials: unknown): Promise<User> {
+    if (this.identityMode === "per-tab") {
+      await this.ensureTabIdentity()
+      const tabUser = this.currentUser!
+      this.currentUserObs.set(tabUser)
+      this.authState.set({ status: "authenticated", user: tabUser })
+      return tabUser
+    }
     const user = this.users[0]
     this.currentUser = user
     this.currentUserObs.set(user)
@@ -855,6 +1000,129 @@ export class LocalConnector implements FullConnector, ActivityLogCapable, Scoped
     this.broadcast({ type: "full-sync" })
   }
 
+  // --- Internal: Identity per tab ---
+
+  private readTabIdentity(): TabIdentity | null {
+    try {
+      const raw = this.identityStorage?.getItem(TAB_IDENTITY_KEY)
+      return raw ? (JSON.parse(raw) as TabIdentity) : null
+    } catch {
+      return null
+    }
+  }
+
+  private writeTabIdentity(identity: TabIdentity): void {
+    try {
+      this.identityStorage?.setItem(TAB_IDENTITY_KEY, JSON.stringify(identity))
+    } catch {
+      // Storage unavailable (private mode): the identity lives for this page only.
+    }
+  }
+
+  private rememberTabGroup(groupId: string | null): void {
+    if (this.identityMode !== "per-tab") return
+    const identity = this.readTabIdentity()
+    if (identity) this.writeTabIdentity({ ...identity, groupId })
+  }
+
+  /**
+   * This tab's person id, resolved ONCE per page: the one in sessionStorage if
+   * no other live tab holds it (reload), else a fresh one (new tab, or a
+   * copied sessionStorage whose origin tab still lives). Held by a Web Lock.
+   */
+  private claimTabUser(): Promise<string> {
+    if (this.tabClaim) return this.tabClaim.userId
+    const key = this.identityStorage ?? this
+    let claim = tabClaims.get(key)
+    if (!claim) {
+      const created: TabClaim = { userId: Promise.resolve(""), holders: 0, release: () => {} }
+      created.userId = (async () => {
+        const saved = this.readTabIdentity()?.userId
+        if (saved && await this.lockTabUser(saved, created)) return saved
+        const fresh = `${TAB_USER_PREFIX}${crypto.randomUUID().slice(0, 8)}`
+        await this.lockTabUser(fresh, created)
+        return fresh
+      })()
+      tabClaims.set(key, created)
+      claim = created
+    }
+    claim.holders++
+    this.tabClaim = claim
+    return claim.userId
+  }
+
+  /**
+   * Take the Web Lock of `userId` for the claim, held until released. False
+   * when another live tab holds it past {@link TAB_IDENTITY_CLAIM_MS}.
+   * Without Web Locks every lock succeeds.
+   */
+  private lockTabUser(userId: string, claim: TabClaim): Promise<boolean> {
+    if (!this.identityLocks) return Promise.resolve(true)
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), TAB_IDENTITY_CLAIM_MS)
+    return new Promise<boolean>((resolve) => {
+      this.identityLocks!.request(`${TAB_IDENTITY_KEY}:${userId}`, { signal: controller.signal }, () => {
+        clearTimeout(timer)
+        resolve(true)
+        return new Promise<void>((release) => { claim.release = release })
+      }).catch(() => {
+        clearTimeout(timer)
+        resolve(false)
+      })
+    })
+  }
+
+  private releaseTabClaim(): void {
+    const claim = this.tabClaim
+    if (!claim) return
+    this.tabClaim = null
+    if (--claim.holders > 0) return
+    claim.release()
+    tabClaims.delete(this.identityStorage ?? this)
+  }
+
+  /**
+   * This tab's person ({@link claimTabUser}), added to the shared store with
+   * the next free name if it is not there yet. A new person is added
+   * ATOMICALLY to the shared store and joins every space; memberships of an
+   * existing person are left as they are — removals stay removed. Also
+   * restores the tab's space.
+   */
+  private async ensureTabIdentity(): Promise<void> {
+    const saved = this.readTabIdentity()
+    const userId = await this.claimTabUser()
+    let committed: StoredState | undefined
+    await updateStoredValue<StoredState>("state", (stored) => {
+      const base = stored ?? this.createStoredState()
+      if (base.users.some((u) => u.id === userId)) {
+        committed = base
+        return base
+      }
+      const user: User = this.users.find((u) => u.id === userId) ?? { id: userId, displayName: nextTabName(base.users) }
+      const groupMembers = { ...base.groupMembers }
+      for (const group of base.groups) {
+        const members = groupMembers[group.id] ?? []
+        if (!members.includes(user.id)) groupMembers[group.id] = [...members, user.id]
+      }
+      committed = { ...base, users: [...base.users, user], groupMembers }
+      return committed
+    }, this.store)
+    if (!committed) return
+    this.users = committed.users
+    this.groups = committed.groups
+    this.groupMembers = committed.groupMembers
+    this.currentUser = this.users.find((u) => u.id === userId) ?? null
+    const groupId = saved ? saved.groupId : this.currentGroup?.id ?? null
+    this.currentGroup = groupId ? this.groups.find((g) => g.id === groupId) ?? null : null
+    this.writeTabIdentity({ userId, groupId: this.currentGroup?.id ?? null })
+    this.currentUserObs.set(this.currentUser)
+    this.currentGroupObs.set(this.currentGroup)
+    if (this.currentUser) this.authState.set({ status: "authenticated", user: this.currentUser })
+    this.notifyGroupObservers()
+    this.notifyObservers()
+    this.broadcast({ type: "groups-changed" })
+  }
+
   // --- Internal: Persistence ---
 
   private async persist(options: { replaceItemState?: boolean } = {}): Promise<void> {
@@ -869,6 +1137,16 @@ export class LocalConnector implements FullConnector, ActivityLogCapable, Scoped
       committedState = stored
         ? {
             ...localState,
+            // People and memberships change only by atomic operations
+            // (commitMembers, ensureTabIdentity): never write this instance's
+            // possibly stale copy over them — it would undo another tab's new
+            // person or a removal.
+            users: stored.users,
+            groupMembers: stored.groupMembers,
+            // Per tab the login is the tab's own; the shared one stays as stored.
+            ...(this.identityMode === "per-tab"
+              ? { currentUserId: stored.currentUserId, currentGroupId: stored.currentGroupId }
+              : {}),
             items: stored.items,
             groupItems: cloneGroupItems(stored.groupItems),
             nextItemId: stored.nextItemId,
@@ -905,7 +1183,7 @@ export class LocalConnector implements FullConnector, ActivityLogCapable, Scoped
   }
 
   private applyStoredItemState(state: StoredState): void {
-    this.items = state.items.map((item) => ({ ...item }))
+    this.items = state.items.map((item) => canonicalItem({ ...item }))
     this.groupItems = cloneGroupItems(state.groupItems)
     this.nextItemId = state.nextItemId
     this.activityByScope = state.activityByScope ?? {}
@@ -947,7 +1225,7 @@ export class LocalConnector implements FullConnector, ActivityLogCapable, Scoped
     }
 
     if (msg.type === "items-changed" || msg.type === "full-sync") {
-      this.items = stored.items.map(i => ({ ...i }))
+      this.items = stored.items.map((i) => canonicalItem({ ...i }))
       this.nextItemId = stored.nextItemId
       // groupItems holds the group-membership for each item. Without
       // reloading it here, getScopedItems() filters the freshly arrived
@@ -965,6 +1243,12 @@ export class LocalConnector implements FullConnector, ActivityLogCapable, Scoped
       this.groups = stored.groups
       this.users = stored.users
       this.groupMembers = stored.groupMembers
+      // Per tab: this tab's person stays this tab's; if it is gone from the
+      // store, put it back. Its memberships are left alone — a removal is one.
+      if (this.identityMode === "per-tab" && this.currentUser) {
+        const self = this.currentUser.id
+        if (!this.users.some((u) => u.id === self)) await this.ensureTabIdentity()
+      }
       this.notifyGroupObservers()
       // A changed space list changes the overview activity union even when
       // its stored entries themselves did not change.
@@ -976,6 +1260,7 @@ export class LocalConnector implements FullConnector, ActivityLogCapable, Scoped
 
   private notifyGroupObservers(): void {
     this.groupsObs.set(this.groups.map((g) => ({ ...g })))
+    this.notifyMemberObservers()
   }
 
   private notifyObservers(): void {
@@ -991,7 +1276,8 @@ export class LocalConnector implements FullConnector, ActivityLogCapable, Scoped
     const scoped = this.getScopedItems()
     for (const [key, observable] of this.itemObservables) {
       const filter: ItemFilter = JSON.parse(key)
-      const filtered = scoped.filter((item) => matchesFilter(item, filter))
+      const inScope = filter.group !== undefined ? this.getScopedItems(filter.group) : scoped
+      const filtered = inScope.filter((item) => matchesFilter(item, filter))
       observable.set(applyPagination(filtered, filter.limit, filter.offset))
     }
     for (const [id, observable] of this.singleItemObservables) {

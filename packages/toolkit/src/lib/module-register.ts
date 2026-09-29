@@ -16,6 +16,16 @@
 // an die Ids.
 
 import type { ComponentType } from "react"
+import type { Group, Item, ModuleHintOptions, ModuleHints } from "@real-life-stack/data-interface"
+import { hintKeyFor, isAggregateVisibleItemType, moduleHintsFor } from "@real-life-stack/data-interface"
+import type { SelectionFocusVisibleArea } from "./selection-focus"
+import { CalendarModule } from "../modules/calendar-module"
+import { CollectionModule } from "../modules/collection-module"
+import { FeedModule } from "../modules/feed-module"
+import { GraphModule } from "../modules/graph-module"
+import { KanbanModule } from "../modules/kanban-module"
+import { MapModule } from "../modules/map-module"
+import { ResonanceModule } from "../modules/resonance-module"
 import {
   Calendar,
   Columns3,
@@ -56,9 +66,25 @@ export interface ModuleViewProps {
   /** Ob dieses Modul gerade sichtbar ist — relevant fuer `keepMounted`. */
   active: boolean
   /** Alle sichtbaren Spaces — fuer Module, die spaceuebergreifend zeigen. */
-  groups?: readonly unknown[]
+  groups?: readonly Group[]
   /** Sichtbarer Bereich fuer Fokus-Scrolling (siehe selection-focus.ts). */
-  selectionFocusVisibleArea?: unknown
+  selectionFocusVisibleArea?: SelectionFocusVisibleArea
+  /**
+   * Die Items nach dem Ladevertrag, vom Host geladen und mit dem geteilten
+   * Filter (Suche, Tags, Typen) bereits angewendet (Spec 01, Der Modul-Host,
+   * Regel 2a): genau das, was der Kopf anzeigt. `undefined`, wenn das Modul
+   * selbst laedt (`loads: "module"`) — dann filtert es auch selbst.
+   */
+  items?: Item[]
+  itemsLoading?: boolean
+}
+
+/** Was der Modul-Host aus `options` liest (Spec 01, Der Modul-Host). */
+export interface ModuleHostOptions {
+  /** Vorschlag des Plusknopfs. Ein Vorschlag, kein Zaun: das Menue bietet alle Typen (Anton, 20.09.2026). */
+  suggestType?: string
+  /** Flaeche des Erstellens: `sheet` (Standard) oder `fullscreen` (der Feed). */
+  createShell?: "sheet" | "fullscreen"
 }
 
 export interface ModuleEntry {
@@ -99,41 +125,74 @@ export interface ModuleEntry {
    * Modul samt Feld mit, ohne dass das Toolkit davon wissen muss.
    */
   presents?: readonly string[]
-  /** Die Flaeche selbst. Kommt von der App, nicht vom Toolkit. */
+  /**
+   * Wer die Items des Moduls laedt (Spec 01, Ladevertrag Punkt 4): `host`
+   * (Standard) leitet den Filter aus `presents` ab; `module` sagt die Karte,
+   * die nach Kartenausschnitt laedt — der Host stellt dann KEINE Abfrage.
+   */
+  loads?: "host" | "module"
+  /**
+   * Modulspezifische Konfiguration, die in den Ladevertrag eingeht (Kanban:
+   * `statusField`) oder die Flaeche parametrisiert (Karte: `initialView`).
+   * Heute statisch in der Erweiterung; sobald Module je Space konfigurierbar
+   * sind, kommt derselbe Wert aus dem Space.
+   */
+  options?: ModuleHintOptions & ModuleHostOptions & Record<string, unknown>
+  /**
+   * Die Flaeche selbst. Fuer die Toolkit-Module liefert sie das Toolkit —
+   * vollstaendig, lauffaehig ohne eine Zeile in der App (Spec 01, Der
+   * Modul-Host). Eine App DARF sie in ihrer Erweiterung ersetzen oder ein
+   * eigenes Modul mit eigener Flaeche hinzufuegen.
+   */
   view?: ComponentType<ModuleViewProps>
 }
 
 /** Additive Ergaenzung eines VORHANDENEN Eintrags (Spec 01, Regel 2). */
 export interface ModuleFragment extends Partial<Omit<ModuleEntry, "id">> {
   id: string
+  /**
+   * Felder, die diese Erweiterung AUSDRUECKLICH ersetzt (Spec 01, Regel 2):
+   * eine App darf die Flaeche eines Toolkit-Moduls austauschen (Anton,
+   * 21.09.2026), aber nur, wenn sie es sagt — ein gesetztes Feld ohne diese
+   * Nennung bleibt ein Konflikt. Es gibt kein stilles Shadowing.
+   */
+  replaces?: readonly ModuleScalar[]
 }
 
-/** Die Module, die RLS selbst mitliefert. Reihenfolge = Tab-Reihenfolge. */
-export const CORE_MODULES: readonly ModuleEntry[] = Object.freeze([
-  { id: "feed", label: "Feed", icon: Newspaper, enabledByDefault: true, maxWidth: "max-w-3xl" },
-  { id: "kanban", label: "Kanban", icon: Columns3, enabledByDefault: true, maxWidth: "max-w-5xl" },
-  { id: "calendar", label: "Kalender", icon: Calendar, enabledByDefault: true, maxWidth: "max-w-5xl", presents: ["start"] },
-  { id: "map", label: "Karte", icon: MapIcon, enabledByDefault: true, fill: "bleed", keepMounted: true, panelFit: "overlay", presents: ["position"] },
+/**
+ * Die Module, die das Toolkit mitliefert. Reihenfolge = Tab-Reihenfolge.
+ * Jedes bringt seine Flaeche mit (B0–B5, 21.09.2026): Ein Toolkit-Modul
+ * laeuft ohne eine Zeile in der App (Spec 01, Der Modul-Host, Regel 1).
+ */
+export const TOOLKIT_MODULES: readonly ModuleEntry[] = Object.freeze([
+  { id: "feed", label: "Feed", icon: Newspaper, enabledByDefault: true, maxWidth: "max-w-3xl", options: { suggestType: "post", createShell: "fullscreen" }, view: FeedModule },
+  { id: "kanban", label: "Kanban", icon: Columns3, enabledByDefault: true, maxWidth: "max-w-5xl", presents: ["status"], options: { suggestType: "task" }, view: KanbanModule },
+  { id: "calendar", label: "Kalender", icon: Calendar, enabledByDefault: true, maxWidth: "max-w-5xl", presents: ["start"], options: { suggestType: "event" }, view: CalendarModule },
+  { id: "map", label: "Karte", icon: MapIcon, enabledByDefault: true, fill: "bleed", keepMounted: true, panelFit: "overlay", presents: ["position"], loads: "module", options: { suggestType: "place" }, view: MapModule },
   // Opt-in — spec: docs/spec/modules/resonance.md
-  { id: "resonance", label: "Resonanz", icon: Waves, maxWidth: "max-w-3xl" },
+  { id: "resonance", label: "Resonanz", icon: Waves, maxWidth: "max-w-3xl", presents: ["statement"], options: { suggestType: "statement" }, view: ResonanceModule },
   // `maxWidth` auch ohne Container: Sie gilt fuer den Kopf der Flaeche UND
   // fuer den Inhalt — die Lens liest sie aus der Flaeche
   // (`useModuleContentClass`), statt eine eigene zu fuehren. Vorher stand die
   // Zahl fuenfmal im Code, und wer eine davon anfasste, rueckte Kopf und
   // Eintraege gegeneinander.
-  { id: "collection", label: "Liste", icon: List, fill: "bleed", maxWidth: "max-w-6xl" },
-  { id: "graph", label: "Graph", icon: Share2, fill: "bleed", panelFit: "overlay" },
+  { id: "collection", label: "Liste", icon: List, fill: "bleed", maxWidth: "max-w-6xl", view: CollectionModule },
+  { id: "graph", label: "Graph", icon: Share2, fill: "bleed", panelFit: "overlay", view: GraphModule },
 ])
 
 /**
- * Eine Kompositionsschicht: Core oder App/Plugin.
+ * Ein Beitrag zum Register: die Definition des Toolkits oder die Erweiterung
+ * einer App (Spec 01, Regel 2: das Toolkit definiert, eine App erweitert,
+ * Definition vor Erweiterung). Eine Erweiterung DARF eigene Module einfuehren
+ * (`definitions`) und vorhandene ergaenzen (`extensions`).
  *
- * Ein Space ist KEINE Schicht (Spec 01, Regel 4): Das Register steht vor dem
- * ersten Render fest, der aktive Space wechselt zur Laufzeit. Ein Space waehlt
- * aus dem Katalog (`Group.data.modules`), er traegt nichts zu ihm bei.
+ * Ein Space erweitert das Register nicht (Regel 4): Es steht vor dem ersten
+ * Render fest, der Space wechselt zur Laufzeit und WAEHLT (`Group.data.modules`).
+ *
+ * Bis zum 21.09.2026 hiess das „Schicht" — ein Wort, das Spec 00 gehoert.
  */
-export interface ModuleLayer {
-  /** Fuer Konfliktmeldungen ("app", "space:garten", …). */
+export interface ModuleExtension {
+  /** Fuer Konfliktmeldungen ("toolkit", "app", …). */
   name: string
   definitions?: readonly ModuleEntry[]
   extensions?: readonly ModuleFragment[]
@@ -142,13 +201,14 @@ export interface ModuleLayer {
 /** Das fertig zusammengesetzte, unveraenderliche Register. */
 export type ModuleRegistry = readonly ModuleEntry[]
 
-/** Die Core-Schicht. */
-export const CORE_MODULE_LAYER: ModuleLayer = Object.freeze({
-  name: "core",
-  definitions: CORE_MODULES,
+/** Die Definition des Toolkits — immer der erste Beitrag. */
+export const TOOLKIT_DEFINITION: ModuleExtension = Object.freeze({
+  name: "toolkit",
+  definitions: TOOLKIT_MODULES,
 })
 
-const SCALARS = ["label", "icon", "enabledByDefault", "fill", "maxWidth", "keepMounted", "presents", "view"] as const
+const SCALARS = ["label", "icon", "enabledByDefault", "fill", "maxWidth", "keepMounted", "panelFit", "presents", "loads", "options", "view"] as const
+export type ModuleScalar = (typeof SCALARS)[number]
 
 /**
  * Setzt Schichten in der Reihenfolge Core → App zusammen und friert
@@ -162,13 +222,13 @@ const SCALARS = ["label", "icon", "enabledByDefault", "fill", "maxWidth", "keepM
  * Konflikte werden abgelehnt, nicht aufgeloest: Es gibt kein Shadowing,
  * still oder ausdruecklich (Spec 01, Regel 2).
  */
-export function composeModules(layers: readonly ModuleLayer[]): ModuleRegistry {
+export function composeModules(beitraege: readonly ModuleExtension[]): ModuleRegistry {
   const order: string[] = []
   const byId = new Map<string, ModuleEntry>()
   /** Wer hat welches skalare Feld gesetzt — fuer die Konfliktmeldung. */
   const owner = new Map<string, Map<string, string>>()
 
-  for (const layer of layers) {
+  for (const layer of beitraege) {
     // Definitionen und Erweiterungen werden PRO SCHICHT abgearbeitet, nicht
     // erst alle Definitionen und dann alle Erweiterungen: Sonst koennte eine
     // fruehe Schicht ein Modul ergaenzen, das erst eine spaetere einfuehrt —
@@ -176,7 +236,7 @@ export function composeModules(layers: readonly ModuleLayer[]): ModuleRegistry {
     for (const def of layer.definitions ?? []) {
       if (byId.has(def.id)) {
         throw new Error(
-          `[rls] Modul "${def.id}": Schicht "${layer.name}" definiert es erneut. ` +
+          `[rls] Modul "${def.id}": Beitrag "${layer.name}" definiert es erneut. ` +
             `Ein vorhandenes Modul wird ergaenzt (extensions), nicht neu definiert.`,
         )
       }
@@ -191,7 +251,7 @@ export function composeModules(layers: readonly ModuleLayer[]): ModuleRegistry {
       const base = byId.get(frag.id)
       if (!base) {
         throw new Error(
-          `[rls] Modul "${frag.id}": Schicht "${layer.name}" will es ergaenzen, ` +
+          `[rls] Modul "${frag.id}": Beitrag "${layer.name}" will es ergaenzen, ` +
             `aber kein Eintrag fuehrt diese Id ein.`,
         )
       }
@@ -200,10 +260,10 @@ export function composeModules(layers: readonly ModuleLayer[]): ModuleRegistry {
         const value = frag[k]
         if (value === undefined) continue
         const held = fields.get(k)
-        if (held !== undefined) {
+        if (held !== undefined && !frag.replaces?.includes(k)) {
           throw new Error(
             `[rls] Modul "${frag.id}": "${k}" ist bereits von "${held}" gesetzt, ` +
-              `Schicht "${layer.name}" wuerde es ueberschreiben.`,
+              `Beitrag "${layer.name}" wuerde es ueberschreiben — ein Ersatz muss ausdruecklich sein: replaces: ["${k}"] (Spec 01, Regel 2).`,
           )
         }
         ;(base as unknown as Record<string, unknown>)[k] = value
@@ -217,7 +277,7 @@ export function composeModules(layers: readonly ModuleLayer[]): ModuleRegistry {
 
 // Das aktive Register. Vor `setModuleRegistry` gilt allein die Core-Schicht,
 // damit Toolkit-Flaechen (Storybook, Tests) ohne App-Bootstrap funktionieren.
-let active: ModuleRegistry = composeModules([CORE_MODULE_LAYER])
+let active: ModuleRegistry = composeModules([TOOLKIT_DEFINITION])
 // Was zuletzt uebergeben wurde — nicht was gespeichert ist: Beim Binden
 // wird eingefroren, also entsteht eine Kopie, und ein Identitaetsvergleich
 // gegen `active` wuerde dasselbe Register faelschlich als anderes lesen.
@@ -253,7 +313,7 @@ export function setModuleRegistry(registry: ModuleRegistry): void {
 
 /** Nur fuer Tests. */
 export function resetModuleRegistryForTests(): void {
-  active = composeModules([CORE_MODULE_LAYER])
+  active = composeModules([TOOLKIT_DEFINITION])
   boundSource = null
 }
 
@@ -358,4 +418,65 @@ export function findModulePresenting(
   return getModules().find(
     (modul) => modul.presents?.includes(field) && (!erlaubt || erlaubt.has(modul.id)),
   )
+}
+
+/**
+ * Welches Feld ein Modul auswählt, wenn ein Item mehrere trägt.
+ *
+ * Entschieden mit Anton: Der Ort schlägt die Zeit — ein Termin an einem Ort
+ * öffnet auf der Karte. Eine Aussage (Schema `statement/v1`, Spec 06) hat kein
+ * eigenes Feld und geht trotzdem vor, weil der Feed sie nicht einzeln listet.
+ *
+ * Dieselbe Regel stand vorher viermal im Monorepo: in `resolveDefaultModule`
+ * und `moduleCanDisplay` der Referenz-App und in `lensForHints` und
+ * `lensCanDisplay` der Netzwerk-App. Die vier kannten verschiedene Module —
+ * die eine kannte `resonance` nicht, die andere `marketplace` nicht.
+ */
+export const PRESENT_PRIORITY = ["statement", "position", "start", "status"] as const
+
+/** `position` → `hasPosition`: so heißt das Feld im Hinweis-Objekt. Die Tabelle weiß es (auch für eigene Hinweise). */
+const hintKey = (field: string): string => hintKeyFor(field)
+
+/**
+ * Welches Modul zeigt dieses Item, wenn der Link keines nennt?
+ *
+ * `verfuegbar` sind die Module, die diese Fläche anbietet. Trägt das Item kein
+ * Feld, das eines davon auswählt, kommt `undefined` zurück — den Rückfall
+ * wählt die Anwendung, nicht die Regel: die Referenz-App den Feed, die
+ * Netzwerk-App die Liste. Ein erstes-aus-der-Liste wäre hier falsch, es hat
+ * einen Beitrag auf der Karte geöffnet.
+ */
+export function moduleForItem(
+  itemOrHints: Item | ModuleHints,
+  verfuegbar: readonly string[],
+): string | undefined {
+  const hints = moduleHintsFor(itemOrHints)
+  for (const field of PRESENT_PRIORITY) {
+    if (!hints[hintKey(field)]) continue
+    const modul = findModulePresenting(field, verfuegbar)
+    if (modul) return modul.id
+  }
+  return undefined
+}
+
+/**
+ * Kann dieses Modul ein Item mit diesen Hinweisen überhaupt zeigen?
+ *
+ * Ein Modul, das ein Feld darstellt, braucht dieses Feld. Der Feed ist die
+ * aggregierende Sicht: Er zeigt alles, was eine eigene Karte hat — welche
+ * Typen das sind, sagt `isAggregateVisibleItemType`, nicht eine zweite Liste.
+ * Module ohne `presents` (Sammlung, Graph) zeigen alles.
+ */
+export function modulePresentsItem(
+  moduleId: string,
+  itemOrHints: Item | ModuleHints | undefined,
+  itemType?: string,
+): boolean {
+  if (moduleId === "feed") return itemType === undefined || isAggregateVisibleItemType(itemType)
+  const modul = getModules().find((m) => m.id === moduleId)
+  const felder = modul?.presents
+  if (!felder?.length) return true
+  if (!itemOrHints) return false
+  const hints = moduleHintsFor(itemOrHints)
+  return felder.some((field) => Boolean(hints[hintKey(field)]))
 }

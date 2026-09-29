@@ -1,5 +1,7 @@
 import type {
   CreateItemInput,
+  CreateItemOptions,
+  GroupScopeCapable,
   DefaultRelationStoreOptions,
   FullConnector,
   Item,
@@ -21,6 +23,7 @@ import type {
   RelationRecordCapable,
   RelationRecordFilter,
   RelationRecordInput,
+  RelationRecordCreateConnector,
   RelationRecordUpdate,
   RelationRecordWriterCapable,
   Source,
@@ -31,8 +34,12 @@ import {
   stripEditStamp,
   assertMayMutateAuthoredItem,
   assertAuthoredTypeUnchanged,
+  authoredUpdateAuthoritative,
+  isFrozen,
+  withoutAuthoredClaim,
   applyPagination,
   createDefaultRelationStore,
+  createRelationRecordWith,
   createObservable,
   deriveActivitySummary,
   itemDisplayTitle,
@@ -40,6 +47,7 @@ import {
   applyNotificationStatePatch,
   cloneNotificationState,
   findRelatedItems,
+  canonicalItem,
   matchesFilter,
 } from "@real-life-stack/data-interface"
 import { demoItems, demoGroups, demoUsers, demoGroupMembers, demoGroupItems } from "@real-life-stack/data-interface/demo-data"
@@ -81,7 +89,7 @@ function compareActivity(a: ActivityEntry, b: ActivityEntry): number {
   return b.ts.localeCompare(a.ts) || b.actor.localeCompare(a.actor) || b.id.localeCompare(a.id)
 }
 
-export class MockConnector implements FullConnector, ActivityLogCapable, ScopedActivityLogCapable, NotificationStateCapable, RelationRecordCapable, RelationRecordWriterCapable {
+export class MockConnector implements FullConnector, GroupScopeCapable, ActivityLogCapable, ScopedActivityLogCapable, NotificationStateCapable, RelationRecordCapable, RelationRecordWriterCapable {
   private itemsByScope = new Map<string | null, Map<string, Item>>()
   private itemOrder: Array<{ scopeId: string | null; id: string }> = []
   private notifyScheduled = false
@@ -100,7 +108,6 @@ export class MockConnector implements FullConnector, ActivityLogCapable, ScopedA
   private relatedObservables = new Map<string, ReturnType<typeof createObservable<Item[]>>>()
   private relatedObservableParams = new Map<string, { itemId: string; predicate?: string; options?: RelatedItemsOptions }>()
   private relationStore: RelationRecordCapable & RelationRecordWriterCapable
-  private nextItemId = 100
   private activityByScope = new Map<string, Map<string, ActivityEntry>>()
   private activityObservables = new Map<string, ReturnType<typeof createObservable<ActivityEntry[]>>>()
   private scopedActivityObservables = new Map<string, ReturnType<typeof createObservable<ScopedActivityEntry[]>>>()
@@ -110,12 +117,16 @@ export class MockConnector implements FullConnector, ActivityLogCapable, ScopedA
   /** SignedClaims verdict (spec 08): authoritative — trusted — unless the
       fixture mode disables the binding and with it the capability. */
   verifyRecordClaim?: (record: RelationRecord) => Promise<"trusted">
+  /** Verdict for authorial items (spec 08): authoritative — no claims,
+      content changes bound to the author — so trusted, absent in fixture mode. */
+  verifyItemClaim?: (item: Item) => Promise<"trusted">
   private allowFixtureAuthors = false
 
   constructor(seed?: MockConnectorSeed, options: MockConnectorOptions = {}) {
     this.allowFixtureAuthors = options.allowFixtureAuthors === true
     if (!this.allowFixtureAuthors) {
       this.verifyRecordClaim = async () => "trusted"
+      this.verifyItemClaim = async () => "trusted"
     }
     const data = seed ?? {
       items: demoItems,
@@ -314,7 +325,16 @@ export class MockConnector implements FullConnector, ActivityLogCapable, ScopedA
 
   // --- Items ---
 
-  private getScopedItems(): Item[] {
+  /**
+   * Die Items eines Space (02 → Lesen in einem bestimmten Space): ohne
+   * `group` der geöffnete Space (Übersicht/Aggregat: alle), mit `group`
+   * genau dieser — ein unbekannter ergibt nichts.
+   */
+  private getScopedItems(group?: string): Item[] {
+    if (group !== undefined) {
+      if (!this.groups.some((g) => g.id === group)) return []
+      return this.itemsInGroup(group)
+    }
     const groupId = this.currentGroup?.id
     const scope = (this.currentGroup?.data?.scope as string) ?? "group"
 
@@ -328,6 +348,10 @@ export class MockConnector implements FullConnector, ActivityLogCapable, ScopedA
       })
     }
 
+    return this.itemsInGroup(groupId)
+  }
+
+  private itemsInGroup(groupId: string): Item[] {
     const scopedItems = [...(this.itemsByScope.get(groupId)?.values() ?? [])]
     const globalFeatures = [...(this.itemsByScope.get(null)?.values() ?? [])]
       .filter((item) => item.type === "feature")
@@ -335,7 +359,7 @@ export class MockConnector implements FullConnector, ActivityLogCapable, ScopedA
   }
 
   async getItems(filter?: ItemFilter): Promise<Item[]> {
-    const scoped = this.getScopedItems()
+    const scoped = this.getScopedItems(filter?.group)
     if (!filter) return scoped
     const filtered = scoped.filter((item) => matchesFilter(item, filter))
     return applyPagination(filtered, filter.limit, filter.offset)
@@ -348,7 +372,7 @@ export class MockConnector implements FullConnector, ActivityLogCapable, ScopedA
   observe(filter: ItemFilter): Observable<Item[]> {
     const key = JSON.stringify(filter)
     if (!this.itemObservables.has(key)) {
-      const scoped = this.getScopedItems()
+      const scoped = this.getScopedItems(filter.group)
       const filtered = scoped.filter((item) => matchesFilter(item, filter))
       this.itemObservables.set(key, createObservable(applyPagination(filtered, filter.limit, filter.offset)))
     }
@@ -363,14 +387,26 @@ export class MockConnector implements FullConnector, ActivityLogCapable, ScopedA
     return this.singleItemObservables.get(id)!
   }
 
-  async createItem(item: CreateItemInput): Promise<Item> {
+  /** 02 → Lesen/Anlegen in einem bestimmten Space. */
+  readonly groupScope = true as const
+
+  async createItem(item: CreateItemInput, options?: CreateItemOptions): Promise<Item> {
+    // Ein unbekannter Space lehnt ab, bevor irgendetwas angelegt ist (02,
+    // Anlegen Regel 3).
+    const target = options?.group
+    if (target !== undefined && !this.groups.some((g) => g.id === target)) {
+      throw new Error(`Space not found: ${target}`)
+    }
     // A fresh item was never edited — drop any caller-supplied stamp.
     item = stripEditStamp(item)
     const sessionUser = this.requireCurrentUser()
     // Authoritative ingress binding (spec 08): createdBy comes from the
     // session, never the caller — except in the marked fixture mode.
     if (!this.allowFixtureAuthors) item = { ...item, createdBy: sessionUser.id }
-    const scopeId = item.type === "feature" ? null : this.currentGroup?.id ?? null
+    // Authoritative store (spec 08): the connector owns data.claim of
+    // authorial items and writes none.
+    item = withoutAuthoredClaim(item)
+    const scopeId = item.type === "feature" ? null : target ?? this.currentGroup?.id ?? null
     const scopeItems = this.getScopeItems(scopeId, true)
     if (item.id !== undefined) {
       const existing = scopeItems.get(item.id)
@@ -414,7 +450,10 @@ export class MockConnector implements FullConnector, ActivityLogCapable, ScopedA
     updates = withEditStamp(updates, actor.id)
     const location = this.findVisibleItemLocation(id)
     if (!location) throw new Error(`Item not found: ${id}`)
-    const updated = { ...location.item, ...updates, id }
+    // Content of an authorial item is the author's alone and frozen once
+    // someone else bound a reference to it (spec 08).
+    updates = authoredUpdateAuthoritative(location.item, updates, actor.id, isFrozen(location.item, location.items.values()))
+    const updated = canonicalItem({ ...location.item, ...updates, id })
     if (location.item.type !== "feature" && updated.type === "feature") {
       this.assertNoItemOutsideScope(location.scopeId, id)
     }
@@ -667,7 +706,21 @@ export class MockConnector implements FullConnector, ActivityLogCapable, ScopedA
 
   async createRelationRecord(input: RelationRecordInput): Promise<RelationRecord> {
     this.requireCurrentUser()
-    return this.relationStore.createRelationRecord(input)
+    // Ein Record gehört NEBEN das Item, auf das er zielt (wie Local und
+    // Supabase): Liegt das Ziel in einem anderen als dem geöffneten Space
+    // (angelegt mit `group`, 02), entsteht der Record dort — sonst zeigte sein
+    // space-lokales `item:`-Ziel ins Leere.
+    const targetItemId = input.to.startsWith("item:") ? input.to.slice("item:".length) : null
+    const targetGroupId = targetItemId ? this.getItemGroupId(targetItemId) : null
+    if (targetGroupId === null || targetGroupId === this.currentGroup?.id) {
+      return this.relationStore.createRelationRecord(input)
+    }
+    const scoped: RelationRecordCreateConnector = {
+      getItem: async (id: string) => this.itemsByScope.get(targetGroupId)?.get(id) ?? null,
+      createItem: (item: CreateItemInput) => this.createItem(item, { group: targetGroupId }),
+      getCurrentUser: () => this.getCurrentUser(),
+    }
+    return createRelationRecordWith(scoped, input)
   }
 
   async updateRelationRecord(id: string, updates: RelationRecordUpdate): Promise<RelationRecord> {
@@ -770,7 +823,8 @@ export class MockConnector implements FullConnector, ActivityLogCapable, ScopedA
   private storeItem(scopeId: string | null, item: Item): void {
     const items = this.getScopeItems(scopeId, true)
     if (items.has(item.id)) return
-    items.set(item.id, item)
+    // Eingangsgrenze (Spec 06, Regel 7): bekannte IRI → Kurzname, fremde bleibt.
+    items.set(item.id, canonicalItem(item))
     this.itemOrder.push({ scopeId, id: item.id })
   }
 
@@ -814,11 +868,13 @@ export class MockConnector implements FullConnector, ActivityLogCapable, ScopedA
     return this.findVisibleItemLocation(id)?.item
   }
 
+  /** Random, never counted: two sessions on the same seed would otherwise
+      hand out the same `item-<n>` and overwrite each other (#561). */
   private allocateItemId(scopeId: string | null, type: string): string {
     const items = this.getScopeItems(scopeId, true)
     let id: string
     do {
-      id = `item-${this.nextItemId++}`
+      id = crypto.randomUUID()
     } while (
       items.has(id)
       || (type === "feature" ? this.hasItemOutsideScope(scopeId, id) : this.hasGlobalFeature(id))
@@ -876,7 +932,8 @@ export class MockConnector implements FullConnector, ActivityLogCapable, ScopedA
     const scoped = this.getScopedItems()
     for (const [key, observable] of this.itemObservables) {
       const filter: ItemFilter = JSON.parse(key)
-      const filtered = scoped.filter((item) => matchesFilter(item, filter))
+      const inScope = filter.group !== undefined ? this.getScopedItems(filter.group) : scoped
+      const filtered = inScope.filter((item) => matchesFilter(item, filter))
       observable.set(applyPagination(filtered, filter.limit, filter.offset))
     }
     for (const [id, observable] of this.singleItemObservables) {
