@@ -28,6 +28,9 @@ COPY packages/supabase-connector/package.json packages/supabase-connector/
 # eines von ihnen etwas aus data-interface importiert.
 COPY packages/td-core/package.json packages/td-core/
 COPY packages/td-ui/package.json packages/td-ui/
+# Der Kreis (docs/spec/modules/kreis.md): Kern und Flaeche.
+COPY packages/kreis-core/package.json packages/kreis-core/
+COPY packages/kreis-ui/package.json packages/kreis-ui/
 COPY apps/reference/package.json apps/reference/
 RUN pnpm install --frozen-lockfile --filter reference...
 
