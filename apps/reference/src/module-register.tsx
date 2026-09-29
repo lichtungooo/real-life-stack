@@ -6,7 +6,8 @@
 // eigene Module einfuehrt (`definitions`) oder eine Toolkit-Flaeche
 // ausdruecklich ersetzt (`extensions` mit `replaces: ["view"]`).
 
-import { Blocks, Sparkles } from "lucide-react"
+import { Blocks, CircleDot, Sparkles } from "lucide-react"
+import { KreisFlaeche } from "@kreis/ui"
 import {
   TOOLKIT_DEFINITION,
   composeModules,
@@ -39,6 +40,13 @@ export const MODULE_REGISTRY = composeModules([
     // Feld-Praesenz haengt, macht sie zur Karte fuer ein Feld, das es nicht
     // gibt.
     { id: "companion", label: "Begleitung", icon: Sparkles, maxWidth: "max-w-3xl", view: CompanionView },
+  ] },
+  // Der Kreis (docs/spec/modules/kreis.md): eine eigene Schicht, damit er
+  // ohne trustdonation zu Anton hinuebergehen kann. `keepMounted`, weil ein
+  // Wechsel zur Karte die Sitzung nicht beenden darf: Wer im Kreis sitzt,
+  // bleibt drin, auch wenn er kurz etwas nachsieht.
+  { name: "kreis", definitions: [
+    { id: "kreis", label: "Kreis", icon: CircleDot, fill: "bleed", keepMounted: true, view: KreisFlaeche },
   ] },
   { name: "app", definitions: [], extensions: [] },
 ])

@@ -26,6 +26,8 @@
     "@real-life-stack/supabase-connector": "workspace:*",
     "@real-life-stack/toolkit": "workspace:*",
     "@real-life-stack/wot-connector": "workspace:*",
+    "@kreis/core": "workspace:*",
+    "@kreis/ui": "workspace:*",
     "@trustdonation/core": "workspace:*",
     "@trustdonation/ui": "workspace:*",
     "leaflet": "^1.9.4",

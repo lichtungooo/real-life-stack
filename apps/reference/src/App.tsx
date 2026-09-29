@@ -36,6 +36,10 @@ import { isAuthenticatable, hasMessaging, hasEncounterVerification, hasProfile }
 import { traegtProfil } from "@trustdonation/core"
 import { StiftungenImport } from "@trustdonation/ui"
 import { SpaceProfilPanel } from "./views/profil-panel"
+// Der Kreis bekommt seinen Raum von der App (Spec kreis, "Der Raum-Adapter").
+// Heute der lokale Adapter: mehrere Fenster auf einem Geraet, ohne Server.
+import { lokalerKreisRaum } from "@kreis/core"
+import { KreisRaumProvider } from "@kreis/ui"
 import { MapLibreAdapterProvider } from "@real-life-stack/toolkit/maplibre"
 import { MockConnector } from "@real-life-stack/mock-connector"
 import { LocalConnector } from "@real-life-stack/local-connector"
@@ -346,6 +350,7 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
 
   return (
     <MapLibreAdapterProvider>
+      <KreisRaumProvider fabrik={lokalerKreisRaum}>
       <RoutedAppFrame
         fallbackModule="feed"
         build={__RLS_BUILD__}
@@ -395,6 +400,7 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
           </div>
         )}
       </RoutedAppFrame>
+      </KreisRaumProvider>
     </MapLibreAdapterProvider>
   )
 }

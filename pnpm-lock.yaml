@@ -223,6 +223,12 @@ importers:
       '@capawesome/capacitor-live-update':
         specifier: ^8.2.1
         version: 8.2.1(@capacitor/core@8.2.0)
+      '@kreis/core':
+        specifier: workspace:*
+        version: link:../../packages/kreis-core
+      '@kreis/ui':
+        specifier: workspace:*
+        version: link:../../packages/kreis-ui
       '@real-life-stack/data-interface':
         specifier: workspace:*
         version: link:../../packages/data-interface
@@ -394,6 +400,40 @@ importers:
 
   packages/kreis-core:
     devDependencies:
+      typescript:
+        specifier: ~5.7.2
+        version: 5.7.3
+      vitest:
+        specifier: ^4.1.0
+        version: 4.1.0(@types/node@24.13.6)(jsdom@26.1.0)(vite@8.3.0(@types/node@24.13.6)(esbuild@0.28.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.1))
+
+  packages/kreis-ui:
+    dependencies:
+      '@kreis/core':
+        specifier: workspace:*
+        version: link:../kreis-core
+      '@real-life-stack/toolkit':
+        specifier: workspace:*
+        version: link:../toolkit
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.2
+        version: 19.2.7
+      '@types/react-dom':
+        specifier: ^19.0.2
+        version: 19.2.3(@types/react@19.2.7)
+      jsdom:
+        specifier: ^26.1.0
+        version: 26.1.0
+      lucide-react:
+        specifier: ^0.468.0
+        version: 0.468.0(react@19.2.3)
+      react:
+        specifier: ^19.0.0
+        version: 19.2.3
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.3(react@19.2.3)
       typescript:
         specifier: ~5.7.2
         version: 5.7.3

@@ -12,6 +12,7 @@
    Gestaltung: Der Arten-Editor, der Stiftungs-Import und die
    Baukasten-Flaeche standen unbemerkt ohne ihr CSS da. */
 @source "../../../packages/td-ui/src/**/*.tsx";
+@source "../../../packages/kreis-ui/src/**/*.tsx";
 
 @custom-variant dark (&:is(.dark *));
 
