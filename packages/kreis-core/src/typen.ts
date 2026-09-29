@@ -1,0 +1,91 @@
+// Kreis — die Typen.
+//
+// Spec: docs/spec/modules/kreis.md
+//
+// Zwei Arten von Wissen liegen hier: der **Prozess** ist eine Vorlage und
+// damit Daten, die ein Space auch selbst tragen kann; der **Sitzungszustand**
+// ist fluechtig und lebt nur, solange Menschen im Raum sind.
+
+/**
+ * Was in einem Schritt geschieht.
+ *
+ * - `stille`: ankommen, atmen, niemand spricht
+ * - `offen`: der Redestab liegt in der Mitte, wer den Impuls spuert, nimmt ihn
+ * - `reihum`: der Stab wandert von einem zum naechsten im Kreis
+ * - `kleingruppen`: der Kreis teilt sich
+ * - `pause`: frische Luft
+ *
+ * Eine unbekannte Art aus einer fremden Vorlage wird wie `offen` gezeigt und
+ * bleibt erhalten (Muster: Unbekanntes bleibt erhalten).
+ */
+export type SchrittArt = "stille" | "offen" | "reihum" | "kleingruppen" | "pause"
+
+export const SCHRITT_ARTEN: readonly SchrittArt[] = ["stille", "offen", "reihum", "kleingruppen", "pause"]
+
+export interface Schritt {
+  id: string
+  titel: string
+  /** Richtwert in Minuten. Die Zeit laeuft sichtbar mit, sie bricht nichts ab. */
+  minuten: number
+  art: SchrittArt | (string & {})
+  /** Was der Kreis in diesem Schritt tut, in zwei, drei Saetzen. */
+  anleitung: string
+  /** Fragen, die der Schritt stellt. */
+  fragen?: readonly string[]
+  /** Nur bei `kleingruppen`: wie viele Menschen eine Gruppe ungefaehr hat. */
+  gruppenGroesse?: number
+}
+
+export interface Prozess {
+  id: string
+  name: string
+  /** Woher der Prozess kommt: Mensch, Buch, Gemeinschaft. */
+  herkunft: string
+  /** Ein Satz: wofuer. */
+  kurz: string
+  /** Fuer wen, wann. */
+  wofuer: string
+  /** Die Empfehlungen, die waehrend des Prozesses sichtbar im Raum haengen. */
+  empfehlungen: readonly string[]
+  /**
+   * Nur wer den Redestab haelt, spricht. Nimmt jemand den Stab, gehen die
+   * Mikrofone der anderen aus; das eigene geht an. Jeder kann es jederzeit
+   * selbst wieder einschalten, der Stab regelt nur, er sperrt nicht.
+   */
+  nurStabSpricht: boolean
+  /** Wie lange nach der Klangschale Stille herrscht, in Sekunden. */
+  stilleSekunden: number
+  schritte: readonly Schritt[]
+}
+
+/** Wer den Redestab haelt. `halter: null` heisst: er liegt in der Mitte. */
+export interface Stab {
+  halter: string | null
+  name: string | null
+  seit: number
+}
+
+/**
+ * Der Zustand einer Sitzung. Er reist als ganze kleine Nachricht durch den
+ * Raum; wer die hoehere Fassung hat, hat recht.
+ */
+export interface Sitzung {
+  /** Fassung. Jede Aenderung zaehlt sie hoch. */
+  v: number
+  /** Wer die letzte Aenderung schrieb. Entscheidet bei gleicher Fassung. */
+  von: string
+  prozessId: string | null
+  schritt: number
+  schrittSeit: number
+  stab: Stab
+  /** Die Klangschale. `nr` zaehlt jeden Schlag, damit jeder Schlag einmal klingt. */
+  schale: { nr: number; von: string | null; stilleBis: number }
+  pause: { bis: number } | null
+  /** Einteilung in Kleingruppen: Teilnehmer-Id → Gruppe (ab 1). */
+  gruppen: Readonly<Record<string, number>> | null
+}
+
+/** Nachrichten, die der Kreis ueber den Daten-Kanal des Raums schickt. */
+export type KreisNachricht =
+  | { art: "kreis-sitzung"; sitzung: Sitzung }
+  | { art: "kreis-frage" }

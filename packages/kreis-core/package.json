@@ -1,0 +1,29 @@
+{
+  "name": "@kreis/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Kreis: Gruppenprozesse, Sitzungszustand und der Vertrag fuer den Raum-Adapter. UI-frei, ohne Abhaengigkeiten. Spec: docs/spec/modules/kreis.md",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/src/index.js",
+  "module": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "development": "./src/index.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "~5.7.2",
+    "vitest": "^4.1.0"
+  }
+}
