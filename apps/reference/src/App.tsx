@@ -37,9 +37,17 @@ import { traegtProfil } from "@trustdonation/core"
 import { StiftungenImport } from "@trustdonation/ui"
 import { SpaceProfilPanel } from "./views/profil-panel"
 // Der Kreis bekommt seinen Raum von der App (Spec kreis, "Der Raum-Adapter").
-// Heute der lokale Adapter: mehrere Fenster auf einem Geraet, ohne Server.
+// LiveKit unter kreis.wir.ooo traegt Bild und Ton; `?kreis=lokal` waehlt den
+// Probe-Raum, der nur die Fenster auf einem Geraet verbindet, ohne Server.
 import { lokalerKreisRaum } from "@kreis/core"
 import { KreisRaumProvider } from "@kreis/ui"
+import { liveKitKreisRaum, KREIS_WIR_OOO } from "@kreis/livekit"
+
+// Einmal gewaehlt, fuer die ganze Sitzung: Die Fabrik darf nicht bei jedem
+// Rendern neu entstehen, sonst baute der Provider die Verbindung neu auf.
+const kreisFabrik = new URLSearchParams(window.location.search).get("kreis") === "lokal"
+  ? () => lokalerKreisRaum()
+  : () => liveKitKreisRaum(KREIS_WIR_OOO)
 import { MapLibreAdapterProvider } from "@real-life-stack/toolkit/maplibre"
 import { MockConnector } from "@real-life-stack/mock-connector"
 import { LocalConnector } from "@real-life-stack/local-connector"
@@ -350,7 +358,7 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
 
   return (
     <MapLibreAdapterProvider>
-      <KreisRaumProvider fabrik={lokalerKreisRaum}>
+      <KreisRaumProvider fabrik={kreisFabrik}>
       <RoutedAppFrame
         fallbackModule="feed"
         build={__RLS_BUILD__}

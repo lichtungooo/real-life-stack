@@ -1,0 +1,87 @@
+# Video Module
+
+**Status:** Entwurf v0.1 (lichtungooo, 29.09.2026), gedacht als Beitrag an den Real Life Stack
+
+## Zweck
+
+Das Video ist die Konferenz eines Space: Bild, Ton, Bildschirm, Chat und ein Live-Protokoll, in dem Aufbau, den Menschen aus Zoom kennen. Und es ist ein **Gastgeber für andere Module**: Mitten in der Konferenz öffnet man den Kreis mit dem Redestab, das Kanban, die Karte oder den Kalender, und alle arbeiten in derselben Fläche weiter.
+
+- **Problem im Current Space:** Gruppen leben verstreut. Eine Videokonferenz daneben in einem fremden Werkzeug trennt das Gespräch von der Arbeit. Hier liegen beide in einem Raum.
+- **Wiederholte Nutzung:** Teamtreffen, Kreise, Beratungen, Planung am Kanban, gemeinsamer Blick auf die Karte.
+- **Wer davon profitiert:** jedes Modul, das in der Konferenz geöffnet wird; das Wissensfeld und der Feed (das Protokoll wird ein Item).
+
+Es ersetzt die eigenständige Seite `kreis.wir.ooo`. Was dort lief, läuft hier in jedem Stack, der das Modul führt.
+
+## Einordnung
+
+| Frage | Antwort |
+|---|---|
+| Space Module? | Ja |
+| App-Shell-Fläche? | Nein |
+| Module Components | `VideoBuehne` (Sprecher und Galerie, Blättern ab zwölf), `VideoKachel`, `VideoSteuerleiste`, `VideoSeitenleiste` (Menschen, Chat, Protokoll, Module), `KreisLeiste` (Redestab, Schritt, Klangschale aus dem Kreis) |
+| Primäre Datenbasis | Capability `KreisRaumCapable` (derselbe Live-Raum wie der Kreis), Modul-Register |
+| Externe Semantik | keine |
+
+## Ein Raum, zwei Sichten
+
+Video und Kreis teilen **eine** Verbindung (Spec [kreis.md](kreis.md), „Der Raum-Adapter"). Die App hält sie im `KreisRaumProvider`; beide Module lesen sie mit `useKreisVerbindung()`.
+
+Daraus folgen die Schnittstellen in beide Richtungen:
+
+| Richtung | Was geschieht |
+|---|---|
+| Video → Kreis | Die Konferenz zeigt oben, welcher Prozess und welcher Schritt läuft und wer den Redestab hält. Die Klangschale lässt sich von hier schlagen. „Zum Kreis" wechselt in den Kreis-Reiter, ohne die Verbindung zu trennen |
+| Kreis → Video | Der Kreis zeigt die Gesichter im Rund. „Zur Konferenz" wechselt ins Video |
+| Video → jedes Modul | Die Seitenleiste „Module" zeigt die Module des Space aus dem Register und rendert das gewählte über Antons `ModuleOutlet`, samt Items vom Host. Das Video kennt kein Modul beim Namen (Spec 01, Regel 1) |
+
+## Datenmodell
+
+| Projektion | Muss? | Quelle | Bedeutung im Modul |
+|---|---:|---|---|
+| Live-Raum | ja | `KreisRaumCapable` | Teilnehmer, Bild, Ton, Bildschirm, Daten-Kanal |
+| Modul-Register | ja | Toolkit | welche Module sich in die Konferenz holen lassen |
+| Items | nein | `DataInterface` | das Protokoll |
+
+Chat, Hand und Zeichen sind **flüchtig**: Sie reisen als Neben-Nachrichten über den Daten-Kanal und enden mit der Sitzung. Das Protokoll wird erst auf Wunsch ein Item (`note`, `data.text`, `data.raum`, `data.teilnehmer`).
+
+## Capabilities
+
+| Capability | Verhalten, wenn vorhanden | Verhalten, wenn fehlt |
+|---|---|---|
+| `KreisRaumCapable` mit Medien | Bild, Ton, Bildschirm | ohne Medien (lokaler Adapter): Teilnehmer, Chat, Hand, Kreis; Kacheln mit Anfangsbuchstaben |
+| `KreisRaumCapable` fehlt | — | Hinweis, dass die App keinen Raum gibt |
+| `ItemWriter` | Protokoll speichern | Speichern ausblenden |
+| Web Speech API | Live-Protokoll des eigenen Mikrofons | Protokoll-Knopf ausblenden. **Hinweis in der Fläche:** Chrome schickt das Audio an Google; für Gesundheitsdaten ungeeignet |
+
+## Aktionen
+
+| Aktion | Voraussetzung | Effekt |
+|---|---|---|
+| Betreten, Gehen | Adapter | wie im Kreis, derselbe Raum |
+| Mikrofon, Kamera, Bildschirm | Adapter mit Medien | eigener Track an oder aus |
+| Leertaste halten | Mikrofon aus, Fokus außerhalb eines Feldes | Mikrofon offen, solange sie gedrückt ist |
+| Ansicht Sprecher / Galerie | — | lokal |
+| Anheften | — | eine Person bleibt groß, lokal |
+| Hand heben, Zeichen geben | Raum | für alle sichtbar, Zeichen verschwinden nach vier Sekunden |
+| Chat | Raum | Zeile an alle |
+| Protokoll | Web Speech | eigene Zeilen an alle |
+| Modul öffnen | Modul-Register | das Modul erscheint in der Seitenleiste, lokal |
+| Klangschale, Redestab | Raum | wie im Kreis |
+
+## Nicht-Ziele
+
+- keine Aufzeichnung,
+- kein Warteraum, keine Moderatorenrechte in v0.1 (die eigenständige Seite konnte stummschalten und hinausbitten; das kommt mit einer eigenen Regel für Rollen),
+- keine Telefoneinwahl,
+- kein eigener Server im Modul.
+
+## Implementierungsreferenzen
+
+- `lichtungooo/rln`, `src/modules/kreis/` (Oberfläche nach Zoom, Protokoll, Leertaste, ERFAHRUNGEN.md)
+- `lichtungooo/kreis-server`, `seite/` (die eigenständige Seite, die dieses Modul ablöst) und `token/` (Token-Dienst)
+
+## Offene Punkte
+
+- Moderatorenrechte: welche Rolle darf stummschalten? Vorschlag: der Space-Admin, über `GroupManager`.
+- Kleingruppen in Unterräumen, gemeinsam mit dem Kreis.
+- Ein Modul für alle gleichzeitig öffnen („alle sehen das Kanban"): als Neben-Nachricht, wer folgen will, folgt.

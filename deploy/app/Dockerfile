@@ -31,6 +31,7 @@ COPY packages/td-ui/package.json packages/td-ui/
 # Der Kreis (docs/spec/modules/kreis.md): Kern und Flaeche.
 COPY packages/kreis-core/package.json packages/kreis-core/
 COPY packages/kreis-ui/package.json packages/kreis-ui/
+COPY packages/kreis-livekit/package.json packages/kreis-livekit/
 COPY apps/reference/package.json apps/reference/
 RUN pnpm install --frozen-lockfile --filter reference...
 

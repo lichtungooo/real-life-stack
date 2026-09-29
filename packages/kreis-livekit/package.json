@@ -1,0 +1,30 @@
+{
+  "name": "@kreis/livekit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Kreis: der Raum-Adapter fuer LiveKit. Bild, Ton und Daten-Kanal. Spec: docs/spec/modules/kreis.md, Der Raum-Adapter",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/src/index.js",
+  "module": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "development": "./src/index.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@kreis/core": "workspace:*",
+    "livekit-client": "^2.22.3"
+  },
+  "devDependencies": {
+    "typescript": "~5.7.2"
+  }
+}

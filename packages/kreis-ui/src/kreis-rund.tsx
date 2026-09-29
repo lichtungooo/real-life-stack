@@ -44,7 +44,6 @@ function Platz({
   groesse: number
 }) {
   const videoRef = useRef<HTMLVideoElement | null>(null)
-  const tonRef = useRef<HTMLAudioElement | null>(null)
   const zeigtBild = raum.traegtMedien && person.kameraAn && !!raum.bildAnhaengen
 
   useEffect(() => {
@@ -52,11 +51,8 @@ function Platz({
     return raum.bildAnhaengen(person.id, videoRef.current)
   }, [zeigtBild, person.id, raum])
 
-  useEffect(() => {
-    // Den eigenen Ton nie zurueckspielen, sonst pfeift es.
-    if (person.ichSelbst || !person.mikroAn || !tonRef.current || !raum.tonAnhaengen) return
-    return raum.tonAnhaengen(person.id, tonRef.current)
-  }, [person.id, person.ichSelbst, person.mikroAn, raum])
+  // Kein Ton hier: Den spielt der Provider einmal fuer die ganze App ab
+  // (raum-kontext.tsx, RaumTon). Sonst hoerte man jeden doppelt.
 
   return (
     <div className="flex flex-col items-center gap-1.5" style={{ width: groesse }}>
@@ -77,7 +73,6 @@ function Platz({
             {kuerzel(person.name)}
           </span>
         )}
-        {!person.ichSelbst && raum.traegtMedien && <audio ref={tonRef} autoPlay />}
       </div>
       <div className="flex max-w-full items-center gap-1 text-xs">
         {raum.traegtMedien && (person.mikroAn

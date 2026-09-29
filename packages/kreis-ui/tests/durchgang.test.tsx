@@ -13,6 +13,7 @@ import { createRoot, type Root } from "react-dom/client"
 import { afterEach, describe, expect, it } from "vitest"
 import { lokalerKreisRaum } from "@kreis/core"
 import { KreisRaumFlaeche } from "../src/kreis-raum-flaeche"
+import { KreisRaumProvider } from "../src/raum-kontext"
 
 ;(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true
 
@@ -48,7 +49,14 @@ function mensch(kanal: ReturnType<typeof kanalNetz>, id: string, name: string) {
   const wurzel = createRoot(huelle)
   wurzeln.push(wurzel)
   const fabrik = () => lokalerKreisRaum({ kanal, id })
-  act(() => { wurzel.render(<KreisRaumFlaeche fabrik={fabrik} raumName="Kollektiv Lichtung" vorschlagName={name} />) })
+  const zeige = (flaeche: boolean) => act(() => {
+    wurzel.render(
+      <KreisRaumProvider fabrik={fabrik}>
+        {flaeche ? <KreisRaumFlaeche raumName="Kollektiv Lichtung" vorschlagName={name} /> : <p>anderer Reiter</p>}
+      </KreisRaumProvider>,
+    )
+  })
+  zeige(true)
   const text = () => huelle.textContent ?? ""
   const knopf = (beschriftung: string | RegExp) => {
     const alle = [...huelle.querySelectorAll("button")]
@@ -66,7 +74,7 @@ function mensch(kanal: ReturnType<typeof kanalNetz>, id: string, name: string) {
       huelle.querySelector("form")!.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }))
     })
   }
-  return { huelle, text, klick, betreten }
+  return { huelle, text, klick, betreten, zeige }
 }
 
 describe("Der Kreis, zwei Menschen", () => {
@@ -123,6 +131,22 @@ describe("Der Kreis, zwei Menschen", () => {
     await cara.betreten()
     expect(cara.text()).toContain("Klärungskreis")
     expect(cara.text()).toContain("Die Haltung einladen")
+  })
+
+  it("wer den Reiter wechselt, bleibt im Raum: die Verbindung gehoert der App", async () => {
+    const kanal = kanalNetz()
+    const anna = mensch(kanal, "a-anna", "Anna")
+    const bert = mensch(kanal, "b-bert", "Bert")
+    await anna.betreten()
+    await bert.betreten()
+    await anna.klick("Den Stab nehmen")
+
+    anna.zeige(false)
+    expect(anna.text()).toBe("anderer Reiter")
+    expect(bert.text()).toContain("Anna hält den Stab")
+
+    anna.zeige(true)
+    expect(anna.text()).toContain("Du hältst den Stab")
   })
 
   it("wer geht, kommt wieder in den Vorraum", async () => {

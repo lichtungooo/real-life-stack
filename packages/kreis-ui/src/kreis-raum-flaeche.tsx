@@ -24,8 +24,8 @@ import {
   stabZuruecklegen,
   stilleLaeuft,
 } from "@kreis/core"
-import type { KreisRaumFabrik } from "./raum-kontext"
-import { useKreis, type KreisVerbindung } from "./use-kreis"
+import { useKreisVerbindung } from "./raum-kontext"
+import type { KreisVerbindung } from "./use-kreis"
 import { KreisRund } from "./kreis-rund"
 import { ProzessLeiste, ProzessWahl } from "./prozess-leiste"
 
@@ -38,15 +38,48 @@ const PAUSE_MINUTEN = 10
  * So laesst er sich allein pruefen und in jede Flaeche setzen.
  */
 export function KreisRaumFlaeche({
-  fabrik, raumName, vorschlagName,
+  raumName, vorschlagName,
 }: {
-  fabrik: KreisRaumFabrik
   raumName: string
   vorschlagName?: string
 }) {
-  const kreis = useKreis({ fabrik, raumName })
+  const kreis = useKreisVerbindung()
+  if (!kreis) return <OhneRaum />
+  if (kreis.zustand === "drin" && kreis.raumName !== raumName) {
+    return <AndererRaum kreis={kreis} hier={raumName} vorschlagName={vorschlagName} />
+  }
   if (kreis.zustand !== "drin") return <Vorraum kreis={kreis} raumName={raumName} vorschlagName={vorschlagName} />
   return <ImKreis kreis={kreis} raumName={raumName} />
+}
+
+/** Fehlt der Raum-Adapter, degradiert das Modul sichtbar (Spec, Capabilities). */
+export function OhneRaum() {
+  return (
+    <div className="mx-auto flex h-full max-w-md flex-col items-center justify-center gap-3 p-6 text-center">
+      <p className="font-semibold text-foreground">Für den Kreis fehlt ein Raum.</p>
+      <p className="text-sm text-muted-foreground">
+        Diese App gibt dem Kreis keinen Raum-Adapter. Mit einem Adapter treffen sich hier die Menschen des Space, im Bild, im Ton und geführt von einem Prozess.
+      </p>
+    </div>
+  )
+}
+
+/** Man sitzt schon in einem anderen Kreis: dort bleiben oder hierher wechseln. */
+function AndererRaum({ kreis, hier, vorschlagName }: { kreis: KreisVerbindung; hier: string; vorschlagName?: string }) {
+  const meinName = kreis.teilnehmer.find((t) => t.ichSelbst)?.name ?? vorschlagName ?? ""
+  return (
+    <div className="mx-auto flex h-full max-w-md flex-col justify-center gap-3 p-6">
+      <p className="text-sm text-muted-foreground">Du sitzt gerade im Kreis von</p>
+      <p className="text-xl font-semibold text-foreground">{kreis.raumName}</p>
+      <button
+        type="button"
+        onClick={async () => { await kreis.verlassen(); await kreis.betreten(hier, meinName) }}
+        className="rounded-lg bg-primary px-4 py-2.5 font-medium text-primary-foreground hover:opacity-90"
+      >
+        In den Kreis von {hier} wechseln
+      </button>
+    </div>
+  )
 }
 
 function Vorraum({ kreis, raumName, vorschlagName }: { kreis: KreisVerbindung; raumName: string; vorschlagName?: string }) {
@@ -66,7 +99,7 @@ function Vorraum({ kreis, raumName, vorschlagName }: { kreis: KreisVerbindung; r
       </div>
       <form
         className="flex flex-col gap-3"
-        onSubmit={(e) => { e.preventDefault(); void kreis.betreten(name) }}
+        onSubmit={(e) => { e.preventDefault(); void kreis.betreten(raumName, name) }}
       >
         <label className="flex flex-col gap-1.5 text-sm">
           <span className="font-medium text-foreground">Wie heißt du im Kreis?</span>

@@ -42,6 +42,7 @@ UNSERE_PFADE = [
     "packages/td-ui",
     "packages/kreis-core",
     "packages/kreis-ui",
+    "packages/kreis-livekit",
     "apps/reference/src/module-register.tsx",
     "apps/reference/src/views/baukasten-view.tsx",
     "apps/reference/src/views/profil-view.tsx",

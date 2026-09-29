@@ -1,8 +1,13 @@
 // Raum und Sitzung zusammenhalten.
 //
-// Der Hook verbindet den Raum-Adapter mit dem Sitzungszustand aus
-// `@kreis/core`: Handlungen laufen durch die reinen Funktionen, das Ergebnis
-// geht an alle; was von aussen kommt, wird ueber `gilt` eingeordnet.
+// Die Verbindung gehoert der App, nicht einer Flaeche: Ein Mensch sitzt in
+// EINEM Raum, und jede Flaeche, die ihn zeigt (der Kreis mit seinen
+// Prozessen, das Video), liest dieselbe Verbindung. Darum lebt dieser Hook im
+// `KreisRaumProvider`, und die Module holen sich die Verbindung mit
+// `useKreisVerbindung()`.
+//
+// Handlungen laufen durch die reinen Funktionen aus `@kreis/core`, das
+// Ergebnis geht an alle; was von aussen kommt, wird ueber `gilt` eingeordnet.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
@@ -18,33 +23,29 @@ import {
   type Sitzung,
 } from "@kreis/core"
 import { schaleAnschlagen } from "./klangschale"
-import type { KreisRaumFabrik } from "./raum-kontext"
 
 export type KreisZustand = "draussen" | "verbindet" | "drin" | "fehler"
+export type KreisRaumFabrik = () => KreisRaum
 
-export interface UseKreisArgumente {
-  fabrik: KreisRaumFabrik
-  /** Der Name, aus dem die Raumkennung wird, meist der Space. */
-  raumName: string
-  /** Eigene Prozess-Vorlagen des Space. */
-  eigeneProzesse?: readonly Prozess[]
-}
+/** Nachrichten, die nicht zum Sitzungszustand gehoeren (Chat, Hand, Zeichen, Protokoll). */
+export type NebenNachricht = { art: string } & Record<string, unknown>
 
-export function useKreis({ fabrik, raumName, eigeneProzesse = [] }: UseKreisArgumente) {
-  // Ein Raum je Flaeche. Die Fabrik wechselt nicht waehrend einer Sitzung.
+export function useKreisVerbindungHalten(fabrik: KreisRaumFabrik, eigeneProzesse: readonly Prozess[] = []) {
+  // Eine Verbindung fuer die ganze App. Die Fabrik wechselt nicht waehrend einer Sitzung.
   const raum: KreisRaum = useMemo(() => fabrik(), [fabrik])
   const [zustand, setZustand] = useState<KreisZustand>("draussen")
   const [fehler, setFehler] = useState<string | null>(null)
+  const [raumName, setRaumName] = useState<string | null>(null)
   const [teilnehmer, setTeilnehmer] = useState<readonly KreisTeilnehmer[]>([])
   const [sitzung, setSitzung] = useState<Sitzung>(() => leereSitzung(Date.now()))
   const [jetzt, setJetzt] = useState(() => Date.now())
   const sitzungRef = useRef(sitzung)
   sitzungRef.current = sitzung
+  const nebenHoerer = useRef(new Set<(n: NebenNachricht, von: string) => void>())
 
   const ich = zustand === "drin" ? raum.ich() : null
   const prozess = prozessFinden(sitzung.prozessId, eigeneProzesse)
 
-  // Die Uhr fuer Stille, Pause und die mitlaufende Zeit eines Schritts.
   useEffect(() => {
     if (zustand !== "drin") return
     const takt = setInterval(() => setJetzt(Date.now()), 1000)
@@ -55,10 +56,7 @@ export function useKreis({ fabrik, raumName, eigeneProzesse = [] }: UseKreisArgu
     raum.senden({ art: "kreis-sitzung", sitzung: s } satisfies KreisNachricht)
   }, [raum])
 
-  /**
-   * Eine Handlung ausfuehren. Kommt derselbe Stand zurueck, war sie nicht
-   * erlaubt, und es geht nichts hinaus.
-   */
+  /** Eine Handlung. Kommt derselbe Stand zurueck, war sie nicht erlaubt. */
   const handle = useCallback((fn: (s: Sitzung, jetzt: number) => Sitzung) => {
     const vorher = sitzungRef.current
     const nachher = fn(vorher, Date.now())
@@ -70,11 +68,12 @@ export function useKreis({ fabrik, raumName, eigeneProzesse = [] }: UseKreisArgu
     return true
   }, [senden])
 
-  const betreten = useCallback(async (name: string) => {
+  const betreten = useCallback(async (name: string, anzeigeName: string) => {
     setFehler(null)
     setZustand("verbindet")
     try {
-      await raum.betreten(raumKennung(raumName), name.trim() || "Gast")
+      await raum.betreten(raumKennung(name), anzeigeName.trim() || "Gast")
+      setRaumName(name)
       setTeilnehmer(raum.teilnehmer())
       setZustand("drin")
       // Wer neu kommt, fragt nach dem Stand. Wer ihn kennt, antwortet.
@@ -83,41 +82,49 @@ export function useKreis({ fabrik, raumName, eigeneProzesse = [] }: UseKreisArgu
       setFehler(e instanceof Error ? e.message : "Der Raum ließ sich nicht betreten.")
       setZustand("fehler")
     }
-  }, [raum, raumName])
+  }, [raum])
 
   const verlassen = useCallback(async () => {
     await raum.verlassen()
     setZustand("draussen")
+    setRaumName(null)
     setTeilnehmer([])
     const leer = leereSitzung(Date.now())
     sitzungRef.current = leer
     setSitzung(leer)
   }, [raum])
 
-  // Teilnehmer und Nachrichten.
+  /** Eine Neben-Nachricht an alle: Chat, Hand, Zeichen. */
+  const nebenSenden = useCallback((n: NebenNachricht) => { raum.senden(n) }, [raum])
+  const beiNeben = useCallback((fn: (n: NebenNachricht, von: string) => void) => {
+    nebenHoerer.current.add(fn)
+    return () => { nebenHoerer.current.delete(fn) }
+  }, [])
+
   useEffect(() => {
     const ab1 = raum.beiAenderung(() => setTeilnehmer(raum.teilnehmer()))
-    const ab2 = raum.beiNachricht((roh) => {
-      const n = roh as Partial<KreisNachricht> | null
-      if (!n || typeof n !== "object") return
+    const ab2 = raum.beiNachricht((roh, von) => {
+      const n = roh as { art?: unknown } | null
+      if (!n || typeof n !== "object" || typeof n.art !== "string") return
       if (n.art === "kreis-frage") {
-        // Nur wer einen Stand hat, antwortet.
         if (sitzungRef.current.v > 0) senden(sitzungRef.current)
         return
       }
-      if (n.art === "kreis-sitzung" && istSitzung((n as { sitzung?: unknown }).sitzung)) {
-        const fremd = (n as { sitzung: Sitzung }).sitzung
+      if (n.art === "kreis-sitzung") {
+        const fremd = (n as { sitzung?: unknown }).sitzung
+        if (!istSitzung(fremd)) return
         const neu = gilt(sitzungRef.current, fremd)
         if (neu !== sitzungRef.current) {
           sitzungRef.current = neu
           setSitzung(neu)
         }
+        return
       }
+      nebenHoerer.current.forEach((fn) => fn(n as NebenNachricht, von))
     })
     return () => { ab1(); ab2() }
   }, [raum, senden])
 
-  // Beim Abbauen der Flaeche den Raum sauber verlassen.
   useEffect(() => () => { void raum.verlassen() }, [raum])
 
   // Die Klangschale klingt bei jedem neuen Schlag, bei allen. Ein Schlag, der
@@ -130,8 +137,7 @@ export function useKreis({ fabrik, raumName, eigeneProzesse = [] }: UseKreisArgu
     }
   }, [sitzung.schale.nr, sitzung.schale.stilleBis])
 
-  // Nur wer den Stab haelt, spricht. Der Stab regelt, er sperrt nicht: Wer
-  // danach sein Mikrofon selbst oeffnet, darf das.
+  // Nur wer den Stab haelt, spricht. Der Stab regelt, er sperrt nicht.
   const halterRef = useRef<string | null>(null)
   useEffect(() => {
     const halter = sitzung.stab.halter
@@ -143,18 +149,9 @@ export function useKreis({ fabrik, raumName, eigeneProzesse = [] }: UseKreisArgu
   }, [sitzung.stab.halter, ich, prozess?.nurStabSpricht, raum])
 
   return {
-    raum,
-    zustand,
-    fehler,
-    teilnehmer,
-    ich,
-    sitzung,
-    prozess,
-    jetzt,
-    betreten,
-    verlassen,
-    handle,
+    raum, zustand, fehler, raumName, teilnehmer, ich, sitzung, prozess, jetzt,
+    betreten, verlassen, handle, nebenSenden, beiNeben,
   }
 }
 
-export type KreisVerbindung = ReturnType<typeof useKreis>
+export type KreisVerbindung = ReturnType<typeof useKreisVerbindungHalten>

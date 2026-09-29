@@ -12,6 +12,8 @@ export interface KreisTeilnehmer {
   spricht: boolean
   mikroAn: boolean
   kameraAn: boolean
+  /** Teilt gerade den Bildschirm. Nur Adapter mit Medien kennen das. */
+  teiltBildschirm?: boolean
 }
 
 export interface KreisRaum {
@@ -33,6 +35,10 @@ export interface KreisRaum {
   bildAnhaengen?(id: string, element: HTMLVideoElement): () => void
   /** Optional: den Ton eines Teilnehmers an ein Element haengen. */
   tonAnhaengen?(id: string, element: HTMLAudioElement): () => void
+  /** Optional: den eigenen Bildschirm teilen oder das Teilen beenden. */
+  bildschirm?(an: boolean): Promise<void>
+  /** Optional: den geteilten Bildschirm eines Teilnehmers an ein Element haengen. */
+  bildschirmAnhaengen?(id: string, element: HTMLVideoElement): () => void
 }
 
 /** Macht aus einem Namen eine Raumkennung: klein, ASCII, Strich statt Leerzeichen. */
