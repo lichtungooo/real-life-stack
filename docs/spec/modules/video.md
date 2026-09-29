@@ -22,6 +22,19 @@ Es ersetzt die eigenständige Seite `kreis.wir.ooo`. Was dort lief, läuft hier 
 | Primäre Datenbasis | Capability `KreisRaumCapable` (derselbe Live-Raum wie der Kreis), Modul-Register |
 | Externe Semantik | keine |
 
+## Aufbau (nach Big Blue Button, v0.2)
+
+| Ort | Was dort steht |
+|---|---|
+| **Mitte** | Was für alle dort liegt: die Menschen (Sprecher oder Galerie), die **Tafel** oder ein Modul. Wer etwas in die Mitte legt, legt es für alle hinein, wie der Präsentator bei Big Blue Button. Gespeichert im Sitzungszustand (`Sitzung.mitte`, Einigung wie beim Redestab) |
+| **Oben** | die Menschen mit Bild als Streifen, sobald etwas in der Mitte liegt |
+| **Links** | die Menschen nur mit Namen (Stab, Hand, Bildschirm, Sprechen, stumm), darunter **Chat** oder **Protokoll**, auf- und zuklappbar |
+| **Unten** | Ton, Bild, Chat, Mitte, teilen, Zeichen, Hand, gehen |
+
+**Die Tafel:** Striche reisen als Punkte in Anteilen der Fläche (16:9), damit sie auf jedem Bildschirm an derselben Stelle liegen (`@kreis/core`, tafel.ts). Wer später kommt, fragt nach dem Stand. Flüchtig wie der Chat.
+
+**Scheitert Kamera, Mikrofon oder Bildschirm**, sagt die Fläche es und nennt den Weg (Browser-Freigabe), statt dass ein Knopf still bleibt.
+
 ## Ein Raum, zwei Sichten
 
 Video und Kreis teilen **eine** Verbindung (Spec [kreis.md](kreis.md), „Der Raum-Adapter"). Die App hält sie im `KreisRaumProvider`; beide Module lesen sie mit `useKreisVerbindung()`.
@@ -32,7 +45,7 @@ Daraus folgen die Schnittstellen in beide Richtungen:
 |---|---|
 | Video → Kreis | Die Konferenz zeigt oben, welcher Prozess und welcher Schritt läuft und wer den Redestab hält. Die Klangschale lässt sich von hier schlagen. „Zum Kreis" wechselt in den Kreis-Reiter, ohne die Verbindung zu trennen |
 | Kreis → Video | Der Kreis zeigt die Gesichter im Rund. „Zur Konferenz" wechselt ins Video |
-| Video → jedes Modul | Die Seitenleiste „Module" zeigt die Module des Space aus dem Register und rendert das gewählte über Antons `ModuleOutlet`, samt Items vom Host. Das Video kennt kein Modul beim Namen (Spec 01, Regel 1) |
+| Video → jedes Modul | „Mitte" bietet die Module des Space aus dem Register an und legt das gewählte für alle in die Mitte, gerendert über Antons `ModuleOutlet` samt Items vom Host. Das Video kennt kein Modul beim Namen (Spec 01, Regel 1) |
 
 ## Datenmodell
 

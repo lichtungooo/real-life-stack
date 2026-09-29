@@ -83,6 +83,13 @@ export interface Sitzung {
   pause: { bis: number } | null
   /** Einteilung in Kleingruppen: Teilnehmer-Id → Gruppe (ab 1). */
   gruppen: Readonly<Record<string, number>> | null
+  /**
+   * Was in der Mitte der Konferenz liegt, fuer alle: `null` (die Menschen),
+   * `"tafel"` oder die Id eines Moduls. Wer etwas in die Mitte legt, legt es
+   * fuer alle hinein, wie der Praesentator bei Big Blue Button. Fehlt das Feld
+   * (aeltere Fassung), gilt `null`.
+   */
+  mitte?: string | null
 }
 
 /** Nachrichten, die der Kreis ueber den Daten-Kanal des Raums schickt. */

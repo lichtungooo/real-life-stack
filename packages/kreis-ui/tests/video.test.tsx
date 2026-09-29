@@ -95,14 +95,14 @@ describe("Video und Kreis, ein Raum", () => {
     expect(bert.text()).toContain("Stille")
   })
 
-  it("Chat und Hand gehen durch", async () => {
+  it("links stehen Menschen und Chat; Chat und Hand gehen durch", async () => {
     const kanal = kanalNetz()
     const anna = mensch(kanal, "a-anna", "Anna", "video")
     const bert = mensch(kanal, "b-bert", "Bert", "video")
     await anna.betreten()
     await bert.betreten()
+    expect(bert.text()).toContain("Menschen · 2")
 
-    await anna.klick(/^Chat/)
     const feld = anna.huelle.querySelector("textarea")!
     await act(async () => {
       const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")!.set!
@@ -111,22 +111,35 @@ describe("Video und Kreis, ein Raum", () => {
     })
     const senden = anna.huelle.querySelector('button[aria-label="Senden"]') as HTMLButtonElement
     await act(async () => { senden.click() })
-
-    await bert.klick(/^Chat/)
     expect(bert.text()).toContain("Schön, dass ihr da seid")
 
     await anna.klick(/^Hand/)
-    await bert.klick(/^Menschen/)
     expect(bert.huelle.querySelector('[aria-label="Hand oben"]')).not.toBeNull()
+
+    // Chat zu, Chat auf
+    await act(async () => { (bert.huelle.querySelector('button[title="Chat auf und zu"]') as HTMLButtonElement).click() })
+    expect(bert.huelle.querySelector("textarea")).toBeNull()
+    await bert.klick(/^Menschen/)
+    expect(bert.huelle.querySelector("textarea")).not.toBeNull()
   })
 
-  it("ein Modul kommt in die Konferenz, ohne dass das Video es kennt", async () => {
+  it("was einer in die Mitte legt, liegt dort fuer alle: Tafel und fremdes Modul", async () => {
     const kanal = kanalNetz()
+    const anna = mensch(kanal, "a-anna", "Anna", "video")
     const bert = mensch(kanal, "b-bert", "Bert", "video")
+    await anna.betreten()
     await bert.betreten()
-    await bert.klick(/^Module/)
-    expect(bert.text()).toContain("Kanban")
+
+    await anna.klick(/^Mitte/)
+    await anna.klick("Tafel")
+    expect(bert.text()).toContain("liegt in der Mitte, für alle")
+    expect(bert.huelle.querySelector('canvas[aria-label="Tafel zum Zeichnen"]')).not.toBeNull()
+
+    await bert.klick(/^Mitte/)
     await bert.klick("Kanban")
-    expect(bert.text()).toContain("Fläche von kanban")
+    expect(anna.text()).toContain("Fläche von kanban")
+
+    await anna.klick("zurück zu den Menschen")
+    expect(bert.text()).not.toContain("Fläche von kanban")
   })
 })

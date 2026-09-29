@@ -19,6 +19,7 @@ export function leereSitzung(jetzt = 0): Sitzung {
     schale: { nr: 0, von: null, stilleBis: 0 },
     pause: null,
     gruppen: null,
+    mitte: null,
   }
 }
 
@@ -177,6 +178,14 @@ export function pauseBeginnen(s: Sitzung, minuten: number, wer: string, jetzt: n
 export function pauseBeenden(s: Sitzung, wer: string): Sitzung {
   if (s.pause === null) return s
   return weiter(s, wer, { pause: null })
+}
+
+// --- Die Mitte der Konferenz ------------------------------------------------
+
+/** Etwas in die Mitte legen, fuer alle: `null` (die Menschen), `"tafel"` oder eine Modul-Id. */
+export function mitteSetzen(s: Sitzung, mitte: string | null, wer: string): Sitzung {
+  if ((s.mitte ?? null) === mitte) return s
+  return weiter(s, wer, { mitte })
 }
 
 // --- Kleingruppen ----------------------------------------------------------

@@ -5,6 +5,7 @@
 // waehrend jemand im Video schreibt, findet die Zeile beim Wechsel vor.
 
 import { useCallback, useEffect, useRef, useState } from "react"
+import { istStrich, standEinmischen, strichDazu, type Strich } from "@kreis/core"
 import type { KreisVerbindung, NebenNachricht } from "./use-kreis"
 
 export interface ChatZeile { id: string; wer: string; name: string; text: string; wann: number }
@@ -56,6 +57,9 @@ export function useNebenHalten(v: KreisVerbindung) {
   const [protokoll, setProtokoll] = useState<ProtokollZeile[]>([])
   const [protokollLaeuft, setProtokollLaeuft] = useState(false)
   const [protokollFehler, setProtokollFehler] = useState<string | null>(null)
+  const [tafel, setTafel] = useState<readonly Strich[]>([])
+  const tafelRef = useRef(tafel)
+  tafelRef.current = tafel
   const erkennungRef = useRef<Erkennung | null>(null)
   const sollLaufenRef = useRef(false)
 
@@ -93,8 +97,25 @@ export function useNebenHalten(v: KreisVerbindung) {
       zeichenSetzen(n.wer, n.zeichen as ZeichenArt)
     } else if (n.art === "transkript" && n.zeile && typeof n.zeile === "object") {
       protokollZeile(n.zeile as ProtokollZeile)
+    } else if (n.art === "tafel-strich" && istStrich(n.strich)) {
+      const strich = n.strich
+      setTafel((t) => strichDazu(t, strich))
+    } else if (n.art === "tafel-leeren") {
+      setTafel([])
+    } else if (n.art === "tafel-frage") {
+      // Nur wer etwas an der Tafel hat, antwortet.
+      if (tafelRef.current.length > 0) v.nebenSenden({ art: "tafel-stand", striche: [...tafelRef.current] })
+    } else if (n.art === "tafel-stand" && Array.isArray(n.striche)) {
+      const stand = (n.striche as unknown[]).filter(istStrich)
+      setTafel((t) => standEinmischen(t, stand))
     }
   }), [v, zeichenSetzen, protokollZeile])
+
+  // Wer hereinkommt, fragt nach dem Stand der Tafel.
+  useEffect(() => {
+    if (v.zustand === "drin") v.nebenSenden({ art: "tafel-frage" })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [v.zustand])
 
   // Wer geht, laesst Hand und Zeichen stehen? Nein: die Liste folgt den Anwesenden.
   const anwesend = v.teilnehmer.map((t) => t.id).join(",")
@@ -106,7 +127,7 @@ export function useNebenHalten(v: KreisVerbindung) {
   // Die Sitzung endet: alles Fluechtige mit ihr.
   useEffect(() => {
     if (v.zustand !== "draussen") return
-    setChat([]); setHaende(new Set()); setZeichen(new Map()); setProtokoll([])
+    setChat([]); setHaende(new Set()); setZeichen(new Map()); setProtokoll([]); setTafel([])
     sollLaufenRef.current = false
     erkennungRef.current?.abort()
     erkennungRef.current = null
@@ -197,7 +218,17 @@ export function useNebenHalten(v: KreisVerbindung) {
     .map((z) => `${new Date(z.wann).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} ${z.name}: ${z.text}`)
     .join("\n"), [protokoll])
 
+  const tafelStrich = useCallback((strich: Strich) => {
+    setTafel((t) => strichDazu(t, strich))
+    v.nebenSenden({ art: "tafel-strich", strich })
+  }, [v])
+  const tafelLeeren = useCallback(() => {
+    setTafel([])
+    v.nebenSenden({ art: "tafel-leeren" })
+  }, [v])
+
   return {
+    tafel, tafelStrich, tafelLeeren,
     chat, chatSenden,
     haende, handUmschalten,
     zeichen, zeichenGeben,

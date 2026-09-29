@@ -23,6 +23,7 @@ import {
   stabArt,
   istSitzung,
   raumKennung,
+  mitteSetzen,
   type Prozess,
 } from "../src"
 
@@ -239,6 +240,18 @@ describe("Kleingruppen", () => {
 
   it("niemand da, keine Einteilung", () => {
     expect(gruppenEinteilen(start, [], 4, "a")).toBe(start)
+  })
+})
+
+describe("Die Mitte", () => {
+  it("wer etwas in die Mitte legt, legt es fuer alle hinein; dasselbe noch einmal aendert nichts", () => {
+    const s = leereSitzung(T)
+    expect(s.mitte).toBeNull()
+    const tafel = mitteSetzen(s, "tafel", "anna")
+    expect(tafel.mitte).toBe("tafel")
+    expect(tafel.v).toBe(s.v + 1)
+    expect(mitteSetzen(tafel, "tafel", "bert")).toBe(tafel)
+    expect(mitteSetzen(tafel, null, "bert").mitte).toBeNull()
   })
 })
 
