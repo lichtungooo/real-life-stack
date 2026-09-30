@@ -1,25 +1,22 @@
 // Die Flaeche des Video-Moduls im Stack (Spec: docs/spec/modules/video.md).
 //
 // Sie verbindet die toolkit-freie Konferenz mit dem, was nur der Stack weiss:
-// welcher Space offen ist, welche Module er fuehrt (Antons Modul-Register),
-// wie ein Modul mit seinen Items gezeigt wird (Antons `ModuleOutlet`), und wie
-// ein Protokoll zum Item wird.
+// welcher Space offen ist, wer ich bin, und wie ein Protokoll zum Item wird.
+//
+// Feed, Kalender, Karte reicht sie NICHT in die Konferenz (Timo, 30.09.2026:
+// "Das kann komplett weg. Das hat hier drin nichts verloren. Wir haben es ja
+// oben im Menue."). Die Schnittstelle `module`/`modulZeigen` der Konferenz
+// bleibt, fuer Module, die eigens fuer die Mitte gebaut werden (Folien).
 
 import { useCallback } from "react"
 import {
-  getModule,
-  ModuleOutlet,
   useCreateItem,
   useCurrentUser,
   useGroups,
   type ModuleViewProps,
 } from "@real-life-stack/toolkit"
 import { raumKennung } from "@kreis/core"
-import { useReiterWechsel } from "../reiter"
-import { VideoRaumFlaeche, type ModulWahl } from "./video-raum-flaeche"
-
-/** Das Video holt sich nicht selbst herein, und der Kreis ist schon sein eigenes Tool. */
-const NICHT_IN_DER_KONFERENZ = new Set(["video", "kreis"])
+import { VideoRaumFlaeche } from "./video-raum-flaeche"
 
 export function VideoFlaeche({ groupId }: ModuleViewProps) {
   const { data: groups } = useGroups()
@@ -27,22 +24,6 @@ export function VideoFlaeche({ groupId }: ModuleViewProps) {
   const createItem = useCreateItem()
   const space = (groups ?? []).find((g) => g.id === groupId)
   const raumName = space?.name ?? groupId ?? "kreis"
-  const reiter = useReiterWechsel(groupId)
-
-  // Aus dem Register, nicht aus einer Liste hier (Spec 01, Regel 1).
-  const module: ModulWahl[] = reiter.module
-    .filter((id) => !NICHT_IN_DER_KONFERENZ.has(id))
-    .map((id) => getModule(id))
-    .filter((m): m is NonNullable<typeof m> => !!m?.view)
-    .map((m) => ({ id: m.id, label: m.label }))
-
-  const modulZeigen = useCallback((id: string) => (
-    <ModuleOutlet
-      activeWorkspace={space ? { id: space.id, name: space.name } : null}
-      activeModule={id}
-      groups={groups ?? []}
-    />
-  ), [space, groups])
 
   // Das Protokoll wird ein Beitrag im Space (`post`): Es erscheint im Feed und
   // in der Liste wie jeder andere, mit Raum und Teilnehmern in `data`.
@@ -69,8 +50,6 @@ export function VideoFlaeche({ groupId }: ModuleViewProps) {
     <VideoRaumFlaeche
       raumName={raumName}
       vorschlagName={user?.displayName}
-      module={module}
-      modulZeigen={modulZeigen}
       protokollSpeichern={protokollSpeichern}
     />
   )

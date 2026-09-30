@@ -16,7 +16,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import {
-  Bell, ChevronLeft, CircleDot, FileText, Hand, LogOut, Maximize2, MessageSquare,
+  Bell, ChevronLeft, ChevronRight, CircleDot, FileText, Hand, LogOut, Maximize2, MessageSquare,
   Mic, MicOff, MonitorUp, MoreVertical, PanelLeft, Plus, Smile, Users, Video, VideoOff, X,
 } from "lucide-react"
 import {
@@ -31,7 +31,8 @@ import { VideoBuehne } from "./video-buehne"
 import { VideoKachel } from "./video-kachel"
 import { Tafel } from "./tafel"
 import { Chat, Menschen, Protokoll, type ProtokollSpeichern } from "./video-seiten"
-import { Einstellungen, GeteilteNotizen, LosAnzeige, UmfrageWerkzeug, WeckerAnzeige } from "./werkzeuge"
+import { GeteilteNotizen, LosAnzeige, UmfrageWerkzeug, WeckerAnzeige } from "./werkzeuge"
+import { Einstellungen } from "../regeln-formular"
 
 /** Die Tools, die das Video selbst mitbringt. Module kommen aus dem Register dazu. */
 export const TOOL_KREIS = "kreis"
@@ -87,6 +88,19 @@ function Menue({ offen, onZu, className, children }: { offen: boolean; onZu: () 
   }, [offen, onZu])
   if (!offen) return null
   return <div ref={ref} className={`absolute z-50 max-h-[70vh] w-72 overflow-y-auto rounded-xl bg-white p-1.5 text-slate-800 shadow-2xl ${className}`}>{children}</div>
+}
+
+/** Ein Aufklappfeld im Menue: zu, bis man es braucht. */
+function Aufklapp({ titel, zeichen, children }: { titel: string; zeichen: ReactNode; children: ReactNode }) {
+  return (
+    <details className="group">
+      <summary className="flex cursor-pointer list-none items-center gap-2.5 rounded-lg px-3 py-2 text-sm hover:bg-slate-100 [&::-webkit-details-marker]:hidden">
+        {zeichen} <span className="flex-1">{titel}</span>
+        <ChevronRight className="h-4 w-4 text-slate-400 transition group-open:rotate-90" />
+      </summary>
+      <div className="pl-3">{children}</div>
+    </details>
+  )
 }
 
 function Eintrag({ onClick, children, aktiv }: { onClick: () => void; children: ReactNode; aktiv?: boolean }) {
@@ -302,7 +316,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
             </button>
             <Menue offen={mehrOffen} onZu={() => setMehrOffen(false)} className="right-0 top-full mt-1">
               <Eintrag onClick={() => { setMehrOffen(false); setEinstellungenOffen(true) }}>
-                <span className="w-4 text-center">⚙</span> Einstellungen: Redezeit
+                <span className="w-4 text-center">⚙</span> Einstellungen des Raums
               </Eintrag>
               <Eintrag onClick={() => { setMehrOffen(false); void huelle.current?.requestFullscreen?.().catch(() => {}) }}>
                 <Maximize2 className="h-4 w-4" /> Vollbild
@@ -366,23 +380,26 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
               <Eintrag aktiv={mitte === TOOL_TAFEL} onClick={() => tool(TOOL_TAFEL)}><span className="w-4 text-center">✎</span> Tafel</Eintrag>
               <Eintrag aktiv={mitte === TOOL_UMFRAGE} onClick={() => tool(TOOL_UMFRAGE)}><span className="w-4 text-center">▤</span> Umfrage</Eintrag>
               <Eintrag aktiv={mitte === TOOL_KREIS && !prozess} onClick={() => tool(TOOL_KREIS)}><CircleDot className="h-4 w-4" /> Kreis mit Redestab</Eintrag>
-              <p className="px-3 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Kreis mit Prozess</p>
-              {PROZESSE.map((p) => (
-                <Eintrag key={p.id} aktiv={mitte === TOOL_KREIS && prozess?.id === p.id} onClick={() => kreisMitProzess(p.id)}>
-                  <span className="w-4" /> {p.name}
-                </Eintrag>
-              ))}
+              {/* Aufklappfelder halten das Menue kurz (Timo, 30.09.2026) */}
+              <Aufklapp titel="Kreis mit Prozess" zeichen={<CircleDot className="h-4 w-4 opacity-60" />}>
+                {PROZESSE.map((p) => (
+                  <Eintrag key={p.id} aktiv={mitte === TOOL_KREIS && prozess?.id === p.id} onClick={() => kreisMitProzess(p.id)}>
+                    <span className="w-4" /> {p.name}
+                  </Eintrag>
+                ))}
+              </Aufklapp>
               <p className="px-3 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Für alle</p>
               <Eintrag onClick={() => { handle((s, t) => losZiehen(s, teilnehmer.map((p) => ({ id: p.id, name: p.name })), wer, t)); setAktionOffen(false) }}>
                 <span className="w-4 text-center">🎲</span> Zufällig jemanden wählen
               </Eintrag>
-              <div className="flex flex-wrap items-center gap-1 px-3 py-2 text-sm">
-                <span className="mr-1">Kurzzeitwecker:</span>
-                {WECKER_MINUTEN.map((m) => (
-                  <button key={m} type="button" onClick={() => { handle((s, t) => weckerStellen(s, m, wer, t)); setAktionOffen(false) }}
-                    className="rounded-md bg-slate-100 px-2 py-0.5 text-xs hover:bg-slate-200">{m} Min.</button>
-                ))}
-              </div>
+              <Aufklapp titel="Kurzzeitwecker" zeichen={<span className="w-4 text-center">⏱</span>}>
+                <div className="grid grid-cols-4 gap-1 px-3 pb-2 pt-1">
+                  {WECKER_MINUTEN.map((m) => (
+                    <button key={m} type="button" onClick={() => { handle((s, t) => weckerStellen(s, m, wer, t)); setAktionOffen(false) }}
+                      className="rounded-md bg-slate-100 px-1.5 py-1 text-xs hover:bg-slate-200">{m} Min.</button>
+                  ))}
+                </div>
+              </Aufklapp>
               {module.length > 0 && (
                 <>
                   <p className="px-3 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Module</p>

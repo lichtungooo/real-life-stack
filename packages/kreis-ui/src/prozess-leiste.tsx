@@ -183,14 +183,24 @@ export function ProzessLeiste({
         </button>
       </div>
 
-      <details className="group rounded-xl bg-muted/40 p-3">
-        <summary className="cursor-pointer text-sm font-semibold text-foreground">
-          Die Empfehlungen ({prozess.empfehlungen.length})
-        </summary>
-        <ol className="mt-2 flex list-decimal flex-col gap-1 pl-5 text-sm text-foreground/90">
-          {prozess.empfehlungen.map((e) => <li key={e}>{e}</li>)}
-        </ol>
-      </details>
+    </div>
+  )
+}
+
+/**
+ * Die Empfehlungen des Prozesses, als eigene Spalte links vom Kreis (Timo,
+ * 30.09.2026: "auf der linken Seite die Empfehlungen, auf der rechten Seite
+ * die Runde").
+ */
+export function ProzessEmpfehlungen({ prozess }: { prozess: Prozess }) {
+  if (prozess.empfehlungen.length === 0) return null
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{prozess.name}</p>
+      <h3 className="text-base font-semibold text-foreground">Die Empfehlungen ({prozess.empfehlungen.length})</h3>
+      <ol className="flex list-decimal flex-col gap-1.5 pl-5 text-sm leading-snug text-foreground/90 marker:text-muted-foreground">
+        {prozess.empfehlungen.map((e) => <li key={e}>{e}</li>)}
+      </ol>
     </div>
   )
 }

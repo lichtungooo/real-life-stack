@@ -55,7 +55,7 @@ export const MODULE_REGISTRY = composeModules([
   // Antons Regel 7 in docs/spec/modules/README.md). `keepMounted`, weil ein
   // Wechsel zur Karte die Sitzung nicht beenden darf.
   { name: "kreis", definitions: [
-    { id: "video", label: "Video", icon: Video, fill: "bleed", keepMounted: true, frame: "bare", view: VideoModul },
+    { id: "video", label: "Video", icon: Video, enabledByDefault: true, fill: "bleed", keepMounted: true, frame: "bare", view: VideoModul },
   ] },
   { name: "app", definitions: [], extensions: [] },
 ])

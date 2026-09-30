@@ -5,7 +5,7 @@
 // Steuerknoepfe. Stille und Pause legen sich ueber den Kreis.
 
 import { useEffect, useMemo, useState } from "react"
-import { Bell, Coffee, LogOut, Mic, MicOff, Video, VideoOff } from "lucide-react"
+import { Coffee, LogOut, Mic, MicOff, Video, VideoOff } from "lucide-react"
 import {
   aktuellerSchritt,
   gruppenAufloesen,
@@ -24,12 +24,17 @@ import {
   stabZuruecklegen,
   stilleLaeuft,
   redezeitRest,
+  regelnSetzen,
+  regelnVon,
   stilleSekundenVon,
+  type Regeln,
 } from "@kreis/core"
 import { useKreisVerbindung } from "./raum-kontext"
 import type { KreisVerbindung } from "./use-kreis"
 import { KreisRund } from "./kreis-rund"
-import { ProzessLeiste, ProzessWahl } from "./prozess-leiste"
+import { ProzessEmpfehlungen, ProzessLeiste, ProzessWahl } from "./prozess-leiste"
+import { RegelnFormular } from "./regeln-formular"
+import { Klangschale, Redestab } from "./sinnbilder"
 
 /** Wie lange eine Pause dauert, in Minuten. */
 const PAUSE_MINUTEN = 10
@@ -144,18 +149,6 @@ export function Vorraum({
   )
 }
 
-function StabIcon({ className }: { className?: string }) {
-  // Ein Redestab: ein Stock mit zwei Baendern. Kein passendes Zeichen im Satz.
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" className={className} aria-hidden="true">
-      <path d="M5 19 19 5" />
-      <path d="M7.5 13.5 10.5 16.5" />
-      <path d="M13.5 7.5 16.5 10.5" />
-      <circle cx="19" cy="5" r="1.4" fill="currentColor" />
-    </svg>
-  )
-}
-
 function ImKreis({ kreis, raumName, zurKonferenz, nurBuehne = false }: { kreis: KreisVerbindung; raumName: string; zurKonferenz?: () => void; nurBuehne?: boolean }) {
   const { raum, teilnehmer, ich, sitzung, prozess, jetzt, handle } = kreis
   const anwesend = useMemo(() => teilnehmer.map((t) => t.id), [teilnehmer])
@@ -191,41 +184,41 @@ function ImKreis({ kreis, raumName, zurKonferenz, nurBuehne = false }: { kreis: 
           </button>
         </div>
       ) : stille ? (
-        <div className="flex flex-col items-center gap-2 text-center">
-          <span className="h-14 w-14 animate-ping rounded-full bg-amber-300/40 motion-reduce:animate-none" aria-hidden="true" />
+        <div className="flex flex-col items-center gap-1 text-center">
+          <Klangschale groesse={72} klingt />
           <p className="font-semibold text-foreground">Stille</p>
           <p className="text-sm tabular-nums text-muted-foreground">noch {Math.ceil((sitzung.schale.stilleBis - jetzt) / 1000)} s</p>
         </div>
       ) : ichHalte ? (
-        <div className="flex flex-col items-center gap-2 text-center">
-          <StabIcon className="h-10 w-10 text-amber-500" />
+        <div className="flex flex-col items-center gap-1.5 text-center">
+          <Redestab groesse={64} />
           <p className="font-semibold text-foreground">Du hältst den Stab</p>
           {redezeitRest(sitzung, jetzt) !== null && (
             <p className="text-sm tabular-nums text-muted-foreground">noch {Math.floor(Math.max(0, redezeitRest(sitzung, jetzt)!) / 60000)}:{String(Math.ceil(Math.max(0, redezeitRest(sitzung, jetzt)!) / 1000) % 60).padStart(2, "0")}</p>
           )}
           <div className="flex flex-wrap justify-center gap-2">
             {reihum && naechsterName && naechster !== ich && (
-              <button type="button" onClick={weitergeben} className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90">
+              <button type="button" onClick={weitergeben} className="rounded-lg bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground hover:opacity-90">
                 weiter an {naechsterName}
               </button>
             )}
-            <button type="button" onClick={zuruecklegen} className="rounded-lg bg-muted px-3 py-1.5 text-sm text-foreground hover:bg-muted/70">
+            <button type="button" onClick={zuruecklegen} className="rounded-lg bg-background/80 px-2.5 py-1 text-xs text-foreground hover:bg-background">
               in die Mitte legen
             </button>
           </div>
         </div>
       ) : halterDa ? (
         <div className="flex flex-col items-center gap-1 text-center">
-          <StabIcon className="h-10 w-10 text-amber-500" />
+          <Redestab groesse={64} />
           <p className="text-sm text-muted-foreground"><span className="font-semibold text-foreground">{sitzung.stab.name}</span> hält den Stab</p>
         </div>
       ) : (
         <button
           type="button"
           onClick={nehmen}
-          className="flex flex-col items-center gap-1 rounded-2xl bg-amber-100 px-5 py-3 text-amber-900 transition hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-100 dark:hover:bg-amber-900/60"
+          className="group flex flex-col items-center gap-0.5 rounded-2xl px-4 py-2 text-amber-900 transition hover:bg-amber-100/70 dark:text-amber-100 dark:hover:bg-amber-900/40"
         >
-          <StabIcon className="h-10 w-10" />
+          <Redestab groesse={76} className="transition group-hover:-rotate-6 motion-reduce:transition-none" />
           <span className="text-sm font-semibold">{reihum ? "Runde beginnen" : "Den Stab nehmen"}</span>
         </button>
       )}
@@ -235,9 +228,11 @@ function ImKreis({ kreis, raumName, zurKonferenz, nurBuehne = false }: { kreis: 
           type="button"
           onClick={schale}
           title="Die Klangschale schlagen: Stille für alle"
-          className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground"
+          aria-label="Die Klangschale schlagen: Stille für alle"
+          className="group flex flex-col items-center rounded-2xl px-3 py-1 text-[11px] font-medium text-muted-foreground transition hover:bg-amber-100/70 hover:text-foreground dark:hover:bg-amber-900/40"
         >
-          <Bell className="h-4 w-4" /> Klangschale
+          <Klangschale groesse={46} className="transition group-hover:scale-105 motion-reduce:transition-none" />
+          Klangschale
         </button>
       )}
     </>
@@ -245,36 +240,62 @@ function ImKreis({ kreis, raumName, zurKonferenz, nurBuehne = false }: { kreis: 
 
   // Die Buehne des Kreises: das Rund mit Redestab und Klangschale und die
   // Leiste zum Prozess. Die Konferenz setzt sie als Tool in ihre Mitte.
+  const regeln = regelnVon(sitzung)
+  const regelnSpeichern = (r: Regeln) => handle((s, t) => regelnSetzen(s, r, wer, t))
+  const regelnTafel = (
+    <details className="rounded-xl bg-muted/40 p-3">
+      <summary className="cursor-pointer text-sm font-semibold text-foreground">Regeln des Kreises</summary>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Redezeit {regeln.redezeit === 0 ? "frei" : `${regeln.redezeit} Min., danach ${regeln.danach === "weiter" ? "zum Nächsten" : "in die Mitte"}`}
+        {" · "}Stille {stilleSekundenVon(sitzung, prozess)} Sek.
+      </p>
+      <div className="mt-3">
+        <RegelnFormular regeln={regeln} stilleVorgabe={stilleSekundenVon({ ...sitzung, regeln: undefined }, prozess)}
+          mitDauer={false} onSpeichern={regelnSpeichern} />
+      </div>
+    </details>
+  )
+
+  // Die Buehne des Kreises (Timo, 30.09.2026): links die Empfehlungen, in der
+  // Mitte der Kreis, rechts die Runde mit ihren Regeln. Die Konferenz setzt
+  // sie als Tool in ihre Mitte. Schmal stehen die Teile untereinander.
   const buehne = (
-        <div className="grid h-full min-h-0 flex-1 gap-4 overflow-y-auto p-4 lg:grid-cols-[minmax(0,1fr)_minmax(260px,340px)] lg:overflow-hidden">
-          <div className="flex min-h-[320px] min-w-0 items-center justify-center lg:min-h-0">
-            <KreisRund
-              teilnehmer={teilnehmer}
-              ich={ich}
-              raum={raum}
-              stabHalter={halterDa ? halter : null}
-              gruppen={sitzung.gruppen}
-              mitte={mitte}
-            />
-          </div>
-  
-          <aside className="min-h-0 min-w-0 overflow-y-auto rounded-2xl bg-card p-4 shadow-sm">
-            {prozess ? (
-              <ProzessLeiste
-                prozess={prozess}
-                sitzung={sitzung}
-                jetzt={jetzt}
-                teilnehmer={teilnehmer}
-                onSchritt={(r) => handle((s, t) => schrittGehen(s, prozess, r, wer, t))}
-                onBeenden={() => handle((s, t) => prozessBeenden(s, wer, t))}
-                onGruppenEinteilen={(g) => handle((s) => gruppenEinteilen(s, anwesend, g, wer))}
-                onGruppenAufloesen={() => handle((s) => gruppenAufloesen(s, wer))}
-              />
-            ) : (
-              <ProzessWahl onWaehlen={(p) => handle((s, t) => prozessWaehlen(s, p, wer, t))} />
-            )}
-          </aside>
-        </div>
+    <div className={`grid h-full min-h-0 flex-1 gap-3 overflow-y-auto p-3 lg:overflow-hidden ${
+      prozess ? "lg:grid-cols-[minmax(200px,280px)_minmax(0,1fr)_minmax(260px,330px)]" : "lg:grid-cols-[minmax(0,1fr)_minmax(260px,330px)]"}`}>
+      {prozess && (
+        <aside aria-label="Empfehlungen" className="order-3 min-h-0 min-w-0 overflow-y-auto rounded-2xl bg-card p-4 shadow-sm lg:order-1">
+          <ProzessEmpfehlungen prozess={prozess} />
+        </aside>
+      )}
+
+      <div className="order-1 flex min-h-[300px] min-w-0 lg:order-2 lg:min-h-0">
+        <KreisRund
+          teilnehmer={teilnehmer}
+          ich={ich}
+          raum={raum}
+          stabHalter={halterDa ? halter : null}
+          gruppen={sitzung.gruppen}
+          mitte={mitte}
+        />
+      </div>
+
+      <aside aria-label="Die Runde" className="order-2 flex min-h-0 min-w-0 flex-col gap-4 overflow-y-auto rounded-2xl bg-card p-4 shadow-sm lg:order-3">
+        {prozess ? (
+          <ProzessLeiste
+            prozess={prozess}
+            sitzung={sitzung}
+            jetzt={jetzt}
+            teilnehmer={teilnehmer}
+            onSchritt={(r) => handle((s, t) => schrittGehen(s, prozess, r, wer, t))}
+            onBeenden={() => handle((s, t) => prozessBeenden(s, wer, t))}
+            onGruppenEinteilen={(g) => handle((s) => gruppenEinteilen(s, anwesend, g, wer))}
+            onGruppenAufloesen={() => handle((s) => gruppenAufloesen(s, wer))}
+          />
+        ) : null}
+        {regelnTafel}
+        {!prozess && <ProzessWahl onWaehlen={(p) => handle((s, t) => prozessWaehlen(s, p, wer, t))} />}
+      </aside>
+    </div>
   )
 
   if (nurBuehne) return buehne

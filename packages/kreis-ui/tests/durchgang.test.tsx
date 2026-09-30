@@ -116,8 +116,16 @@ describe("Der Kreis, zwei Menschen", () => {
     expect(anna.text()).toContain("Die Empfehlungen")
     expect(anna.text()).toContain("Schritt 2 von 4")
 
-    // Die 18 Empfehlungen haengen im Raum.
-    expect(anna.huelle.querySelectorAll("details li")).toHaveLength(18)
+    // Die 18 Empfehlungen stehen links vom Kreis, die Runde rechts.
+    expect(anna.huelle.querySelectorAll('aside[aria-label="Empfehlungen"] li')).toHaveLength(18)
+    expect(anna.huelle.querySelector('aside[aria-label="Die Runde"]')?.textContent).toContain("Schritt 2 von 4")
+
+    // Die Regeln des Kreises stehen in der Runde; Bert stellt die Stille um, Anna sieht es.
+    const regeln = [...bert.huelle.querySelectorAll('aside[aria-label="Die Runde"] fieldset')]
+    const stille = regeln.find((f) => f.querySelector("legend")?.textContent === "Stille nach der Klangschale")!
+    await act(async () => { [...stille.querySelectorAll("button")].find((b) => b.textContent === "1 Min.")!.click() })
+    await bert.klick("Für alle übernehmen")
+    expect(anna.text()).toContain("Stille 60 Sek.")
   })
 
   it("wer spaeter kommt, bekommt den laufenden Stand", async () => {

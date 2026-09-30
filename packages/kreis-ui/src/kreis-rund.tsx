@@ -8,6 +8,10 @@ import { useEffect, useRef, useState, type ReactNode } from "react"
 import { Mic, MicOff } from "lucide-react"
 import type { KreisRaum, KreisTeilnehmer } from "@kreis/core"
 
+/** Das Rund wird nie groesser als das, damit die Mitte markant bleibt. */
+const RUND_HOECHSTENS = 460
+const RUND_MINDESTENS = 260
+
 /** Aus einem Namen eine ruhige, immer gleiche Farbe. */
 const TOENE = ["#0e7490", "#047857", "#6d28d9", "#b45309", "#be123c", "#0f766e", "#4338ca", "#c2410c"]
 function farbe(text: string): string {
@@ -101,19 +105,19 @@ export function KreisRund({
 }) {
   const orte = plaetze(teilnehmer.map((t) => t.id), ich)
   const n = teilnehmer.length
-  // Bis zu acht Menschen gross, bis zwanzig kleiner, darueber klein.
-  // Das Rund misst seinen Platz und nimmt die kleinere Seite: so passt es in
-  // die Buehne der Konferenz wie in einen eigenen Reiter (Timo, 30.09.2026:
-  // "Das passt von der Groesse her nicht mehr").
+  // Das Rund misst seinen Platz und nimmt die kleinere Seite, hoechstens
+  // RUND_HOECHSTENS. Die Huelle misst sich, ohne dass das Rund sie aufblaeht:
+  // das Rund liegt absolut darin (Timo, 30.09.2026, mit Bild: der Kreis lief
+  // ueber die ganze Buehne hinaus, "der kann viel, viel kleiner").
   const huelle = useRef<HTMLDivElement | null>(null)
-  const [seite, setSeite] = useState(480)
+  const [seite, setSeite] = useState(360)
   useEffect(() => {
     const el = huelle.current
     if (!el || typeof ResizeObserver === "undefined") return
     const messen = () => {
       const w = el.clientWidth, h = el.clientHeight
-      const passend = Math.min(w, h > 0 ? h : w)
-      if (passend > 0) setSeite(passend)
+      const passend = Math.min(w, h > 0 ? h : w, RUND_HOECHSTENS)
+      if (passend > 0) setSeite(Math.max(RUND_MINDESTENS, passend))
     }
     messen()
     const beobachter = new ResizeObserver(messen)
@@ -121,16 +125,21 @@ export function KreisRund({
     return () => beobachter.disconnect()
   }, [])
   // Die Menschen wachsen mit dem Rund, und bei vielen werden sie kleiner.
-  const anteil = n <= 8 ? 0.15 : n <= 14 ? 0.11 : n <= 20 ? 0.085 : 0.065
-  const groesse = Math.round(Math.max(32, Math.min(96, seite * anteil)))
+  const anteil = n <= 8 ? 0.16 : n <= 14 ? 0.12 : n <= 20 ? 0.09 : 0.07
+  const groesse = Math.round(Math.max(30, Math.min(72, seite * anteil)))
 
   return (
-    <div ref={huelle} className="flex h-full w-full items-center justify-center">
-    <div className="relative aspect-square" style={{ width: seite, height: seite }}>
-      {/* Der Kreis selbst, ein ruhiger Ring */}
-      <div className="absolute inset-[10%] rounded-full border-2 border-dashed border-border" aria-hidden="true" />
+    <div ref={huelle} className="relative h-full min-h-[280px] w-full overflow-hidden">
+    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" style={{ width: seite, height: seite }}>
+      {/* Der Kreis selbst: ein warmer Boden, auf dem die Menschen sitzen */}
+      <div className="absolute inset-[10%] rounded-full border border-amber-300/70 dark:hidden" aria-hidden="true"
+        style={{ background: "radial-gradient(circle, rgba(254,243,199,.95) 0%, rgba(255,251,235,.7) 55%, rgba(255,251,235,0) 76%)", boxShadow: "inset 0 0 40px rgba(253,230,138,.45)" }} />
+      <div className="absolute inset-[10%] hidden rounded-full border border-amber-700/50 dark:block" aria-hidden="true"
+        style={{ background: "radial-gradient(circle, rgba(120,53,15,.4) 0%, rgba(69,26,3,.22) 60%, rgba(69,26,3,0) 78%)" }} />
+      {/* Die Mitte, in der Stab und Schale liegen */}
+      <div className="absolute inset-[30%] rounded-full border border-dashed border-amber-400/50 dark:border-amber-600/40" aria-hidden="true" />
 
-      <div className="absolute left-1/2 top-1/2 flex w-[46%] -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-3">
+      <div className="absolute left-1/2 top-1/2 flex w-[52%] -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1.5">
         {mitte}
       </div>
 

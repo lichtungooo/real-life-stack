@@ -162,9 +162,9 @@ describe("Redezeit mit Gong", () => {
     await bert.betreten()
 
     await anna.aria("Mehr")
-    await anna.klick("Einstellungen: Redezeit")
+    await anna.klick("Einstellungen des Raums")
     await anna.klick("1 Min.")
-    await act(async () => { (anna.huelle.querySelectorAll('input[name="danach"]')[0] as HTMLInputElement).click() })
+    await act(async () => { (anna.huelle.querySelectorAll('[role="dialog"] input[name^="danach"]')[0] as HTMLInputElement).click() })
     await anna.klick("Für alle übernehmen")
 
     await anna.klick("Wort nehmen")
@@ -200,7 +200,7 @@ describe("Stille und Dauer des Treffens", () => {
     await bert.betreten()
 
     await anna.aria("Mehr")
-    await anna.klick("Einstellungen: Redezeit")
+    await anna.klick("Einstellungen des Raums")
     await wahl(anna, "Stille nach der Klangschale", "1 Min.")
     await anna.klick("Für alle übernehmen")
 
@@ -230,7 +230,7 @@ describe("Stille und Dauer des Treffens", () => {
     await bert.betreten()
 
     await anna.aria("Mehr")
-    await anna.klick("Einstellungen: Redezeit")
+    await anna.klick("Einstellungen des Raums")
     await wahl(anna, "Dauer des Treffens", "30 Min.")
     await anna.klick("Für alle übernehmen")
     expect(bert.text()).toContain("Treffen noch 30 Min.")

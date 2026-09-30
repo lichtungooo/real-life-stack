@@ -108,6 +108,10 @@ Regeln:
 
 ## Komponenten
 
+**Die Bühne des Kreises (30.09.2026, nach Timos Bild):** links die **Empfehlungen** des Prozesses (`ProzessEmpfehlungen`), in der Mitte das **Rund** (höchstens 460 px, warmer Boden, markante Mitte), rechts **die Runde** (`ProzessLeiste`: Schritt, Zeit, Anleitung, Fragen) und darunter aufklappbar die **Regeln des Kreises** (`RegelnFormular`: Redezeit, was danach geschieht, Stille nach der Klangschale). Ohne Prozess stehen rechts die Regeln und die Wahl der Prozesse. Schmal stehen die Teile untereinander: Kreis, Runde, Empfehlungen. **Redestab und Klangschale sind Bilder** (`sinnbilder.tsx`: geschnitzter Stab mit Bändern, Perlen und Feder; Bronzeschale auf Kissen mit Klöppel, die klingt, solange Stille herrscht), reines SVG ohne Bilddatei.
+
+**Falle, gelöst:** Das Rund maß seine Hülle, und die Hülle wuchs mit dem Rund. So lief es über die ganze Bühne hinaus. Jetzt liegt das Rund absolut in der Hülle und kann sie nicht mehr aufblähen.
+
 | Komponente | Rolle | Wiederverwendbar? |
 |---|---|---|
 | `KreisRund` | Teilnehmer auf einem Kreis, jeder sieht sich unten, gleiche Reihenfolge für alle | ja |

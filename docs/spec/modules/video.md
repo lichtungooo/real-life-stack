@@ -4,7 +4,7 @@
 
 ## Zweck
 
-Das Video ist die Konferenz eines Space: Bild, Ton, Bildschirm, Chat und ein Live-Protokoll, in dem Aufbau, den Menschen aus Zoom kennen. Und es ist ein **Gastgeber für andere Module**: Mitten in der Konferenz öffnet man den Kreis mit dem Redestab, das Kanban, die Karte oder den Kalender, und alle arbeiten in derselben Fläche weiter.
+Das Video ist die Konferenz eines Space: Bild, Ton, Bildschirm, Chat und ein Live-Protokoll, in dem Aufbau, den Menschen aus Zoom kennen. Und es ist ein **Gastgeber für andere Module**: Mitten in der Konferenz öffnet man den Kreis mit dem Redestab, die Tafel oder eine Umfrage, und alle arbeiten in derselben Fläche weiter. Feed, Kalender und Karte bleiben oben im Menü des Space; in der Konferenz haben sie nichts verloren (Timo, 30.09.2026).
 
 - **Problem im Current Space:** Gruppen leben verstreut. Eine Videokonferenz daneben in einem fremden Werkzeug trennt das Gespräch von der Arbeit. Hier liegen beide in einem Raum.
 - **Wiederholte Nutzung:** Teamtreffen, Kreise, Beratungen, Planung am Kanban, gemeinsamer Blick auf die Karte.
@@ -35,7 +35,7 @@ Timo: *„Der mittlere Bereich ist für mich der Modul-im-Modul-Bereich.“* In 
 | Umfrage | das Video selbst: Frage und bis zu sechs Antworten, oder schnell Ja · Nein · Enthaltung; je Mensch zählt die jüngste Stimme |
 | Folien (geplant) | braucht Dateien; siehe Offene Punkte |
 
-Dazu, ebenfalls im Aktions-Knopf: **Zufällig jemanden wählen** (das Los steht acht Sekunden groß bei allen) und der **Kurzzeitwecker** (1, 3, 5, 10, 15 Minuten; die Restzeit steht oben, am Ende klingt es einmal leise). Links unter Notizen: **Geteilte Notizen**, ein Text für alle.
+Dazu, ebenfalls im Aktions-Knopf: **Zufällig jemanden wählen** (das Los steht acht Sekunden groß bei allen) und der **Kurzzeitwecker** (1 bis 30 Minuten; die Restzeit steht oben, am Ende klingt es einmal leise). **„Kreis mit Prozess“ und „Kurzzeitwecker“ sind Aufklappfelder**, damit das Menü kurz bleibt. Links unter Notizen: **Geteilte Notizen**, ein Text für alle.
 
 **Redezeit mit Gong (Einstellungen, ⋮):** Für alle gleich festgelegt (keine, 1, 2, 3, 5, 10, 15, 20, 30 Minuten) und was danach geschieht: Der Stab geht an den Nächsten im Kreis, oder er kehrt in die Mitte zurück. Wer den Stab hält, sieht seine Restzeit, die anderen sehen sie oben. Ist sie um, klingt ein Gong bei allen, und der Stab wandert von selbst. Ausgelöst vom Gerät dessen, der den Stab hält, damit es genau einmal geschieht (`redezeitAblaufen`, `Sitzung.regeln`, `Sitzung.gong`). Der Knopf **„Wort nehmen“** unten macht den Redestab in jeder Konferenz nutzbar, auch ohne Kreis-Prozess.
 
@@ -70,7 +70,7 @@ Daraus folgen die Schnittstellen in beide Richtungen:
 |---|---|
 | Video → Kreis | Die Konferenz zeigt oben, welcher Prozess und welcher Schritt läuft und wer den Redestab hält. Die Klangschale lässt sich von hier schlagen. „Zum Kreis" wechselt in den Kreis-Reiter, ohne die Verbindung zu trennen |
 | Kreis → Video | Der Kreis zeigt die Gesichter im Rund. „Zur Konferenz" wechselt ins Video |
-| Video → jedes Modul | „Mitte" bietet die Module des Space aus dem Register an und legt das gewählte für alle in die Mitte, gerendert über Antons `ModuleOutlet` samt Items vom Host. Das Video kennt kein Modul beim Namen (Spec 01, Regel 1) |
+| Video → Modul in der Mitte | Die Konferenz nimmt über `module`/`modulZeigen` Module entgegen und legt das gewählte für alle in die Mitte. **Der Host reicht seit 30.09.2026 keine Stack-Module mehr hinein** (Feed, Kalender, Karte gehören ins Menü oben). Die Schnittstelle bleibt für Module, die eigens für die Mitte entstehen (Folien) |
 
 ## Datenmodell
 
