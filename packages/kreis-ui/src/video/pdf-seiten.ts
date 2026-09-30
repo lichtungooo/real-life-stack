@@ -19,9 +19,11 @@ type PdfSeite = {
 
 let pdfjs: Promise<typeof import("pdfjs-dist")> | null = null
 function laden() {
-  // Der Worker als eigene Datei aus dem Bau (Vite `?url`), nicht aus einem fremden Netz.
-  pdfjs ??= Promise.all([import("pdfjs-dist"), import("pdfjs-dist/build/pdf.worker.min.mjs?url")]).then(([m, worker]) => {
-    m.GlobalWorkerOptions.workerSrc = worker.default
+  // Der Worker aus dem eigenen Bau, nicht aus einem fremden Netz. Vite baut
+  // ihn als `.js` (`?worker`): Server liefern `.mjs` oft mit falschem Typ
+  // aus, und der Browser lehnt ein Modul dann ab (live gesehen, 30.09.2026).
+  pdfjs ??= Promise.all([import("pdfjs-dist"), import("pdfjs-dist/build/pdf.worker.min.mjs?worker")]).then(([m, worker]) => {
+    m.GlobalWorkerOptions.workerPort = new worker.default()
     return m
   })
   return pdfjs
