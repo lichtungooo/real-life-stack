@@ -111,6 +111,12 @@ export interface Regeln {
   redezeit: number
   /** `weiter`: an den Naechsten im Kreis. `mitte`: zurueck in die Mitte. */
   danach: NachDerRedezeit
+  /** Stille nach der Klangschale in Sekunden. Fehlt sie, gilt die des Prozesses. */
+  stille?: number
+  /** Wie lange das Treffen dauert, in Minuten. 0 oder fehlend: offen. */
+  sitzungsdauer?: number
+  /** Seit wann die Sitzungsdauer laeuft (gesetzt, wenn sie festgelegt wird). */
+  sitzungSeit?: number
 }
 
 export const STANDARD_REGELN: Regeln = { redezeit: 0, danach: "mitte" }

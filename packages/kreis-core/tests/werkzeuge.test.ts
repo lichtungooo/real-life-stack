@@ -114,3 +114,27 @@ describe("Redezeit mit Gong", () => {
     expect(redezeitRest(um, T + 200_000)).toBeNull()
   })
 })
+
+import { stilleSekundenVon, sitzungRest, prozessFinden } from "../src"
+
+describe("Stille und Sitzungsdauer", () => {
+  const wir = prozessFinden("wir-prozess")
+
+  it("die Stille kommt aus der Regel des Raums, sonst aus dem Prozess, sonst 20 Sekunden", () => {
+    const s = leereSitzung(T)
+    expect(stilleSekundenVon(s, null)).toBe(20)
+    expect(stilleSekundenVon(s, wir)).toBe(30)
+    const mitStille = regelnSetzen(s, { redezeit: 0, danach: "mitte", stille: 60 }, "anna", T)
+    expect(stilleSekundenVon(mitStille, wir)).toBe(60)
+  })
+
+  it("die Sitzungsdauer laeuft ab dem Festlegen und bleibt stehen, wenn anderes geaendert wird", () => {
+    const s = regelnSetzen(leereSitzung(T), { redezeit: 0, danach: "mitte", sitzungsdauer: 120 }, "anna", T)
+    expect(sitzungRest(s, T + 60 * 60_000)).toBe(60 * 60_000)
+    const spaeter = regelnSetzen(s, { redezeit: 3, danach: "weiter", sitzungsdauer: 120 }, "bert", T + 30 * 60_000)
+    expect(sitzungRest(spaeter, T + 60 * 60_000)).toBe(60 * 60_000)
+    const neu = regelnSetzen(spaeter, { redezeit: 3, danach: "weiter", sitzungsdauer: 90 }, "bert", T + 60 * 60_000)
+    expect(sitzungRest(neu, T + 60 * 60_000)).toBe(90 * 60_000)
+    expect(sitzungRest(leereSitzung(T), T)).toBeNull()
+  })
+})

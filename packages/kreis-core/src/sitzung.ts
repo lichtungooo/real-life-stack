@@ -194,10 +194,37 @@ export function regelnVon(s: Sitzung): Regeln {
   return s.regeln ?? STANDARD_REGELN
 }
 
-export function regelnSetzen(s: Sitzung, regeln: Regeln, wer: string): Sitzung {
+/**
+ * Die Regeln fuer alle setzen. Wird die Sitzungsdauer neu festgelegt, laeuft
+ * sie ab `jetzt`; bleibt sie gleich, laeuft sie weiter wie bisher.
+ */
+export function regelnSetzen(s: Sitzung, regeln: Regeln, wer: string, jetzt = Date.now()): Sitzung {
   const alt = regelnVon(s)
-  if (alt.redezeit === regeln.redezeit && alt.danach === regeln.danach) return s
-  return weiter(s, wer, { regeln: { redezeit: Math.max(0, regeln.redezeit), danach: regeln.danach } })
+  const dauer = Math.max(0, regeln.sitzungsdauer ?? 0)
+  const gleich = alt.redezeit === regeln.redezeit && alt.danach === regeln.danach &&
+    (alt.stille ?? null) === (regeln.stille ?? null) && (alt.sitzungsdauer ?? 0) === dauer
+  if (gleich) return s
+  const seit = dauer > 0 ? ((alt.sitzungsdauer ?? 0) === dauer && alt.sitzungSeit ? alt.sitzungSeit : jetzt) : undefined
+  return weiter(s, wer, {
+    regeln: {
+      redezeit: Math.max(0, regeln.redezeit),
+      danach: regeln.danach,
+      ...(regeln.stille !== undefined ? { stille: Math.max(1, regeln.stille) } : {}),
+      ...(dauer > 0 ? { sitzungsdauer: dauer, sitzungSeit: seit } : {}),
+    },
+  })
+}
+
+/** Wie lange die Stille nach der Klangschale dauert: die Regel des Raums, sonst die des Prozesses, sonst 20 Sekunden. */
+export function stilleSekundenVon(s: Sitzung, prozess: Prozess | null): number {
+  return s.regeln?.stille ?? prozess?.stilleSekunden ?? 20
+}
+
+/** Wie viel Zeit das Treffen noch hat, in Millisekunden. `null`: keine Sitzungsdauer festgelegt. */
+export function sitzungRest(s: Sitzung, jetzt: number): number | null {
+  const r = s.regeln
+  if (!r?.sitzungsdauer || !r.sitzungSeit) return null
+  return r.sitzungSeit + r.sitzungsdauer * 60_000 - jetzt
 }
 
 /** Wie viel Redezeit bleibt dem, der den Stab haelt, in Millisekunden. `null`: keine Redezeit oder niemand haelt ihn. */

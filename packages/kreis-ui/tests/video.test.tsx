@@ -180,6 +180,72 @@ describe("Redezeit mit Gong", () => {
   })
 })
 
+describe("Stille und Dauer des Treffens", () => {
+  afterEach(() => { vi.useRealTimers() })
+
+  const wahl = async (m: ReturnType<typeof mensch>, legende: string, stufe: string) => {
+    const feld = [...m.huelle.querySelectorAll("fieldset")].find((f) => f.querySelector("legend")?.textContent === legende)
+    const b = [...(feld?.querySelectorAll("button") ?? [])].find((x) => x.textContent === stufe)
+    if (!b) throw new Error(`Keine Stufe ${stufe} unter ${legende}`)
+    await act(async () => { b.click() })
+  }
+
+  it("die Stille nach der Klangschale laesst sich einstellen", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: false })
+    vi.setSystemTime(new Date("2026-09-30T10:00:00Z"))
+    const kanal = kanalNetz()
+    const anna = mensch(kanal, "a-anna", "Anna", "video")
+    const bert = mensch(kanal, "b-bert", "Bert", "video")
+    await anna.betreten()
+    await bert.betreten()
+
+    await anna.aria("Mehr")
+    await anna.klick("Einstellungen: Redezeit")
+    await wahl(anna, "Stille nach der Klangschale", "1 Min.")
+    await anna.klick("Für alle übernehmen")
+
+    await anna.aria("Aktionen")
+    await anna.klick("Kreis mit Redestab")
+    await bert.aria("Die Klangschale schlagen: Stille für alle")
+    expect(anna.text()).toContain("Stille")
+    await act(async () => {
+      vi.setSystemTime(new Date("2026-09-30T10:00:45Z"))
+      vi.advanceTimersByTime(1000)
+    })
+    expect(anna.text()).toContain("Stille")
+    await act(async () => {
+      vi.setSystemTime(new Date("2026-09-30T10:01:05Z"))
+      vi.advanceTimersByTime(1000)
+    })
+    expect(anna.text()).not.toContain("Stille ·")
+  })
+
+  it("ist die Dauer um, klingt der Gong, ein Hinweis ruft zur Abschlussrunde, das Treffen laeuft weiter", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: false })
+    vi.setSystemTime(new Date("2026-09-30T10:00:00Z"))
+    const kanal = kanalNetz()
+    const anna = mensch(kanal, "a-anna", "Anna", "video")
+    const bert = mensch(kanal, "b-bert", "Bert", "video")
+    await anna.betreten()
+    await bert.betreten()
+
+    await anna.aria("Mehr")
+    await anna.klick("Einstellungen: Redezeit")
+    await wahl(anna, "Dauer des Treffens", "30 Min.")
+    await anna.klick("Für alle übernehmen")
+    expect(bert.text()).toContain("Treffen noch 30 Min.")
+
+    await act(async () => {
+      vi.setSystemTime(new Date("2026-09-30T10:30:01Z"))
+      vi.advanceTimersByTime(1000)
+    })
+    expect(bert.text()).toContain("Zeit für die Abschlussrunde")
+    expect(bert.text()).toContain("Gemeinsamer Chat")
+    await bert.aria("Hinweis schließen")
+    expect(bert.text()).not.toContain("Zeit für die Abschlussrunde")
+  })
+})
+
 describe("Die Konferenz nach Big Blue Button", () => {
   it("der Vorraum nennt die Konferenz", () => {
     const bert = mensch(kanalNetz(), "b", "Bert", "video")
@@ -216,7 +282,16 @@ describe("Die Konferenz nach Big Blue Button", () => {
     await bert.aria("Die Klangschale schlagen: Stille für alle")
     expect(anna.text()).toContain("Stille")
 
+    // Alle zeigen ueber der Buehne gilt nur fuer mich; oben fuehrt ein Weg zurueck
     await bert.klick("Alle zeigen")
+    expect(bert.text()).toContain("Zurück zu Kreis · Wir-Prozess")
+    expect(anna.text()).toContain("liegt in der Mitte")
+    await bert.klick("Zurück zu Kreis")
+    expect(bert.text()).toContain("liegt in der Mitte")
+
+    // Ueber + zeigt Bert allen die Menschen
+    await bert.aria("Aktionen")
+    await bert.klick("Alle zeigen, für alle")
     expect(anna.text()).not.toContain("liegt in der Mitte")
   })
 

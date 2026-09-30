@@ -17,11 +17,11 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import {
   Bell, ChevronLeft, CircleDot, FileText, Hand, LogOut, Maximize2, MessageSquare,
-  Mic, MicOff, MonitorUp, MoreVertical, PanelLeft, Plus, Smile, Users, Video, VideoOff,
+  Mic, MicOff, MonitorUp, MoreVertical, PanelLeft, Plus, Smile, Users, Video, VideoOff, X,
 } from "lucide-react"
 import {
   PROZESSE, aktuellerSchritt, losZiehen, mitteSetzen, prozessWaehlen, redezeitRest, regelnSetzen, regelnVon,
-  schaleSchlagen, stabNehmen, stabZuruecklegen, stilleLaeuft, weckerAus, weckerStellen, type KreisTeilnehmer,
+  schaleSchlagen, sitzungRest, stabNehmen, stabZuruecklegen, stilleLaeuft, stilleSekundenVon, weckerAus, weckerStellen, type KreisTeilnehmer,
 } from "@kreis/core"
 import { schaleAnschlagen } from "../klangschale"
 import { useKreisVerbindung, type KreisKontext } from "../raum-kontext"
@@ -59,8 +59,6 @@ export interface VideoRaumFlaecheProps {
   /** Das Protokoll als Item ablegen. Fehlt es, gibt es keinen Knopf dafuer. */
   protokollSpeichern?: ProtokollSpeichern
 }
-
-const STILLE_OHNE_PROZESS = 20
 
 function dauer(seit: number, jetzt: number): string {
   const s = Math.max(0, Math.floor((jetzt - seit) / 1000))
@@ -127,6 +125,10 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
   const [aktionOffen, setAktionOffen] = useState(false)
   const [mehrOffen, setMehrOffen] = useState(false)
   const [einstellungenOffen, setEinstellungenOffen] = useState(false)
+  // Die eigene Ansicht aller: nur fuer mich, das Tool bleibt fuer die anderen
+  // in der Mitte (Timo: man muss nicht immer das Redekreisfenster sehen).
+  const [nurMenschen, setNurMenschen] = useState(false)
+  const [abschlussGesehen, setAbschlussGesehen] = useState(false)
   const [zeichenOffen, setZeichenOffen] = useState(false)
   const [seit] = useState(() => Date.now())
   const [gelesen, setGelesen] = useState(0)
@@ -192,6 +194,22 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
     schaleAnschlagen(392, 0.25)
   }, [wecker, jetzt])
 
+  // Kommt ein neues Tool in die Mitte, zeigt die Buehne es wieder.
+  useEffect(() => { setNurMenschen(false) }, [mitte])
+
+  // Das Ende des Treffens: einmal der Gong, bei jedem selbst, und ein Hinweis
+  // auf die Abschlussrunde. Das Treffen laeuft weiter.
+  const sitzungUebrig = sitzungRest(sitzung, jetzt)
+  const sitzungsEnde = sitzungUebrig !== null && sitzungUebrig <= 0
+  const endeGeklungen = useRef(0)
+  useEffect(() => {
+    const seit = sitzung.regeln?.sitzungSeit ?? 0
+    if (!sitzungsEnde || endeGeklungen.current === seit) return
+    endeGeklungen.current = seit
+    setAbschlussGesehen(false)
+    schaleAnschlagen(131, 0.5)
+  }, [sitzungsEnde, sitzung.regeln?.sitzungSeit])
+
   const wer = ich ?? ""
   const rest = redezeitRest(sitzung, jetzt)
   const ichHalte = !!ich && sitzung.stab.halter === ich
@@ -202,7 +220,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
     handle((s, t) => mitteSetzen(prozessWaehlen(s, p, wer, t), TOOL_KREIS, wer))
     setAktionOffen(false)
   }
-  const schale = () => handle((s, t) => schaleSchlagen(s, wer, prozess?.stilleSekunden ?? STILLE_OHNE_PROZESS, t))
+  const schale = () => handle((s, t) => schaleSchlagen(s, wer, stilleSekundenVon(s, prozess), t))
   const spalteZeigen = (b: Exclude<Spalte, null>) => setSpalte(spalte === b ? null : b)
 
   const kachel = (p: KreisTeilnehmer) => (
@@ -270,6 +288,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
               {stille ? " · Stille" : prozess && schritt ? ` · ${prozess.name}: ${schritt.titel}` : ""}
               {halterDa && !stille ? ` · ${sitzung.stab.name} hält den Stab` : ""}
               {halterDa && !stille && rest !== null ? ` · noch ${mmss(rest)}` : ""}
+              {sitzungUebrig !== null && sitzungUebrig > 0 ? ` · Treffen noch ${sitzungUebrig >= 3_600_000 ? `${Math.floor(sitzungUebrig / 3_600_000)} Std. ${Math.floor((sitzungUebrig % 3_600_000) / 60_000)} Min.` : `${Math.ceil(sitzungUebrig / 60_000)} Min.`}` : ""}
             </p>
           </div>
           {wecker && <WeckerAnzeige bis={wecker.bis} jetzt={jetzt} onAus={() => handle((s) => weckerAus(s, wer))} />}
@@ -293,11 +312,20 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
           </div>
         </header>
 
-        {mitte === null ? (
-          // Alle zeigen: die Menschen gross, ohne Tool
-          <div className="min-h-0 flex-1">
+        {mitte === null || nurMenschen ? (
+          // Alle zeigen: die Menschen gross. Liegt ein Tool in der Mitte und
+          // ich schaue nur auf die Menschen, fuehrt oben ein Weg zurueck.
+          <div className="flex min-h-0 flex-1 flex-col gap-2">
+            {mitte !== null && nurMenschen && (
+              <button type="button" onClick={() => setNurMenschen(false)}
+                className="flex shrink-0 items-center gap-2 self-center rounded-full bg-sky-600 px-4 py-1.5 text-sm font-medium hover:bg-sky-500">
+                <ChevronLeft className="h-4 w-4" /> Zurück zu {toolName}
+              </button>
+            )}
+            <div className="min-h-0 flex-1">
             <VideoBuehne teilnehmer={teilnehmer} raum={raum} ansicht="galerie"
               stabHalter={halterDa ? sitzung.stab.halter : null} haende={neben.haende} zeichen={neben.zeichen} />
+            </div>
           </div>
         ) : (
           <>
@@ -310,7 +338,8 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
               <header className="flex shrink-0 items-center gap-2 border-b border-border px-4 py-2">
                 <span className="text-sm font-semibold">{toolName}</span>
                 <span className="text-xs text-muted-foreground">liegt in der Mitte, für alle</span>
-                <button type="button" onClick={() => tool(null)} className="ml-auto flex items-center gap-1.5 rounded-lg bg-muted px-2.5 py-1 text-xs font-medium hover:bg-muted/70">
+                <button type="button" onClick={() => setNurMenschen(true)} title="Nur für dich: alle Menschen groß, das Tool bleibt für die anderen"
+                  className="ml-auto flex items-center gap-1.5 rounded-lg bg-muted px-2.5 py-1 text-xs font-medium hover:bg-muted/70">
                   <Users className="h-3.5 w-3.5" /> Alle zeigen
                 </button>
               </header>
@@ -333,7 +362,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
             </button>
             <Menue offen={aktionOffen} onZu={() => setAktionOffen(false)} className="bottom-full left-0 mb-2">
               <p className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">In die Mitte, für alle</p>
-              <Eintrag aktiv={mitte === null} onClick={() => tool(null)}><Users className="h-4 w-4" /> Alle zeigen</Eintrag>
+              <Eintrag aktiv={mitte === null} onClick={() => tool(null)}><Users className="h-4 w-4" /> Alle zeigen, für alle</Eintrag>
               <Eintrag aktiv={mitte === TOOL_TAFEL} onClick={() => tool(TOOL_TAFEL)}><span className="w-4 text-center">✎</span> Tafel</Eintrag>
               <Eintrag aktiv={mitte === TOOL_UMFRAGE} onClick={() => tool(TOOL_UMFRAGE)}><span className="w-4 text-center">▤</span> Umfrage</Eintrag>
               <Eintrag aktiv={mitte === TOOL_KREIS && !prozess} onClick={() => tool(TOOL_KREIS)}><CircleDot className="h-4 w-4" /> Kreis mit Redestab</Eintrag>
@@ -405,9 +434,17 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
         </footer>
 
         <LosAnzeige los={sitzung.los} />
+        {sitzungsEnde && !abschlussGesehen && (
+          <div role="status" className="absolute inset-x-0 top-16 z-40 flex justify-center px-4">
+            <span className="flex items-center gap-3 rounded-2xl bg-amber-400 px-5 py-3 text-slate-900 shadow-2xl">
+              <span className="font-semibold">Die Zeit des Treffens ist um. Zeit für die Abschlussrunde.</span>
+              <button type="button" onClick={() => setAbschlussGesehen(true)} aria-label="Hinweis schließen" className="rounded-full p-1 hover:bg-black/10"><X className="h-4 w-4" /></button>
+            </span>
+          </div>
+        )}
         {einstellungenOffen && (
-          <Einstellungen regeln={regelnVon(sitzung)} onZu={() => setEinstellungenOffen(false)}
-            onSpeichern={(r) => handle((s) => regelnSetzen(s, r, wer))} />
+          <Einstellungen regeln={regelnVon(sitzung)} stilleVorgabe={stilleSekundenVon({ ...sitzung, regeln: undefined }, prozess)} onZu={() => setEinstellungenOffen(false)}
+            onSpeichern={(r) => handle((s, t) => regelnSetzen(s, r, wer, t))} />
         )}
         {meldung && (
           <div role="alert" className="pointer-events-none absolute inset-x-0 bottom-20 flex justify-center px-4">

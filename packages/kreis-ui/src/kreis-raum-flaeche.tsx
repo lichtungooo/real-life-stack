@@ -24,14 +24,14 @@ import {
   stabZuruecklegen,
   stilleLaeuft,
   redezeitRest,
+  stilleSekundenVon,
 } from "@kreis/core"
 import { useKreisVerbindung } from "./raum-kontext"
 import type { KreisVerbindung } from "./use-kreis"
 import { KreisRund } from "./kreis-rund"
 import { ProzessLeiste, ProzessWahl } from "./prozess-leiste"
 
-/** Wie lange Stille herrscht, wenn kein Prozess eine Dauer vorgibt. */
-const STILLE_OHNE_PROZESS = 20
+/** Wie lange eine Pause dauert, in Minuten. */
 const PAUSE_MINUTEN = 10
 
 /**
@@ -175,7 +175,7 @@ function ImKreis({ kreis, raumName, zurKonferenz, nurBuehne = false }: { kreis: 
   const nehmen = () => handle((s, t) => stabNehmen(s, wer, meinName, anwesend, t))
   const zuruecklegen = () => handle((s, t) => stabZuruecklegen(s, wer, t))
   const weitergeben = () => handle((s, t) => stabWeitergeben(s, wer, teilnehmer.map((p) => ({ id: p.id, name: p.name })), t))
-  const schale = () => handle((s, t) => schaleSchlagen(s, wer, prozess?.stilleSekunden ?? STILLE_OHNE_PROZESS, t))
+  const schale = () => handle((s, t) => schaleSchlagen(s, wer, stilleSekundenVon(s, prozess), t))
 
   const mitte = (
     <>
