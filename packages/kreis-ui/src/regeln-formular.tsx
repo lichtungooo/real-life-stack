@@ -11,11 +11,11 @@ import type { NachDerRedezeit, Regeln } from "@kreis/core"
 export const REDEZEIT_STUFEN = [0, 1, 2, 3, 5, 10, 15, 20, 30] as const
 /** Stille nach der Klangschale, in Sekunden (Timo: 15 Sekunden sind zu kurz). */
 export const STILLE_STUFEN = [15, 30, 60, 120] as const
-/** Wie lange das Treffen dauert, in Minuten. 0 heisst: offen. */
-export const SITZUNG_STUFEN = [0, 30, 60, 90, 120, 180] as const
+/** Wie lange das Meeting dauert, in Minuten. 0 heisst: offen. */
+export const SITZUNG_STUFEN = [0, 30, 45, 60, 90, 120, 180] as const
 
 const stilleText = (s: number) => (s < 60 ? `${s} Sek.` : `${s / 60} Min.`)
-const dauerText = (m: number) => (m === 0 ? "offen" : m < 60 ? `${m} Min.` : m % 60 === 0 ? `${m / 60} Std.` : `${Math.floor(m / 60)},5 Std.`)
+export const dauerText = (m: number) => (m === 0 ? "offen" : m < 60 ? `${m} Min.` : m % 60 === 0 ? `${m / 60} Std.` : `${Math.floor(m / 60)},5 Std.`)
 
 function Stufen<T extends number>({ legende, stufen, wert, setzen, text }: {
   legende: string
@@ -91,8 +91,8 @@ export function RegelnFormular({
 
       {mitDauer && (
         <div>
-          <Stufen legende="Dauer des Treffens" stufen={SITZUNG_STUFEN} wert={dauer} setzen={setDauer} text={dauerText} />
-          <p className="mt-1.5 text-xs text-muted-foreground">Ist sie um, klingt der Gong: Zeit für die Abschlussrunde. Das Treffen läuft weiter.</p>
+          <Stufen legende="Dauer des Meetings" stufen={SITZUNG_STUFEN} wert={dauer} setzen={setDauer} text={dauerText} />
+          <p className="mt-1.5 text-xs text-muted-foreground">Ist sie um, klingt ein eigener Ton, und ein Hinweis ruft zur Abschlussrunde. Das Meeting läuft weiter.</p>
         </div>
       )}
 

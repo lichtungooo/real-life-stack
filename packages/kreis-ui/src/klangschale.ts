@@ -66,3 +66,34 @@ export function schaleAnschlagen(grundton = 196, lautstaerke = 0.35): void {
   rauschen.connect(filter).connect(anschlag).connect(summe)
   rauschen.start(t)
 }
+
+/**
+ * Das Ende des Meetings: vier helle, aufsteigende Toene wie ein
+ * Glockenspiel. Bewusst anders als Schale und Gong (Timo, 30.09.2026: "Da
+ * kann ruhig was anderes kommen"), damit niemand an Stille oder Redezeit
+ * denkt.
+ */
+export function meetingEnde(lautstaerke = 0.22): void {
+  const ctx = audio()
+  if (!ctx) return
+  const t = ctx.currentTime
+  const summe = ctx.createGain()
+  summe.gain.value = lautstaerke
+  summe.connect(ctx.destination)
+  const toene = [523.25, 659.25, 783.99, 1046.5] // C, E, G, C
+  toene.forEach((ton, i) => {
+    const start = t + i * 0.26
+    for (const [faktor, laut] of [[1, 0.6], [2, 0.16], [3.01, 0.06]] as const) {
+      const osz = ctx.createOscillator()
+      osz.type = "sine"
+      osz.frequency.value = ton * faktor
+      const huelle = ctx.createGain()
+      huelle.gain.setValueAtTime(0.0001, start)
+      huelle.gain.exponentialRampToValueAtTime(laut, start + 0.01)
+      huelle.gain.exponentialRampToValueAtTime(0.0001, start + 1.8)
+      osz.connect(huelle).connect(summe)
+      osz.start(start)
+      osz.stop(start + 1.9)
+    }
+  })
+}

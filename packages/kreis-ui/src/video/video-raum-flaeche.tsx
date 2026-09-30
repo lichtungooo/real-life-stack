@@ -23,7 +23,7 @@ import {
   PROZESSE, aktuellerSchritt, losZiehen, mitteSetzen, prozessWaehlen, redezeitRest, regelnSetzen, regelnVon,
   schaleSchlagen, sitzungRest, stabNehmen, stabZuruecklegen, stilleLaeuft, stilleSekundenVon, weckerAus, weckerStellen, type KreisTeilnehmer,
 } from "@kreis/core"
-import { schaleAnschlagen } from "../klangschale"
+import { meetingEnde, schaleAnschlagen } from "../klangschale"
 import { useKreisVerbindung, type KreisKontext } from "../raum-kontext"
 import { AndererRaum, KreisWerkzeug, OhneRaum, Vorraum } from "../kreis-raum-flaeche"
 import { ZEICHEN, spracherkennungVorhanden, type ZeichenArt } from "../use-neben"
@@ -32,7 +32,7 @@ import { VideoKachel } from "./video-kachel"
 import { Tafel } from "./tafel"
 import { Chat, Menschen, Protokoll, type ProtokollSpeichern } from "./video-seiten"
 import { GeteilteNotizen, LosAnzeige, UmfrageWerkzeug, WeckerAnzeige } from "./werkzeuge"
-import { Einstellungen } from "../regeln-formular"
+import { Einstellungen, SITZUNG_STUFEN, dauerText } from "../regeln-formular"
 import { EinladenDialog, NeuImRaum, type KonferenzEinladen } from "./einladen"
 
 /** Die Tools, die das Video selbst mitbringt. Module kommen aus dem Register dazu. */
@@ -224,8 +224,9 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
   // Kommt ein neues Tool in die Mitte, zeigt die Buehne es wieder.
   useEffect(() => { setNurMenschen(false) }, [mitte])
 
-  // Das Ende des Treffens: einmal der Gong, bei jedem selbst, und ein Hinweis
-  // auf die Abschlussrunde. Das Treffen laeuft weiter.
+  // Das Ende des Meetings: einmal ein eigener Klang (kein Gong, keine
+  // Schale), bei jedem selbst, und ein Hinweis auf die Abschlussrunde. Das
+  // Meeting laeuft weiter.
   const sitzungUebrig = sitzungRest(sitzung, jetzt)
   const sitzungsEnde = sitzungUebrig !== null && sitzungUebrig <= 0
   const endeGeklungen = useRef(0)
@@ -234,7 +235,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
     if (!sitzungsEnde || endeGeklungen.current === seit) return
     endeGeklungen.current = seit
     setAbschlussGesehen(false)
-    schaleAnschlagen(131, 0.5)
+    meetingEnde()
   }, [sitzungsEnde, sitzung.regeln?.sitzungSeit])
 
   const wer = ich ?? ""
@@ -316,7 +317,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
               {stille ? " · Stille" : prozess && schritt ? ` · ${prozess.name}: ${schritt.titel}` : ""}
               {halterDa && !stille ? ` · ${sitzung.stab.name} hält den Stab` : ""}
               {halterDa && !stille && rest !== null ? ` · noch ${mmss(rest)}` : ""}
-              {sitzungUebrig !== null && sitzungUebrig > 0 ? ` · Treffen noch ${sitzungUebrig >= 3_600_000 ? `${Math.floor(sitzungUebrig / 3_600_000)} Std. ${Math.floor((sitzungUebrig % 3_600_000) / 60_000)} Min.` : `${Math.ceil(sitzungUebrig / 60_000)} Min.`}` : ""}
+              {sitzungUebrig !== null && sitzungUebrig > 0 ? ` · Meeting noch ${sitzungUebrig >= 3_600_000 ? `${Math.floor(sitzungUebrig / 3_600_000)} Std. ${Math.floor((sitzungUebrig % 3_600_000) / 60_000)} Min.` : `${Math.max(1, Math.round(sitzungUebrig / 60_000))} Min.`}` : ""}
             </p>
           </div>
           {wecker && <WeckerAnzeige bis={wecker.bis} jetzt={jetzt} onAus={() => handle((s) => weckerAus(s, wer))} />}
@@ -399,9 +400,12 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
               <Eintrag aktiv={mitte === null} onClick={() => tool(null)}><Users className="h-4 w-4" /> Alle zeigen, für alle</Eintrag>
               <Eintrag aktiv={mitte === TOOL_TAFEL} onClick={() => tool(TOOL_TAFEL)}><span className="w-4 text-center">✎</span> Tafel</Eintrag>
               <Eintrag aktiv={mitte === TOOL_UMFRAGE} onClick={() => tool(TOOL_UMFRAGE)}><span className="w-4 text-center">▤</span> Umfrage</Eintrag>
-              <Eintrag aktiv={mitte === TOOL_KREIS && !prozess} onClick={() => tool(TOOL_KREIS)}><CircleDot className="h-4 w-4" /> Kreis mit Redestab</Eintrag>
-              {/* Aufklappfelder halten das Menue kurz (Timo, 30.09.2026) */}
-              <Aufklapp titel="Kreis mit Prozess" zeichen={<CircleDot className="h-4 w-4 opacity-60" />}>
+              {/* Ein Eintrag fuer den Kreis (Timo, 30.09.2026: "nicht trennen,
+                  einfach Kreisprozess"). Ohne ihn ist es ein normales Meeting. */}
+              <Aufklapp titel="Kreisprozess" zeichen={<CircleDot className="h-4 w-4" />}>
+                <Eintrag aktiv={mitte === TOOL_KREIS && !prozess} onClick={() => tool(TOOL_KREIS)}>
+                  <span className="w-4" /> Freier Kreis mit Redestab
+                </Eintrag>
                 {PROZESSE.map((p) => (
                   <Eintrag key={p.id} aktiv={mitte === TOOL_KREIS && prozess?.id === p.id} onClick={() => kreisMitProzess(p.id)}>
                     <span className="w-4" /> {p.name}
@@ -409,10 +413,21 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
                 ))}
               </Aufklapp>
               <p className="px-3 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Für alle</p>
+              <Aufklapp titel={`Dauer des Meetings${sitzung.regeln?.sitzungsdauer ? `: ${dauerText(sitzung.regeln.sitzungsdauer)}` : ""}`} zeichen={<span className="w-4 text-center">⌛</span>}>
+                <div className="grid grid-cols-4 gap-1 px-3 pb-2 pt-1">
+                  {SITZUNG_STUFEN.map((m) => (
+                    <button key={m} type="button" aria-pressed={(sitzung.regeln?.sitzungsdauer ?? 0) === m}
+                      onClick={() => { handle((s, t) => regelnSetzen(s, { ...regelnVon(s), sitzungsdauer: m }, wer, t)); setAktionOffen(false) }}
+                      className={`rounded-md px-1.5 py-1 text-xs ${(sitzung.regeln?.sitzungsdauer ?? 0) === m ? "bg-sky-600 text-white" : "bg-slate-100 hover:bg-slate-200"}`}>{dauerText(m)}</button>
+                  ))}
+                </div>
+                <p className="px-3 pb-2 text-[11px] text-slate-500">Am Ende klingt ein eigener Ton, das Meeting läuft weiter.</p>
+              </Aufklapp>
               <Eintrag onClick={() => { handle((s, t) => losZiehen(s, teilnehmer.map((p) => ({ id: p.id, name: p.name })), wer, t)); setAktionOffen(false) }}>
                 <span className="w-4 text-center">🎲</span> Zufällig jemanden wählen
               </Eintrag>
               <Aufklapp titel="Kurzzeitwecker" zeichen={<span className="w-4 text-center">⏱</span>}>
+                <p className="px-3 pt-1 text-[11px] text-slate-500">Für eine Pause oder eine Übung. Die Redezeit steht unter ⋮ Einstellungen.</p>
                 <div className="grid grid-cols-4 gap-1 px-3 pb-2 pt-1">
                   {WECKER_MINUTEN.map((m) => (
                     <button key={m} type="button" onClick={() => { handle((s, t) => weckerStellen(s, m, wer, t)); setAktionOffen(false) }}
@@ -475,7 +490,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
         {sitzungsEnde && !abschlussGesehen && (
           <div role="status" className="absolute inset-x-0 top-16 z-40 flex justify-center px-4">
             <span className="flex items-center gap-3 rounded-2xl bg-amber-400 px-5 py-3 text-slate-900 shadow-2xl">
-              <span className="font-semibold">Die Zeit des Treffens ist um. Zeit für die Abschlussrunde.</span>
+              <span className="font-semibold">Die Zeit des Meetings ist um. Zeit für die Abschlussrunde.</span>
               <button type="button" onClick={() => setAbschlussGesehen(true)} aria-label="Hinweis schließen" className="rounded-full p-1 hover:bg-black/10"><X className="h-4 w-4" /></button>
             </span>
           </div>

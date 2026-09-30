@@ -142,7 +142,8 @@ describe("Die Werkzeuge der Konferenz", () => {
     expect(bert.text()).toMatch(/Das Los fällt auf (Anna|Bert)/)
 
     await anna.aria("Aktionen")
-    await anna.klick("5 Min.")
+    const wecker = [...anna.huelle.querySelectorAll("details")].find((d) => d.querySelector("summary")?.textContent?.includes("Kurzzeitwecker"))!
+    await act(async () => { [...wecker.querySelectorAll("button")].find((x) => x.textContent === "5 Min.")!.click() })
     expect(bert.huelle.querySelector('button[aria-label="Kurzzeitwecker aus"]')).not.toBeNull()
     await bert.aria("Kurzzeitwecker aus")
     expect(anna.huelle.querySelector('button[aria-label="Kurzzeitwecker aus"]')).toBeNull()
@@ -205,7 +206,7 @@ describe("Stille und Dauer des Treffens", () => {
     await anna.klick("Für alle übernehmen")
 
     await anna.aria("Aktionen")
-    await anna.klick("Kreis mit Redestab")
+    await anna.klick("Freier Kreis mit Redestab")
     await bert.aria("Die Klangschale schlagen: Stille für alle")
     expect(anna.text()).toContain("Stille")
     await act(async () => {
@@ -231,9 +232,9 @@ describe("Stille und Dauer des Treffens", () => {
 
     await anna.aria("Mehr")
     await anna.klick("Einstellungen des Raums")
-    await wahl(anna, "Dauer des Treffens", "30 Min.")
+    await wahl(anna, "Dauer des Meetings", "30 Min.")
     await anna.klick("Für alle übernehmen")
-    expect(bert.text()).toContain("Treffen noch 30 Min.")
+    expect(bert.text()).toContain("Meeting noch 30 Min.")
 
     await act(async () => {
       vi.setSystemTime(new Date("2026-09-30T10:30:01Z"))
@@ -243,6 +244,20 @@ describe("Stille und Dauer des Treffens", () => {
     expect(bert.text()).toContain("Gemeinsamer Chat")
     await bert.aria("Hinweis schließen")
     expect(bert.text()).not.toContain("Zeit für die Abschlussrunde")
+  })
+})
+
+describe("Dauer des Meetings im Aktions-Menü", () => {
+  it("45 Minuten für alle, direkt über +", async () => {
+    const kanal = kanalNetz()
+    const anna = mensch(kanal, "a-anna", "Anna", "video")
+    const bert = mensch(kanal, "b-bert", "Bert", "video")
+    await anna.betreten()
+    await bert.betreten()
+    await anna.aria("Aktionen")
+    const dauer = [...anna.huelle.querySelectorAll("details")].find((d) => d.querySelector("summary")?.textContent?.includes("Dauer des Meetings"))!
+    await act(async () => { [...dauer.querySelectorAll("button")].find((x) => x.textContent === "45 Min.")!.click() })
+    expect(bert.text()).toContain("Meeting noch 45 Min.")
   })
 })
 
