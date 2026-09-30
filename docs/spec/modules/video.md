@@ -32,7 +32,12 @@ Timo: *„Der mittlere Bereich ist für mich der Modul-im-Modul-Bereich.“* In 
 | Tafel | das Video selbst |
 | Kreis mit Redestab, Kreis mit Prozess (Wir-Prozess, Klärungskreis …) | `@kreis/core`, als Module Component (Spec [kreis.md](kreis.md)) |
 | jedes Modul des Space | Antons Modul-Register über `ModuleOutlet` |
+| Umfrage | das Video selbst: Frage und bis zu sechs Antworten, oder schnell Ja · Nein · Enthaltung; je Mensch zählt die jüngste Stimme |
 | Folien (geplant) | braucht Dateien; siehe Offene Punkte |
+
+Dazu, ebenfalls im Aktions-Knopf: **Zufällig jemanden wählen** (das Los steht acht Sekunden groß bei allen) und der **Kurzzeitwecker** (1, 3, 5, 10, 15 Minuten; die Restzeit steht oben, am Ende klingt es einmal leise). Links unter Notizen: **Geteilte Notizen**, ein Text für alle.
+
+**Wo was liegt, und warum:** Kurzzeitwecker und Los stehen im Sitzungszustand (`Sitzung.wecker`, `Sitzung.los`), dort handelt immer einer. Die Umfrage liegt NICHT dort: Bei gleicher Fassung gilt einer von zwei Ständen, und zwei gleichzeitige Stimmen ließen eine verloren gehen. Darum reist jede Stimme einzeln und wird eingemischt (`@kreis/core`, werkzeuge.ts). Die geteilten Notizen gelten mit Fassung und Absender wie der Redestab; solange jemand im Feld schreibt, bleibt sein Entwurf stehen.
 
 Links eine Leiste wie bei Big Blue Button: **Nachrichten** (Gemeinsamer Chat), **Notizen** (Protokoll; geteilte Notizen geplant), **Teilnehmer** mit Namen. Ein Eintrag klappt eine Spalte daneben auf, der Pfeil klappt sie zu. Oben rechts: gehen, ⋮ (Vollbild).
 

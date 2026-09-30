@@ -90,6 +90,10 @@ export interface Sitzung {
    * (aeltere Fassung), gilt `null`.
    */
   mitte?: string | null
+  /** Der Kurzzeitwecker, fuer alle. Fehlt (aeltere Fassung) oder `null`: keiner. */
+  wecker?: { bis: number; minuten: number; von: string } | null
+  /** Das Los: wer zuletzt gezogen wurde. `nr` zaehlt jeden Zug, damit er einmal erscheint. */
+  los?: { nr: number; id: string; name: string; wann: number } | null
 }
 
 /** Nachrichten, die der Kreis ueber den Daten-Kanal des Raums schickt. */

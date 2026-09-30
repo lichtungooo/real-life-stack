@@ -5,7 +5,11 @@
 // waehrend jemand im Video schreibt, findet die Zeile beim Wechsel vor.
 
 import { useCallback, useEffect, useRef, useState } from "react"
-import { istStrich, standEinmischen, strichDazu, type Strich } from "@kreis/core"
+import {
+  LEERE_NOTIZ, istNotiz, istStimme, istStrich, istUmfrage, notizGilt, notizSchreiben,
+  standEinmischen, stimmeDazu, strichDazu, umfrageEinmischen, umfrageNeu, umfrageSchliessen,
+  type GeteilteNotiz, type Strich, type Umfrage,
+} from "@kreis/core"
 import type { KreisVerbindung, NebenNachricht } from "./use-kreis"
 
 export interface ChatZeile { id: string; wer: string; name: string; text: string; wann: number }
@@ -58,6 +62,12 @@ export function useNebenHalten(v: KreisVerbindung) {
   const [protokollLaeuft, setProtokollLaeuft] = useState(false)
   const [protokollFehler, setProtokollFehler] = useState<string | null>(null)
   const [tafel, setTafel] = useState<readonly Strich[]>([])
+  const [notiz, setNotiz] = useState<GeteilteNotiz>(LEERE_NOTIZ)
+  const notizRef = useRef(notiz)
+  notizRef.current = notiz
+  const [umfrage, setUmfrage] = useState<Umfrage | null>(null)
+  const umfrageRef = useRef(umfrage)
+  umfrageRef.current = umfrage
   const tafelRef = useRef(tafel)
   tafelRef.current = tafel
   const erkennungRef = useRef<Erkennung | null>(null)
@@ -105,6 +115,19 @@ export function useNebenHalten(v: KreisVerbindung) {
     } else if (n.art === "tafel-frage") {
       // Nur wer etwas an der Tafel hat, antwortet.
       if (tafelRef.current.length > 0) v.nebenSenden({ art: "tafel-stand", striche: [...tafelRef.current] })
+    } else if (n.art === "notiz" && istNotiz(n.notiz)) {
+      const fremd = n.notiz
+      setNotiz((eigen) => notizGilt(eigen, fremd))
+    } else if (n.art === "umfrage" && istUmfrage(n.umfrage)) {
+      const fremd = n.umfrage
+      setUmfrage((eigen) => umfrageEinmischen(eigen, fremd))
+    } else if (n.art === "stimme" && istStimme(n.stimme)) {
+      const st = n.stimme
+      setUmfrage((u) => (u ? stimmeDazu(u, st) : u))
+    } else if (n.art === "werkzeug-frage") {
+      // Wer spaeter kommt, bekommt Notiz und Umfrage, wenn es sie gibt.
+      if (notizRef.current.v > 0) v.nebenSenden({ art: "notiz", notiz: notizRef.current })
+      if (umfrageRef.current) v.nebenSenden({ art: "umfrage", umfrage: umfrageRef.current })
     } else if (n.art === "tafel-stand" && Array.isArray(n.striche)) {
       const stand = (n.striche as unknown[]).filter(istStrich)
       setTafel((t) => standEinmischen(t, stand))
@@ -113,7 +136,10 @@ export function useNebenHalten(v: KreisVerbindung) {
 
   // Wer hereinkommt, fragt nach dem Stand der Tafel.
   useEffect(() => {
-    if (v.zustand === "drin") v.nebenSenden({ art: "tafel-frage" })
+    if (v.zustand === "drin") {
+      v.nebenSenden({ art: "tafel-frage" })
+      v.nebenSenden({ art: "werkzeug-frage" })
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [v.zustand])
 
@@ -127,7 +153,7 @@ export function useNebenHalten(v: KreisVerbindung) {
   // Die Sitzung endet: alles Fluechtige mit ihr.
   useEffect(() => {
     if (v.zustand !== "draussen") return
-    setChat([]); setHaende(new Set()); setZeichen(new Map()); setProtokoll([]); setTafel([])
+    setChat([]); setHaende(new Set()); setZeichen(new Map()); setProtokoll([]); setTafel([]); setNotiz(LEERE_NOTIZ); setUmfrage(null)
     sollLaufenRef.current = false
     erkennungRef.current?.abort()
     erkennungRef.current = null
@@ -227,7 +253,46 @@ export function useNebenHalten(v: KreisVerbindung) {
     v.nebenSenden({ art: "tafel-leeren" })
   }, [v])
 
+  const notizSetzen = useCallback((text: string) => {
+    if (!v.ich) return
+    const neu = notizSchreiben(notizRef.current, text, v.ich, meinName, Date.now())
+    if (neu === notizRef.current) return
+    notizRef.current = neu
+    setNotiz(neu)
+    v.nebenSenden({ art: "notiz", notiz: neu })
+  }, [v, meinName])
+
+  /** Eine Umfrage starten. Gibt false zurueck, wenn Frage oder Antworten fehlen. */
+  const umfrageStarten = useCallback((frage: string, antworten: readonly string[]) => {
+    if (!v.ich) return false
+    const u = umfrageNeu(`${v.ich}-${Date.now()}`, frage, antworten, v.ich)
+    if (!u) return false
+    setUmfrage(u)
+    v.nebenSenden({ art: "umfrage", umfrage: u })
+    return true
+  }, [v])
+
+  const abstimmen = useCallback((wahl: number) => {
+    const u = umfrageRef.current
+    if (!u || !v.ich) return
+    const stimme = { umfrage: u.id, wer: v.ich, wahl, wann: Date.now() }
+    setUmfrage((alt) => (alt ? stimmeDazu(alt, stimme) : alt))
+    v.nebenSenden({ art: "stimme", stimme })
+  }, [v])
+
+  const umfrageBeenden = useCallback(() => {
+    const u = umfrageRef.current
+    if (!u) return
+    const zu = umfrageSchliessen(u)
+    setUmfrage(zu)
+    v.nebenSenden({ art: "umfrage", umfrage: zu })
+  }, [v])
+
+  const umfrageVerwerfen = useCallback(() => setUmfrage(null), [])
+
   return {
+    notiz, notizSetzen,
+    umfrage, umfrageStarten, abstimmen, umfrageBeenden, umfrageVerwerfen,
     tafel, tafelStrich, tafelLeeren,
     chat, chatSenden,
     haende, handUmschalten,

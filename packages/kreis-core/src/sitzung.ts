@@ -188,6 +188,35 @@ export function mitteSetzen(s: Sitzung, mitte: string | null, wer: string): Sitz
   return weiter(s, wer, { mitte })
 }
 
+// --- Kurzzeitwecker und Los ----------------------------------------------------
+
+/** Den Kurzzeitwecker stellen, fuer alle. */
+export function weckerStellen(s: Sitzung, minuten: number, wer: string, jetzt: number): Sitzung {
+  if (minuten <= 0) return s
+  return weiter(s, wer, { wecker: { bis: jetzt + minuten * 60_000, minuten, von: wer } })
+}
+
+export function weckerAus(s: Sitzung, wer: string): Sitzung {
+  if (!s.wecker) return s
+  return weiter(s, wer, { wecker: null })
+}
+
+/**
+ * Ein Los ziehen: einen der Anwesenden zufaellig waehlen, fuer alle sichtbar.
+ * `zufall` kommt von aussen, damit es pruefbar ist. Niemand da: kein Los.
+ */
+export function losZiehen(
+  s: Sitzung,
+  anwesend: readonly { id: string; name: string }[],
+  wer: string,
+  jetzt: number,
+  zufall: () => number = Math.random,
+): Sitzung {
+  if (anwesend.length === 0) return s
+  const gezogen = anwesend[Math.min(anwesend.length - 1, Math.floor(zufall() * anwesend.length))]
+  return weiter(s, wer, { los: { nr: (s.los?.nr ?? 0) + 1, id: gezogen.id, name: gezogen.name, wann: jetzt } })
+}
+
 // --- Kleingruppen ----------------------------------------------------------
 
 /**

@@ -20,9 +20,10 @@ import {
   Mic, MicOff, MonitorUp, MoreVertical, PanelLeft, Plus, Smile, Users, Video, VideoOff,
 } from "lucide-react"
 import {
-  PROZESSE, aktuellerSchritt, mitteSetzen, prozessWaehlen, schaleSchlagen, stilleLaeuft,
-  type KreisTeilnehmer,
+  PROZESSE, aktuellerSchritt, losZiehen, mitteSetzen, prozessWaehlen, schaleSchlagen, stilleLaeuft,
+  weckerAus, weckerStellen, type KreisTeilnehmer,
 } from "@kreis/core"
+import { schaleAnschlagen } from "../klangschale"
 import { useKreisVerbindung, type KreisKontext } from "../raum-kontext"
 import { AndererRaum, KreisWerkzeug, OhneRaum, Vorraum } from "../kreis-raum-flaeche"
 import { ZEICHEN, spracherkennungVorhanden, type ZeichenArt } from "../use-neben"
@@ -30,12 +31,16 @@ import { VideoBuehne } from "./video-buehne"
 import { VideoKachel } from "./video-kachel"
 import { Tafel } from "./tafel"
 import { Chat, Menschen, Protokoll, type ProtokollSpeichern } from "./video-seiten"
+import { GeteilteNotizen, LosAnzeige, UmfrageWerkzeug, WeckerAnzeige } from "./werkzeuge"
 
 /** Die Tools, die das Video selbst mitbringt. Module kommen aus dem Register dazu. */
 export const TOOL_KREIS = "kreis"
 export const TOOL_TAFEL = "tafel"
+export const TOOL_UMFRAGE = "umfrage"
 
-type Spalte = "chat" | "protokoll" | null
+const WECKER_MINUTEN = [1, 3, 5, 10, 15] as const
+
+type Spalte = "chat" | "notizen" | "protokoll" | null
 
 export interface ModulWahl { id: string; label: string }
 
@@ -129,7 +134,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
   const halterDa = sitzung.stab.halter !== null && teilnehmer.some((t) => t.id === sitzung.stab.halter)
   const mitte = sitzung.mitte ?? null
   const toolName = mitte === TOOL_KREIS ? (prozess ? `Kreis · ${prozess.name}` : "Kreis")
-    : mitte === TOOL_TAFEL ? "Tafel" : mitte ? module.find((m) => m.id === mitte)?.label ?? mitte : null
+    : mitte === TOOL_TAFEL ? "Tafel" : mitte === TOOL_UMFRAGE ? "Umfrage" : mitte ? module.find((m) => m.id === mitte)?.label ?? mitte : null
 
   useEffect(() => { if (spalte === "chat") setGelesen(neben.chat.length) }, [spalte, neben.chat.length])
   const ungelesen = spalte === "chat" ? 0 : Math.max(0, neben.chat.length - gelesen)
@@ -172,6 +177,15 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
     return () => { window.removeEventListener("keydown", runter); window.removeEventListener("keyup", hoch) }
   }, [raum, mich?.mikroAn, leertaste, medien])
 
+  // Die Zeit ist um: einmal ein leiser, hoher Klang, bei allen.
+  const weckerGeklungen = useRef(0)
+  const wecker = sitzung.wecker ?? null
+  useEffect(() => {
+    if (!wecker || jetzt < wecker.bis || weckerGeklungen.current === wecker.bis) return
+    weckerGeklungen.current = wecker.bis
+    schaleAnschlagen(392, 0.25)
+  }, [wecker, jetzt])
+
   const wer = ich ?? ""
   const tool = (was: string | null) => { handle((s) => mitteSetzen(s, was, wer)); setAktionOffen(false) }
   const kreisMitProzess = (id: string) => {
@@ -199,9 +213,13 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
             <MessageSquare className="h-4 w-4 text-slate-300" /> Gemeinsamer Chat
             {ungelesen > 0 && <span className="ml-auto rounded-full bg-sky-500 px-1.5 text-[10px] font-bold">{ungelesen}</span>}
           </button>
+          <p className="px-4 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Notizen</p>
+          <button type="button" onClick={() => spalteZeigen("notizen")} aria-pressed={spalte === "notizen"}
+            className={`mx-2 flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-left ${spalte === "notizen" ? "bg-white/10" : "hover:bg-white/5"}`}>
+            <FileText className="h-4 w-4 text-slate-300" /> Geteilte Notizen
+          </button>
           {spracherkennungVorhanden() && (
             <>
-              <p className="px-4 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Notizen</p>
               <button type="button" onClick={() => spalteZeigen("protokoll")} aria-pressed={spalte === "protokoll"}
                 className={`mx-2 flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-left ${spalte === "protokoll" ? "bg-white/10" : "hover:bg-white/5"}`}>
                 <FileText className="h-4 w-4 text-slate-300" /> Protokoll
@@ -221,10 +239,10 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
             <button type="button" onClick={() => setSpalte(null)} aria-label="Spalte schließen" className="rounded-lg p-1.5 text-slate-300 hover:bg-white/10">
               <ChevronLeft className="h-4 w-4" />
             </button>
-            <h3 className="text-sm font-semibold">{spalte === "chat" ? "Gemeinsamer Chat" : "Protokoll"}</h3>
+            <h3 className="text-sm font-semibold">{spalte === "chat" ? "Gemeinsamer Chat" : spalte === "notizen" ? "Geteilte Notizen" : "Protokoll"}</h3>
           </header>
           <div className="min-h-0 flex-1 overflow-hidden">
-            {spalte === "chat" ? <Chat kreis={kreis} /> : <Protokoll kreis={kreis} speichern={protokollSpeichern} />}
+            {spalte === "chat" ? <Chat kreis={kreis} /> : spalte === "notizen" ? <GeteilteNotizen kreis={kreis} /> : <Protokoll kreis={kreis} speichern={protokollSpeichern} />}
           </div>
         </aside>
       )}
@@ -245,6 +263,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
               {halterDa && !stille ? ` · ${sitzung.stab.name} hält den Stab` : ""}
             </p>
           </div>
+          {wecker && <WeckerAnzeige bis={wecker.bis} jetzt={jetzt} onAus={() => handle((s) => weckerAus(s, wer))} />}
           <button type="button" onClick={() => void kreis.verlassen()} title="Die Konferenz verlassen" aria-label="gehen"
             className="flex h-9 items-center gap-1.5 rounded-full bg-rose-600 px-3 text-xs font-medium hover:bg-rose-700">
             <LogOut className="h-4 w-4" /> gehen
@@ -285,6 +304,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
               </header>
               <div className="min-h-0 flex-1 overflow-hidden">
                 {mitte === TOOL_KREIS ? <div className="h-full overflow-hidden"><KreisWerkzeug kreis={kreis} /></div>
+                  : mitte === TOOL_UMFRAGE ? <UmfrageWerkzeug kreis={kreis} />
                   : mitte === TOOL_TAFEL ? <div className="h-full p-3"><Tafel striche={neben.tafel} ich={wer} onStrich={neben.tafelStrich} onLeeren={neben.tafelLeeren} /></div>
                   : modulZeigen ? <div className="h-full overflow-hidden">{modulZeigen(mitte)}</div> : null}
               </div>
@@ -303,6 +323,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
               <p className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">In die Mitte, für alle</p>
               <Eintrag aktiv={mitte === null} onClick={() => tool(null)}><Users className="h-4 w-4" /> Alle zeigen</Eintrag>
               <Eintrag aktiv={mitte === TOOL_TAFEL} onClick={() => tool(TOOL_TAFEL)}><span className="w-4 text-center">✎</span> Tafel</Eintrag>
+              <Eintrag aktiv={mitte === TOOL_UMFRAGE} onClick={() => tool(TOOL_UMFRAGE)}><span className="w-4 text-center">▤</span> Umfrage</Eintrag>
               <Eintrag aktiv={mitte === TOOL_KREIS && !prozess} onClick={() => tool(TOOL_KREIS)}><CircleDot className="h-4 w-4" /> Kreis mit Redestab</Eintrag>
               <p className="px-3 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Kreis mit Prozess</p>
               {PROZESSE.map((p) => (
@@ -310,6 +331,17 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
                   <span className="w-4" /> {p.name}
                 </Eintrag>
               ))}
+              <p className="px-3 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Für alle</p>
+              <Eintrag onClick={() => { handle((s, t) => losZiehen(s, teilnehmer.map((p) => ({ id: p.id, name: p.name })), wer, t)); setAktionOffen(false) }}>
+                <span className="w-4 text-center">🎲</span> Zufällig jemanden wählen
+              </Eintrag>
+              <div className="flex flex-wrap items-center gap-1 px-3 py-2 text-sm">
+                <span className="mr-1">Kurzzeitwecker:</span>
+                {WECKER_MINUTEN.map((m) => (
+                  <button key={m} type="button" onClick={() => { handle((s, t) => weckerStellen(s, m, wer, t)); setAktionOffen(false) }}
+                    className="rounded-md bg-slate-100 px-2 py-0.5 text-xs hover:bg-slate-200">{m} Min.</button>
+                ))}
+              </div>
               {module.length > 0 && (
                 <>
                   <p className="px-3 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Module</p>
@@ -353,6 +385,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
           {leertaste && <span className="absolute right-1 hidden rounded-lg bg-emerald-500/20 px-2.5 py-1 text-[10px] font-medium text-emerald-300 sm:block">Leertaste: du sprichst</span>}
         </footer>
 
+        <LosAnzeige los={sitzung.los} />
         {meldung && (
           <div role="alert" className="pointer-events-none absolute inset-x-0 bottom-20 flex justify-center px-4">
             <span className="max-w-xl rounded-xl bg-rose-600/95 px-4 py-2 text-sm text-white shadow-lg">{meldung}</span>

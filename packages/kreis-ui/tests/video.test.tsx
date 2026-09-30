@@ -77,6 +77,78 @@ function mensch(kanal: ReturnType<typeof kanalNetz>, id: string, name: string, f
   return { huelle, text, klick, betreten, aria }
 }
 
+const tippe = async (el: HTMLInputElement | HTMLTextAreaElement, text: string) => {
+  await act(async () => {
+    const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype
+    Object.getOwnPropertyDescriptor(proto, "value")!.set!.call(el, text)
+    el.dispatchEvent(new Event("input", { bubbles: true }))
+  })
+}
+
+describe("Die Werkzeuge der Konferenz", () => {
+  it("Umfrage: fuer alle in der Mitte, gleichzeitige Stimmen zaehlen beide, Nachzuegler sieht den Stand", async () => {
+    const kanal = kanalNetz()
+    const anna = mensch(kanal, "a-anna", "Anna", "video")
+    const bert = mensch(kanal, "b-bert", "Bert", "video")
+    await anna.betreten()
+    await bert.betreten()
+
+    await anna.aria("Aktionen")
+    await anna.klick("Umfrage")
+    await tippe(anna.huelle.querySelector("#umfrage-frage") as HTMLInputElement, "Treffen wir uns am Montag?")
+    await anna.klick("Schnell: Ja · Nein · Enthaltung")
+    expect(bert.text()).toContain("Treffen wir uns am Montag?")
+
+    await anna.klick(/^Ja/)
+    await bert.klick(/^Ja/)
+    expect(anna.text()).toContain("2 Stimmen")
+    expect(bert.text()).toContain("2 Stimmen")
+
+    const cara = mensch(kanal, "c-cara", "Cara", "video")
+    await cara.betreten()
+    expect(cara.text()).toContain("Treffen wir uns am Montag?")
+    expect(cara.text()).toContain("2 Stimmen")
+
+    await bert.klick("Umfrage beenden")
+    expect(anna.text()).toContain("beendet")
+  })
+
+  it("Geteilte Notizen: was Anna schreibt, liest Bert", async () => {
+    const kanal = kanalNetz()
+    const anna = mensch(kanal, "a-anna", "Anna", "video")
+    const bert = mensch(kanal, "b-bert", "Bert", "video")
+    await anna.betreten()
+    await bert.betreten()
+
+    await anna.klick("Geteilte Notizen")
+    const feld = anna.huelle.querySelector("#geteilte-notizen") as HTMLTextAreaElement
+    await tippe(feld, "1. Ankommen, 2. Kreis")
+    await act(async () => { feld.dispatchEvent(new FocusEvent("focusout", { bubbles: true })) })
+
+    await bert.klick("Geteilte Notizen")
+    expect((bert.huelle.querySelector("#geteilte-notizen") as HTMLTextAreaElement).value).toContain("1. Ankommen")
+    expect(bert.text()).toContain("zuletzt von Anna")
+  })
+
+  it("Los und Kurzzeitwecker erscheinen bei allen", async () => {
+    const kanal = kanalNetz()
+    const anna = mensch(kanal, "a-anna", "Anna", "video")
+    const bert = mensch(kanal, "b-bert", "Bert", "video")
+    await anna.betreten()
+    await bert.betreten()
+
+    await anna.aria("Aktionen")
+    await anna.klick("Zufällig jemanden wählen")
+    expect(bert.text()).toMatch(/Das Los fällt auf (Anna|Bert)/)
+
+    await anna.aria("Aktionen")
+    await anna.klick("5 Min.")
+    expect(bert.huelle.querySelector('button[aria-label="Kurzzeitwecker aus"]')).not.toBeNull()
+    await bert.aria("Kurzzeitwecker aus")
+    expect(anna.huelle.querySelector('button[aria-label="Kurzzeitwecker aus"]')).toBeNull()
+  })
+})
+
 describe("Die Konferenz nach Big Blue Button", () => {
   it("der Vorraum nennt die Konferenz", () => {
     const bert = mensch(kanalNetz(), "b", "Bert", "video")
