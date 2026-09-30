@@ -29,7 +29,7 @@ Anton hat den **Modul-Host** gebaut. Kopfleiste, Space-Umschalter, Space-Dialog,
 | Module `baukasten`, `companion` | App-Schicht plus Views für alle Toolkit-Module | Nur noch unsere Schicht `trustdonation` mit eigener `view`. Antons Module bringen ihre Flächen selbst mit |
 | Netzwerk-Felder und Ordnung der Spaces | `apps/reference/src/hooks/use-workspace-routing.ts` (unsere Datei) | **Naht** in `packages/toolkit/src/components/router/workspace-routing.tsx` (Ordnung, rund 25 Zeilen) und in `workspaceOf` in `workspace-switcher.tsx` (fünf Felder). Teil von PR #379 |
 | Netzwerke im Space-Dialog, `activeNetworkId` im Umschalter, Anlegen mit Netzwerk und Art, Überschrift erster Ordnung, Reiterleiste `min-w-0` | `apps/reference/src/App.tsx` | **Neue Naht** in `packages/toolkit/src/components/frame/app-frame.tsx` (rund 55 Zeilen). `spaceLink` kommt als neuer Prop von der App, weil nur sie ihren Basispfad kennt. Teil von PR #379, der Reiterleisten-Fix als eigener Wunsch |
-| Beispieldaten-Hinweis, Profil-Taste, Profil-Panel, Stiftungs-Import | `App.tsx` im Kopf und Körper | `App.tsx` über die Haken `navbarEnd` und `children` des Rahmens. Space aus der URL (`useParams`) |
+| Beispieldaten-Hinweis, Profil-Taste, Profil-Panel, Stiftungs-Import, Netzwerke-Import (Knopf „Netzwerke übernehmen“, `?import=netzwerke`, 30.09.2026) | `App.tsx` im Kopf und Körper | `App.tsx` über die Haken `navbarEnd` und `children` des Rahmens. Space aus der URL (`useParams`) |
 | Musterdaten | `App.tsx` | unverändert als Seed-Parameter der Connectoren, `SEED_VERSION` und `MUSTERDATEN_VERSION` auf 16 |
 | `apps/reference/package.json`, `pnpm-lock.yaml` | ungenannt | zwei Einträge `@trustdonation/core` und `@trustdonation/ui`, die Sperrdatei folgt ihnen. Ruhig |
 
@@ -125,7 +125,7 @@ Stellen, die nur deshalb Nähte sind, weil wir in Antons Referenz-App gearbeitet
 
 | Datei | Umfang | Was wir tun | Danach |
 |---|---|---|---|
-| `apps/reference/src/App.tsx` | +163 / -13 | Komposition, Connector-Wahl, Musterdaten, Beispieldaten-Hinweis, Stiftungs-Import, Klassen für die Reiterleiste (siehe H), das Profil-Panel einer Einrichtung (`?profil=`) | unsere Datei |
+| `apps/reference/src/App.tsx` | +163 / -13 | Komposition, Connector-Wahl, Musterdaten, Beispieldaten-Hinweis, Stiftungs-Import, Netzwerke-Import, Klassen für die Reiterleiste (siehe H), das Profil-Panel einer Einrichtung (`?profil=`) | unsere Datei |
 | `apps/reference/src/module-register-td.test.ts` | neu | Unsere Schicht im Register, in unserer Datei statt in seiner | unsere Datei |
 | `apps/reference/src/views/companion-view.tsx` | neu | Die Begleitung an das Register gehängt; die Fläche liegt in `td-ui` | unsere Datei |
 | `apps/reference/src/views/profil-panel.tsx` | neu | Das Profil einer Einrichtung im Panel rechts; die Fläche liegt in `td-ui` | unsere Datei |

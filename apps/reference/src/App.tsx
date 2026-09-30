@@ -24,6 +24,7 @@ import {
   getRuntimeConfig,
   useGroups,
   resolveSpaceModules,
+  defaultModuleIds,
   Button,
   type ProfileData,
   type ConnectorOption,
@@ -34,7 +35,7 @@ import { isAuthenticatable, hasMessaging, hasEncounterVerification, hasProfile }
 // nicht aus Antons Demodaten. Beide Connectoren nehmen einen Seed als
 // Parameter, darum bleiben seine Dateien unberuehrt (NAEHTE Abschnitt C).
 import { traegtProfil } from "@trustdonation/core"
-import { StiftungenImport } from "@trustdonation/ui"
+import { NetzwerkeImport, StiftungenImport } from "@trustdonation/ui"
 import { SpaceProfilPanel } from "./views/profil-panel"
 // Der Kreis bekommt seinen Raum von der App (Spec kreis, "Der Raum-Adapter").
 // LiveKit unter kreis.wir.ooo traegt Bild und Ton; `?kreis=lokal` waehlt den
@@ -374,6 +375,7 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
         navbarEnd={
           <>
             <BeispieldatenHinweis aktiv={activeConnectorId === "local"} />
+            <NetzwerkeKnopf aktiv={activeConnectorId !== "local"} />
             {hasMessaging(connector) ? <RelayStatusBadgeWrapper /> : null}
             <SpaceProfilKnopf />
           </>
@@ -385,6 +387,9 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
             gibt, den eine Stiftung versehentlich drückt:
             .../<space>/feed?connector=wot&import=stiftungen */}
         <StiftungenImportHost beispielwelt={activeConnectorId === "local"} />
+        {/* Unsere Netzwerke als echte Spaces anlegen (Timo, 30.09.2026).
+            Ausgeloest ueber den Knopf in der Kopfzeile oder ?import=netzwerke. */}
+        <NetzwerkeImportHost beispielwelt={activeConnectorId === "local"} />
         <ProfilePanelHost
           userId={profileUserId}
           currentUser={currentUser}
@@ -482,6 +487,47 @@ function BeispieldatenHinweis({ aktiv }: { aktiv: boolean }) {
       <span aria-hidden="true">·</span>
       <span className="font-medium">Mein Konto</span>
     </a>
+  )
+}
+
+/**
+ * Im Login ohne ein einziges Netzwerk: der Weg zur Ordnung der Demo (Timo,
+ * 30.09.2026: "Die Gruppen genauso, wie sie in der Demo-Version sind").
+ * Sobald ein Netzwerk da ist, verschwindet der Knopf.
+ */
+function NetzwerkeKnopf({ aktiv }: { aktiv: boolean }) {
+  const { data: groups, isLoading } = useGroups()
+  const [searchParams, setSearchParams] = useSearchParams()
+  if (!aktiv || isLoading || !groups) return null
+  if (groups.some((g) => g.data?.isNetwork === true)) return null
+  return (
+    <button
+      type="button"
+      onClick={() => { const p = new URLSearchParams(searchParams); p.set("import", "netzwerke"); setSearchParams(p) }}
+      className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-dashed px-2.5 py-1 text-xs text-muted-foreground hover:border-primary hover:text-foreground"
+      title="Die Netzwerke, Projekte und Stiftungen der Demo als echte Spaces anlegen"
+    >
+      Netzwerke übernehmen
+    </button>
+  )
+}
+
+function NetzwerkeImportHost({ beispielwelt }: { beispielwelt: boolean }) {
+  const connector = useConnector()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const zu = useCallback(() => {
+    const p = new URLSearchParams(searchParams)
+    p.delete("import")
+    setSearchParams(p)
+  }, [searchParams, setSearchParams])
+  return (
+    <NetzwerkeImport
+      connector={connector}
+      aktiv={searchParams.get("import") === "netzwerke"}
+      beispielwelt={beispielwelt}
+      module={defaultModuleIds()}
+      onZu={zu}
+    />
   )
 }
 

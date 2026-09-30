@@ -64,3 +64,9 @@ export {
   sitzAusAnschrift,
   type ZerlegterEintrag,
 } from "./eintrag-zerlegen.js"
+
+export {
+  netzwerkePlanen,
+  type NetzwerkPlan,
+  type NetzwerkSchritt,
+} from "./netzwerke-uebernehmen.js"
