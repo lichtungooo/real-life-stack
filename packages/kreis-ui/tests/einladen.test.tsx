@@ -14,6 +14,7 @@ import { KreisRaumProvider } from "../src/raum-kontext"
 import { VideoRaumFlaeche } from "../src/video/video-raum-flaeche"
 import { BeitrittsKonferenz } from "../src/video/beitritts-konferenz"
 import { einladungsText, type KonferenzEinladen } from "../src/video/einladen"
+import { ueberblickAlsCsv } from "../src/video/ueberblick"
 
 ;(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true
 
@@ -258,4 +259,34 @@ describe("Gruppenraeume", () => {
     expect(anna.text()).toContain("Teilnehmer (2)")
     expect(anna.text()).not.toContain("Du gehst gleich in")
   }, 15_000)
+})
+
+describe("Meeting-Ueberblick", () => {
+  it("zeigt jeden Menschen mit Nachrichten und Haenden", async () => {
+    const kanal = kanalNetz()
+    const einladen = einladenFuer()
+    const anna = mensch(kanal, "a-anna", "kennung-anna",
+      (e) => <VideoRaumFlaeche raumId={GRUPPE} raumName="Garten" vorschlagName="Anna" einladen={e} />, einladen)
+    const bert = mensch(kanal, "b-bert", "kennung-bert",
+      (e) => <VideoRaumFlaeche raumId={GRUPPE} raumName="Garten" vorschlagName="Bert" einladen={e} />, einladen)
+    await anna.betreten()
+    await namenFeld(bert.huelle, "Bert")
+    await bert.betreten()
+    await act(async () => { (bert.huelle.querySelector('button[aria-label="Hand heben oder senken"]') as HTMLButtonElement).click() })
+
+    await act(async () => { (anna.huelle.querySelector('button[aria-label="Moderation"]') as HTMLButtonElement).click() })
+    await anna.klick("Meeting-Überblick")
+    const tabelle = anna.huelle.querySelector('[aria-label="Meeting-Überblick"] table')!
+    const bertZeile = [...tabelle.querySelectorAll("tr")].find((r) => r.textContent?.includes("Bert"))!
+    expect(bertZeile.textContent).toContain("Online")
+    expect(bertZeile.querySelectorAll("td")[6].textContent).toBe("1")
+    expect(anna.text()).toContain("Aktive Teilnehmer")
+  })
+
+  it("CSV mit Semikolon und Kopfzeile", () => {
+    const csv = ueberblickAlsCsv([{ name: "Anna; die Erste", seit: 0, onlineMs: 65_000, redeMs: 5_000, kameraMs: 0, haende: 2, reaktionen: 1, da: true, nachrichten: 3 }])
+    const zeilen = csv.split(/\r?\n/)
+    expect(zeilen[0]).toBe("Name;Onlinezeit;Redezeit;Kamerazeit;Nachrichten;Reaktionen;Gehobene Haende;Status")
+    expect(zeilen[1]).toBe("Anna, die Erste;00:01:05;00:00:05;00:00:00;3;1;2;online")
+  })
 })

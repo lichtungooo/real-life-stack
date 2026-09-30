@@ -28,6 +28,7 @@ import { istLayout, useVorlieben, vorliebenSetzen, type HinweisArt, type LayoutA
 import { LAYOUT_NAMEN, LayoutDialog } from "./layouts"
 import { ErgebnisseSpalte, TagesordnungSpalte, type ErgebnisAblegen } from "./meeting-spalten"
 import { GruppenraeumeDialog, GruppenraeumeHinweis } from "./gruppenraeume"
+import { UeberblickDialog, useUeberblick } from "./ueberblick"
 import { EinstellungenDialog } from "./einstellungen-dialog"
 import { useKreisVerbindung, type KreisKontext } from "../raum-kontext"
 import { AndererRaum, KreisWerkzeug, OhneRaum, Vorraum } from "../kreis-raum-flaeche"
@@ -165,6 +166,8 @@ function InDerKonferenz({ kreis, raumName, raumId, module = [], modulZeigen, pro
   const [layoutOffen, setLayoutOffen] = useState(false)
   const [moderationOffen, setModerationOffen] = useState(false)
   const [gruppenOffen, setGruppenOffen] = useState(false)
+  const [ueberblickOffen, setUeberblickOffen] = useState(false)
+  const ueberblick = useUeberblick(kreis)
   const vorlieben = useVorlieben()
   // Hinweise wie in Big Blue Button: je Anlass ein Ton und eine Einblendung.
   const [einblendungen, setEinblendungen] = useState<{ id: number; text: string }[]>([])
@@ -412,6 +415,9 @@ function InDerKonferenz({ kreis, raumName, raumId, module = [], modulZeigen, pro
               <Eintrag onClick={() => { setModerationOffen(false); setGruppenOffen(true) }}>
                 <span className="w-4 text-center">⊞</span> Gruppenräume erstellen
               </Eintrag>
+              <Eintrag onClick={() => { setModerationOffen(false); setUeberblickOffen(true) }}>
+                <span className="w-4 text-center">▥</span> Meeting-Überblick
+              </Eintrag>
               <p className="px-3 pb-2 pt-1 text-[11px] text-slate-500">Auf Augenhöhe: Jeder darf das, und jedes Gerät hält sich selbst daran.</p>
             </Menue>
           </div>
@@ -656,6 +662,7 @@ function InDerKonferenz({ kreis, raumName, raumId, module = [], modulZeigen, pro
             </span>
           </div>
         )}
+        {ueberblickOffen && <UeberblickDialog kreis={kreis} raumName={raumName} zahlen={ueberblick} seit={seit} onZu={() => setUeberblickOffen(false)} />}
         {gruppenOffen && (
           <GruppenraeumeDialog teilnehmer={teilnehmer} onZu={() => setGruppenOffen(false)}
             onStarten={(r, min, selbst) => handle((s, t) => gruppenraeumeStarten(s, r, min, selbst, wer, t))} />
