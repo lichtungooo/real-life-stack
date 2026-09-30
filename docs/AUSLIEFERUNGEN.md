@@ -6,7 +6,7 @@ Das Image liegt auf dem Server als `trustdonation-app:proto-N`. Zurückgedreht w
 
 | Stand | Commit | Datum | Was drin ist |
 |---|---|---|---|
-| **proto-41** | `COMMIT` | 30.09.2026 | **Tagesordnung, Aufgaben und Beschlüsse.** Links unter „Meeting“: Tagesordnung mit Zeiten, der laufende Punkt oben mit Restzeit. Aufgaben (wer, bis wann) landen als Aufgabe im **Kanban der Gruppe**, Beschlüsse im **Feed**, mit Herkunft aus dem Meeting. |
+| **proto-41** | `975cc6b1` | 30.09.2026 | **Tagesordnung, Aufgaben und Beschlüsse.** Links unter „Meeting“: Tagesordnung mit Zeiten, der laufende Punkt oben mit Restzeit. Aufgaben (wer, bis wann) landen als Aufgabe im **Kanban der Gruppe**, Beschlüsse im **Feed**, mit Herkunft aus dem Meeting. |
 | **proto-40** | `b280a299` | 30.09.2026 | **Layouts wie in Big Blue Button.** ⋮ → Layout: Bilder oben, Bilder rechts, Präsentation im Zentrum, Video im Zentrum; für mich oder **„Für alle übernehmen“**. |
 | **proto-39** | `1ec7c40b` | 30.09.2026 | **Folien laufen live.** Im echten Browser lehnte der Server den pdf.js-Worker ab (`.mjs` kam als `application/octet-stream`). Vite baut den Worker jetzt als `.js` (`?worker`) und gibt ihn pdf.js direkt. |
 | **proto-38** | `6ba590a1` | 30.09.2026 | **Folien auf dem Zeichenpad.** PDF hochladen (bis 15 MB), sie reist in Stücken über den Raum zu allen, ohne Server; jedes Gerät zeichnet die Seite mit pdf.js; ‹ Folie n von N ›, jede Folie mit eigener Zeichnung, Nachzügler bekommen Datei und Stand. Nebenbei behoben: Der Neben-Kanal konnte eine Nachricht verlieren, die genau beim Neuzeichnen kam. |
