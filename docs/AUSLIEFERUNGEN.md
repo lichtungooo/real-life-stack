@@ -6,7 +6,7 @@ Das Image liegt auf dem Server als `trustdonation-app:proto-N`. Zurückgedreht w
 
 | Stand | Commit | Datum | Was drin ist |
 |---|---|---|---|
-| **proto-46** | `COMMIT` | 30.09.2026 | **Das Textdokument, als ganz normales Item** (Antons Entscheidung): ein Beitrag im Space, gemeinsam in Markdown geschrieben, mit Leiste und Vorschau, synchronisiert vom Stack; kein eigenes Yjs. **Behoben:** Protokoll und Beschlüsse landen jetzt mit Inhalt im Feed (`content` statt `text`). |
+| **proto-46** | `5dc845dc` | 30.09.2026 | **Das Textdokument, als ganz normales Item** (Antons Entscheidung): ein Beitrag im Space, gemeinsam in Markdown geschrieben, mit Leiste und Vorschau, synchronisiert vom Stack; kein eigenes Yjs. **Behoben:** Protokoll und Beschlüsse landen jetzt mit Inhalt im Feed (`content` statt `text`). Die kreis-ui-Tests laufen Datei für Datei; parallel rissen sie im Torlauf unter Last die 20 Sekunden. |
 | **proto-45** | `f94c369a` | 30.09.2026 | Das Zahnrad-Menü der Moderation schwebt frei; in der schmalen Leiste war es rechts abgeschnitten (im Browser gesehen). |
 | **proto-44** | `13780310` | 30.09.2026 | **Meeting-Überblick** nach dem Lernanalyse-Dashboard: je Mensch Online-, Rede- und Kamerazeit, Nachrichten, Reaktionen, Hände; Download als CSV. Jedes Gerät zählt nur, was es selbst sieht, nichts wird gespeichert; keine Punktzahl für Menschen. |
 | **proto-43** | `1a70725f` | 30.09.2026 | **Gruppenräume wie in BBB.** Anzahl, Dauer, selbst aussuchen, Menschen per Ziehen oder zufällig zuordnen; Countdown, eigener Raum je Gruppe, Restzeit und „Zurück in den Hauptraum“, zur Zeit geht jeder von selbst zurück. |
