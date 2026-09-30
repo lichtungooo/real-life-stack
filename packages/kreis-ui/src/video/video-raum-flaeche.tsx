@@ -99,7 +99,7 @@ function Rund({ an, warnung, titel, onClick, children }: { an?: boolean; warnung
   )
 }
 
-function Menue({ offen, onZu, className, children }: { offen: boolean; onZu: () => void; className: string; children: ReactNode }) {
+function Menue({ offen, onZu, className, children, fest = false }: { offen: boolean; onZu: () => void; className: string; children: ReactNode; fest?: boolean }) {
   const ref = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
     if (!offen) return
@@ -108,7 +108,7 @@ function Menue({ offen, onZu, className, children }: { offen: boolean; onZu: () 
     return () => { clearTimeout(t); document.removeEventListener("click", zu) }
   }, [offen, onZu])
   if (!offen) return null
-  return <div ref={ref} className={`absolute z-50 max-h-[70vh] w-72 overflow-y-auto rounded-xl bg-white p-1.5 text-slate-800 shadow-2xl ${className}`}>{children}</div>
+  return <div ref={ref} className={`${fest ? "fixed" : "absolute"} z-50 max-h-[70vh] w-72 overflow-y-auto rounded-xl bg-white p-1.5 text-slate-800 shadow-2xl ${className}`}>{children}</div>
 }
 
 /** Ein Aufklappfeld im Menue: zu, bis man es braucht. */
@@ -380,7 +380,7 @@ function InDerKonferenz({ kreis, raumName, raumId, module = [], modulZeigen, pro
             <p className="flex-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Teilnehmer ({teilnehmer.length})</p>
             <button type="button" onClick={() => setModerationOffen(!moderationOffen)} aria-label="Moderation" title="Moderation"
               className="rounded p-1 text-slate-400 hover:bg-white/10 hover:text-white"><Settings className="h-4 w-4" /></button>
-            <Menue offen={moderationOffen} onZu={() => setModerationOffen(false)} className="left-2 top-full mt-1 w-80">
+            <Menue offen={moderationOffen} onZu={() => setModerationOffen(false)} className="bottom-4 left-3 w-80" fest>
               <Eintrag aktiv={moderation.neueStumm} onClick={() => handle((s) => moderationSetzen(s, { neueStumm: !moderation.neueStumm }, wer))}>
                 <MicOff className="h-4 w-4" /> {moderation.neueStumm ? "Neue Teilnehmer stumm: an" : "Neue Teilnehmer stumm schalten"}
               </Eintrag>
