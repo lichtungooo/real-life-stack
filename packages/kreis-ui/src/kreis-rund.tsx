@@ -7,6 +7,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react"
 import { Mic, MicOff } from "lucide-react"
 import type { KreisRaum, KreisTeilnehmer } from "@kreis/core"
+import { useVorlieben } from "./vorlieben"
 
 /** Das Rund wird nie groesser als das, damit die Mitte markant bleibt. */
 const RUND_HOECHSTENS = 460
@@ -48,7 +49,8 @@ function Platz({
   groesse: number
 }) {
   const videoRef = useRef<HTMLVideoElement | null>(null)
-  const zeigtBild = raum.traegtMedien && person.kameraAn && !!raum.bildAnhaengen
+  const vorlieben = useVorlieben()
+  const zeigtBild = raum.traegtMedien && person.kameraAn && !!raum.bildAnhaengen && (person.ichSelbst || vorlieben.kamerasAnderer)
 
   useEffect(() => {
     if (!zeigtBild || !videoRef.current || !raum.bildAnhaengen) return

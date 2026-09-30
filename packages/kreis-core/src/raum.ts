@@ -30,6 +30,12 @@ export interface KreisRaum {
   senden(nachricht: unknown): void
   beiNachricht(fn: (nachricht: unknown, von: string) => void): () => void
   mikro(an: boolean): Promise<void>
+  /**
+   * Optional: den Audiofilter des eigenen Mikrofons schalten (Rausch- und
+   * Echounterdrueckung, automatische Lautstaerke). Wie der Schalter in Big
+   * Blue Button; gilt fuer das laufende Mikrofon und jedes weitere.
+   */
+  mikroFilter?(an: boolean): Promise<void>
   kamera(an: boolean): Promise<void>
   /** Optional: das Bild eines Teilnehmers an ein Element haengen. Gibt das Loesen zurueck. */
   bildAnhaengen?(id: string, element: HTMLVideoElement): () => void

@@ -43,6 +43,12 @@ Dazu, ebenfalls im Aktions-Knopf: **Zufällig jemanden wählen** (das Los steht 
 
 **Aktions-Menü, Feinarbeit (30.09.2026):** Timo: *„nicht trennen, sondern einfach nur Kreisprozess … ansonsten wäre es ein normales Meeting“*. Ein Aufklappfeld **Kreisprozess** mit „Freier Kreis mit Redestab“ und den Prozessen. Unter „Für alle“ steht **Dauer des Meetings** (offen, 30, 45, 60, 90 Min., 2 und 3 Std.) direkt im Menü. Am Ende klingt ein **eigener Ton** (`meetingEnde`: vier helle, aufsteigende Töne), weder Schale noch Gong (*„da kann ruhig was anderes kommen“*). Der Kurzzeitwecker ist für Pausen und Übungen; die Redezeit mit Gong steht unter ⋮ Einstellungen. Die Restzeit rundet auf die nächste Minute statt auf, damit zwei Geräte mit einem Takt Abstand dasselbe zeigen.
 
+**Einstellungen wie in Big Blue Button (30.09.2026):** ⋮ → **Einstellungen**, links vier Reiter, oben Schließen und Speichern (Timo mit Bildschirmfotos aus BBB).
+- **Anwendung** (nur für mich, im Browser, `vorlieben.ts`): Animationen, **Audiofilter** fürs Mikrofon (Rausch-, Echounterdrückung, automatische Lautstärke; `KreisRaum.mikroFilter`, LiveKit `restartTrack` ohne Neuverbindung), **Push-to-Talk** (Leertaste), **Selbstansicht**, Reaktionsleiste schließt sich, **Schriftgröße** 80 bis 130 %. Hell und dunkel bleibt oben in der App.
+- **Benachrichtigungen:** Ton und Einblendung je Chatnachricht, Beitritt, Gehen, Hand heben; Vorgabe wie BBB nur beim Handheben.
+- **Datensparmodus:** Kameras der anderen, geteilter Bildschirm der anderen (das eigene Bild bleibt).
+- **Regeln des Raums** (für alle): Redezeit, danach, Stille, Dauer des Meetings.
+
 **Einladen (30.09.2026):** Timo: *„dass der, der eine Konferenz startet, Nutzer dafür einlädt. Und dass es einen Link gibt, den man verschicken kann, falls noch ein Nutzer mit beitreten will, der noch nie drin war.“* Neue werden richtige Mitglieder, keine Gäste. Keine E-Mail.
 
 - **Der Raum hängt an der Id der Gruppe** (`raumId`), nicht mehr an ihrem Namen. Der Token-Dienst gibt das Zugangswort jedem mit erlaubter Herkunft, und die lässt sich außerhalb des Browsers fälschen; ein Name ließe sich erraten, eine UUID nicht. Der Link ist so der Schlüssel. Der Provider trennt Schlüssel (`raumName`) und Titel (`raumTitel`).

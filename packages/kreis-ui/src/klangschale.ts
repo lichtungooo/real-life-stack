@@ -97,3 +97,23 @@ export function meetingEnde(lautstaerke = 0.22): void {
     }
   })
 }
+
+/** Ein kurzer, leiser Hinweiston (Chat, Beitritt, Hand): zwei weiche Toene. */
+export function hinweisTon(lautstaerke = 0.12): void {
+  const ctx = audio()
+  if (!ctx) return
+  const t = ctx.currentTime
+  ;[880, 1174.66].forEach((ton, i) => {
+    const start = t + i * 0.09
+    const osz = ctx.createOscillator()
+    osz.type = "sine"
+    osz.frequency.value = ton
+    const huelle = ctx.createGain()
+    huelle.gain.setValueAtTime(0.0001, start)
+    huelle.gain.exponentialRampToValueAtTime(lautstaerke, start + 0.01)
+    huelle.gain.exponentialRampToValueAtTime(0.0001, start + 0.35)
+    osz.connect(huelle).connect(ctx.destination)
+    osz.start(start)
+    osz.stop(start + 0.4)
+  })
+}

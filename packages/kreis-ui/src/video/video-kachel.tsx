@@ -9,6 +9,7 @@ import { useEffect, useRef } from "react"
 import { MicOff, MonitorUp, Pin } from "lucide-react"
 import type { KreisRaum, KreisTeilnehmer } from "@kreis/core"
 import { ZEICHEN, type ZeichenArt } from "../use-neben"
+import { useVorlieben } from "../vorlieben"
 
 const TOENE = ["#0369a1", "#047857", "#6d28d9", "#b45309", "#be123c", "#0f766e", "#4338ca", "#c2410c"]
 function farbe(text: string): string {
@@ -34,7 +35,10 @@ export function VideoKachel({
   onAnheften?: () => void
 }) {
   const videoRef = useRef<HTMLVideoElement | null>(null)
-  const zeigtBild = bildschirm ? !!person.teiltBildschirm : person.kameraAn && raum.traegtMedien
+  // Datensparmodus: Bilder und Bildschirme der anderen nur, wenn gewuenscht.
+  const vorlieben = useVorlieben()
+  const erlaubt = person.ichSelbst || (bildschirm ? vorlieben.bildschirmAnderer : vorlieben.kamerasAnderer)
+  const zeigtBild = erlaubt && (bildschirm ? !!person.teiltBildschirm : person.kameraAn && raum.traegtMedien)
 
   useEffect(() => {
     const el = videoRef.current

@@ -23,7 +23,9 @@ import {
   PROZESSE, aktuellerSchritt, losZiehen, mitteSetzen, prozessWaehlen, redezeitRest, regelnSetzen, regelnVon,
   schaleSchlagen, sitzungRest, stabNehmen, stabZuruecklegen, stilleLaeuft, stilleSekundenVon, weckerAus, weckerStellen, type KreisTeilnehmer,
 } from "@kreis/core"
-import { meetingEnde, schaleAnschlagen } from "../klangschale"
+import { hinweisTon, meetingEnde, schaleAnschlagen } from "../klangschale"
+import { useVorlieben, type HinweisArt } from "../vorlieben"
+import { EinstellungenDialog } from "./einstellungen-dialog"
 import { useKreisVerbindung, type KreisKontext } from "../raum-kontext"
 import { AndererRaum, KreisWerkzeug, OhneRaum, Vorraum } from "../kreis-raum-flaeche"
 import { ZEICHEN, spracherkennungVorhanden, type ZeichenArt } from "../use-neben"
@@ -32,7 +34,7 @@ import { VideoKachel } from "./video-kachel"
 import { Tafel } from "./tafel"
 import { Chat, Menschen, Protokoll, type ProtokollSpeichern } from "./video-seiten"
 import { GeteilteNotizen, LosAnzeige, UmfrageWerkzeug, WeckerAnzeige } from "./werkzeuge"
-import { Einstellungen, SITZUNG_STUFEN, dauerText } from "../regeln-formular"
+import { SITZUNG_STUFEN, dauerText } from "../regeln-formular"
 import { EinladenDialog, NeuImRaum, type KonferenzEinladen } from "./einladen"
 
 /** Die Tools, die das Video selbst mitbringt. Module kommen aus dem Register dazu. */
@@ -152,6 +154,9 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
   const [mehrOffen, setMehrOffen] = useState(false)
   const [einstellungenOffen, setEinstellungenOffen] = useState(false)
   const [einladenOffen, setEinladenOffen] = useState(false)
+  const vorlieben = useVorlieben()
+  // Hinweise wie in Big Blue Button: je Anlass ein Ton und eine Einblendung.
+  const [einblendungen, setEinblendungen] = useState<{ id: number; text: string }[]>([])
   // Die eigene Ansicht aller: nur fuer mich, das Tool bleibt fuer die anderen
   // in der Mitte (Timo: man muss nicht immer das Redekreisfenster sehen).
   const [nurMenschen, setNurMenschen] = useState(false)
@@ -189,7 +194,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
 
   // Leertaste haelt das Mikrofon offen. ⚠ Nicht beim Schreiben in ein Feld.
   useEffect(() => {
-    if (!raum.traegtMedien) return
+    if (!raum.traegtMedien || !vorlieben.pushToTalk) return
     const schreibt = () => {
       const el = document.activeElement as HTMLElement | null
       return !!el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable)
@@ -210,7 +215,42 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
     window.addEventListener("keydown", runter)
     window.addEventListener("keyup", hoch)
     return () => { window.removeEventListener("keydown", runter); window.removeEventListener("keyup", hoch) }
-  }, [raum, mich?.mikroAn, leertaste, medien])
+  }, [raum, mich?.mikroAn, leertaste, medien, vorlieben.pushToTalk])
+
+  // Der Audiofilter des Mikrofons folgt der Vorliebe.
+  useEffect(() => { void raum.mikroFilter?.(vorlieben.audiofilter) }, [raum, vorlieben.audiofilter])
+
+  // Hinweise: neue Chatzeilen der anderen, wer kommt, wer geht, wer die Hand hebt.
+  const melde = useCallback((art: HinweisArt, text: string) => {
+    const h = vorlieben.hinweise[art]
+    if (h.ton) hinweisTon()
+    if (!h.popup) return
+    const id = Date.now() + Math.random()
+    setEinblendungen((e) => [...e.slice(-3), { id, text }])
+    setTimeout(() => setEinblendungen((e) => e.filter((x) => x.id !== id)), 4500)
+  }, [vorlieben.hinweise])
+  const chatBisher = useRef(neben.chat.length)
+  useEffect(() => {
+    const neu = neben.chat.slice(chatBisher.current).filter((z) => z.wer !== ich)
+    chatBisher.current = neben.chat.length
+    if (neu.length > 0) melde("chat", `${neu[neu.length - 1].name}: ${neu[neu.length - 1].text.slice(0, 80)}`)
+  }, [neben.chat, ich, melde])
+  const anwesendBisher = useRef<Map<string, string> | null>(null)
+  useEffect(() => {
+    const jetztDa = new Map(teilnehmer.map((t) => [t.id, t.name]))
+    const vorher = anwesendBisher.current
+    anwesendBisher.current = jetztDa
+    if (!vorher) return
+    for (const [id, name] of jetztDa) if (!vorher.has(id)) melde("beitritt", `${name} ist dazugekommen`)
+    for (const [id, name] of vorher) if (!jetztDa.has(id)) melde("gehen", `${name} ist gegangen`)
+  }, [teilnehmer, melde])
+  const haendeBisher = useRef<ReadonlySet<string>>(neben.haende)
+  useEffect(() => {
+    for (const id of neben.haende) {
+      if (!haendeBisher.current.has(id) && id !== ich) melde("hand", `${teilnehmer.find((t) => t.id === id)?.name ?? "Jemand"} hebt die Hand`)
+    }
+    haendeBisher.current = neben.haende
+  }, [neben.haende, ich, teilnehmer, melde])
 
   // Die Zeit ist um: einmal ein leiser, hoher Klang, bei allen.
   const weckerGeklungen = useRef(0)
@@ -251,13 +291,18 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
   const schale = () => handle((s, t) => schaleSchlagen(s, wer, stilleSekundenVon(s, prozess), t))
   const spalteZeigen = (b: Exclude<Spalte, null>) => setSpalte(spalte === b ? null : b)
 
+  // Selbstansicht aus: das eigene Bild faellt weg, ausser man ist allein.
+  const sichtbar = vorlieben.selbstansicht || teilnehmer.length <= 1 ? teilnehmer : teilnehmer.filter((t) => !t.ichSelbst)
   const kachel = (p: KreisTeilnehmer) => (
     <VideoKachel person={p} raum={raum} handOben={neben.haende.has(p.id)}
       zeichen={neben.zeichen.get(p.id)?.art ?? null} haeltStab={halterDa && sitzung.stab.halter === p.id} />
   )
 
   return (
-    <div ref={huelle} className="relative flex h-full w-full overflow-hidden bg-slate-950 text-white">
+    <div ref={huelle} data-ruhig={vorlieben.animationen ? undefined : ""}
+      style={vorlieben.schrift !== 100 ? { zoom: vorlieben.schrift / 100 } : undefined}
+      className="relative flex h-full w-full overflow-hidden bg-slate-950 text-white">
+      {!vorlieben.animationen && <style>{"[data-ruhig] *, [data-ruhig] *::before, [data-ruhig] *::after { animation: none !important; transition: none !important; }"}</style>}
       {/* LINKS: die Leiste wie bei Big Blue Button */}
       {leisteOffen && (
         <nav aria-label="Konferenz" className="flex w-56 shrink-0 flex-col overflow-y-auto bg-slate-900 text-sm">
@@ -337,7 +382,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
             </button>
             <Menue offen={mehrOffen} onZu={() => setMehrOffen(false)} className="right-0 top-full mt-1">
               <Eintrag onClick={() => { setMehrOffen(false); setEinstellungenOffen(true) }}>
-                <span className="w-4 text-center">⚙</span> Einstellungen des Raums
+                <span className="w-4 text-center">⚙</span> Einstellungen
               </Eintrag>
               <Eintrag onClick={() => { setMehrOffen(false); void huelle.current?.requestFullscreen?.().catch(() => {}) }}>
                 <Maximize2 className="h-4 w-4" /> Vollbild
@@ -358,7 +403,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
               </button>
             )}
             <div className="min-h-0 flex-1">
-            <VideoBuehne teilnehmer={teilnehmer} raum={raum} ansicht="galerie"
+            <VideoBuehne teilnehmer={sichtbar} raum={raum} ansicht="galerie"
               stabHalter={halterDa ? sitzung.stab.halter : null} haende={neben.haende} zeichen={neben.zeichen} />
             </div>
           </div>
@@ -366,7 +411,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
           <>
             {/* OBEN: die Menschen mit Bild */}
             <div className="flex shrink-0 gap-2 overflow-x-auto pb-1" aria-label="Die Menschen">
-              {teilnehmer.map((p) => <div key={p.id} className="w-32 shrink-0">{kachel(p)}</div>)}
+              {sichtbar.map((p) => <div key={p.id} className="w-32 shrink-0">{kachel(p)}</div>)}
             </div>
             {/* MITTE: das Tool im Modul, fuer alle */}
             <section className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-background text-foreground">
@@ -474,7 +519,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
             {zeichenOffen && (
               <div className="absolute bottom-full left-1/2 z-50 mb-2 flex -translate-x-1/2 gap-1 rounded-xl bg-slate-800 p-1.5 shadow-2xl">
                 {(Object.keys(ZEICHEN) as ZeichenArt[]).map((art) => (
-                  <button key={art} type="button" onClick={() => { neben.zeichenGeben(art); setZeichenOffen(false) }} aria-label={art} className="flex h-9 w-9 items-center justify-center rounded-lg text-lg hover:scale-110 hover:bg-white/10">
+                  <button key={art} type="button" onClick={() => { neben.zeichenGeben(art); if (vorlieben.reaktionenSchliessen) setZeichenOffen(false) }} aria-label={art} className="flex h-9 w-9 items-center justify-center rounded-lg text-lg hover:scale-110 hover:bg-white/10">
                     {ZEICHEN[art]}
                   </button>
                 ))}
@@ -496,8 +541,15 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
           </div>
         )}
         {einstellungenOffen && (
-          <Einstellungen regeln={regelnVon(sitzung)} stilleVorgabe={stilleSekundenVon({ ...sitzung, regeln: undefined }, prozess)} onZu={() => setEinstellungenOffen(false)}
-            onSpeichern={(r) => handle((s, t) => regelnSetzen(s, r, wer, t))} />
+          <EinstellungenDialog regeln={regelnVon(sitzung)} stilleVorgabe={stilleSekundenVon({ ...sitzung, regeln: undefined }, prozess)}
+            onZu={() => setEinstellungenOffen(false)} onRegelnSpeichern={(r) => handle((s, t) => regelnSetzen(s, r, wer, t))} />
+        )}
+        {einblendungen.length > 0 && (
+          <div aria-live="polite" className="pointer-events-none absolute right-3 top-14 z-40 flex w-72 flex-col gap-2">
+            {einblendungen.map((e) => (
+              <div key={e.id} role="status" className="rounded-xl bg-slate-800/95 px-3.5 py-2.5 text-sm text-slate-100 shadow-xl ring-1 ring-white/10">{e.text}</div>
+            ))}
+          </div>
         )}
         {meldung && (
           <div role="alert" className="pointer-events-none absolute inset-x-0 bottom-20 flex justify-center px-4">

@@ -95,6 +95,11 @@ export function liveKitKreisRaum(optionen: LiveKitRaumOptionen = KREIS_WIR_OOO):
     }
   }
 
+  // Der Audiofilter des eigenen Mikrofons (Rausch-, Echounterdrueckung,
+  // automatische Lautstaerke). An, bis jemand ihn ausschaltet.
+  let filter = true
+  const tonFilter = () => ({ noiseSuppression: filter, echoCancellation: filter, autoGainControl: filter })
+
   return {
     traegtMedien: true,
 
@@ -133,7 +138,7 @@ export function liveKitKreisRaum(optionen: LiveKitRaumOptionen = KREIS_WIR_OOO):
       await r.connect(optionen.serverUrl, token)
       raum = r
       if (optionen.mikroBeimBetreten ?? true) {
-        await r.localParticipant.setMicrophoneEnabled(true).catch(() => {
+        await r.localParticipant.setMicrophoneEnabled(true, tonFilter()).catch(() => {
           // Ohne Freigabe fuers Mikrofon bleibt man stumm im Kreis, statt draussen.
         })
       }
@@ -185,7 +190,17 @@ export function liveKitKreisRaum(optionen: LiveKitRaumOptionen = KREIS_WIR_OOO):
     },
 
     async mikro(an) {
-      await raum?.localParticipant.setMicrophoneEnabled(an)
+      await raum?.localParticipant.setMicrophoneEnabled(an, an ? tonFilter() : undefined)
+      melden()
+    },
+
+    async mikroFilter(an) {
+      filter = an
+      // Die laufende Spur mit den neuen Einstellungen neu starten; die
+      // Verbindung und die Veroeffentlichung bleiben stehen.
+      const spur = raum?.localParticipant.getTrackPublications()
+        .find((p) => p.source === "microphone")?.track as { restartTrack?: (o: unknown) => Promise<void> } | undefined
+      await spur?.restartTrack?.(tonFilter()).catch(() => {})
       melden()
     },
 
