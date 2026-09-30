@@ -17,7 +17,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import {
   Bell, ChevronLeft, ChevronRight, CircleDot, FileText, Hand, LogOut, Maximize2, MessageSquare,
-  Mic, MicOff, MonitorUp, MoreVertical, PanelLeft, Plus, Smile, Users, Video, VideoOff, X,
+  Mic, MicOff, MonitorUp, MoreVertical, PanelLeft, Plus, Smile, UserPlus, Users, Video, VideoOff, X,
 } from "lucide-react"
 import {
   PROZESSE, aktuellerSchritt, losZiehen, mitteSetzen, prozessWaehlen, redezeitRest, regelnSetzen, regelnVon,
@@ -33,6 +33,7 @@ import { Tafel } from "./tafel"
 import { Chat, Menschen, Protokoll, type ProtokollSpeichern } from "./video-seiten"
 import { GeteilteNotizen, LosAnzeige, UmfrageWerkzeug, WeckerAnzeige } from "./werkzeuge"
 import { Einstellungen } from "../regeln-formular"
+import { EinladenDialog, NeuImRaum, type KonferenzEinladen } from "./einladen"
 
 /** Die Tools, die das Video selbst mitbringt. Module kommen aus dem Register dazu. */
 export const TOOL_KREIS = "kreis"
@@ -51,7 +52,16 @@ type Spalte = "chat" | "notizen" | "protokoll" | null
 export interface ModulWahl { id: string; label: string }
 
 export interface VideoRaumFlaecheProps {
+  /** Wie die Konferenz heisst (der Name der Gruppe). */
   raumName: string
+  /**
+   * Der Schluessel des Raums: die Id der Gruppe. Ein Name laesst sich
+   * erraten, eine Id nicht; der Link ist so der Schluessel. Fehlt sie, gilt
+   * der Name (Probe-Raum, Tests).
+   */
+  raumId?: string
+  /** Einladen per Link und aus den Kontakten. Fehlt es, gibt es keinen Knopf dafuer. */
+  einladen?: KonferenzEinladen
   vorschlagName?: string
   /** Die Module des Space, die sich als Tool in die Mitte legen lassen. */
   module?: readonly ModulWahl[]
@@ -114,14 +124,16 @@ function Eintrag({ onClick, children, aktiv }: { onClick: () => void; children: 
 export function VideoRaumFlaeche(props: VideoRaumFlaecheProps) {
   const kreis = useKreisVerbindung()
   if (!kreis) return <OhneRaum />
-  if (kreis.zustand === "drin" && kreis.raumName !== props.raumName) {
-    return <AndererRaum kreis={kreis} hier={props.raumName} vorschlagName={props.vorschlagName} />
+  const schluessel = props.raumId ?? props.raumName
+  if (kreis.zustand === "drin" && kreis.raumName !== schluessel) {
+    return <AndererRaum kreis={kreis} hier={schluessel} hierTitel={props.raumName} vorschlagName={props.vorschlagName} />
   }
   if (kreis.zustand !== "drin") {
     return (
       <Vorraum
         kreis={kreis}
         raumName={props.raumName}
+        raumSchluessel={schluessel}
         vorschlagName={props.vorschlagName}
         titel="Konferenz"
         einleitung="Bild, Ton und Bildschirm für alle im Space. In der Mitte legt ihr ein Tool für alle hinein: den Kreis mit dem Redestab, die Tafel, ein Modul."
@@ -132,13 +144,14 @@ export function VideoRaumFlaeche(props: VideoRaumFlaecheProps) {
   return <InDerKonferenz kreis={kreis} {...props} />
 }
 
-function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSpeichern }: VideoRaumFlaecheProps & { kreis: KreisKontext }) {
+function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSpeichern, einladen }: VideoRaumFlaecheProps & { kreis: KreisKontext }) {
   const { raum, teilnehmer, ich, sitzung, prozess, jetzt, handle, neben } = kreis
   const [leisteOffen, setLeisteOffen] = useState(true)
   const [spalte, setSpalte] = useState<Spalte>(null)
   const [aktionOffen, setAktionOffen] = useState(false)
   const [mehrOffen, setMehrOffen] = useState(false)
   const [einstellungenOffen, setEinstellungenOffen] = useState(false)
+  const [einladenOffen, setEinladenOffen] = useState(false)
   // Die eigene Ansicht aller: nur fuer mich, das Tool bleibt fuer die anderen
   // in der Mitte (Timo: man muss nicht immer das Redekreisfenster sehen).
   const [nurMenschen, setNurMenschen] = useState(false)
@@ -269,6 +282,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
           )}
           <p className="px-4 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Teilnehmer ({teilnehmer.length})</p>
           <Menschen teilnehmer={teilnehmer} haende={neben.haende} stab={halterDa ? sitzung.stab.halter : null} medien={raum.traegtMedien} />
+          {einladen && <NeuImRaum kreis={kreis} einladen={einladen} />}
         </nav>
       )}
 
@@ -306,6 +320,12 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
             </p>
           </div>
           {wecker && <WeckerAnzeige bis={wecker.bis} jetzt={jetzt} onAus={() => handle((s) => weckerAus(s, wer))} />}
+          {einladen && (
+            <button type="button" onClick={() => setEinladenOffen(true)} title="Menschen einladen: Link teilen oder aus den Kontakten"
+              className="flex h-9 items-center gap-1.5 rounded-full bg-sky-600 px-3 text-xs font-medium hover:bg-sky-500">
+              <UserPlus className="h-4 w-4" /> Einladen
+            </button>
+          )}
           <button type="button" onClick={() => void kreis.verlassen()} title="Die Konferenz verlassen" aria-label="gehen"
             className="flex h-9 items-center gap-1.5 rounded-full bg-rose-600 px-3 text-xs font-medium hover:bg-rose-700">
             <LogOut className="h-4 w-4" /> gehen
@@ -451,6 +471,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
         </footer>
 
         <LosAnzeige los={sitzung.los} />
+        {einladen && einladenOffen && <EinladenDialog gruppe={raumName} einladen={einladen} onZu={() => setEinladenOffen(false)} />}
         {sitzungsEnde && !abschlussGesehen && (
           <div role="status" className="absolute inset-x-0 top-16 z-40 flex justify-center px-4">
             <span className="flex items-center gap-3 rounded-2xl bg-amber-400 px-5 py-3 text-slate-900 shadow-2xl">

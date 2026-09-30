@@ -41,6 +41,17 @@ Dazu, ebenfalls im Aktions-Knopf: **Zufällig jemanden wählen** (das Los steht 
 
 **Stille und Dauer des Treffens (Einstellungen, ⋮):** Die Stille nach der Klangschale gilt für alle (15 Sekunden, 30 Sekunden, 1 Minute, 2 Minuten); ohne eigene Wahl gilt die des Prozesses (`stilleSekundenVon`). Die Dauer des Treffens (offen, 30 Minuten bis 3 Stunden) beginnt mit dem Festlegen (`Regeln.sitzungSeit`). Oben steht, wie lange das Treffen noch geht. Ist sie um, klingt der Gong bei jedem einmal, und ein Hinweis ruft zur Abschlussrunde. Das Treffen läuft weiter.
 
+**Einladen (30.09.2026):** Timo: *„dass der, der eine Konferenz startet, Nutzer dafür einlädt. Und dass es einen Link gibt, den man verschicken kann, falls noch ein Nutzer mit beitreten will, der noch nie drin war.“* Neue werden richtige Mitglieder, keine Gäste. Keine E-Mail.
+
+- **Der Raum hängt an der Id der Gruppe** (`raumId`), nicht mehr an ihrem Namen. Der Token-Dienst gibt das Zugangswort jedem mit erlaubter Herkunft, und die lässt sich außerhalb des Browsers fälschen; ein Name ließe sich erraten, eine UUID nicht. Der Link ist so der Schlüssel. Der Provider trennt Schlüssel (`raumName`) und Titel (`raumTitel`).
+- **Knopf „Einladen“** in der Kopfzeile: optionale Beschreibung, **„Text mit Link kopieren“** (Einladung zur Session „Gruppe“, Beschreibung, Link, was Neue erwartet, „Conferencing ist ein Modul vom Real Life Network“) und „Nur den Link“. Darunter die Kontakte: wer nicht in der Gruppe ist, bekommt die Einladung (`inviteMember`), wer drin ist, steht als „in der Gruppe“.
+- **Der Link** führt auf die Einladungsseite der Instanz (`/einladung/?konferenz=<id>&gruppe=<name>`, Instanz-Repo trustdonation). Sie trägt die Vorschau für Telegram und Signal (Open Graph; Messenger führen kein JavaScript aus) und leitet mit einem Knopf nach `/app/?connector=wot&konferenz=…&gruppe=…`.
+- **In der App** fängt `KonferenzBeitrittHost` (`App.tsx`) `?konferenz=` ab: Mitglieder springen nach `/<id>/video`; Neue legen erst ihren Zugang an und sitzen dann in der **Beitritts-Konferenz** (`BeitrittsKonferenz`, derselbe Raum, ohne Daten der Gruppe). Kommt die Gruppe bei ihnen an, wechselt die Fläche, die Verbindung bleibt.
+- **Vorstellen:** Jeder schickt beim Betreten seine Kennung (DID) über den Neben-Kanal (`vorstellen`, `vorstellen-frage`; `kennungVon`). Wer kein Mitglied ist, steht bei den Mitgliedern unter **„Neu im Raum“** mit **„In die Gruppe aufnehmen“** (`inviteMember`). Die Einladung ist an seinen Schlüssel verschlüsselt: Wer eine fremde Kennung vorgibt, kann sie nicht annehmen. `inviteMember` braucht nur die veröffentlichte Kennung, keine Verifizierung; verifizieren geht live im Gespräch (der Code gilt fünf Minuten, Antons Regel).
+- Die Konferenz kennt den Stack nicht: Link, Kontakte, `kontaktEinladen`, `istMitglied`, `aufnehmen` gibt ihr die App über `KonferenzEinladen`.
+
+**Name:** Das Modul heißt **Conferencing** (Timo, 30.09.2026); die Id bleibt `video`, weil sie in `Group.data.modules` steht.
+
 **In der Übersicht** („Mein Netzwerk“) gehört die Konferenz keiner Gruppe. Sie zeigt dann die Gruppen, die das Video führen, und führt per Klick in deren Raum. Der Raumname kommt aus `raumKennung` und passt immer zum Muster des Token-Dienstes (Buchstabe oder Ziffer an beiden Enden).
 
 **Alle zeigen, zwei Wege:** Der Knopf über der Bühne zeigt nur mir die Menschen groß; das Tool bleibt für die anderen in der Mitte, und oben führt „Zurück zu …“ hinein. Über + legt „Alle zeigen, für alle“ das Tool für die ganze Runde beiseite.

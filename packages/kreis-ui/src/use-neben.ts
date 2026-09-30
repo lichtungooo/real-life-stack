@@ -54,7 +54,7 @@ export function spracherkennungVorhanden(): boolean {
   return Boolean(w.SpeechRecognition ?? w.webkitSpeechRecognition)
 }
 
-export function useNebenHalten(v: KreisVerbindung) {
+export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null) {
   const [chat, setChat] = useState<ChatZeile[]>([])
   const [haende, setHaende] = useState<ReadonlySet<string>>(new Set())
   const [zeichen, setZeichen] = useState<ReadonlyMap<string, { art: ZeichenArt; wann: number }>>(new Map())
@@ -70,6 +70,11 @@ export function useNebenHalten(v: KreisVerbindung) {
   umfrageRef.current = umfrage
   const tafelRef = useRef(tafel)
   tafelRef.current = tafel
+  // Wer ist wer: Teilnehmer im Raum -> Kennung in der App (DID). Jeder
+  // stellt sich beim Betreten vor, und wer neu kommt, fragt nach.
+  const [kennungen, setKennungen] = useState<ReadonlyMap<string, string>>(new Map())
+  const kennungRef = useRef(kennung)
+  kennungRef.current = kennung
   const erkennungRef = useRef<Erkennung | null>(null)
   const sollLaufenRef = useRef(false)
 
@@ -97,8 +102,13 @@ export function useNebenHalten(v: KreisVerbindung) {
   }, [])
 
   // Was von den anderen kommt.
-  useEffect(() => v.beiNeben((n) => {
-    if (n.art === "chat" && typeof n.text === "string") {
+  useEffect(() => v.beiNeben((n, von) => {
+    if (n.art === "vorstellen" && typeof n.kennung === "string" && von) {
+      const k = n.kennung
+      setKennungen((alt) => (alt.get(von) === k ? alt : new Map(alt).set(von, k)))
+    } else if (n.art === "vorstellen-frage") {
+      if (kennungRef.current) v.nebenSenden({ art: "vorstellen", kennung: kennungRef.current })
+    } else if (n.art === "chat" && typeof n.text === "string") {
       setChat((c) => [...c, n as unknown as ChatZeile].slice(-300))
     } else if (n.art === "hand" && typeof n.wer === "string") {
       const wer = n.wer
@@ -139,6 +149,8 @@ export function useNebenHalten(v: KreisVerbindung) {
     if (v.zustand === "drin") {
       v.nebenSenden({ art: "tafel-frage" })
       v.nebenSenden({ art: "werkzeug-frage" })
+      if (kennungRef.current) v.nebenSenden({ art: "vorstellen", kennung: kennungRef.current })
+      v.nebenSenden({ art: "vorstellen-frage" })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [v.zustand])
@@ -148,11 +160,13 @@ export function useNebenHalten(v: KreisVerbindung) {
   useEffect(() => {
     const da = new Set(anwesend.split(","))
     setHaende((h) => { const neu = new Set([...h].filter((id) => da.has(id))); return neu.size === h.size ? h : neu })
+    setKennungen((k) => { const neu = new Map([...k].filter(([id]) => da.has(id))); return neu.size === k.size ? k : neu })
   }, [anwesend])
 
   // Die Sitzung endet: alles Fluechtige mit ihr.
   useEffect(() => {
     if (v.zustand !== "draussen") return
+    setKennungen(new Map())
     setChat([]); setHaende(new Set()); setZeichen(new Map()); setProtokoll([]); setTafel([]); setNotiz(LEERE_NOTIZ); setUmfrage(null)
     sollLaufenRef.current = false
     erkennungRef.current?.abort()
@@ -290,7 +304,12 @@ export function useNebenHalten(v: KreisVerbindung) {
 
   const umfrageVerwerfen = useCallback(() => setUmfrage(null), [])
 
+  /** Die Kennung eines Teilnehmers in der App, meine eingeschlossen. */
+  const kennungVon = useCallback((teilnehmerId: string): string | undefined =>
+    (teilnehmerId === v.ich && kennungRef.current) ? kennungRef.current : kennungen.get(teilnehmerId), [kennungen, v.ich])
+
   return {
+    kennungVon,
     notiz, notizSetzen,
     umfrage, umfrageStarten, abstimmen, umfrageBeenden, umfrageVerwerfen,
     tafel, tafelStrich, tafelLeeren,

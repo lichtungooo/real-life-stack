@@ -8,20 +8,30 @@
 // oben im Menue."). Die Schnittstelle `module`/`modulZeigen` der Konferenz
 // bleibt, fuer Module, die eigens fuer die Mitte gebaut werden (Folien).
 
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { Video } from "lucide-react"
 import {
   resolveSpaceModules,
+  useContacts,
   useCreateItem,
   useCurrentUser,
   useGroups,
+  useInviteMember,
+  useMembers,
   type ModuleViewProps,
 } from "@real-life-stack/toolkit"
 import { raumKennung } from "@kreis/core"
 import { VideoRaumFlaeche } from "./video-raum-flaeche"
+import type { KonferenzEinladen } from "./einladen"
 
-export function VideoFlaeche({ groupId }: ModuleViewProps) {
+/**
+ * Der Link zum Einladen. Nur die App kennt Adresse und Basispfad, darum gibt
+ * sie ihn herein (module-register.tsx). Fehlt er, gibt es keinen Knopf.
+ */
+export type EinladungsLink = (gruppeId: string, gruppeName: string) => string
+
+export function VideoFlaeche({ groupId, einladungsLink }: ModuleViewProps & { einladungsLink?: EinladungsLink }) {
   const { data: groups } = useGroups()
   const { data: user } = useCurrentUser()
   const createItem = useCreateItem()
@@ -49,6 +59,25 @@ export function VideoFlaeche({ groupId }: ModuleViewProps) {
     )
   }, [createItem, raumName, groupId, user?.id])
 
+  // Einladen (Spec video, "Einladen"): Link, Kontakte, Aufnehmen. Alles ueber
+  // Antons Hooks; `inviteMember` braucht nur die veroeffentlichte Kennung.
+  const { activeContacts } = useContacts()
+  const { data: mitglieder } = useMembers(space ? groupId : null)
+  const einladenInGruppe = useInviteMember()
+  const mitgliedIds = useMemo(() => new Set((mitglieder ?? []).map((m) => m.id)), [mitglieder])
+  const einladen: KonferenzEinladen | undefined = useMemo(() => {
+    if (!space || !einladungsLink) return undefined
+    return {
+      link: einladungsLink(space.id, space.name),
+      kontakte: activeContacts
+        .filter((k) => k.id !== user?.id)
+        .map((k) => ({ id: k.id, name: k.name ?? k.id.slice(-8), mitglied: mitgliedIds.has(k.id) })),
+      kontaktEinladen: (id) => einladenInGruppe(space.id, id),
+      istMitglied: (kennung) => mitgliedIds.has(kennung),
+      aufnehmen: (kennung) => einladenInGruppe(space.id, kennung),
+    }
+  }, [space, einladungsLink, activeContacts, mitgliedIds, einladenInGruppe, user?.id])
+
   // In der Uebersicht ("Mein Netzwerk") gehoert die Konferenz keiner Gruppe.
   // Sie zeigt dann die Gruppen, in denen man sich treffen kann (Timo,
   // 30.09.2026: im Login stand dort `__overview__` als Raumname).
@@ -57,6 +86,8 @@ export function VideoFlaeche({ groupId }: ModuleViewProps) {
   return (
     <VideoRaumFlaeche
       raumName={raumName}
+      raumId={space.id}
+      einladen={einladen}
       vorschlagName={user?.displayName}
       protokollSpeichern={protokollSpeichern}
     />

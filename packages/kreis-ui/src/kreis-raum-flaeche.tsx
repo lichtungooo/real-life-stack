@@ -73,30 +73,39 @@ export function OhneRaum() {
 }
 
 /** Man sitzt schon in einem anderen Kreis: dort bleiben oder hierher wechseln. */
-export function AndererRaum({ kreis, hier, vorschlagName }: { kreis: KreisVerbindung; hier: string; vorschlagName?: string }) {
+export function AndererRaum({ kreis, hier, hierTitel, vorschlagName }: {
+  kreis: KreisVerbindung
+  /** Schluessel des Raums hier (die Id der Gruppe oder ihr Name). */
+  hier: string
+  /** Wie der Raum hier heisst; fehlt er, gilt der Schluessel. */
+  hierTitel?: string
+  vorschlagName?: string
+}) {
   const meinName = kreis.teilnehmer.find((t) => t.ichSelbst)?.name ?? vorschlagName ?? ""
   return (
     <div className="mx-auto flex h-full max-w-md flex-col justify-center gap-3 p-6">
       <p className="text-sm text-muted-foreground">Du sitzt gerade im Kreis von</p>
-      <p className="text-xl font-semibold text-foreground">{kreis.raumName}</p>
+      <p className="text-xl font-semibold text-foreground">{kreis.raumTitel ?? kreis.raumName}</p>
       <button
         type="button"
-        onClick={async () => { await kreis.verlassen(); await kreis.betreten(hier, meinName) }}
+        onClick={async () => { await kreis.verlassen(); await kreis.betreten(hier, meinName, hierTitel ?? hier) }}
         className="rounded-lg bg-primary px-4 py-2.5 font-medium text-primary-foreground hover:opacity-90"
       >
-        In den Kreis von {hier} wechseln
+        In den Kreis von {hierTitel ?? hier} wechseln
       </button>
     </div>
   )
 }
 
 export function Vorraum({
-  kreis, raumName, vorschlagName, titel = "Kreis",
+  kreis, raumName, raumSchluessel, vorschlagName, titel = "Kreis",
   einleitung = "Hier trifft sich der Kreis, auch wenn alle weit verstreut leben. Ein Prozess gibt dem Gespräch seine Form.",
   knopf = "Den Kreis betreten",
 }: {
   kreis: KreisVerbindung
   raumName: string
+  /** Der Schluessel des Raums; fehlt er, gilt der Name (Kreis-Reiter, Tests). */
+  raumSchluessel?: string
   vorschlagName?: string
   titel?: string
   einleitung?: string
@@ -118,7 +127,7 @@ export function Vorraum({
       </div>
       <form
         className="flex flex-col gap-3"
-        onSubmit={(e) => { e.preventDefault(); void kreis.betreten(raumName, name) }}
+        onSubmit={(e) => { e.preventDefault(); void kreis.betreten(raumSchluessel ?? raumName, name, raumName) }}
       >
         <label className="flex flex-col gap-1.5 text-sm">
           <span className="font-medium text-foreground">Wie heißt du im Kreis?</span>
@@ -363,5 +372,5 @@ function ImKreis({ kreis, raumName, zurKonferenz, nurBuehne = false }: { kreis: 
  * Die Konferenz legt ihn in ihre Mitte (Spec video, "Tools im Modul").
  */
 export function KreisWerkzeug({ kreis }: { kreis: KreisVerbindung }) {
-  return <ImKreis kreis={kreis} raumName={kreis.raumName ?? ""} nurBuehne />
+  return <ImKreis kreis={kreis} raumName={kreis.raumTitel ?? kreis.raumName ?? ""} nurBuehne />
 }

@@ -36,7 +36,11 @@ export function useKreisVerbindungHalten(fabrik: KreisRaumFabrik, eigeneProzesse
   const raum: KreisRaum = useMemo(() => fabrik(), [fabrik])
   const [zustand, setZustand] = useState<KreisZustand>("draussen")
   const [fehler, setFehler] = useState<string | null>(null)
+  // Der Schluessel des Raums (die Id der Gruppe) und sein Titel zum Anzeigen.
+  // Getrennt, seit der Raum an der Id haengt: Ein Name laesst sich erraten,
+  // eine Id nicht (Timo, 30.09.2026, Einladen per Link).
   const [raumName, setRaumName] = useState<string | null>(null)
+  const [raumTitel, setRaumTitel] = useState<string | null>(null)
   const [teilnehmer, setTeilnehmer] = useState<readonly KreisTeilnehmer[]>([])
   const [sitzung, setSitzung] = useState<Sitzung>(() => leereSitzung(Date.now()))
   const [jetzt, setJetzt] = useState(() => Date.now())
@@ -69,12 +73,13 @@ export function useKreisVerbindungHalten(fabrik: KreisRaumFabrik, eigeneProzesse
     return true
   }, [senden])
 
-  const betreten = useCallback(async (name: string, anzeigeName: string) => {
+  const betreten = useCallback(async (name: string, anzeigeName: string, titel?: string) => {
     setFehler(null)
     setZustand("verbindet")
     try {
       await raum.betreten(raumKennung(name), anzeigeName.trim() || "Gast")
       setRaumName(name)
+      setRaumTitel(titel ?? name)
       setTeilnehmer(raum.teilnehmer())
       setZustand("drin")
       // Wer neu kommt, fragt nach dem Stand. Wer ihn kennt, antwortet.
@@ -89,6 +94,7 @@ export function useKreisVerbindungHalten(fabrik: KreisRaumFabrik, eigeneProzesse
     await raum.verlassen()
     setZustand("draussen")
     setRaumName(null)
+    setRaumTitel(null)
     setTeilnehmer([])
     const leer = leereSitzung(Date.now())
     sitzungRef.current = leer
@@ -167,7 +173,7 @@ export function useKreisVerbindungHalten(fabrik: KreisRaumFabrik, eigeneProzesse
   }, [sitzung.stab.halter, ich, prozess?.nurStabSpricht, raum])
 
   return {
-    raum, zustand, fehler, raumName, teilnehmer, ich, sitzung, prozess, jetzt,
+    raum, zustand, fehler, raumName, raumTitel, teilnehmer, ich, sitzung, prozess, jetzt,
     betreten, verlassen, handle, nebenSenden, beiNeben,
   }
 }

@@ -359,7 +359,7 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
 
   return (
     <MapLibreAdapterProvider>
-      <KreisRaumProvider fabrik={kreisFabrik}>
+      <KreisRaumProvider fabrik={kreisFabrik} kennung={currentUser?.id ?? null}>
       <RoutedAppFrame
         fallbackModule="feed"
         build={__RLS_BUILD__}
@@ -390,6 +390,10 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
         {/* Unsere Netzwerke als echte Spaces anlegen (Timo, 30.09.2026).
             Ausgeloest ueber den Knopf in der Kopfzeile oder ?import=netzwerke. */}
         <NetzwerkeImportHost beispielwelt={activeConnectorId === "local"} />
+        {/* Einladungslink in die Konferenz (?konferenz=<gruppe>&gruppe=<name>):
+            Mitglieder springen in die Konferenz ihrer Gruppe, Neue landen in
+            der Beitritts-Konferenz, bis die Runde sie aufnimmt. */}
+        <KonferenzBeitrittHost />
         <ProfilePanelHost
           userId={profileUserId}
           currentUser={currentUser}
@@ -528,6 +532,49 @@ function NetzwerkeImportHost({ beispielwelt }: { beispielwelt: boolean }) {
       module={defaultModuleIds()}
       onZu={zu}
     />
+  )
+}
+
+const BeitrittLazy = lazy(() => import("@kreis/ui/flaechen").then((m) => ({ default: m.BeitrittsKonferenz })))
+
+/**
+ * Wer ueber einen Einladungslink kommt (Timo, 30.09.2026: "falls noch ein
+ * Nutzer mit beitreten will, der noch nie drin war"). Ist er Mitglied der
+ * Gruppe, fuehrt der Weg direkt in ihre Konferenz. Sonst sitzt er in der
+ * Beitritts-Konferenz, im selben Raum, bis ihn jemand aufnimmt; sobald die
+ * Gruppe bei ihm ankommt, wechselt die Flaeche, und die Verbindung bleibt.
+ */
+function KonferenzBeitrittHost() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { data: groups, isLoading } = useGroups()
+  const gruppeId = searchParams.get("konferenz")
+  const gruppeName = searchParams.get("gruppe") ?? "Konferenz"
+  const mitglied = !!gruppeId && (groups ?? []).some((g) => g.id === gruppeId)
+
+  useEffect(() => {
+    if (!gruppeId || !mitglied) return
+    const p = new URLSearchParams(searchParams)
+    p.delete("konferenz")
+    p.delete("gruppe")
+    const rest = p.toString()
+    navigate(`/${gruppeId}/video${rest ? `?${rest}` : ""}${location.hash}`, { replace: true })
+  }, [gruppeId, mitglied, searchParams, navigate, location.hash])
+
+  if (!gruppeId || isLoading || mitglied) return null
+  const schliessen = () => {
+    const p = new URLSearchParams(searchParams)
+    p.delete("konferenz")
+    p.delete("gruppe")
+    setSearchParams(p)
+  }
+  return (
+    <div className="fixed inset-0 z-[70] bg-slate-950">
+      <Suspense fallback={<div className="flex h-full items-center justify-center text-sm text-slate-400">Einen Moment …</div>}>
+        <BeitrittLazy raumId={gruppeId} raumName={gruppeName} onSchliessen={schliessen} />
+      </Suspense>
+    </div>
   )
 }
 

@@ -45,14 +45,20 @@ function RaumTon({ v }: { v: KreisVerbindung }) {
 }
 
 export function KreisRaumProvider({
-  fabrik, eigeneProzesse, children,
+  fabrik, eigeneProzesse, kennung, children,
 }: {
   fabrik: KreisRaumFabrik
   eigeneProzesse?: readonly Prozess[]
+  /**
+   * Die Kennung des Menschen in der App (seine DID im Web of Trust). Mit ihr
+   * stellt er sich im Raum vor; so sieht die Runde, wer noch kein Mitglied
+   * der Gruppe ist, und kann ihn aufnehmen.
+   */
+  kennung?: string | null
   children: ReactNode
 }) {
   const verbindung = useKreisVerbindungHalten(fabrik, eigeneProzesse)
-  const neben = useNebenHalten(verbindung)
+  const neben = useNebenHalten(verbindung, kennung ?? null)
   return (
     <Kontext.Provider value={{ ...verbindung, neben }}>
       <RaumTon v={verbindung} />

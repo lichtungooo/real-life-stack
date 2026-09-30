@@ -24,7 +24,12 @@ const Baukasten = ({ groupId }: ModuleViewProps) => <BaukastenView groupId={grou
 // klein und bleibt im Hauptstueck.
 const VideoLazy = lazy(() => import("@kreis/ui/flaechen").then((m) => ({ default: m.VideoFlaeche })))
 const laedt = <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Einen Moment …</div>
-const VideoModul = (p: ModuleViewProps) => <Suspense fallback={laedt}><VideoLazy {...p} /></Suspense>
+// Der Einladungslink. Er fuehrt auf die Einladungsseite der Instanz
+// (`/einladung/`, Instanz-Repo trustdonation, mit Vorschau fuer Telegram und
+// Signal), die weiter in die App leitet. Nur die App kennt ihre Adresse.
+export const einladungsLink = (gruppeId: string, gruppeName: string) =>
+  `${window.location.origin}/einladung/?konferenz=${encodeURIComponent(gruppeId)}&gruppe=${encodeURIComponent(gruppeName)}`
+const VideoModul = (p: ModuleViewProps) => <Suspense fallback={laedt}><VideoLazy {...p} einladungsLink={einladungsLink} /></Suspense>
 
 // Einmal komponiert, einmal gebunden, danach unveraenderlich (Spec 01, Regel 3).
 export const MODULE_REGISTRY = composeModules([
@@ -55,7 +60,9 @@ export const MODULE_REGISTRY = composeModules([
   // Antons Regel 7 in docs/spec/modules/README.md). `keepMounted`, weil ein
   // Wechsel zur Karte die Sitzung nicht beenden darf.
   { name: "kreis", definitions: [
-    { id: "video", label: "Video", icon: Video, enabledByDefault: true, fill: "bleed", keepMounted: true, frame: "bare", view: VideoModul },
+    // Id bleibt `video` (steht in `Group.data.modules`), der Name heisst
+    // Conferencing (Timo, 30.09.2026).
+    { id: "video", label: "Conferencing", icon: Video, enabledByDefault: true, fill: "bleed", keepMounted: true, frame: "bare", view: VideoModul },
   ] },
   // Die Grundausstattung eines Space ohne eigene Liste: Feed, Kalender,
   // Karte, dazu das Video. Kanban bleibt im Register und laesst sich im
