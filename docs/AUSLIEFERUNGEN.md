@@ -6,7 +6,7 @@ Das Image liegt auf dem Server als `trustdonation-app:proto-N`. Zurückgedreht w
 
 | Stand | Commit | Datum | Was drin ist |
 |---|---|---|---|
-| **proto-40** | `COMMIT` | 30.09.2026 | **Layouts wie in Big Blue Button.** ⋮ → Layout: Bilder oben, Bilder rechts, Präsentation im Zentrum, Video im Zentrum; für mich oder **„Für alle übernehmen“**. |
+| **proto-40** | `b280a299` | 30.09.2026 | **Layouts wie in Big Blue Button.** ⋮ → Layout: Bilder oben, Bilder rechts, Präsentation im Zentrum, Video im Zentrum; für mich oder **„Für alle übernehmen“**. |
 | **proto-39** | `1ec7c40b` | 30.09.2026 | **Folien laufen live.** Im echten Browser lehnte der Server den pdf.js-Worker ab (`.mjs` kam als `application/octet-stream`). Vite baut den Worker jetzt als `.js` (`?worker`) und gibt ihn pdf.js direkt. |
 | **proto-38** | `6ba590a1` | 30.09.2026 | **Folien auf dem Zeichenpad.** PDF hochladen (bis 15 MB), sie reist in Stücken über den Raum zu allen, ohne Server; jedes Gerät zeichnet die Seite mit pdf.js; ‹ Folie n von N ›, jede Folie mit eigener Zeichnung, Nachzügler bekommen Datei und Stand. Nebenbei behoben: Der Neben-Kanal konnte eine Nachricht verlieren, die genau beim Neuzeichnen kam. |
 | **proto-37** | `8185191c` | 30.09.2026 | **Das Zeichenpad.** Über + → Zeichenpad statt Tafel: **Excalidraw** (MIT) mit Stift, Marker, Formen, Pfeilen, Text, Farben, Strichart, Rückgängig und Zoom. Wer es öffnet, präsentiert; **„Mehrere Benutzer“** gibt es für alle frei; Nachzügler bekommen das Gezeichnete. Schriften selbst ausgeliefert, kein fremdes Netz. Nächste Schritte: Folien aus PDF, Markdown-Textdokument. |
