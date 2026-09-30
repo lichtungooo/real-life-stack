@@ -6,7 +6,7 @@ Das Image liegt auf dem Server als `trustdonation-app:proto-N`. Zurückgedreht w
 
 | Stand | Commit | Datum | Was drin ist |
 |---|---|---|---|
-| **proto-43** | `COMMIT` | 30.09.2026 | **Gruppenräume wie in BBB.** Anzahl, Dauer, selbst aussuchen, Menschen per Ziehen oder zufällig zuordnen; Countdown, eigener Raum je Gruppe, Restzeit und „Zurück in den Hauptraum“, zur Zeit geht jeder von selbst zurück. |
+| **proto-43** | `1a70725f` | 30.09.2026 | **Gruppenräume wie in BBB.** Anzahl, Dauer, selbst aussuchen, Menschen per Ziehen oder zufällig zuordnen; Countdown, eigener Raum je Gruppe, Restzeit und „Zurück in den Hauptraum“, zur Zeit geht jeder von selbst zurück. |
 | **proto-42** | `1b7cd7a0` | 30.09.2026 | **Moderation wie in BBB, auf Augenhöhe.** Zahnrad bei Teilnehmer: Neue stumm, alle stumm bis auf die Präsentierenden, Chat schließen, Notizen nur lesen, Bildschirm sperren, **Warteraum** mit „Hereinholen“, Namen speichern, Reaktionen löschen. Jeder darf, jedes Gerät hält sich daran. |
 | **proto-41** | `975cc6b1` | 30.09.2026 | **Tagesordnung, Aufgaben und Beschlüsse.** Links unter „Meeting“: Tagesordnung mit Zeiten, der laufende Punkt oben mit Restzeit. Aufgaben (wer, bis wann) landen als Aufgabe im **Kanban der Gruppe**, Beschlüsse im **Feed**, mit Herkunft aus dem Meeting. |
 | **proto-40** | `b280a299` | 30.09.2026 | **Layouts wie in Big Blue Button.** ⋮ → Layout: Bilder oben, Bilder rechts, Präsentation im Zentrum, Video im Zentrum; für mich oder **„Für alle übernehmen“**. |
