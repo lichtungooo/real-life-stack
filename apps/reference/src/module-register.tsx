@@ -57,6 +57,13 @@ export const MODULE_REGISTRY = composeModules([
   { name: "kreis", definitions: [
     { id: "video", label: "Video", icon: Video, enabledByDefault: true, fill: "bleed", keepMounted: true, frame: "bare", view: VideoModul },
   ] },
+  // Die Grundausstattung eines Space ohne eigene Liste: Feed, Kalender,
+  // Karte, dazu das Video. Kanban bleibt im Register und laesst sich im
+  // Zahnrad dazunehmen (Timo, 30.09.2026). Ein ausdruecklicher Ersatz ueber
+  // Antons Regel 2, keine Naht.
+  { name: "grundausstattung", extensions: [
+    { id: "kanban", enabledByDefault: false, replaces: ["enabledByDefault"] },
+  ] },
   { name: "app", definitions: [], extensions: [] },
 ])
 

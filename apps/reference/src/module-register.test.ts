@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest"
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
-import { getModules, moduleIds, resolveSpaceModules, resolveActiveModule } from "@real-life-stack/toolkit"
+import { defaultModuleIds, getModules, moduleIds, resolveSpaceModules, resolveActiveModule } from "@real-life-stack/toolkit"
 import "./module-register"
 import { resolveDefaultModule, canonicalPath } from "@real-life-stack/toolkit/router"
 
@@ -62,8 +62,10 @@ describe("Routing filtert unbekannte Modul-Ids (Review #277)", () => {
     expect(resolveSpaceModules(["quests", "campaign"])).toEqual(moduleIds())
   })
 
-  it("uses the full set when a space stores nothing", () => {
-    expect(resolveSpaceModules(undefined)).toEqual(moduleIds())
+  // Naht A-Grundausstattung (docs/NAEHTE.md): Ohne Liste gelten die
+  // Vorgaben, wie im Space-Dialog. Vorher: der volle Satz.
+  it("uses the defaults when a space stores nothing", () => {
+    expect(resolveSpaceModules(undefined)).toEqual(defaultModuleIds())
   })
 })
 

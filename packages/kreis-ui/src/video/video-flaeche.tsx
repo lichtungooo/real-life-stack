@@ -9,7 +9,10 @@
 // bleibt, fuer Module, die eigens fuer die Mitte gebaut werden (Folien).
 
 import { useCallback } from "react"
+import { useLocation, useNavigate } from "react-router-dom"
+import { Video } from "lucide-react"
 import {
+  resolveSpaceModules,
   useCreateItem,
   useCurrentUser,
   useGroups,
@@ -46,11 +49,51 @@ export function VideoFlaeche({ groupId }: ModuleViewProps) {
     )
   }, [createItem, raumName, groupId, user?.id])
 
+  // In der Uebersicht ("Mein Netzwerk") gehoert die Konferenz keiner Gruppe.
+  // Sie zeigt dann die Gruppen, in denen man sich treffen kann (Timo,
+  // 30.09.2026: im Login stand dort `__overview__` als Raumname).
+  if (!space) return <GruppeWaehlen />
+
   return (
     <VideoRaumFlaeche
       raumName={raumName}
       vorschlagName={user?.displayName}
       protokollSpeichern={protokollSpeichern}
     />
+  )
+}
+
+function GruppeWaehlen() {
+  const { data: groups } = useGroups()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const mitVideo = (groups ?? []).filter((g) =>
+    resolveSpaceModules(g.data?.modules as string[] | undefined).includes("video"))
+  return (
+    <div className="flex h-full w-full items-center justify-center p-6">
+      <div className="w-full max-w-md">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Konferenz</p>
+        <h2 className="mt-1 text-2xl font-semibold text-foreground">Wo trefft ihr euch?</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Jede Gruppe hat ihren eigenen Raum. Wähle die Gruppe, mit der du dich treffen willst.
+        </p>
+        {mitVideo.length > 0 ? (
+          <ul className="mt-5 flex flex-col gap-2">
+            {mitVideo.map((g) => (
+              <li key={g.id}>
+                <button type="button" onClick={() => navigate(`/${g.id}/video${location.search}${location.hash}`)}
+                  className="flex w-full items-center gap-3 rounded-xl bg-muted/60 px-4 py-3 text-left font-medium text-foreground transition hover:bg-muted">
+                  <Video className="h-4 w-4 text-muted-foreground" /> {g.name}
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-5 rounded-xl bg-muted/60 p-4 text-sm text-foreground">
+            In keiner deiner Gruppen ist das Video eingeschaltet. Im Zahnrad einer Gruppe unter Module lässt es sich dazunehmen.
+          </p>
+        )}
+      </div>
+    </div>
   )
 }

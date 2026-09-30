@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect } from "vitest"
-import { getModules } from "@real-life-stack/toolkit"
+import { defaultModuleIds, getModules, resolveSpaceModules } from "@real-life-stack/toolkit"
 import "./module-register"
 
 describe("Die Schicht trustdonation", () => {
@@ -54,5 +54,23 @@ describe("Die Schicht trustdonation", () => {
   it("⚠ fuehrt das Profil nicht als Modul", () => {
     const ids = getModules().map((m) => m.id)
     expect(ids, "das Profil gehoert ins Panel, nicht in die Reiterleiste").not.toContain("profil")
+  })
+})
+
+describe("Die Grundausstattung eines Space", () => {
+  /**
+   * Timo, 30.09.2026: Im Login trug jeder Space ohne eigene Liste alle zehn
+   * Module. Die Grundausstattung ist Feed, Kalender, Karte, dazu das Video;
+   * alles andere waehlt man im Zahnrad dazu. Zusammen mit der Naht
+   * A-Grundausstattung (`resolveSpaceModules`) gilt sie auch fuer die
+   * Uebersicht.
+   */
+  it("ist Feed, Kalender, Karte und Video", () => {
+    expect(defaultModuleIds()).toEqual(["feed", "calendar", "map", "video"])
+    expect(resolveSpaceModules(undefined)).toEqual(["feed", "calendar", "map", "video"])
+  })
+
+  it("Kanban bleibt im Register und laesst sich dazunehmen", () => {
+    expect(getModules().map((m) => m.id)).toContain("kanban")
   })
 })

@@ -47,8 +47,10 @@ export function raumKennung(roh: string | null | undefined): string {
     .toLowerCase()
     .replace(/[äöüß]/g, (z) => ({ "ä": "ae", "ö": "oe", "ü": "ue", "ß": "ss" })[z] ?? z)
     .replace(/[^a-z0-9_-]+/g, "-")
-    .replace(/^-+|-+$/g, "")
+    // Der Token-Dienst verlangt Buchstabe oder Ziffer an beiden Enden
+    // (kreis-server, RAUM_MUSTER). `__overview__` scheiterte daran.
+    .replace(/^[-_]+|[-_]+$/g, "")
     .slice(0, 60)
-    .replace(/-+$/, "")
+    .replace(/[-_]+$/, "")
   return sauber.length >= 3 ? sauber : `kreis-${sauber || "offen"}`
 }

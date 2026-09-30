@@ -382,7 +382,11 @@ export function displayableModules(stored: readonly string[]): string[] {
  * Vorgaben.
  */
 export function resolveSpaceModules(stored?: readonly string[]): string[] {
-  const displayable = displayableModules(stored ?? moduleIds())
+  // Naht A-Grundausstattung (docs/NAEHTE.md): Ohne eigene Liste fuehrt ein
+  // Space die Vorgaben, wie der Space-Dialog sie auch anzeigt, nicht jedes
+  // Modul. Ebenso die Uebersicht (Timo, 30.09.2026: "Das ueberlaedt ja
+  // wirklich alles").
+  const displayable = displayableModules(stored ?? defaultModuleIds())
   return displayable.length > 0 ? displayable : moduleIds()
 }
 

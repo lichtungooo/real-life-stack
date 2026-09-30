@@ -41,6 +41,8 @@ Dazu, ebenfalls im Aktions-Knopf: **Zufällig jemanden wählen** (das Los steht 
 
 **Stille und Dauer des Treffens (Einstellungen, ⋮):** Die Stille nach der Klangschale gilt für alle (15 Sekunden, 30 Sekunden, 1 Minute, 2 Minuten); ohne eigene Wahl gilt die des Prozesses (`stilleSekundenVon`). Die Dauer des Treffens (offen, 30 Minuten bis 3 Stunden) beginnt mit dem Festlegen (`Regeln.sitzungSeit`). Oben steht, wie lange das Treffen noch geht. Ist sie um, klingt der Gong bei jedem einmal, und ein Hinweis ruft zur Abschlussrunde. Das Treffen läuft weiter.
 
+**In der Übersicht** („Mein Netzwerk“) gehört die Konferenz keiner Gruppe. Sie zeigt dann die Gruppen, die das Video führen, und führt per Klick in deren Raum. Der Raumname kommt aus `raumKennung` und passt immer zum Muster des Token-Dienstes (Buchstabe oder Ziffer an beiden Enden).
+
 **Alle zeigen, zwei Wege:** Der Knopf über der Bühne zeigt nur mir die Menschen groß; das Tool bleibt für die anderen in der Mitte, und oben führt „Zurück zu …“ hinein. Über + legt „Alle zeigen, für alle“ das Tool für die ganze Runde beiseite.
 
 **Wo was liegt, und warum:** Kurzzeitwecker und Los stehen im Sitzungszustand (`Sitzung.wecker`, `Sitzung.los`), dort handelt immer einer. Die Umfrage liegt NICHT dort: Bei gleicher Fassung gilt einer von zwei Ständen, und zwei gleichzeitige Stimmen ließen eine verloren gehen. Darum reist jede Stimme einzeln und wird eingemischt (`@kreis/core`, werkzeuge.ts). Die geteilten Notizen gelten mit Fassung und Absender wie der Redestab; solange jemand im Feld schreibt, bleibt sein Entwurf stehen.

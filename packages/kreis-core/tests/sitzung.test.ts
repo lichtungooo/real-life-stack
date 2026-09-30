@@ -262,4 +262,12 @@ describe("Raumkennung", () => {
     expect(raumKennung("")).toBe("kreis-offen")
     expect(raumKennung("ab")).toBe("kreis-ab")
   })
+
+  it("passt immer zum Muster des Token-Dienstes, auch mit Unterstrichen am Rand", () => {
+    const muster = /^[a-z0-9][a-z0-9_-]{1,62}[a-z0-9]$/ // kreis-server, token/server.js
+    for (const roh of ["__overview__", "_a_", "Tratsch&Off-Topics", "UX/UI", "x".repeat(90), "---", "Real Life Netzwerk"]) {
+      expect(raumKennung(roh), roh).toMatch(muster)
+    }
+    expect(raumKennung("__overview__")).toBe("overview")
+  })
 })

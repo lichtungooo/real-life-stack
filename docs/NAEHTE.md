@@ -109,6 +109,16 @@ Stellen, an denen ein Haken fehlt und wir ihn uns wünschen.
 | **Risiko bei Update** | gering, vier kleine Stellen |
 | **Wunsch an Anton** | Genau dieses Feld oder ein gleichwertiges in `ModuleEntry`, damit Module ohne Item-Liste (Konferenz, Spiele, Werkzeuge) den Rahmen abbestellen können. **Zweiter Wunsch, Grundaufbau (Timo):** Die Suche nimmt oben viel Platz. Vorschlag: eine Lupe, die ein Such-Fenster öffnet, statt einer breiten Leiste in jedem Modul |
 
+### A-Grundausstattung. Ein Space ohne Liste führt die Vorgaben (30.09.2026)
+
+| | |
+|---|---|
+| **Dateien** | `packages/toolkit/src/lib/module-register.ts` (`resolveSpaceModules`: `stored ?? defaultModuleIds()` statt `stored ?? moduleIds()`, 1 Zeile plus Kommentar), `apps/reference/src/module-register.test.ts` (Antons Erwartung „full set“ auf „defaults“ umgestellt, 3 Zeilen), `packages/toolkit/tests/grundausstattung.test.ts` (unser Test) |
+| **Was wir tun** | Ein Space ohne eigene `data.modules` und die Übersicht („Mein Netzwerk“) führen die Vorgaben (`enabledByDefault`), nicht jedes Modul. Unsere Vorgaben: Feed, Kalender, Karte, Video; Kanban nimmt unsere Schicht `grundausstattung` über Antons Regel 2 aus dem Standard (`replaces: ["enabledByDefault"]`, keine Naht). Test: `apps/reference/src/module-register-td.test.ts` |
+| **Warum kein Haken** | Antons Space-Dialog zeigt für einen Space ohne Liste schon die Vorgaben an (`group-dialog.tsx`, `defaults()`), sein Routing aber jedes Modul. Im Login trugen Timos echte Gruppen und die Übersicht so alle zehn Module (Timo, 30.09.2026, mit Bildschirmfoto: *"Das überlädt ja wirklich alles"*). Einen Haken für diese Rückfallregel gibt es nicht |
+| **Risiko bei Update** | gering, eine Zeile; bei Kollision Antons Test prüfen |
+| **Wunsch an Anton** | Dialog und Routing gleich machen: ohne Liste die Vorgaben. Wir bringen das als kleinen PR mit dem Anwendungsfall |
+
 ## B. Nähte, die verschwinden
 
 Stellen, die nur deshalb Nähte sind, weil wir in Antons Referenz-App gearbeitet haben. Mit `apps/trustdonation` werden es unsere eigenen Dateien.
