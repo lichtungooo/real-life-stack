@@ -126,6 +126,12 @@ export interface Sitzung {
   moderation?: Partial<import("./moderation").Moderation> | null
   /** Laufende Gruppenraeume (siehe gruppenraeume.ts). */
   gruppenraeume?: import("./gruppenraeume").Gruppenraeume | null
+  /**
+   * Das Textdokument in der Mitte: ein ganz normales Item im Space (Antons
+   * Entscheidung, 30.09.2026), hier nur seine Id. Geschrieben wird es ueber
+   * die Hooks des Stacks.
+   */
+  dokument?: { item: string } | null
 }
 
 /** Was nach Ablauf der Redezeit mit dem Redestab geschieht. */

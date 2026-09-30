@@ -8,7 +8,7 @@
 // MIT) und pdf.js laden erst, wenn sie gebraucht werden.
 
 import { lazy, Suspense, useEffect, useRef, useState } from "react"
-import { ChevronLeft, ChevronRight, FileUp, MoveHorizontal, Users, X } from "lucide-react"
+import { ChevronLeft, ChevronRight, FileText, FileUp, MoveHorizontal, Users, X } from "lucide-react"
 import {
   DATEI_HOECHSTENS, darfZeichnen, dateiId, padBlaettern, padFolienSetzen, padFreigeben, padSchluessel, padUebernehmen,
 } from "@kreis/core"
@@ -19,7 +19,7 @@ import { seiteAlsBild, seitenZahl, type SeitenBild } from "./pdf-seiten"
 
 const Flaeche = lazy(() => import("./zeichenpad-flaeche"))
 
-export function ZeichenPad({ kreis }: { kreis: KreisKontext }) {
+export function ZeichenPad({ kreis, onTextdokument }: { kreis: KreisKontext; onTextdokument?: () => void }) {
   const { sitzung, ich, handle, teilnehmer, neben } = kreis
   const wer = ich ?? ""
   const pad = sitzung.pad ?? null
@@ -134,6 +134,12 @@ export function ZeichenPad({ kreis }: { kreis: KreisKontext }) {
           <button type="button" onClick={() => handle((s) => padUebernehmen(s, wer, teilnehmer.map((t) => t.id)))}
             className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90">
             Präsentation übernehmen
+          </button>
+        )}
+        {onTextdokument && (
+          <button type="button" onClick={onTextdokument} title="Zum gemeinsamen Textdokument (Markdown)"
+            className="flex items-center gap-1.5 rounded-lg bg-muted px-3 py-1.5 text-xs hover:bg-muted/70">
+            <FileText className="h-4 w-4" /> Textdokument
           </button>
         )}
         <button type="button" onClick={() => steuerung?.anBreiteAnpassen()} disabled={!steuerung} title="An Breite anpassen" aria-label="An Breite anpassen"

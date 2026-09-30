@@ -237,6 +237,12 @@ export function padSchluessel(s: Sitzung): string {
   return f ? `${f.datei}:${s.pad?.seite ?? 1}` : "frei"
 }
 
+/** Welches Dokument-Item in der Mitte liegt; `null` legt ein neues bereit. */
+export function dokumentSetzen(s: Sitzung, item: string | null, wer: string): Sitzung {
+  if ((s.dokument?.item ?? null) === item) return s
+  return weiter(s, wer, { dokument: item ? { item } : null })
+}
+
 /** Ein Layout fuer alle uebernehmen. */
 export function layoutFuerAlle(s: Sitzung, art: string, wer: string): Sitzung {
   return weiter(s, wer, { layout: { art, nr: (s.layout?.nr ?? 0) + 1 } })

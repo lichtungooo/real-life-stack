@@ -19,3 +19,13 @@ describe("Moderation", () => {
     expect(t).toContain("- anna\n- Bert\n- Clara")
   })
 })
+
+describe("Textdokument als Item", () => {
+  it("merkt sich nur die Id des Items", async () => {
+    const { dokumentSetzen } = await import("../src")
+    const s = dokumentSetzen(leereSitzung(0), "item-1", "anna")
+    expect(s.dokument).toEqual({ item: "item-1" })
+    expect(dokumentSetzen(s, "item-1", "bert")).toBe(s)
+    expect(dokumentSetzen(s, null, "bert").dokument).toBeNull()
+  })
+})

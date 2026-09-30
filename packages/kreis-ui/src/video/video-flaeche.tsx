@@ -18,12 +18,16 @@ import {
   useCurrentUser,
   useGroups,
   useInviteMember,
+  useItem,
   useMembers,
+  useUpdateItem,
   type ModuleViewProps,
 } from "@real-life-stack/toolkit"
 import { raumKennung } from "@kreis/core"
 import { VideoRaumFlaeche } from "./video-raum-flaeche"
 import type { KonferenzEinladen } from "./einladen"
+import { TextDokument, TextdokumentAnlegen, type TextdokumentAnschluss } from "./textdokument"
+import { dokumentTitel } from "./markdown-werkzeug"
 
 /**
  * Der Link zum Einladen. Nur die App kennt Adresse und Basispfad, darum gibt
@@ -47,9 +51,10 @@ export function VideoFlaeche({ groupId, einladungsLink }: ModuleViewProps & { ei
       {
         type: "post",
         createdBy: user?.id ?? "",
+        // Antons Beitrag traegt seinen Text in `content` (PostData, Markdown).
         data: {
           title: `Protokoll ${raumName}, ${datum}`,
-          text,
+          content: text,
           raum: raumKennung(raumName),
           teilnehmer: [...teilnehmer],
           wann: new Date().toISOString(),
@@ -78,11 +83,6 @@ export function VideoFlaeche({ groupId, einladungsLink }: ModuleViewProps & { ei
     }
   }, [space, einladungsLink, activeContacts, mitgliedIds, einladenInGruppe, user?.id])
 
-  // In der Uebersicht ("Mein Netzwerk") gehoert die Konferenz keiner Gruppe.
-  // Sie zeigt dann die Gruppen, in denen man sich treffen kann (Timo,
-  // 30.09.2026: im Login stand dort `__overview__` als Raumname).
-  if (!space) return <GruppeWaehlen />
-
   // Aufgaben ins Kanban der Gruppe (Item `task`, Status `open`), Beschluesse
   // in den Feed (Item `post`). Aus dem Meeting heraus, mit Herkunft.
   const ergebnisAblegen = useCallback(async (e: { art: "aufgabe" | "beschluss"; text: string; wer?: string; bis?: string; von: string }) => {
@@ -92,10 +92,26 @@ export function VideoFlaeche({ groupId, einladungsLink }: ModuleViewProps & { ei
     await createItem(
       e.art === "aufgabe"
         ? { type: "task", createdBy: user?.id ?? "", data: { title: e.text, status: "open", description: [zusatz, herkunft].filter(Boolean).join("\n\n") } }
-        : { type: "post", createdBy: user?.id ?? "", data: { title: `Beschluss: ${e.text.slice(0, 80)}`, text: `${e.text}\n\n${herkunft}` } },
+        : { type: "post", createdBy: user?.id ?? "", data: { title: `Beschluss: ${e.text.slice(0, 80)}`, content: `${e.text}\n\n${herkunft}` } },
       groupId ? { group: groupId } : undefined,
     )
   }, [createItem, raumName, groupId, user?.id])
+
+  // Das Textdokument: ein ganz normales Item im Space (Anton, 30.09.2026),
+  // ein Beitrag (`post`) mit dem Markdown in `content`.
+  const textdokument: TextdokumentAnschluss = useCallback(({ itemId, onAngelegt, gruppe }) => (
+    itemId
+      ? <TextdokumentItem itemId={itemId} gruppe={gruppe} />
+      : <TextdokumentAnlegen gruppe={gruppe} onAnlegen={async (titel) => {
+          const item = await createItem({ type: "post", createdBy: user?.id ?? "", data: { title: titel, content: "" } }, groupId ? { group: groupId } : undefined)
+          onAngelegt(item.id)
+        }} />
+  ), [createItem, groupId, user?.id])
+
+  // In der Uebersicht ("Mein Netzwerk") gehoert die Konferenz keiner Gruppe.
+  // Sie zeigt dann die Gruppen, in denen man sich treffen kann (Timo,
+  // 30.09.2026: im Login stand dort `__overview__` als Raumname).
+  if (!space) return <GruppeWaehlen />
 
   return (
     <VideoRaumFlaeche
@@ -105,6 +121,7 @@ export function VideoFlaeche({ groupId, einladungsLink }: ModuleViewProps & { ei
       vorschlagName={user?.displayName}
       protokollSpeichern={protokollSpeichern}
       ergebnisAblegen={ergebnisAblegen}
+      textdokument={textdokument}
     />
   )
 }
@@ -141,5 +158,21 @@ function GruppeWaehlen() {
         )}
       </div>
     </div>
+  )
+}
+
+/** Ein Textdokument-Item: lesen ueber `useItem`, schreiben ueber `useUpdateItem`. */
+function TextdokumentItem({ itemId, gruppe }: { itemId: string; gruppe: string }) {
+  const { data: item, isLoading } = useItem(itemId)
+  const aendern = useUpdateItem()
+  const inhalt = typeof item?.data?.content === "string" ? item.data.content : ""
+  const alterTitel = typeof item?.data?.title === "string" ? item.data.title : gruppe
+  return (
+    <TextDokument
+      inhalt={inhalt}
+      gruppe={gruppe}
+      laedt={isLoading && !item}
+      onAendern={(neu) => { void aendern(itemId, { data: { content: neu, title: dokumentTitel(neu, alterTitel) } }) }}
+    />
   )
 }
