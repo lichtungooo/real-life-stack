@@ -224,3 +224,38 @@ describe("Moderation auf Augenhoehe", () => {
     expect(bert.text()).toContain("Willkommen in „Garten“")
   })
 })
+
+describe("Gruppenraeume", () => {
+  it("erstellen, zufaellig verteilen, hinueber, getrennt, und zurueck", async () => {
+    const kanal = kanalNetz()
+    const einladen = einladenFuer()
+    const anna = mensch(kanal, "a-anna", "kennung-anna",
+      (e) => <VideoRaumFlaeche raumId={GRUPPE} raumName="Garten" vorschlagName="Anna" einladen={e} />, einladen)
+    const bert = mensch(kanal, "b-bert", "kennung-bert",
+      (e) => <VideoRaumFlaeche raumId={GRUPPE} raumName="Garten" vorschlagName="Bert" einladen={e} />, einladen)
+    await anna.betreten()
+    await namenFeld(bert.huelle, "Bert")
+    await bert.betreten()
+    expect(anna.text()).toContain("Teilnehmer (2)")
+
+    await act(async () => { (anna.huelle.querySelector('button[aria-label="Moderation"]') as HTMLButtonElement).click() })
+    await anna.klick("Gruppenräume erstellen")
+    expect(anna.text()).toContain("Räume verwalten")
+    await anna.klick("Zufällig zuordnen")
+    await anna.klick("Erstellen")
+
+    expect(bert.text()).toContain("Du gehst gleich in")
+    await anna.klick("Jetzt gehen")
+    await bert.klick("Jetzt gehen")
+    await act(async () => { await new Promise((r) => setTimeout(r, 20)) })
+    expect(anna.text()).toMatch(/Garten · Raum \d · noch/)
+    expect(anna.text()).toContain("Teilnehmer (1)")
+    expect(bert.text()).toContain("Teilnehmer (1)")
+
+    await anna.klick("Zurück in den Hauptraum")
+    await bert.klick("Zurück in den Hauptraum")
+    await act(async () => { await new Promise((r) => setTimeout(r, 20)) })
+    expect(anna.text()).toContain("Teilnehmer (2)")
+    expect(anna.text()).not.toContain("Du gehst gleich in")
+  }, 15_000)
+})

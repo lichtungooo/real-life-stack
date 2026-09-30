@@ -124,6 +124,8 @@ export interface Sitzung {
   tagesordnung?: import("./tagesordnung").Tagesordnung | null
   /** Die Moderation (siehe moderation.ts). Fehlt sie, ist alles offen. */
   moderation?: Partial<import("./moderation").Moderation> | null
+  /** Laufende Gruppenraeume (siehe gruppenraeume.ts). */
+  gruppenraeume?: import("./gruppenraeume").Gruppenraeume | null
 }
 
 /** Was nach Ablauf der Redezeit mit dem Redestab geschieht. */

@@ -41,6 +41,9 @@ export function useKreisVerbindungHalten(fabrik: KreisRaumFabrik, eigeneProzesse
   // eine Id nicht (Timo, 30.09.2026, Einladen per Link).
   const [raumName, setRaumName] = useState<string | null>(null)
   const [raumTitel, setRaumTitel] = useState<string | null>(null)
+  // Sitzt man in einem Gruppenraum, merkt sich die App den Hauptraum und das
+  // Ende; zurueck geht es von selbst oder mit einem Klick.
+  const [unterraum, setUnterraum] = useState<{ haupt: string; hauptTitel: string; bis: number; titel: string } | null>(null)
   const [teilnehmer, setTeilnehmer] = useState<readonly KreisTeilnehmer[]>([])
   const [sitzung, setSitzung] = useState<Sitzung>(() => leereSitzung(Date.now()))
   const [jetzt, setJetzt] = useState(() => Date.now())
@@ -100,6 +103,22 @@ export function useKreisVerbindungHalten(fabrik: KreisRaumFabrik, eigeneProzesse
     sitzungRef.current = leer
     setSitzung(leer)
   }, [raum])
+
+  /** In einen Gruppenraum wechseln: den Hauptraum verlassen, den Gruppenraum betreten. */
+  const inUnterraum = useCallback(async (haupt: string, hauptTitel: string, unter: string, titel: string, bis: number, name: string) => {
+    await verlassen()
+    await betreten(unter, name, titel)
+    setUnterraum({ haupt, hauptTitel, bis, titel })
+  }, [verlassen, betreten])
+
+  /** Zurueck in den Hauptraum. */
+  const zurueckInHauptraum = useCallback(async (name: string) => {
+    const u = unterraum
+    if (!u) return
+    setUnterraum(null)
+    await verlassen()
+    await betreten(u.haupt, name, u.hauptTitel)
+  }, [unterraum, verlassen, betreten])
 
   /** Eine Neben-Nachricht an alle: Chat, Hand, Zeichen. */
   const nebenSenden = useCallback((n: NebenNachricht) => { raum.senden(n) }, [raum])
@@ -175,6 +194,7 @@ export function useKreisVerbindungHalten(fabrik: KreisRaumFabrik, eigeneProzesse
   return {
     raum, zustand, fehler, raumName, raumTitel, teilnehmer, ich, sitzung, prozess, jetzt,
     betreten, verlassen, handle, nebenSenden, beiNeben,
+    unterraum, inUnterraum, zurueckInHauptraum,
   }
 }
 

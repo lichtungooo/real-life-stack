@@ -20,13 +20,14 @@ import {
   Mic, MicOff, MonitorUp, MoreVertical, PanelLeft, Plus, Settings, Smile, UserPlus, Users, Video, VideoOff, X, ListOrdered, ClipboardCheck,
 } from "lucide-react"
 import {
-  PROZESSE, aktuellerSchritt, layoutFuerAlle, moderationSetzen, moderationVon, namensliste, punktRest, tagesordnungVon, losZiehen, mitteSetzen, padOeffnen, prozessWaehlen, redezeitRest, regelnSetzen, regelnVon,
+  PROZESSE, aktuellerSchritt, gruppenraeumeStarten, istUnterraumVon, layoutFuerAlle, moderationSetzen, moderationVon, namensliste, punktRest, tagesordnungVon, losZiehen, mitteSetzen, padOeffnen, prozessWaehlen, redezeitRest, regelnSetzen, regelnVon,
   schaleSchlagen, sitzungRest, stabNehmen, stabZuruecklegen, stilleLaeuft, stilleSekundenVon, weckerAus, weckerStellen, type KreisTeilnehmer,
 } from "@kreis/core"
 import { hinweisTon, meetingEnde, schaleAnschlagen } from "../klangschale"
 import { istLayout, useVorlieben, vorliebenSetzen, type HinweisArt, type LayoutArt } from "../vorlieben"
 import { LAYOUT_NAMEN, LayoutDialog } from "./layouts"
 import { ErgebnisseSpalte, TagesordnungSpalte, type ErgebnisAblegen } from "./meeting-spalten"
+import { GruppenraeumeDialog, GruppenraeumeHinweis } from "./gruppenraeume"
 import { EinstellungenDialog } from "./einstellungen-dialog"
 import { useKreisVerbindung, type KreisKontext } from "../raum-kontext"
 import { AndererRaum, KreisWerkzeug, OhneRaum, Vorraum } from "../kreis-raum-flaeche"
@@ -134,7 +135,7 @@ export function VideoRaumFlaeche(props: VideoRaumFlaecheProps) {
   const kreis = useKreisVerbindung()
   if (!kreis) return <OhneRaum />
   const schluessel = props.raumId ?? props.raumName
-  if (kreis.zustand === "drin" && kreis.raumName !== schluessel) {
+  if (kreis.zustand === "drin" && kreis.raumName !== schluessel && !istUnterraumVon(kreis.raumName, schluessel)) {
     return <AndererRaum kreis={kreis} hier={schluessel} hierTitel={props.raumName} vorschlagName={props.vorschlagName} />
   }
   if (kreis.zustand !== "drin") {
@@ -153,7 +154,7 @@ export function VideoRaumFlaeche(props: VideoRaumFlaecheProps) {
   return <InDerKonferenz kreis={kreis} {...props} />
 }
 
-function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSpeichern, einladen, ergebnisAblegen }: VideoRaumFlaecheProps & { kreis: KreisKontext }) {
+function InDerKonferenz({ kreis, raumName, raumId, module = [], modulZeigen, protokollSpeichern, einladen, ergebnisAblegen }: VideoRaumFlaecheProps & { kreis: KreisKontext }) {
   const { raum, teilnehmer, ich, sitzung, prozess, jetzt, handle, neben } = kreis
   const [leisteOffen, setLeisteOffen] = useState(true)
   const [spalte, setSpalte] = useState<Spalte>(null)
@@ -163,6 +164,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
   const [einladenOffen, setEinladenOffen] = useState(false)
   const [layoutOffen, setLayoutOffen] = useState(false)
   const [moderationOffen, setModerationOffen] = useState(false)
+  const [gruppenOffen, setGruppenOffen] = useState(false)
   const vorlieben = useVorlieben()
   // Hinweise wie in Big Blue Button: je Anlass ein Ton und eine Einblendung.
   const [einblendungen, setEinblendungen] = useState<{ id: number; text: string }[]>([])
@@ -406,6 +408,10 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
               <Eintrag onClick={() => { neben.reaktionenLoeschen(); setModerationOffen(false) }}>
                 <span className="w-4 text-center">✕</span> Alle Reaktionen löschen
               </Eintrag>
+              <div className="my-1 border-t border-slate-200" />
+              <Eintrag onClick={() => { setModerationOffen(false); setGruppenOffen(true) }}>
+                <span className="w-4 text-center">⊞</span> Gruppenräume erstellen
+              </Eintrag>
               <p className="px-3 pb-2 pt-1 text-[11px] text-slate-500">Auf Augenhöhe: Jeder darf das, und jedes Gerät hält sich selbst daran.</p>
             </Menue>
           </div>
@@ -481,6 +487,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
           </div>
         </header>
 
+        <GruppenraeumeHinweis kreis={kreis} hauptSchluessel={kreis.unterraum?.haupt ?? raumId ?? raumName} hauptTitel={kreis.unterraum?.hauptTitel ?? raumName} />
         {mitte === null || nurMenschen ? (
           // Alle zeigen: die Menschen gross. Liegt ein Tool in der Mitte und
           // ich schaue nur auf die Menschen, fuehrt oben ein Weg zurueck.
@@ -648,6 +655,10 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
               <button type="button" onClick={() => setAbschlussGesehen(true)} aria-label="Hinweis schließen" className="rounded-full p-1 hover:bg-black/10"><X className="h-4 w-4" /></button>
             </span>
           </div>
+        )}
+        {gruppenOffen && (
+          <GruppenraeumeDialog teilnehmer={teilnehmer} onZu={() => setGruppenOffen(false)}
+            onStarten={(r, min, selbst) => handle((s, t) => gruppenraeumeStarten(s, r, min, selbst, wer, t))} />
         )}
         {layoutOffen && <LayoutDialog aktuell={vorlieben.layout} onUebernehmen={layoutSetzen} onZu={() => setLayoutOffen(false)} />}
         {einstellungenOffen && (
