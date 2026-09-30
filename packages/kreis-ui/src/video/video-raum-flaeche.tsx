@@ -17,10 +17,10 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import {
   Bell, ChevronLeft, ChevronRight, CircleDot, FileText, Hand, LogOut, Maximize2, MessageSquare,
-  Mic, MicOff, MonitorUp, MoreVertical, PanelLeft, Plus, Smile, UserPlus, Users, Video, VideoOff, X, ListOrdered, ClipboardCheck,
+  Mic, MicOff, MonitorUp, MoreVertical, PanelLeft, Plus, Settings, Smile, UserPlus, Users, Video, VideoOff, X, ListOrdered, ClipboardCheck,
 } from "lucide-react"
 import {
-  PROZESSE, aktuellerSchritt, layoutFuerAlle, punktRest, tagesordnungVon, losZiehen, mitteSetzen, padOeffnen, prozessWaehlen, redezeitRest, regelnSetzen, regelnVon,
+  PROZESSE, aktuellerSchritt, layoutFuerAlle, moderationSetzen, moderationVon, namensliste, punktRest, tagesordnungVon, losZiehen, mitteSetzen, padOeffnen, prozessWaehlen, redezeitRest, regelnSetzen, regelnVon,
   schaleSchlagen, sitzungRest, stabNehmen, stabZuruecklegen, stilleLaeuft, stilleSekundenVon, weckerAus, weckerStellen, type KreisTeilnehmer,
 } from "@kreis/core"
 import { hinweisTon, meetingEnde, schaleAnschlagen } from "../klangschale"
@@ -162,6 +162,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
   const [einstellungenOffen, setEinstellungenOffen] = useState(false)
   const [einladenOffen, setEinladenOffen] = useState(false)
   const [layoutOffen, setLayoutOffen] = useState(false)
+  const [moderationOffen, setModerationOffen] = useState(false)
   const vorlieben = useVorlieben()
   // Hinweise wie in Big Blue Button: je Anlass ein Ton und eine Einblendung.
   const [einblendungen, setEinblendungen] = useState<{ id: number; text: string }[]>([])
@@ -237,6 +238,16 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
     vorliebenSetzen({ ...vorlieben, layout: art })
     if (fuerAlle) handle((s) => layoutFuerAlle(s, art, wer))
   }
+
+  // Moderation "Neue Teilnehmer stumm": wer hereinkommt, schaltet sich einmal
+  // selbst stumm, sobald der Stand des Raums bei ihm ist.
+  const moderation = moderationVon(sitzung)
+  const stummGeprueft = useRef(false)
+  useEffect(() => {
+    if (stummGeprueft.current || sitzung.v === 0 || !mich) return
+    stummGeprueft.current = true
+    if (moderation.neueStumm && mich.mikroAn && Date.now() - seit < 20_000) void raum.mikro(false)
+  }, [sitzung.v, moderation.neueStumm, mich, raum, seit])
 
   // Der Audiofilter des Mikrofons folgt der Vorliebe.
   useEffect(() => { void raum.mikroFilter?.(vorlieben.audiofilter) }, [raum, vorlieben.audiofilter])
@@ -360,7 +371,44 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
               </button>
             </>
           )}
-          <p className="px-4 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Teilnehmer ({teilnehmer.length})</p>
+          <div className="relative flex items-center px-4 pb-1 pt-4">
+            <p className="flex-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Teilnehmer ({teilnehmer.length})</p>
+            <button type="button" onClick={() => setModerationOffen(!moderationOffen)} aria-label="Moderation" title="Moderation"
+              className="rounded p-1 text-slate-400 hover:bg-white/10 hover:text-white"><Settings className="h-4 w-4" /></button>
+            <Menue offen={moderationOffen} onZu={() => setModerationOffen(false)} className="left-2 top-full mt-1 w-80">
+              <Eintrag aktiv={moderation.neueStumm} onClick={() => handle((s) => moderationSetzen(s, { neueStumm: !moderation.neueStumm }, wer))}>
+                <MicOff className="h-4 w-4" /> {moderation.neueStumm ? "Neue Teilnehmer stumm: an" : "Neue Teilnehmer stumm schalten"}
+              </Eintrag>
+              <Eintrag onClick={() => { neben.alleStumm(sitzung.pad?.praesentiert ?? sitzung.stab.halter ?? wer); setModerationOffen(false) }}>
+                <MicOff className="h-4 w-4" /> Alle stumm schalten bis auf die Person, die präsentiert
+              </Eintrag>
+              <p className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Rechte der Zuschauenden</p>
+              <Eintrag aktiv={!moderation.chat} onClick={() => handle((s) => moderationSetzen(s, { chat: !moderation.chat }, wer))}>
+                <span className="w-4 text-center">{moderation.chat ? "○" : "●"}</span> Chat {moderation.chat ? "schließen" : "ist geschlossen, öffnen"}
+              </Eintrag>
+              <Eintrag aktiv={!moderation.notizen} onClick={() => handle((s) => moderationSetzen(s, { notizen: !moderation.notizen }, wer))}>
+                <span className="w-4 text-center">{moderation.notizen ? "○" : "●"}</span> Notizen {moderation.notizen ? "nur zum Lesen" : "sind nur zum Lesen, freigeben"}
+              </Eintrag>
+              <Eintrag aktiv={!moderation.bildschirm} onClick={() => handle((s) => moderationSetzen(s, { bildschirm: !moderation.bildschirm }, wer))}>
+                <span className="w-4 text-center">{moderation.bildschirm ? "○" : "●"}</span> Bildschirm teilen {moderation.bildschirm ? "sperren" : "ist gesperrt, erlauben"}
+              </Eintrag>
+              <Eintrag aktiv={moderation.warteraum} onClick={() => handle((s) => moderationSetzen(s, { warteraum: !moderation.warteraum }, wer))}>
+                <span className="w-4 text-center">⌂</span> Gastzugang: {moderation.warteraum ? "Warteraum an" : "offen, Warteraum einschalten"}
+              </Eintrag>
+              <div className="my-1 border-t border-slate-200" />
+              <Eintrag onClick={() => {
+                const url = URL.createObjectURL(new Blob([namensliste(raumName, teilnehmer.map((t) => t.name), Date.now())], { type: "text/plain;charset=utf-8" }))
+                const a = document.createElement("a"); a.href = url; a.download = `Teilnehmende ${raumName}.txt`; a.click()
+                setTimeout(() => URL.revokeObjectURL(url), 1000); setModerationOffen(false)
+              }}>
+                <span className="w-4 text-center">⤓</span> Teilnehmernamen speichern
+              </Eintrag>
+              <Eintrag onClick={() => { neben.reaktionenLoeschen(); setModerationOffen(false) }}>
+                <span className="w-4 text-center">✕</span> Alle Reaktionen löschen
+              </Eintrag>
+              <p className="px-3 pb-2 pt-1 text-[11px] text-slate-500">Auf Augenhöhe: Jeder darf das, und jedes Gerät hält sich selbst daran.</p>
+            </Menue>
+          </div>
           <Menschen teilnehmer={teilnehmer} haende={neben.haende} stab={halterDa ? sitzung.stab.halter : null} medien={raum.traegtMedien} />
           {einladen && <NeuImRaum kreis={kreis} einladen={einladen} />}
         </nav>
@@ -560,7 +608,8 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
                 {mich.kameraAn ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
               </Rund>
               {raum.bildschirm && (
-                <Rund an={!!mich.teiltBildschirm} titel={mich.teiltBildschirm ? "Teilen beenden" : "Bildschirm teilen"} onClick={() => void medien("Bildschirm", () => raum.bildschirm?.(!mich.teiltBildschirm))}>
+                <Rund an={!!mich.teiltBildschirm} titel={mich.teiltBildschirm ? "Teilen beenden" : moderation.bildschirm ? "Bildschirm teilen" : "Bildschirm teilen ist gerade gesperrt"}
+                  onClick={() => { if (mich.teiltBildschirm || moderation.bildschirm) void medien("Bildschirm", () => raum.bildschirm?.(!mich.teiltBildschirm)) }}>
                   <MonitorUp className="h-5 w-5" />
                 </Rund>
               )}

@@ -102,6 +102,8 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
   const eingaenge = useRef(new Map<string, Eingang>())
   // Aufgaben und Beschluesse dieses Meetings, fuer alle.
   const [ergebnisse, setErgebnisse] = useState<readonly Ergebnis[]>([])
+  // Warteraum: wen jemand aus der Gruppe hereingeholt hat (Kennungen).
+  const [hereingeholt, setHereingeholt] = useState<ReadonlySet<string>>(new Set())
   const ergebnisseRef = useRef(ergebnisse)
   ergebnisseRef.current = ergebnisse
   // Wer ist wer: Teilnehmer im Raum -> Kennung in der App (DID). Jeder
@@ -201,6 +203,14 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
     } else if (n.art === "stimme" && istStimme(n.stimme)) {
       const st = n.stimme
       setUmfrage((u) => (u ? stimmeDazu(u, st) : u))
+    } else if (n.art === "alle-stumm") {
+      // Moderation: alle stumm bis auf den, der praesentiert. Jedes Geraet tut es selbst.
+      if (v.ich && n.ausser !== v.ich) void v.raum.mikro(false)
+    } else if (n.art === "reaktionen-weg") {
+      setHaende(new Set()); setZeichen(new Map())
+    } else if (n.art === "hereinholen" && typeof n.kennung === "string") {
+      const k = n.kennung
+      setHereingeholt((alt) => new Set(alt).add(k))
     } else if (n.art === "ergebnis" && istErgebnis(n.ergebnis)) {
       const e = n.ergebnis
       setErgebnisse((alt) => (alt.some((x) => x.id === e.id) ? alt : [...alt, e]))
@@ -247,7 +257,7 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
   useEffect(() => {
     if (v.zustand !== "draussen") return
     setKennungen(new Map())
-    setChat([]); setHaende(new Set()); setZeichen(new Map()); setProtokoll([]); setTafel([]); setNotiz(LEERE_NOTIZ); setUmfrage(null); setPad({}); setDateien(new Map()); setErgebnisse([])
+    setChat([]); setHaende(new Set()); setZeichen(new Map()); setProtokoll([]); setTafel([]); setNotiz(LEERE_NOTIZ); setUmfrage(null); setPad({}); setDateien(new Map()); setErgebnisse([]); setHereingeholt(new Set())
     sollLaufenRef.current = false
     erkennungRef.current?.abort()
     erkennungRef.current = null
@@ -361,6 +371,24 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
     void dateiSenden(id, name, bytes)
   }, [dateiSenden])
 
+  /** Moderation: alle stumm schalten, bis auf `ausser`. */
+  const alleStumm = useCallback((ausser: string | null) => {
+    v.nebenSenden({ art: "alle-stumm", ausser })
+    if (v.ich && ausser !== v.ich) void v.raum.mikro(false)
+  }, [v])
+
+  /** Moderation: alle Haende und Zeichen weg, bei allen. */
+  const reaktionenLoeschen = useCallback(() => {
+    setHaende(new Set()); setZeichen(new Map())
+    v.nebenSenden({ art: "reaktionen-weg" })
+  }, [v])
+
+  /** Warteraum: jemanden hereinholen. */
+  const hereinholen = useCallback((kennung: string) => {
+    setHereingeholt((alt) => new Set(alt).add(kennung))
+    v.nebenSenden({ art: "hereinholen", kennung })
+  }, [v])
+
   /** Eine Aufgabe oder einen Beschluss fuer alle festhalten. */
   const ergebnisDazu = useCallback((e: Ergebnis) => {
     setErgebnisse((alt) => [...alt, e])
@@ -431,6 +459,7 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
     pad, padSenden,
     dateien, dateiTeilen, dateiAnfragen,
     ergebnisse, ergebnisDazu,
+    alleStumm, reaktionenLoeschen, hereinholen, hereingeholt,
     chat, chatSenden,
     haende, handUmschalten,
     zeichen, zeichenGeben,

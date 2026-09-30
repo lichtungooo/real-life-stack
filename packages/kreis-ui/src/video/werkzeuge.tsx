@@ -4,7 +4,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { BarChart3, Timer, X } from "lucide-react"
-import { ergebnis } from "@kreis/core"
+import { ergebnis, moderationVon } from "@kreis/core"
 import type { KreisKontext } from "../raum-kontext"
 
 const uhrzeit = (wann: number) => new Date(wann).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })
@@ -19,6 +19,7 @@ const uhrzeit = (wann: number) => new Date(wann).toLocaleTimeString("de-DE", { h
  */
 export function GeteilteNotizen({ kreis }: { kreis: KreisKontext }) {
   const { notiz, notizSetzen } = kreis.neben
+  const notizenOffen = moderationVon(kreis.sitzung).notizen
   const [entwurf, setEntwurf] = useState(notiz.text)
   const [fokus, setFokus] = useState(false)
   const warte = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -41,7 +42,8 @@ export function GeteilteNotizen({ kreis }: { kreis: KreisKontext }) {
         onChange={(e) => schreiben(e.target.value)}
         onFocus={() => setFokus(true)}
         onBlur={() => { setFokus(false); notizSetzen(entwurf) }}
-        placeholder="Hier schreiben alle zusammen: Tagesordnung, Beschlüsse, Ideen."
+        placeholder={notizenOffen ? "Hier schreiben alle zusammen: Tagesordnung, Beschlüsse, Ideen." : "Die Notizen sind gerade nur zum Lesen."}
+        readOnly={!notizenOffen}
         className="min-h-0 flex-1 resize-none rounded-xl bg-white/10 p-3 text-[13px] leading-relaxed text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
       />
       <p className="text-[11px] text-slate-500">

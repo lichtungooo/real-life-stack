@@ -1,5 +1,6 @@
 // Die linke Seite der Konferenz: Menschen mit Namen, Chat, Protokoll.
 
+import { moderationVon } from "@kreis/core"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { AlertTriangle, CircleDot, Hand, MicOff, MonitorUp, Save, Send, Trash2 } from "lucide-react"
 import type { KreisTeilnehmer } from "@kreis/core"
@@ -27,6 +28,8 @@ export function Menschen({ teilnehmer, haende, stab, medien }: { teilnehmer: rea
 const uhrzeit = (wann: number) => new Date(wann).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })
 
 export function Chat({ kreis }: { kreis: KreisKontext }) {
+  // Moderation: "Rechte der Zuschauenden einschraenken" schliesst den Chat.
+  const chatOffen = moderationVon(kreis.sitzung).chat
   const [entwurf, setEntwurf] = useState("")
   const kasten = useRef<HTMLDivElement | null>(null)
   useEffect(() => { const k = kasten.current; if (k) k.scrollTop = k.scrollHeight }, [kreis.neben.chat.length])
@@ -52,12 +55,13 @@ export function Chat({ kreis }: { kreis: KreisKontext }) {
           value={entwurf}
           onChange={(e) => setEntwurf(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); senden() } }}
-          placeholder="Schreiben, Enter schickt"
+          placeholder={chatOffen ? "Schreiben, Enter schickt" : "Der Chat ist gerade geschlossen."}
+          disabled={!chatOffen}
           aria-label="Nachricht"
           rows={1}
           className="max-h-28 min-h-9 flex-1 resize-none rounded-xl bg-white/10 px-3 py-2 text-[13px] text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
         />
-        <button type="button" onClick={senden} disabled={!entwurf.trim()} aria-label="Senden" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-30">
+        <button type="button" onClick={senden} disabled={!chatOffen || !entwurf.trim()} aria-label="Senden" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-30">
           <Send className="h-4 w-4" />
         </button>
       </div>

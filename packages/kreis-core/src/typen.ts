@@ -122,6 +122,8 @@ export interface Sitzung {
   layout?: { art: string; nr: number } | null
   /** Die Tagesordnung des Meetings (siehe tagesordnung.ts). */
   tagesordnung?: import("./tagesordnung").Tagesordnung | null
+  /** Die Moderation (siehe moderation.ts). Fehlt sie, ist alles offen. */
+  moderation?: Partial<import("./moderation").Moderation> | null
 }
 
 /** Was nach Ablauf der Redezeit mit dem Redestab geschieht. */

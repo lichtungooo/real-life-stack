@@ -47,6 +47,13 @@ Dazu, ebenfalls im Aktions-Knopf: **Zufällig jemanden wählen** (das Los steht 
 
 **Folien (30.09.2026, Schritt B):** Wer präsentiert, legt über „Folien hochladen“ eine **PDF** auf (bis 15 MB). Sie reist **in Stücken über den Kanal des Raums** (`datei-kopf`, `datei-teil`, `datei-frage` für Nachzügler; `@kreis/core/dateien`), ohne Server, und lebt nur in der Sitzung (der Stack trägt keine Dateianhänge; Wunsch an Anton: `BlobCapable`). Jedes Gerät zeichnet die Seite selbst mit **pdf.js** (Apache 2.0, Worker aus dem Bau) als Bild und legt es gesperrt unter die Zeichnung. **Jede Folie hat ihre eigene Zeichnung** (`padSchluessel`). Blättern (‹ Folie n ›) nur, wer präsentiert (`padBlaettern`); „Folien abnehmen“ führt zur freien Fläche zurück. **Gefunden und behoben:** Der Neben-Kanal meldete seinen Empfänger bei jedem Neuzeichnen ab und an; eine Antwort genau dazwischen ging verloren. Jetzt meldet er sich einmal an und liest die Verarbeitung aus einem Ref.
 
+**Moderation (30.09.2026):** Zahnrad bei „Teilnehmer“, wie in BBB. **Auf Augenhöhe:** Jeder darf sie bedienen, und jedes Gerät hält sich selbst daran (`Sitzung.moderation`, `@kreis/core/moderation`); einen Server, der für andere entscheidet, gibt es nicht.
+- **Neue Teilnehmer stumm schalten:** Wer hereinkommt, schaltet sich einmal selbst stumm, sobald der Stand bei ihm ist.
+- **Alle stumm schalten bis auf die Person, die präsentiert** (Pad-Präsentierende, sonst wer den Stab hält, sonst wer klickt): Neben-Kanal `alle-stumm`.
+- **Rechte der Zuschauenden:** Chat schließen, Notizen nur zum Lesen, Bildschirm teilen sperren (eigenes Teilen beenden geht immer).
+- **Gastzugang, Warteraum:** Wer über den Link kommt und nicht zur Gruppe gehört, wartet ohne Mikrofon, Kamera und Ton, bis ihn jemand **hereinholt** (`hereinholen`); der Provider kennt dafür `tonAus`.
+- **Teilnehmernamen speichern** (Textdatei), **Alle Reaktionen löschen** (Hände und Zeichen bei allen).
+
 **Tagesordnung, Aufgaben und Beschlüsse (30.09.2026):** Links unter **Meeting** zwei Spalten.
 - **Tagesordnung** (`Sitzung.tagesordnung`, `@kreis/core/tagesordnung`): Punkte mit Zeit (ohne, 5 bis 60 Min.), aufrufen (der vorige gilt dann als erledigt), abhaken, verschieben, entfernen, „Punkt abschließen“. Der laufende Punkt steht oben in der Kopfzeile mit Restzeit oder „überzogen“. Jeder darf sie pflegen.
 - **Aufgaben und Beschlüsse** (Neben-Kanal `ergebnis`, Nachzügler über `werkzeug-frage`): Aufgabe mit „Wer?“ (Namen aus dem Raum) und „Bis wann“, oder Beschluss. **Nur wer festhält, legt ab**, damit jedes Item genau einmal entsteht: Aufgabe als Item `task` mit Status `open` (Kanban der Gruppe), Beschluss als `post` (Feed), jeweils mit Herkunft „Aus dem Meeting … am …, festgehalten von …“ (`ergebnisAblegen` von der App).

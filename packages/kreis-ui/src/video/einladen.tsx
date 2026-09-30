@@ -13,6 +13,7 @@
 
 import { useState } from "react"
 import { Check, Copy, Link2, UserPlus, X } from "lucide-react"
+import { moderationVon } from "@kreis/core"
 import type { KreisKontext } from "../raum-kontext"
 
 export interface EinladbarerKontakt {
@@ -173,6 +174,10 @@ export function NeuImRaum({ kreis, einladen }: { kreis: KreisKontext; einladen: 
         {neue.map(({ t, kennung }) => (
           <li key={t.id} className="flex items-center gap-2 text-sm">
             <span className="min-w-0 flex-1 truncate">{t.name}</span>
+            {moderationVon(kreis.sitzung).warteraum && !kreis.neben.hereingeholt.has(kennung) && (
+              <button type="button" onClick={() => kreis.neben.hereinholen(kennung)}
+                className="rounded-lg bg-white/15 px-2.5 py-1 text-xs font-semibold hover:bg-white/25">Hereinholen</button>
+            )}
             {aufgenommen.has(kennung) ? (
               <span className="flex items-center gap-1 text-xs text-emerald-300"><Check className="h-3.5 w-3.5" /> eingeladen</span>
             ) : (

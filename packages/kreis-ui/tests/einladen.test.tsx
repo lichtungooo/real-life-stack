@@ -171,3 +171,56 @@ describe("Einladen in die Konferenz", () => {
     expect(anna.knopf("Einladen")).toBeUndefined()
   })
 })
+
+describe("Moderation auf Augenhoehe", () => {
+  it("Chat schliessen, alle stumm, Reaktionen loeschen: jedes Geraet folgt", async () => {
+    const kanal = kanalNetz()
+    const einladen = einladenFuer()
+    const anna = mensch(kanal, "a-anna", "kennung-anna",
+      (e) => <VideoRaumFlaeche raumId={GRUPPE} raumName="Garten" vorschlagName="Anna" einladen={e} />, einladen)
+    const bert = mensch(kanal, "b-bert", "kennung-bert",
+      (e) => <VideoRaumFlaeche raumId={GRUPPE} raumName="Garten" vorschlagName="Bert" einladen={e} />, einladen)
+    await anna.betreten()
+    await namenFeld(bert.huelle, "Bert")
+    await bert.betreten()
+
+    const aria = async (m: typeof anna, label: string) => {
+      const b = m.huelle.querySelector(`button[aria-label="${label}"]`) as HTMLButtonElement
+      await act(async () => { b.click() })
+    }
+    await aria(anna, "Moderation")
+    await anna.klick("Chat schließen")
+    await bert.klick("Gemeinsamer Chat")
+    expect((bert.huelle.querySelector("textarea#video-chat") as HTMLTextAreaElement).disabled).toBe(true)
+
+    await aria(bert, "Hand heben oder senken")
+    expect(anna.text()).toContain("hebt die Hand")
+    await aria(anna, "Moderation")
+    await anna.klick("Alle Reaktionen löschen")
+    expect(bert.huelle.querySelector('button[aria-label="Hand heben oder senken"]')?.getAttribute("aria-pressed")).toBe("false")
+  })
+
+  it("Warteraum: Neue warten ohne Ton, bis jemand sie hereinholt", async () => {
+    const kanal = kanalNetz()
+    const einladen = einladenFuer()
+    const anna = mensch(kanal, "a-anna", "kennung-anna",
+      (e) => <VideoRaumFlaeche raumId={GRUPPE} raumName="Garten" vorschlagName="Anna" einladen={e} />, einladen)
+    await anna.betreten()
+    const aria = async (m: typeof anna, label: string) => {
+      const b = m.huelle.querySelector(`button[aria-label="${label}"]`) as HTMLButtonElement
+      await act(async () => { b.click() })
+    }
+    await aria(anna, "Moderation")
+    await anna.klick("Warteraum einschalten")
+
+    const bert = mensch(kanal, "b-bert", "kennung-bert", () => <BeitrittsKonferenz raumId={GRUPPE} raumName="Garten" />)
+    await namenFeld(bert.huelle, "Bert")
+    await bert.betreten()
+    expect(bert.text()).toContain("Warteraum")
+    expect(bert.text()).toContain("Gleich holt dich jemand")
+
+    await anna.klick("Hereinholen")
+    expect(bert.text()).not.toContain("Gleich holt dich jemand")
+    expect(bert.text()).toContain("Willkommen in „Garten“")
+  })
+})

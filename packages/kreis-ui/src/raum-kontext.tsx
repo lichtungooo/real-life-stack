@@ -15,13 +15,18 @@
 //
 // Fehlt der Provider, degradiert das Modul sichtbar.
 
-import { createContext, useContext, useEffect, useRef, type ReactNode } from "react"
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react"
 import type { KreisRaum, KreisTeilnehmer, Prozess } from "@kreis/core"
 import { useKreisVerbindungHalten, type KreisRaumFabrik, type KreisVerbindung } from "./use-kreis"
 import { useNebenHalten, type Neben } from "./use-neben"
 
 export type { KreisRaumFabrik } from "./use-kreis"
-export type KreisKontext = KreisVerbindung & { neben: Neben }
+export type KreisKontext = KreisVerbindung & {
+  neben: Neben
+  /** Den Ton des Raums fuer mich aus- und wieder einschalten (etwa im Warteraum). */
+  tonAus: boolean
+  setTonAus: (aus: boolean) => void
+}
 
 const Kontext = createContext<KreisKontext | null>(null)
 
@@ -35,8 +40,8 @@ function Lautsprecher({ raum, person }: { raum: KreisRaum; person: KreisTeilnehm
 }
 
 /** Der Ton aller anderen im Raum, einmal fuer die ganze App. Den eigenen nie, sonst pfeift es. */
-function RaumTon({ v }: { v: KreisVerbindung }) {
-  if (v.zustand !== "drin" || !v.raum.traegtMedien) return null
+function RaumTon({ v, aus }: { v: KreisVerbindung; aus: boolean }) {
+  if (aus || v.zustand !== "drin" || !v.raum.traegtMedien) return null
   return (
     <div hidden aria-hidden="true">
       {v.teilnehmer.filter((t) => !t.ichSelbst).map((t) => <Lautsprecher key={t.id} raum={v.raum} person={t} />)}
@@ -59,9 +64,10 @@ export function KreisRaumProvider({
 }) {
   const verbindung = useKreisVerbindungHalten(fabrik, eigeneProzesse)
   const neben = useNebenHalten(verbindung, kennung ?? null)
+  const [tonAus, setTonAus] = useState(false)
   return (
-    <Kontext.Provider value={{ ...verbindung, neben }}>
-      <RaumTon v={verbindung} />
+    <Kontext.Provider value={{ ...verbindung, neben, tonAus, setTonAus }}>
+      <RaumTon v={verbindung} aus={tonAus} />
       {children}
     </Kontext.Provider>
   )
