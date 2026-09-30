@@ -102,3 +102,12 @@ describe("Wer zeichnen darf", () => {
     expect(darfZeichnen(leereSitzung(0), "wer")).toBe(true)
   })
 })
+
+describe("Layout fuer alle", () => {
+  it("zaehlt jede Uebernahme, damit sie einmal ankommt", async () => {
+    const { layoutFuerAlle } = await import("../src")
+    const a = layoutFuerAlle(leereSitzung(0), "rechts", "anna")
+    expect(a.layout).toEqual({ art: "rechts", nr: 1 })
+    expect(layoutFuerAlle(a, "video", "bert").layout).toEqual({ art: "video", nr: 2 })
+  })
+})

@@ -20,11 +20,12 @@ import {
   Mic, MicOff, MonitorUp, MoreVertical, PanelLeft, Plus, Smile, UserPlus, Users, Video, VideoOff, X,
 } from "lucide-react"
 import {
-  PROZESSE, aktuellerSchritt, losZiehen, mitteSetzen, padOeffnen, prozessWaehlen, redezeitRest, regelnSetzen, regelnVon,
+  PROZESSE, aktuellerSchritt, layoutFuerAlle, losZiehen, mitteSetzen, padOeffnen, prozessWaehlen, redezeitRest, regelnSetzen, regelnVon,
   schaleSchlagen, sitzungRest, stabNehmen, stabZuruecklegen, stilleLaeuft, stilleSekundenVon, weckerAus, weckerStellen, type KreisTeilnehmer,
 } from "@kreis/core"
 import { hinweisTon, meetingEnde, schaleAnschlagen } from "../klangschale"
-import { useVorlieben, type HinweisArt } from "../vorlieben"
+import { istLayout, useVorlieben, vorliebenSetzen, type HinweisArt, type LayoutArt } from "../vorlieben"
+import { LAYOUT_NAMEN, LayoutDialog } from "./layouts"
 import { EinstellungenDialog } from "./einstellungen-dialog"
 import { useKreisVerbindung, type KreisKontext } from "../raum-kontext"
 import { AndererRaum, KreisWerkzeug, OhneRaum, Vorraum } from "../kreis-raum-flaeche"
@@ -157,6 +158,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
   const [mehrOffen, setMehrOffen] = useState(false)
   const [einstellungenOffen, setEinstellungenOffen] = useState(false)
   const [einladenOffen, setEinladenOffen] = useState(false)
+  const [layoutOffen, setLayoutOffen] = useState(false)
   const vorlieben = useVorlieben()
   // Hinweise wie in Big Blue Button: je Anlass ein Ton und eine Einblendung.
   const [einblendungen, setEinblendungen] = useState<{ id: number; text: string }[]>([])
@@ -219,6 +221,19 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
     window.addEventListener("keyup", hoch)
     return () => { window.removeEventListener("keydown", runter); window.removeEventListener("keyup", hoch) }
   }, [raum, mich?.mikroAn, leertaste, medien, vorlieben.pushToTalk])
+
+  // "Fuer alle uebernehmen": jede neue Nummer einmal in die eigene Vorliebe.
+  const layoutGesehen = useRef(0)
+  useEffect(() => {
+    const l = sitzung.layout
+    if (!l || l.nr <= layoutGesehen.current) return
+    layoutGesehen.current = l.nr
+    if (istLayout(l.art) && l.art !== vorlieben.layout) vorliebenSetzen({ ...vorlieben, layout: l.art })
+  }, [sitzung.layout, vorlieben])
+  const layoutSetzen = (art: LayoutArt, fuerAlle: boolean) => {
+    vorliebenSetzen({ ...vorlieben, layout: art })
+    if (fuerAlle) handle((s) => layoutFuerAlle(s, art, wer))
+  }
 
   // Der Audiofilter des Mikrofons folgt der Vorliebe.
   useEffect(() => { void raum.mikroFilter?.(vorlieben.audiofilter) }, [raum, vorlieben.audiofilter])
@@ -387,6 +402,9 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
               <Eintrag onClick={() => { setMehrOffen(false); setEinstellungenOffen(true) }}>
                 <span className="w-4 text-center">⚙</span> Einstellungen
               </Eintrag>
+              <Eintrag onClick={() => { setMehrOffen(false); setLayoutOffen(true) }}>
+                <span className="w-4 text-center">▦</span> Layout: {LAYOUT_NAMEN[vorlieben.layout]}
+              </Eintrag>
               <Eintrag onClick={() => { setMehrOffen(false); void huelle.current?.requestFullscreen?.().catch(() => {}) }}>
                 <Maximize2 className="h-4 w-4" /> Vollbild
               </Eintrag>
@@ -411,12 +429,29 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
             </div>
           </div>
         ) : (
-          <>
-            {/* OBEN: die Menschen mit Bild */}
-            <div className="flex shrink-0 gap-2 overflow-x-auto pb-1" aria-label="Die Menschen">
-              {sichtbar.map((p) => <div key={p.id} className="w-32 shrink-0">{kachel(p)}</div>)}
-            </div>
-            {/* MITTE: das Tool im Modul, fuer alle */}
+          <LayoutFlaeche
+            art={vorlieben.layout}
+            streifen={(form) => (
+              <div aria-label="Die Menschen" className={
+                form === "quer" ? "flex shrink-0 gap-2 overflow-x-auto pb-1"
+                : form === "hoch" ? "flex w-40 shrink-0 flex-col gap-2 overflow-y-auto"
+                : "absolute bottom-3 left-3 z-10 flex max-w-[60%] gap-1.5 overflow-x-auto rounded-xl bg-slate-950/60 p-1.5"}>
+                {sichtbar.map((p) => <div key={p.id} className={form === "klein" ? "w-24 shrink-0" : form === "hoch" ? "w-full" : "w-32 shrink-0"}>{kachel(p)}</div>)}
+              </div>
+            )}
+            galerie={
+              <VideoBuehne teilnehmer={sichtbar} raum={raum} ansicht="galerie"
+                stabHalter={halterDa ? sitzung.stab.halter : null} haende={neben.haende} zeichen={neben.zeichen} />
+            }
+            toolKlein={
+              <button type="button" onClick={() => vorliebenSetzen({ ...vorlieben, layout: "oben" })}
+                className="absolute bottom-3 left-3 z-10 flex w-56 flex-col items-start gap-0.5 rounded-xl bg-background p-3 text-left text-foreground shadow-xl hover:ring-2 hover:ring-primary">
+                <span className="text-xs text-muted-foreground">In der Mitte, für alle</span>
+                <span className="text-sm font-semibold">{toolName}</span>
+                <span className="text-xs text-primary">groß zeigen</span>
+              </button>
+            }
+            werkzeug={
             <section className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-background text-foreground">
               <header className="flex shrink-0 items-center gap-2 border-b border-border px-4 py-2">
                 <span className="text-sm font-semibold">{toolName}</span>
@@ -434,7 +469,8 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
                   : modulZeigen ? <div className="h-full overflow-hidden">{modulZeigen(mitte)}</div> : null}
               </div>
             </section>
-          </>
+            }
+          />
         )}
 
         {/* UNTEN: der Aktions-Knopf links, die Medien in der Mitte */}
@@ -544,6 +580,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
             </span>
           </div>
         )}
+        {layoutOffen && <LayoutDialog aktuell={vorlieben.layout} onUebernehmen={layoutSetzen} onZu={() => setLayoutOffen(false)} />}
         {einstellungenOffen && (
           <EinstellungenDialog regeln={regelnVon(sitzung)} stilleVorgabe={stilleSekundenVon({ ...sitzung, regeln: undefined }, prozess)}
             onZu={() => setEinstellungenOffen(false)} onRegelnSpeichern={(r) => handle((s, t) => regelnSetzen(s, r, wer, t))} />
@@ -570,4 +607,21 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
       </div>
     </div>
   )
+}
+
+/**
+ * Ordnet Menschen und Tool nach dem Layout (wie in Big Blue Button). Die
+ * Teile kommen fertig herein; hier steht nur die Anordnung.
+ */
+function LayoutFlaeche({ art, streifen, werkzeug, galerie, toolKlein }: {
+  art: LayoutArt
+  streifen: (form: "quer" | "hoch" | "klein") => ReactNode
+  werkzeug: ReactNode
+  galerie: ReactNode
+  toolKlein: ReactNode
+}) {
+  if (art === "rechts") return <div className="flex min-h-0 flex-1 gap-2">{werkzeug}{streifen("hoch")}</div>
+  if (art === "praesentation") return <div className="relative flex min-h-0 flex-1 flex-col">{werkzeug}{streifen("klein")}</div>
+  if (art === "video") return <div className="relative min-h-0 flex-1">{galerie}{toolKlein}</div>
+  return <>{streifen("quer")}{werkzeug}</>
 }

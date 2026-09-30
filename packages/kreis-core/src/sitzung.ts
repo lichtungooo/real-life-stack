@@ -237,6 +237,11 @@ export function padSchluessel(s: Sitzung): string {
   return f ? `${f.datei}:${s.pad?.seite ?? 1}` : "frei"
 }
 
+/** Ein Layout fuer alle uebernehmen. */
+export function layoutFuerAlle(s: Sitzung, art: string, wer: string): Sitzung {
+  return weiter(s, wer, { layout: { art, nr: (s.layout?.nr ?? 0) + 1 } })
+}
+
 /** Darf dieser Mensch auf dem Pad zeichnen? */
 export function darfZeichnen(s: Sitzung, wer: string): boolean {
   return !s.pad || s.pad.alle || s.pad.praesentiert === wer

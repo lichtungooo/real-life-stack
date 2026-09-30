@@ -10,6 +10,15 @@ import { useSyncExternalStore } from "react"
 
 export type HinweisArt = "chat" | "beitritt" | "gehen" | "hand"
 
+/**
+ * Die Layouts wie in Big Blue Button: Bilder oben (unser Standard), Bilder
+ * rechts, Praesentation im Zentrum (Bilder klein unten), Video im Zentrum
+ * (das Tool klein unten).
+ */
+export const LAYOUTS = ["oben", "rechts", "praesentation", "video"] as const
+export type LayoutArt = (typeof LAYOUTS)[number]
+export const istLayout = (w: unknown): w is LayoutArt => (LAYOUTS as readonly unknown[]).includes(w)
+
 export interface Vorlieben {
   /** Bewegungen und Uebergaenge. */
   animationen: boolean
@@ -29,6 +38,8 @@ export interface Vorlieben {
   kamerasAnderer: boolean
   /** Datensparmodus: den geteilten Bildschirm der anderen zeigen. */
   bildschirmAnderer: boolean
+  /** Wie die Konferenz aufgeteilt ist. */
+  layout: LayoutArt
 }
 
 // Die Vorgaben folgen Big Blue Button: Hinweise nur beim Handheben.
@@ -47,6 +58,7 @@ export const VORGABEN: Vorlieben = {
   },
   kamerasAnderer: true,
   bildschirmAnderer: true,
+  layout: "oben",
 }
 
 export const SCHRIFT_STUFEN = [80, 90, 100, 110, 120, 130] as const
@@ -74,6 +86,7 @@ export function vorliebenLesen(roh: string | null): Vorlieben {
       hinweise,
       kamerasAnderer: bool("kamerasAnderer"),
       bildschirmAnderer: bool("bildschirmAnderer"),
+      layout: istLayout(g.layout) ? g.layout : VORGABEN.layout,
     }
   } catch {
     return VORGABEN

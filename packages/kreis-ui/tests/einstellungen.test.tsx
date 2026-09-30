@@ -142,3 +142,21 @@ describe("Datensparmodus und Audiofilter", () => {
     expect(filter).toHaveBeenCalledWith(false)
   })
 })
+
+describe("Layouts wie in Big Blue Button", () => {
+  it("vier Ansichten; Video im Zentrum zeigt das Tool klein, ein Klick holt es gross zurueck", async () => {
+    const anna = konferenz(kanalNetz(), "a-anna", "Anna")
+    await anna.betreten()
+    await anna.klick("Aktionen")
+    await anna.klick("Umfrage")
+    await anna.klick("Mehr")
+    await anna.klick("Layout")
+    for (const n of ["Bilder oben", "Bilder rechts", "Präsentation im Zentrum", "Video im Zentrum"]) expect(anna.text()).toContain(n)
+    await anna.klick("Video im Zentrum")
+    await anna.klick("Übernehmen")
+    expect(anna.text()).toContain("groß zeigen")
+    expect(JSON.parse(localStorage.getItem("kreis-vorlieben") ?? "{}").layout).toBe("video")
+    await anna.klick("groß zeigen")
+    expect(anna.text()).not.toContain("groß zeigen")
+  })
+})

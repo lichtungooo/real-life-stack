@@ -114,6 +114,12 @@ export interface Sitzung {
     /** Die Seite, die alle sehen (ab 1). Ohne Folien die freie Flaeche. */
     seite?: number
   } | null
+  /**
+   * Ein Layout fuer alle ("Fuer alle aktualisieren" wie in Big Blue Button).
+   * `nr` zaehlt jede Uebernahme, damit sie einmal ankommt; danach darf jeder
+   * fuer sich wieder umstellen.
+   */
+  layout?: { art: string; nr: number } | null
 }
 
 /** Was nach Ablauf der Redezeit mit dem Redestab geschieht. */
