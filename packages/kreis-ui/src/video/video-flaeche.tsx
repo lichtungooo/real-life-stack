@@ -83,6 +83,20 @@ export function VideoFlaeche({ groupId, einladungsLink }: ModuleViewProps & { ei
   // 30.09.2026: im Login stand dort `__overview__` als Raumname).
   if (!space) return <GruppeWaehlen />
 
+  // Aufgaben ins Kanban der Gruppe (Item `task`, Status `open`), Beschluesse
+  // in den Feed (Item `post`). Aus dem Meeting heraus, mit Herkunft.
+  const ergebnisAblegen = useCallback(async (e: { art: "aufgabe" | "beschluss"; text: string; wer?: string; bis?: string; von: string }) => {
+    const datum = new Date().toLocaleDateString("de-DE")
+    const herkunft = `Aus dem Meeting „${raumName}“ am ${datum}, festgehalten von ${e.von}.`
+    const zusatz = [e.wer ? `Übernimmt: ${e.wer}` : "", e.bis ? `Bis: ${new Date(e.bis).toLocaleDateString("de-DE")}` : ""].filter(Boolean).join(" · ")
+    await createItem(
+      e.art === "aufgabe"
+        ? { type: "task", createdBy: user?.id ?? "", data: { title: e.text, status: "open", description: [zusatz, herkunft].filter(Boolean).join("\n\n") } }
+        : { type: "post", createdBy: user?.id ?? "", data: { title: `Beschluss: ${e.text.slice(0, 80)}`, text: `${e.text}\n\n${herkunft}` } },
+      groupId ? { group: groupId } : undefined,
+    )
+  }, [createItem, raumName, groupId, user?.id])
+
   return (
     <VideoRaumFlaeche
       raumName={raumName}
@@ -90,6 +104,7 @@ export function VideoFlaeche({ groupId, einladungsLink }: ModuleViewProps & { ei
       einladen={einladen}
       vorschlagName={user?.displayName}
       protokollSpeichern={protokollSpeichern}
+      ergebnisAblegen={ergebnisAblegen}
     />
   )
 }

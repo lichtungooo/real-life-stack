@@ -17,15 +17,16 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import {
   Bell, ChevronLeft, ChevronRight, CircleDot, FileText, Hand, LogOut, Maximize2, MessageSquare,
-  Mic, MicOff, MonitorUp, MoreVertical, PanelLeft, Plus, Smile, UserPlus, Users, Video, VideoOff, X,
+  Mic, MicOff, MonitorUp, MoreVertical, PanelLeft, Plus, Smile, UserPlus, Users, Video, VideoOff, X, ListOrdered, ClipboardCheck,
 } from "lucide-react"
 import {
-  PROZESSE, aktuellerSchritt, layoutFuerAlle, losZiehen, mitteSetzen, padOeffnen, prozessWaehlen, redezeitRest, regelnSetzen, regelnVon,
+  PROZESSE, aktuellerSchritt, layoutFuerAlle, punktRest, tagesordnungVon, losZiehen, mitteSetzen, padOeffnen, prozessWaehlen, redezeitRest, regelnSetzen, regelnVon,
   schaleSchlagen, sitzungRest, stabNehmen, stabZuruecklegen, stilleLaeuft, stilleSekundenVon, weckerAus, weckerStellen, type KreisTeilnehmer,
 } from "@kreis/core"
 import { hinweisTon, meetingEnde, schaleAnschlagen } from "../klangschale"
 import { istLayout, useVorlieben, vorliebenSetzen, type HinweisArt, type LayoutArt } from "../vorlieben"
 import { LAYOUT_NAMEN, LayoutDialog } from "./layouts"
+import { ErgebnisseSpalte, TagesordnungSpalte, type ErgebnisAblegen } from "./meeting-spalten"
 import { EinstellungenDialog } from "./einstellungen-dialog"
 import { useKreisVerbindung, type KreisKontext } from "../raum-kontext"
 import { AndererRaum, KreisWerkzeug, OhneRaum, Vorraum } from "../kreis-raum-flaeche"
@@ -53,7 +54,7 @@ function mmss(ms: number): string {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`
 }
 
-type Spalte = "chat" | "notizen" | "protokoll" | null
+type Spalte = "chat" | "notizen" | "protokoll" | "tagesordnung" | "ergebnisse" | null
 
 export interface ModulWahl { id: string; label: string }
 
@@ -68,6 +69,8 @@ export interface VideoRaumFlaecheProps {
   raumId?: string
   /** Einladen per Link und aus den Kontakten. Fehlt es, gibt es keinen Knopf dafuer. */
   einladen?: KonferenzEinladen
+  /** Aufgaben und Beschluesse in der Gruppe ablegen. Fehlt es, bleiben sie in der Sitzung. */
+  ergebnisAblegen?: ErgebnisAblegen
   vorschlagName?: string
   /** Die Module des Space, die sich als Tool in die Mitte legen lassen. */
   module?: readonly ModulWahl[]
@@ -150,7 +153,7 @@ export function VideoRaumFlaeche(props: VideoRaumFlaecheProps) {
   return <InDerKonferenz kreis={kreis} {...props} />
 }
 
-function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSpeichern, einladen }: VideoRaumFlaecheProps & { kreis: KreisKontext }) {
+function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSpeichern, einladen, ergebnisAblegen }: VideoRaumFlaecheProps & { kreis: KreisKontext }) {
   const { raum, teilnehmer, ich, sitzung, prozess, jetzt, handle, neben } = kreis
   const [leisteOffen, setLeisteOffen] = useState(true)
   const [spalte, setSpalte] = useState<Spalte>(null)
@@ -298,6 +301,8 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
 
   const wer = ich ?? ""
   const rest = redezeitRest(sitzung, jetzt)
+  const laufenderPunkt = tagesordnungVon(sitzung).punkte.find((p) => p.id === tagesordnungVon(sitzung).aktiv) ?? null
+  const punktUebrig = punktRest(sitzung, jetzt)
   const ichHalte = !!ich && sitzung.stab.halter === ich
   const tool = (was: string | null) => { handle((s) => mitteSetzen(s, was, wer)); setAktionOffen(false) }
   const kreisMitProzess = (id: string) => {
@@ -330,6 +335,17 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
             <MessageSquare className="h-4 w-4 text-slate-300" /> Gemeinsamer Chat
             {ungelesen > 0 && <span className="ml-auto rounded-full bg-sky-500 px-1.5 text-[10px] font-bold">{ungelesen}</span>}
           </button>
+          <p className="px-4 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Meeting</p>
+          <button type="button" onClick={() => spalteZeigen("tagesordnung")} aria-pressed={spalte === "tagesordnung"}
+            className={`mx-2 flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-left ${spalte === "tagesordnung" ? "bg-white/10" : "hover:bg-white/5"}`}>
+            <ListOrdered className="h-4 w-4 text-slate-300" /> Tagesordnung
+            {tagesordnungVon(sitzung).punkte.length > 0 && <span className="ml-auto text-[10px] text-slate-400">{tagesordnungVon(sitzung).punkte.filter((p) => p.erledigt).length}/{tagesordnungVon(sitzung).punkte.length}</span>}
+          </button>
+          <button type="button" onClick={() => spalteZeigen("ergebnisse")} aria-pressed={spalte === "ergebnisse"}
+            className={`mx-2 flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-left ${spalte === "ergebnisse" ? "bg-white/10" : "hover:bg-white/5"}`}>
+            <ClipboardCheck className="h-4 w-4 text-slate-300" /> Aufgaben und Beschlüsse
+            {neben.ergebnisse.length > 0 && <span className="ml-auto text-[10px] text-slate-400">{neben.ergebnisse.length}</span>}
+          </button>
           <p className="px-4 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Notizen</p>
           <button type="button" onClick={() => spalteZeigen("notizen")} aria-pressed={spalte === "notizen"}
             className={`mx-2 flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-left ${spalte === "notizen" ? "bg-white/10" : "hover:bg-white/5"}`}>
@@ -357,10 +373,13 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
             <button type="button" onClick={() => setSpalte(null)} aria-label="Spalte schließen" className="rounded-lg p-1.5 text-slate-300 hover:bg-white/10">
               <ChevronLeft className="h-4 w-4" />
             </button>
-            <h3 className="text-sm font-semibold">{spalte === "chat" ? "Gemeinsamer Chat" : spalte === "notizen" ? "Geteilte Notizen" : "Protokoll"}</h3>
+            <h3 className="text-sm font-semibold">{spalte === "chat" ? "Gemeinsamer Chat" : spalte === "notizen" ? "Geteilte Notizen" : spalte === "tagesordnung" ? "Tagesordnung" : spalte === "ergebnisse" ? "Aufgaben und Beschlüsse" : "Protokoll"}</h3>
           </header>
           <div className="min-h-0 flex-1 overflow-hidden">
-            {spalte === "chat" ? <Chat kreis={kreis} /> : spalte === "notizen" ? <GeteilteNotizen kreis={kreis} /> : <Protokoll kreis={kreis} speichern={protokollSpeichern} />}
+            {spalte === "chat" ? <Chat kreis={kreis} /> : spalte === "notizen" ? <GeteilteNotizen kreis={kreis} />
+              : spalte === "tagesordnung" ? <TagesordnungSpalte kreis={kreis} />
+              : spalte === "ergebnisse" ? <ErgebnisseSpalte kreis={kreis} ablegen={ergebnisAblegen} />
+              : <Protokoll kreis={kreis} speichern={protokollSpeichern} />}
           </div>
         </aside>
       )}
@@ -380,6 +399,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
               {stille ? " · Stille" : prozess && schritt ? ` · ${prozess.name}: ${schritt.titel}` : ""}
               {halterDa && !stille ? ` · ${sitzung.stab.name} hält den Stab` : ""}
               {halterDa && !stille && rest !== null ? ` · noch ${mmss(rest)}` : ""}
+              {laufenderPunkt ? ` · TOP: ${laufenderPunkt.titel}${punktUebrig !== null ? (punktUebrig < 0 ? " (überzogen)" : ` noch ${mmss(punktUebrig)}`) : ""}` : ""}
               {sitzungUebrig !== null && sitzungUebrig > 0 ? ` · Meeting noch ${sitzungUebrig >= 3_600_000 ? `${Math.floor(sitzungUebrig / 3_600_000)} Std. ${Math.floor((sitzungUebrig % 3_600_000) / 60_000)} Min.` : `${Math.max(1, Math.round(sitzungUebrig / 60_000))} Min.`}` : ""}
             </p>
           </div>

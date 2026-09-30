@@ -12,6 +12,25 @@ import {
 } from "@kreis/core"
 import type { KreisVerbindung, NebenNachricht } from "./use-kreis"
 
+/** Was im Meeting festgehalten wurde: eine Aufgabe oder ein Beschluss. */
+export interface Ergebnis {
+  id: string
+  art: "aufgabe" | "beschluss"
+  text: string
+  /** Bei Aufgaben: wer sie uebernimmt, bis wann (Datum als Text). */
+  wer?: string
+  bis?: string
+  /** Name dessen, der es festgehalten hat. */
+  von: string
+  wann: number
+}
+
+function istErgebnis(w: unknown): w is Ergebnis {
+  if (!w || typeof w !== "object") return false
+  const e = w as Record<string, unknown>
+  return typeof e.id === "string" && (e.art === "aufgabe" || e.art === "beschluss") && typeof e.text === "string" && typeof e.von === "string" && typeof e.wann === "number"
+}
+
 export interface ChatZeile { id: string; wer: string; name: string; text: string; wann: number }
 export interface ProtokollZeile extends ChatZeile { vorlaeufig: boolean }
 
@@ -81,6 +100,10 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
   const dateienRef = useRef(dateien)
   dateienRef.current = dateien
   const eingaenge = useRef(new Map<string, Eingang>())
+  // Aufgaben und Beschluesse dieses Meetings, fuer alle.
+  const [ergebnisse, setErgebnisse] = useState<readonly Ergebnis[]>([])
+  const ergebnisseRef = useRef(ergebnisse)
+  ergebnisseRef.current = ergebnisse
   // Wer ist wer: Teilnehmer im Raum -> Kennung in der App (DID). Jeder
   // stellt sich beim Betreten vor, und wer neu kommt, fragt nach.
   const [kennungen, setKennungen] = useState<ReadonlyMap<string, string>>(new Map())
@@ -178,7 +201,18 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
     } else if (n.art === "stimme" && istStimme(n.stimme)) {
       const st = n.stimme
       setUmfrage((u) => (u ? stimmeDazu(u, st) : u))
+    } else if (n.art === "ergebnis" && istErgebnis(n.ergebnis)) {
+      const e = n.ergebnis
+      setErgebnisse((alt) => (alt.some((x) => x.id === e.id) ? alt : [...alt, e]))
+    } else if (n.art === "ergebnisse" && Array.isArray(n.liste)) {
+      const neu = (n.liste as unknown[]).filter(istErgebnis)
+      setErgebnisse((alt) => {
+        const da = new Set(alt.map((x) => x.id))
+        const dazu = neu.filter((x) => !da.has(x.id))
+        return dazu.length ? [...alt, ...dazu].sort((a, b) => a.wann - b.wann) : alt
+      })
     } else if (n.art === "werkzeug-frage") {
+      if (ergebnisseRef.current.length > 0) v.nebenSenden({ art: "ergebnisse", liste: [...ergebnisseRef.current] })
       // Wer spaeter kommt, bekommt Notiz und Umfrage, wenn es sie gibt.
       if (notizRef.current.v > 0) v.nebenSenden({ art: "notiz", notiz: notizRef.current })
       if (umfrageRef.current) v.nebenSenden({ art: "umfrage", umfrage: umfrageRef.current })
@@ -213,7 +247,7 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
   useEffect(() => {
     if (v.zustand !== "draussen") return
     setKennungen(new Map())
-    setChat([]); setHaende(new Set()); setZeichen(new Map()); setProtokoll([]); setTafel([]); setNotiz(LEERE_NOTIZ); setUmfrage(null); setPad({}); setDateien(new Map())
+    setChat([]); setHaende(new Set()); setZeichen(new Map()); setProtokoll([]); setTafel([]); setNotiz(LEERE_NOTIZ); setUmfrage(null); setPad({}); setDateien(new Map()); setErgebnisse([])
     sollLaufenRef.current = false
     erkennungRef.current?.abort()
     erkennungRef.current = null
@@ -327,6 +361,12 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
     void dateiSenden(id, name, bytes)
   }, [dateiSenden])
 
+  /** Eine Aufgabe oder einen Beschluss fuer alle festhalten. */
+  const ergebnisDazu = useCallback((e: Ergebnis) => {
+    setErgebnisse((alt) => [...alt, e])
+    v.nebenSenden({ art: "ergebnis", ergebnis: e })
+  }, [v])
+
   /** Eine Datei erbitten, die hier fehlt (Nachzuegler). */
   const dateiAnfragen = useCallback((id: string) => {
     if (dateienRef.current.has(id)) return
@@ -390,6 +430,7 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
     tafel, tafelStrich, tafelLeeren,
     pad, padSenden,
     dateien, dateiTeilen, dateiAnfragen,
+    ergebnisse, ergebnisDazu,
     chat, chatSenden,
     haende, handUmschalten,
     zeichen, zeichenGeben,

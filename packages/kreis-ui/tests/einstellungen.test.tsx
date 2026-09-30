@@ -160,3 +160,49 @@ describe("Layouts wie in Big Blue Button", () => {
     expect(anna.text()).not.toContain("groß zeigen")
   })
 })
+
+describe("Tagesordnung, Aufgaben und Beschluesse", () => {
+  const tippen = async (feld: HTMLInputElement | HTMLTextAreaElement, text: string) => {
+    await act(async () => {
+      const proto = feld instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype
+      Object.getOwnPropertyDescriptor(proto, "value")!.set!.call(feld, text)
+      feld.dispatchEvent(new Event("input", { bubbles: true }))
+    })
+  }
+
+  it("ein Punkt kommt bei allen an, laeuft oben mit; Aufgaben werden festgehalten und abgelegt", async () => {
+    const kanal = kanalNetz()
+    const ablegen = vi.fn(async () => {})
+    const m = (id: string, name: string) => {
+      const x = zeigen(
+        <KreisRaumProvider fabrik={() => lokalerKreisRaum({ kanal, id })}>
+          <VideoRaumFlaeche raumName="Garten" vorschlagName={name} ergebnisAblegen={ablegen} />
+        </KreisRaumProvider>,
+      )
+      return { ...x, betreten: async () => { await act(async () => { x.huelle.querySelector("form")!.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })) }) } }
+    }
+    const anna = m("a-anna", "Anna")
+    const bert = m("b-bert", "Bert")
+    await anna.betreten()
+    await bert.betreten()
+
+    await anna.klick("Tagesordnung")
+    await tippen(anna.huelle.querySelector('input[aria-label="Neuer Punkt"]') as HTMLInputElement, "Ernte planen")
+    await act(async () => { (anna.huelle.querySelector('input[aria-label="Neuer Punkt"]') as HTMLInputElement).form!.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })) })
+    await anna.klick("Ernte planen aufrufen")
+    expect(bert.text()).toContain("TOP: Ernte planen")
+
+    await anna.klick("Aufgaben und Beschlüsse")
+    await tippen(anna.huelle.querySelector('textarea[aria-label="Was festhalten"]') as HTMLTextAreaElement, "Saatgut bestellen")
+    await tippen(anna.huelle.querySelector('input[aria-label="Wer übernimmt"]') as HTMLInputElement, "Bert")
+    await anna.klick("Festhalten und ins Kanban")
+    expect(ablegen).toHaveBeenCalledTimes(1)
+    expect(ablegen).toHaveBeenCalledWith(expect.objectContaining({ art: "aufgabe", text: "Saatgut bestellen", wer: "Bert", von: "Anna" }))
+
+    await bert.klick("Aufgaben und Beschlüsse")
+    expect(bert.text()).toContain("Saatgut bestellen")
+    expect(bert.text()).toContain("übernimmt Bert")
+    // Nur wer festhaelt, legt ab: Bert legt nichts doppelt an.
+    expect(ablegen).toHaveBeenCalledTimes(1)
+  })
+})

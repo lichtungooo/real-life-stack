@@ -120,6 +120,8 @@ export interface Sitzung {
    * fuer sich wieder umstellen.
    */
   layout?: { art: string; nr: number } | null
+  /** Die Tagesordnung des Meetings (siehe tagesordnung.ts). */
+  tagesordnung?: import("./tagesordnung").Tagesordnung | null
 }
 
 /** Was nach Ablauf der Redezeit mit dem Redestab geschieht. */
