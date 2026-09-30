@@ -4,7 +4,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { BarChart3, Timer, X } from "lucide-react"
-import { ergebnis } from "@kreis/core"
+import { ergebnis, type NachDerRedezeit, type Regeln } from "@kreis/core"
 import type { KreisKontext } from "../raum-kontext"
 
 const uhrzeit = (wann: number) => new Date(wann).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })
@@ -166,6 +166,67 @@ export function LosAnzeige({ los }: { los: { nr: number; name: string } | null |
   return (
     <div role="status" className="pointer-events-none absolute inset-x-0 top-16 z-40 flex justify-center px-4">
       <span className="rounded-2xl bg-amber-400 px-6 py-3 text-lg font-semibold text-slate-900 shadow-2xl">Das Los fällt auf {zeige.name}</span>
+    </div>
+  )
+}
+
+// --- Einstellungen des Raums ---------------------------------------------------
+
+/** Die Stufen der Redezeit in Minuten (Timo, 30.09.2026). 0 heisst: keine. */
+export const REDEZEIT_STUFEN = [0, 1, 2, 3, 5, 10, 15, 20, 30] as const
+
+/**
+ * Die Regeln des Raums, fuer alle gleich: Redezeit und was danach geschieht.
+ * Wer den Stab haelt, sieht seine Restzeit; ist sie um, klingt ein Gong bei
+ * allen, und der Stab wandert von selbst.
+ */
+export function Einstellungen({
+  regeln, onSpeichern, onZu,
+}: {
+  regeln: Regeln
+  onSpeichern: (r: Regeln) => void
+  onZu: () => void
+}) {
+  const [redezeit, setRedezeit] = useState(regeln.redezeit)
+  const [danach, setDanach] = useState<NachDerRedezeit>(regeln.danach)
+  return (
+    <div role="dialog" aria-modal="true" aria-label="Einstellungen des Raums" className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" onClick={onZu}>
+      <div className="w-full max-w-md rounded-2xl bg-white p-5 text-slate-800 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="mb-4 flex items-center">
+          <h3 className="text-lg font-semibold">Einstellungen des Raums</h3>
+          <button type="button" onClick={onZu} aria-label="Schließen" className="ml-auto rounded-lg p-1.5 hover:bg-slate-100"><X className="h-4 w-4" /></button>
+        </div>
+        <p className="mb-4 text-sm text-slate-500">Diese Regeln gelten für alle im Raum.</p>
+
+        <fieldset className="mb-5">
+          <legend className="mb-2 text-sm font-semibold">Redezeit mit dem Redestab</legend>
+          <div className="flex flex-wrap gap-1.5">
+            {REDEZEIT_STUFEN.map((m) => (
+              <button key={m} type="button" onClick={() => setRedezeit(m)} aria-pressed={redezeit === m}
+                className={`rounded-lg px-3 py-1.5 text-sm ${redezeit === m ? "bg-sky-600 text-white" : "bg-slate-100 hover:bg-slate-200"}`}>
+                {m === 0 ? "keine" : `${m} Min.`}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset className="mb-6" disabled={redezeit === 0}>
+          <legend className="mb-2 text-sm font-semibold">Ist die Zeit um, klingt der Gong, und dann …</legend>
+          <label className="mb-1.5 flex items-center gap-2 text-sm">
+            <input type="radio" name="danach" checked={danach === "weiter"} onChange={() => setDanach("weiter")} />
+            geht der Stab an den Nächsten im Kreis
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="radio" name="danach" checked={danach === "mitte"} onChange={() => setDanach("mitte")} />
+            kehrt der Stab in die Mitte zurück, und wer mag, nimmt ihn
+          </label>
+        </fieldset>
+
+        <div className="flex justify-end gap-2">
+          <button type="button" onClick={onZu} className="rounded-lg px-4 py-2 text-sm hover:bg-slate-100">Abbrechen</button>
+          <button type="button" onClick={() => { onSpeichern({ redezeit, danach }); onZu() }} className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-500">Für alle übernehmen</button>
+        </div>
+      </div>
     </div>
   )
 }

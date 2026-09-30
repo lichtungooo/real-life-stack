@@ -7,7 +7,7 @@
  */
 import { act } from "react"
 import { createRoot, type Root } from "react-dom/client"
-import { afterEach, describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { lokalerKreisRaum } from "@kreis/core"
 import { KreisRaumProvider } from "../src/raum-kontext"
 import { KreisRaumFlaeche } from "../src/kreis-raum-flaeche"
@@ -146,6 +146,37 @@ describe("Die Werkzeuge der Konferenz", () => {
     expect(bert.huelle.querySelector('button[aria-label="Kurzzeitwecker aus"]')).not.toBeNull()
     await bert.aria("Kurzzeitwecker aus")
     expect(anna.huelle.querySelector('button[aria-label="Kurzzeitwecker aus"]')).toBeNull()
+  })
+})
+
+describe("Redezeit mit Gong", () => {
+  afterEach(() => { vi.useRealTimers() })
+
+  it("in den Einstellungen fuer alle festgelegt; ist sie um, geht der Stab von selbst an den Naechsten", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: false })
+    vi.setSystemTime(new Date("2026-09-30T10:00:00Z"))
+    const kanal = kanalNetz()
+    const anna = mensch(kanal, "a-anna", "Anna", "video")
+    const bert = mensch(kanal, "b-bert", "Bert", "video")
+    await anna.betreten()
+    await bert.betreten()
+
+    await anna.aria("Mehr")
+    await anna.klick("Einstellungen: Redezeit")
+    await anna.klick("1 Min.")
+    await act(async () => { (anna.huelle.querySelectorAll('input[name="danach"]')[0] as HTMLInputElement).click() })
+    await anna.klick("Für alle übernehmen")
+
+    await anna.klick("Wort nehmen")
+    expect(bert.text()).toContain("Anna hält den Stab")
+    expect(bert.text()).toContain("noch 1:00")
+
+    await act(async () => {
+      vi.setSystemTime(new Date("2026-09-30T10:01:01Z"))
+      vi.advanceTimersByTime(1000)
+    })
+    expect(anna.text()).toContain("Bert hält den Stab")
+    expect(bert.text()).toContain("Wort abgeben")
   })
 })
 

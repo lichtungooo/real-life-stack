@@ -20,8 +20,8 @@ import {
   Mic, MicOff, MonitorUp, MoreVertical, PanelLeft, Plus, Smile, Users, Video, VideoOff,
 } from "lucide-react"
 import {
-  PROZESSE, aktuellerSchritt, losZiehen, mitteSetzen, prozessWaehlen, schaleSchlagen, stilleLaeuft,
-  weckerAus, weckerStellen, type KreisTeilnehmer,
+  PROZESSE, aktuellerSchritt, losZiehen, mitteSetzen, prozessWaehlen, redezeitRest, regelnSetzen, regelnVon,
+  schaleSchlagen, stabNehmen, stabZuruecklegen, stilleLaeuft, weckerAus, weckerStellen, type KreisTeilnehmer,
 } from "@kreis/core"
 import { schaleAnschlagen } from "../klangschale"
 import { useKreisVerbindung, type KreisKontext } from "../raum-kontext"
@@ -31,14 +31,19 @@ import { VideoBuehne } from "./video-buehne"
 import { VideoKachel } from "./video-kachel"
 import { Tafel } from "./tafel"
 import { Chat, Menschen, Protokoll, type ProtokollSpeichern } from "./video-seiten"
-import { GeteilteNotizen, LosAnzeige, UmfrageWerkzeug, WeckerAnzeige } from "./werkzeuge"
+import { Einstellungen, GeteilteNotizen, LosAnzeige, UmfrageWerkzeug, WeckerAnzeige } from "./werkzeuge"
 
 /** Die Tools, die das Video selbst mitbringt. Module kommen aus dem Register dazu. */
 export const TOOL_KREIS = "kreis"
 export const TOOL_TAFEL = "tafel"
 export const TOOL_UMFRAGE = "umfrage"
 
-const WECKER_MINUTEN = [1, 3, 5, 10, 15] as const
+const WECKER_MINUTEN = [1, 3, 5, 10, 15, 20, 30] as const
+
+function mmss(ms: number): string {
+  const s = Math.max(0, Math.ceil(ms / 1000))
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`
+}
 
 type Spalte = "chat" | "notizen" | "protokoll" | null
 
@@ -121,6 +126,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
   const [spalte, setSpalte] = useState<Spalte>(null)
   const [aktionOffen, setAktionOffen] = useState(false)
   const [mehrOffen, setMehrOffen] = useState(false)
+  const [einstellungenOffen, setEinstellungenOffen] = useState(false)
   const [zeichenOffen, setZeichenOffen] = useState(false)
   const [seit] = useState(() => Date.now())
   const [gelesen, setGelesen] = useState(0)
@@ -187,6 +193,8 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
   }, [wecker, jetzt])
 
   const wer = ich ?? ""
+  const rest = redezeitRest(sitzung, jetzt)
+  const ichHalte = !!ich && sitzung.stab.halter === ich
   const tool = (was: string | null) => { handle((s) => mitteSetzen(s, was, wer)); setAktionOffen(false) }
   const kreisMitProzess = (id: string) => {
     const p = PROZESSE.find((x) => x.id === id)
@@ -261,6 +269,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
               {dauer(seit, jetzt)} · {teilnehmer.length} {teilnehmer.length === 1 ? "Mensch" : "Menschen"}
               {stille ? " · Stille" : prozess && schritt ? ` · ${prozess.name}: ${schritt.titel}` : ""}
               {halterDa && !stille ? ` · ${sitzung.stab.name} hält den Stab` : ""}
+              {halterDa && !stille && rest !== null ? ` · noch ${mmss(rest)}` : ""}
             </p>
           </div>
           {wecker && <WeckerAnzeige bis={wecker.bis} jetzt={jetzt} onAus={() => handle((s) => weckerAus(s, wer))} />}
@@ -273,6 +282,9 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
               <MoreVertical className="h-5 w-5" />
             </button>
             <Menue offen={mehrOffen} onZu={() => setMehrOffen(false)} className="right-0 top-full mt-1">
+              <Eintrag onClick={() => { setMehrOffen(false); setEinstellungenOffen(true) }}>
+                <span className="w-4 text-center">⚙</span> Einstellungen: Redezeit
+              </Eintrag>
               <Eintrag onClick={() => { setMehrOffen(false); void huelle.current?.requestFullscreen?.().catch(() => {}) }}>
                 <Maximize2 className="h-4 w-4" /> Vollbild
               </Eintrag>
@@ -368,6 +380,13 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
               )}
             </>
           )}
+          <button type="button" disabled={!ichHalte && (halterDa || stille)}
+            onClick={() => handle((s, t) => ichHalte ? stabZuruecklegen(s, wer, t) : stabNehmen(s, wer, mich?.name ?? "Gast", teilnehmer.map((p) => p.id), t))}
+            title={ichHalte ? "Das Wort abgeben: der Stab kehrt in die Mitte" : "Das Wort nehmen: den Redestab halten"}
+            className={`flex h-11 items-center gap-1.5 rounded-full px-4 text-sm font-medium transition disabled:opacity-40 ${ichHalte ? "bg-amber-400 text-slate-900 hover:bg-amber-300" : "bg-white/10 text-slate-100 hover:bg-white/20"}`}>
+            <CircleDot className="h-4 w-4" />
+            {ichHalte ? (rest !== null ? `Wort abgeben · ${mmss(rest)}` : "Wort abgeben") : "Wort nehmen"}
+          </button>
           <Rund an={!!ich && neben.haende.has(ich)} titel="Hand heben oder senken" onClick={neben.handUmschalten}><Hand className="h-5 w-5" /></Rund>
           <div className="relative">
             <Rund an={zeichenOffen} titel="Ein Zeichen geben" onClick={() => setZeichenOffen(!zeichenOffen)}><Smile className="h-5 w-5" /></Rund>
@@ -386,6 +405,10 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
         </footer>
 
         <LosAnzeige los={sitzung.los} />
+        {einstellungenOffen && (
+          <Einstellungen regeln={regelnVon(sitzung)} onZu={() => setEinstellungenOffen(false)}
+            onSpeichern={(r) => handle((s) => regelnSetzen(s, r, wer))} />
+        )}
         {meldung && (
           <div role="alert" className="pointer-events-none absolute inset-x-0 bottom-20 flex justify-center px-4">
             <span className="max-w-xl rounded-xl bg-rose-600/95 px-4 py-2 text-sm text-white shadow-lg">{meldung}</span>

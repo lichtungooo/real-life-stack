@@ -94,7 +94,26 @@ export interface Sitzung {
   wecker?: { bis: number; minuten: number; von: string } | null
   /** Das Los: wer zuletzt gezogen wurde. `nr` zaehlt jeden Zug, damit er einmal erscheint. */
   los?: { nr: number; id: string; name: string; wann: number } | null
+  /**
+   * Die Regeln des Raums, fuer alle gleich (Einstellungen). Fehlt das Feld
+   * (aeltere Fassung): keine Redezeit.
+   */
+  regeln?: Regeln
+  /** Der Gong am Ende einer Redezeit. `nr` zaehlt jeden, damit er einmal klingt. */
+  gong?: { nr: number; wann: number } | null
 }
+
+/** Was nach Ablauf der Redezeit mit dem Redestab geschieht. */
+export type NachDerRedezeit = "weiter" | "mitte"
+
+export interface Regeln {
+  /** Redezeit in Minuten, 0 heisst: keine. */
+  redezeit: number
+  /** `weiter`: an den Naechsten im Kreis. `mitte`: zurueck in die Mitte. */
+  danach: NachDerRedezeit
+}
+
+export const STANDARD_REGELN: Regeln = { redezeit: 0, danach: "mitte" }
 
 /** Nachrichten, die der Kreis ueber den Daten-Kanal des Raums schickt. */
 export type KreisNachricht =

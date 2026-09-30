@@ -77,3 +77,40 @@ describe("Kurzzeitwecker und Los", () => {
     expect(losZiehen(eins, [], "anna", T)).toBe(eins)
   })
 })
+
+import { regelnSetzen, regelnVon, redezeitRest, redezeitAblaufen, stabNehmen, STANDARD_REGELN } from "../src"
+
+describe("Redezeit mit Gong", () => {
+  const leute = [{ id: "anna", name: "Anna" }, { id: "bert", name: "Bert" }, { id: "cara", name: "Cara" }]
+  const ids = leute.map((l) => l.id)
+  const mitRegel = (danach: "weiter" | "mitte") =>
+    stabNehmen(regelnSetzen(leereSitzung(T), { redezeit: 3, danach }, "anna"), "anna", "Anna", ids, T)
+
+  it("ohne Regel keine Redezeit; die Regel gilt fuer alle", () => {
+    expect(regelnVon(leereSitzung(T))).toEqual(STANDARD_REGELN)
+    const s = mitRegel("mitte")
+    expect(regelnVon(s)).toEqual({ redezeit: 3, danach: "mitte" })
+    expect(redezeitRest(s, T + 60_000)).toBe(120_000)
+  })
+
+  it("vor dem Ablauf geschieht nichts, und nur wer den Stab haelt, loest aus", () => {
+    const s = mitRegel("weiter")
+    expect(redezeitAblaufen(s, leute, "anna", T + 179_999)).toBe(s)
+    expect(redezeitAblaufen(s, leute, "bert", T + 180_000)).toBe(s)
+  })
+
+  it("danach 'weiter': Gong und der Stab geht an den Naechsten im Kreis", () => {
+    const um = redezeitAblaufen(mitRegel("weiter"), leute, "anna", T + 180_000)
+    expect(um.gong?.nr).toBe(1)
+    expect(um.stab).toMatchObject({ halter: "bert", name: "Bert", seit: T + 180_000 })
+    // Die Redezeit beginnt fuer Bert neu
+    expect(redezeitRest(um, T + 180_000)).toBe(180_000)
+  })
+
+  it("danach 'mitte': Gong und der Stab liegt wieder in der Mitte", () => {
+    const um = redezeitAblaufen(mitRegel("mitte"), leute, "anna", T + 200_000)
+    expect(um.gong?.nr).toBe(1)
+    expect(um.stab.halter).toBeNull()
+    expect(redezeitRest(um, T + 200_000)).toBeNull()
+  })
+})

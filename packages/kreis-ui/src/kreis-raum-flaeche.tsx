@@ -23,6 +23,7 @@ import {
   stabWeitergeben,
   stabZuruecklegen,
   stilleLaeuft,
+  redezeitRest,
 } from "@kreis/core"
 import { useKreisVerbindung } from "./raum-kontext"
 import type { KreisVerbindung } from "./use-kreis"
@@ -199,6 +200,9 @@ function ImKreis({ kreis, raumName, zurKonferenz, nurBuehne = false }: { kreis: 
         <div className="flex flex-col items-center gap-2 text-center">
           <StabIcon className="h-10 w-10 text-amber-500" />
           <p className="font-semibold text-foreground">Du hältst den Stab</p>
+          {redezeitRest(sitzung, jetzt) !== null && (
+            <p className="text-sm tabular-nums text-muted-foreground">noch {Math.floor(Math.max(0, redezeitRest(sitzung, jetzt)!) / 60000)}:{String(Math.ceil(Math.max(0, redezeitRest(sitzung, jetzt)!) / 1000) % 60).padStart(2, "0")}</p>
+          )}
           <div className="flex flex-wrap justify-center gap-2">
             {reihum && naechsterName && naechster !== ich && (
               <button type="button" onClick={weitergeben} className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90">
@@ -242,8 +246,8 @@ function ImKreis({ kreis, raumName, zurKonferenz, nurBuehne = false }: { kreis: 
   // Die Buehne des Kreises: das Rund mit Redestab und Klangschale und die
   // Leiste zum Prozess. Die Konferenz setzt sie als Tool in ihre Mitte.
   const buehne = (
-        <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto p-4 lg:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="flex min-w-0 items-center justify-center">
+        <div className="grid h-full min-h-0 flex-1 gap-4 overflow-y-auto p-4 lg:grid-cols-[minmax(0,1fr)_minmax(260px,340px)] lg:overflow-hidden">
+          <div className="flex min-h-[320px] min-w-0 items-center justify-center lg:min-h-0">
             <KreisRund
               teilnehmer={teilnehmer}
               ich={ich}
@@ -254,7 +258,7 @@ function ImKreis({ kreis, raumName, zurKonferenz, nurBuehne = false }: { kreis: 
             />
           </div>
   
-          <aside className="min-w-0 rounded-2xl bg-card p-4 shadow-sm">
+          <aside className="min-h-0 min-w-0 overflow-y-auto rounded-2xl bg-card p-4 shadow-sm">
             {prozess ? (
               <ProzessLeiste
                 prozess={prozess}

@@ -4,7 +4,7 @@
 // und jeder sieht sich selbst unten: so, wie man im echten Kreis sitzt, mit
 // denselben Nachbarn links und rechts.
 
-import { useEffect, useRef, type ReactNode } from "react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
 import { Mic, MicOff } from "lucide-react"
 import type { KreisRaum, KreisTeilnehmer } from "@kreis/core"
 
@@ -102,10 +102,31 @@ export function KreisRund({
   const orte = plaetze(teilnehmer.map((t) => t.id), ich)
   const n = teilnehmer.length
   // Bis zu acht Menschen gross, bis zwanzig kleiner, darueber klein.
-  const groesse = n <= 8 ? 76 : n <= 20 ? 56 : 40
+  // Das Rund misst seinen Platz und nimmt die kleinere Seite: so passt es in
+  // die Buehne der Konferenz wie in einen eigenen Reiter (Timo, 30.09.2026:
+  // "Das passt von der Groesse her nicht mehr").
+  const huelle = useRef<HTMLDivElement | null>(null)
+  const [seite, setSeite] = useState(480)
+  useEffect(() => {
+    const el = huelle.current
+    if (!el || typeof ResizeObserver === "undefined") return
+    const messen = () => {
+      const w = el.clientWidth, h = el.clientHeight
+      const passend = Math.min(w, h > 0 ? h : w)
+      if (passend > 0) setSeite(passend)
+    }
+    messen()
+    const beobachter = new ResizeObserver(messen)
+    beobachter.observe(el)
+    return () => beobachter.disconnect()
+  }, [])
+  // Die Menschen wachsen mit dem Rund, und bei vielen werden sie kleiner.
+  const anteil = n <= 8 ? 0.15 : n <= 14 ? 0.11 : n <= 20 ? 0.085 : 0.065
+  const groesse = Math.round(Math.max(32, Math.min(96, seite * anteil)))
 
   return (
-    <div className="relative mx-auto aspect-square w-full max-w-[min(100%,640px)]">
+    <div ref={huelle} className="flex h-full w-full items-center justify-center">
+    <div className="relative aspect-square" style={{ width: seite, height: seite }}>
       {/* Der Kreis selbst, ein ruhiger Ring */}
       <div className="absolute inset-[10%] rounded-full border-2 border-dashed border-border" aria-hidden="true" />
 
@@ -131,6 +152,7 @@ export function KreisRund({
           </div>
         )
       })}
+    </div>
     </div>
   )
 }

@@ -6,7 +6,7 @@
 //
 // Die Zeit kommt immer von aussen (`jetzt`), damit alles ohne Uhr pruefbar ist.
 
-import type { Prozess, Schritt, Sitzung } from "./typen"
+import { STANDARD_REGELN, type Prozess, type Regeln, type Schritt, type Sitzung } from "./typen"
 
 export function leereSitzung(jetzt = 0): Sitzung {
   return {
@@ -186,6 +186,49 @@ export function pauseBeenden(s: Sitzung, wer: string): Sitzung {
 export function mitteSetzen(s: Sitzung, mitte: string | null, wer: string): Sitzung {
   if ((s.mitte ?? null) === mitte) return s
   return weiter(s, wer, { mitte })
+}
+
+// --- Regeln und Redezeit ---------------------------------------------------------
+
+export function regelnVon(s: Sitzung): Regeln {
+  return s.regeln ?? STANDARD_REGELN
+}
+
+export function regelnSetzen(s: Sitzung, regeln: Regeln, wer: string): Sitzung {
+  const alt = regelnVon(s)
+  if (alt.redezeit === regeln.redezeit && alt.danach === regeln.danach) return s
+  return weiter(s, wer, { regeln: { redezeit: Math.max(0, regeln.redezeit), danach: regeln.danach } })
+}
+
+/** Wie viel Redezeit bleibt dem, der den Stab haelt, in Millisekunden. `null`: keine Redezeit oder niemand haelt ihn. */
+export function redezeitRest(s: Sitzung, jetzt: number): number | null {
+  const { redezeit } = regelnVon(s)
+  if (redezeit <= 0 || s.stab.halter === null) return null
+  return s.stab.seit + redezeit * 60_000 - jetzt
+}
+
+/**
+ * Die Redezeit ist um: Gong fuer alle, und der Stab wandert nach der Regel.
+ *
+ * Ausfuehren soll es das Geraet dessen, der den Stab haelt (`wer`), damit es
+ * nur einmal geschieht. Vor dem Ablauf, oder wenn `wer` den Stab nicht haelt,
+ * bleibt alles, wie es ist.
+ */
+export function redezeitAblaufen(
+  s: Sitzung,
+  anwesend: readonly { id: string; name: string }[],
+  wer: string,
+  jetzt: number,
+): Sitzung {
+  const rest = redezeitRest(s, jetzt)
+  if (rest === null || rest > 0 || s.stab.halter !== wer) return s
+  const gong = { nr: (s.gong?.nr ?? 0) + 1, wann: jetzt }
+  const danach = regelnVon(s).danach
+  const naechste = danach === "weiter" ? naechsterImKreis(anwesend.map((t) => t.id), wer) : null
+  const stab = naechste && naechste !== wer
+    ? { halter: naechste, name: anwesend.find((t) => t.id === naechste)?.name ?? null, seit: jetzt }
+    : { halter: null, name: null, seit: jetzt }
+  return weiter(s, wer, { gong, stab })
 }
 
 // --- Kurzzeitwecker und Los ----------------------------------------------------

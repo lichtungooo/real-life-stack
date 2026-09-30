@@ -37,6 +37,8 @@ Timo: *„Der mittlere Bereich ist für mich der Modul-im-Modul-Bereich.“* In 
 
 Dazu, ebenfalls im Aktions-Knopf: **Zufällig jemanden wählen** (das Los steht acht Sekunden groß bei allen) und der **Kurzzeitwecker** (1, 3, 5, 10, 15 Minuten; die Restzeit steht oben, am Ende klingt es einmal leise). Links unter Notizen: **Geteilte Notizen**, ein Text für alle.
 
+**Redezeit mit Gong (Einstellungen, ⋮):** Für alle gleich festgelegt (keine, 1, 2, 3, 5, 10, 15, 20, 30 Minuten) und was danach geschieht: Der Stab geht an den Nächsten im Kreis, oder er kehrt in die Mitte zurück. Wer den Stab hält, sieht seine Restzeit, die anderen sehen sie oben. Ist sie um, klingt ein Gong bei allen, und der Stab wandert von selbst. Ausgelöst vom Gerät dessen, der den Stab hält, damit es genau einmal geschieht (`redezeitAblaufen`, `Sitzung.regeln`, `Sitzung.gong`). Der Knopf **„Wort nehmen“** unten macht den Redestab in jeder Konferenz nutzbar, auch ohne Kreis-Prozess.
+
 **Wo was liegt, und warum:** Kurzzeitwecker und Los stehen im Sitzungszustand (`Sitzung.wecker`, `Sitzung.los`), dort handelt immer einer. Die Umfrage liegt NICHT dort: Bei gleicher Fassung gilt einer von zwei Ständen, und zwei gleichzeitige Stimmen ließen eine verloren gehen. Darum reist jede Stimme einzeln und wird eingemischt (`@kreis/core`, werkzeuge.ts). Die geteilten Notizen gelten mit Fassung und Absender wie der Redestab; solange jemand im Feld schreibt, bleibt sein Entwurf stehen.
 
 Links eine Leiste wie bei Big Blue Button: **Nachrichten** (Gemeinsamer Chat), **Notizen** (Protokoll; geteilte Notizen geplant), **Teilnehmer** mit Namen. Ein Eintrag klappt eine Spalte daneben auf, der Pfeil klappt sie zu. Oben rechts: gehen, ⋮ (Vollbild).

@@ -12,6 +12,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   gilt,
+  redezeitAblaufen,
   istSitzung,
   leereSitzung,
   prozessFinden,
@@ -136,6 +137,23 @@ export function useKreisVerbindungHalten(fabrik: KreisRaumFabrik, eigeneProzesse
       if (Date.now() < sitzung.schale.stilleBis) schaleAnschlagen()
     }
   }, [sitzung.schale.nr, sitzung.schale.stilleBis])
+
+  // Der Gong am Ende einer Redezeit: bei allen einmal, tiefer als die Schale.
+  const gongRef = useRef(0)
+  useEffect(() => {
+    const nr = sitzung.gong?.nr ?? 0
+    if (nr > gongRef.current) {
+      gongRef.current = nr
+      if (Date.now() - (sitzung.gong?.wann ?? 0) < 10_000) schaleAnschlagen(131, 0.5)
+    }
+  }, [sitzung.gong?.nr, sitzung.gong?.wann])
+
+  // Ist die Redezeit um, loest das Geraet dessen aus, der den Stab haelt:
+  // so geschieht es genau einmal, und niemand aus der Runde muss eingreifen.
+  useEffect(() => {
+    if (!ich || sitzung.stab.halter !== ich) return
+    handle((s, t) => redezeitAblaufen(s, teilnehmer.map((p) => ({ id: p.id, name: p.name })), ich, t))
+  }, [jetzt, ich, sitzung.stab.halter, teilnehmer, handle])
 
   // Nur wer den Stab haelt, spricht. Der Stab regelt, er sperrt nicht.
   const halterRef = useRef<string | null>(null)
