@@ -35,6 +35,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@excalidraw/excalidraw": "0.18.1",
     "@kreis/core": "workspace:*",
     "@real-life-stack/toolkit": "workspace:*"
   },
@@ -45,13 +46,13 @@
   },
   "devDependencies": {
     "@types/react": "^19.0.2",
-    "typescript": "~5.7.2",
-    "vitest": "^4.1.0",
+    "@types/react-dom": "^19.0.2",
     "jsdom": "^26.1.0",
+    "lucide-react": "^0.468.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "@types/react-dom": "^19.0.2",
-    "lucide-react": "^0.468.0",
-    "react-router-dom": "^7.1.1"
+    "react-router-dom": "^7.1.1",
+    "typescript": "~5.7.2",
+    "vitest": "^4.1.0"
   }
 }

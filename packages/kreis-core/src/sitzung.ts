@@ -188,6 +188,31 @@ export function mitteSetzen(s: Sitzung, mitte: string | null, wer: string): Sitz
   return weiter(s, wer, { mitte })
 }
 
+// --- Zeichenpad ------------------------------------------------------------------
+
+/** Das Zeichenpad in die Mitte legen. Wer es hineinlegt, praesentiert. */
+export function padOeffnen(s: Sitzung, id: string, wer: string): Sitzung {
+  return weiter(s, wer, { mitte: id, pad: { praesentiert: wer, alle: s.pad?.alle ?? false } })
+}
+
+/** "Mehrere Benutzer": nur wer praesentiert, gibt frei oder nimmt zurueck. */
+export function padFreigeben(s: Sitzung, alle: boolean, wer: string): Sitzung {
+  if (!s.pad || s.pad.praesentiert !== wer || s.pad.alle === alle) return s
+  return weiter(s, wer, { pad: { ...s.pad, alle } })
+}
+
+/** Die Praesentation uebernehmen, wenn der bisherige Praesentierende nicht mehr da ist oder sie abgibt. */
+export function padUebernehmen(s: Sitzung, wer: string, anwesend: readonly string[]): Sitzung {
+  if (!s.pad || s.pad.praesentiert === wer) return s
+  if (anwesend.includes(s.pad.praesentiert)) return s
+  return weiter(s, wer, { pad: { ...s.pad, praesentiert: wer } })
+}
+
+/** Darf dieser Mensch auf dem Pad zeichnen? */
+export function darfZeichnen(s: Sitzung, wer: string): boolean {
+  return !s.pad || s.pad.alle || s.pad.praesentiert === wer
+}
+
 // --- Regeln und Redezeit ---------------------------------------------------------
 
 export function regelnVon(s: Sitzung): Regeln {

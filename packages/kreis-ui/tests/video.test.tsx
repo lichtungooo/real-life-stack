@@ -13,6 +13,19 @@ import { KreisRaumProvider } from "../src/raum-kontext"
 import { KreisRaumFlaeche } from "../src/kreis-raum-flaeche"
 import { VideoRaumFlaeche } from "../src/video/video-raum-flaeche"
 
+// Excalidraw braucht eine echte Zeichenflaeche. Im Test steht an ihrer Stelle
+// eine Attrappe mit denselben Anschluessen: Sie zeigt, wie viele Elemente sie
+// hat, und kann selbst eines zeichnen.
+vi.mock("../src/video/zeichenpad-flaeche", () => ({
+  default: ({ elemente, onAenderung, nurLesen }: { elemente: readonly unknown[]; onAenderung: (e: unknown[]) => void; nurLesen: boolean }) => (
+    <div>
+      <span>Elemente: {elemente.length}</span>
+      <span>{nurLesen ? "nur ansehen" : "zeichnen erlaubt"}</span>
+      <button type="button" onClick={() => onAenderung([{ id: `strich-${elemente.length}`, version: 1, versionNonce: 1 }])}>Strich ziehen</button>
+    </div>
+  ),
+}))
+
 ;(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true
 
 function kanalNetz() {
@@ -338,7 +351,7 @@ describe("Die Konferenz nach Big Blue Button", () => {
     expect(bert.huelle.querySelector('[aria-label="Hand oben"]')).not.toBeNull()
   })
 
-  it("Tafel und fremdes Modul liegen fuer alle in der Mitte", async () => {
+  it("Zeichenpad: wer es oeffnet, praesentiert; Mehrere Benutzer gibt frei; Striche gehen durch", async () => {
     const kanal = kanalNetz()
     const anna = mensch(kanal, "a-anna", "Anna", "video")
     const bert = mensch(kanal, "b-bert", "Bert", "video")
@@ -346,8 +359,33 @@ describe("Die Konferenz nach Big Blue Button", () => {
     await bert.betreten()
 
     await anna.aria("Aktionen")
-    await anna.klick("Tafel")
-    expect(bert.huelle.querySelector('canvas[aria-label="Tafel zum Zeichnen"]')).not.toBeNull()
+    await anna.klick("Zeichenpad")
+    await act(async () => { await new Promise((r) => setTimeout(r, 0)) })
+    expect(bert.text()).toContain("Anna präsentiert")
+    expect(bert.text()).toContain("nur ansehen")
+    expect(anna.text()).toContain("zeichnen erlaubt")
+
+    await anna.klick("Strich ziehen")
+    expect(bert.text()).toContain("Elemente: 1")
+
+    await anna.klick("Mehrere Benutzer")
+    expect(bert.text()).toContain("zeichnen erlaubt")
+    await bert.klick("Strich ziehen")
+    expect(anna.text()).toContain("Elemente: 2")
+
+    // Wer spaeter kommt, bekommt das Gezeichnete
+    const clara = mensch(kanal, "c-clara", "Clara", "video")
+    await clara.betreten()
+    await act(async () => { await new Promise((r) => setTimeout(r, 0)) })
+    expect(clara.text()).toContain("Elemente: 2")
+  })
+
+  it("ein fremdes Modul liegt fuer alle in der Mitte", async () => {
+    const kanal = kanalNetz()
+    const anna = mensch(kanal, "a-anna", "Anna", "video")
+    const bert = mensch(kanal, "b-bert", "Bert", "video")
+    await anna.betreten()
+    await bert.betreten()
 
     await bert.aria("Aktionen")
     await bert.klick("Kanban")

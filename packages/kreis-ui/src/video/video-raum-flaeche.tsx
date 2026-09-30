@@ -20,7 +20,7 @@ import {
   Mic, MicOff, MonitorUp, MoreVertical, PanelLeft, Plus, Smile, UserPlus, Users, Video, VideoOff, X,
 } from "lucide-react"
 import {
-  PROZESSE, aktuellerSchritt, losZiehen, mitteSetzen, prozessWaehlen, redezeitRest, regelnSetzen, regelnVon,
+  PROZESSE, aktuellerSchritt, losZiehen, mitteSetzen, padOeffnen, prozessWaehlen, redezeitRest, regelnSetzen, regelnVon,
   schaleSchlagen, sitzungRest, stabNehmen, stabZuruecklegen, stilleLaeuft, stilleSekundenVon, weckerAus, weckerStellen, type KreisTeilnehmer,
 } from "@kreis/core"
 import { hinweisTon, meetingEnde, schaleAnschlagen } from "../klangschale"
@@ -36,10 +36,13 @@ import { Chat, Menschen, Protokoll, type ProtokollSpeichern } from "./video-seit
 import { GeteilteNotizen, LosAnzeige, UmfrageWerkzeug, WeckerAnzeige } from "./werkzeuge"
 import { SITZUNG_STUFEN, dauerText } from "../regeln-formular"
 import { EinladenDialog, NeuImRaum, type KonferenzEinladen } from "./einladen"
+import { ZeichenPad } from "./zeichenpad"
 
 /** Die Tools, die das Video selbst mitbringt. Module kommen aus dem Register dazu. */
 export const TOOL_KREIS = "kreis"
 export const TOOL_TAFEL = "tafel"
+/** Das Zeichenpad (Excalidraw); ersetzt die einfache Tafel. */
+export const TOOL_PAD = "pad"
 export const TOOL_UMFRAGE = "umfrage"
 
 const WECKER_MINUTEN = [1, 3, 5, 10, 15, 20, 30] as const
@@ -174,7 +177,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
   const halterDa = sitzung.stab.halter !== null && teilnehmer.some((t) => t.id === sitzung.stab.halter)
   const mitte = sitzung.mitte ?? null
   const toolName = mitte === TOOL_KREIS ? (prozess ? `Kreis · ${prozess.name}` : "Kreis")
-    : mitte === TOOL_TAFEL ? "Tafel" : mitte === TOOL_UMFRAGE ? "Umfrage" : mitte ? module.find((m) => m.id === mitte)?.label ?? mitte : null
+    : mitte === TOOL_PAD ? "Zeichenpad" : mitte === TOOL_TAFEL ? "Tafel" : mitte === TOOL_UMFRAGE ? "Umfrage" : mitte ? module.find((m) => m.id === mitte)?.label ?? mitte : null
 
   useEffect(() => { if (spalte === "chat") setGelesen(neben.chat.length) }, [spalte, neben.chat.length])
   const ungelesen = spalte === "chat" ? 0 : Math.max(0, neben.chat.length - gelesen)
@@ -426,6 +429,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
               <div className="min-h-0 flex-1 overflow-hidden">
                 {mitte === TOOL_KREIS ? <div className="h-full overflow-hidden"><KreisWerkzeug kreis={kreis} /></div>
                   : mitte === TOOL_UMFRAGE ? <UmfrageWerkzeug kreis={kreis} />
+                  : mitte === TOOL_PAD ? <ZeichenPad kreis={kreis} />
                   : mitte === TOOL_TAFEL ? <div className="h-full p-3"><Tafel striche={neben.tafel} ich={wer} onStrich={neben.tafelStrich} onLeeren={neben.tafelLeeren} /></div>
                   : modulZeigen ? <div className="h-full overflow-hidden">{modulZeigen(mitte)}</div> : null}
               </div>
@@ -443,7 +447,7 @@ function InDerKonferenz({ kreis, raumName, module = [], modulZeigen, protokollSp
             <Menue offen={aktionOffen} onZu={() => setAktionOffen(false)} className="bottom-full left-0 mb-2">
               <p className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">In die Mitte, für alle</p>
               <Eintrag aktiv={mitte === null} onClick={() => tool(null)}><Users className="h-4 w-4" /> Alle zeigen, für alle</Eintrag>
-              <Eintrag aktiv={mitte === TOOL_TAFEL} onClick={() => tool(TOOL_TAFEL)}><span className="w-4 text-center">✎</span> Tafel</Eintrag>
+              <Eintrag aktiv={mitte === TOOL_PAD} onClick={() => { handle((s) => padOeffnen(s, TOOL_PAD, wer)); setAktionOffen(false) }}><span className="w-4 text-center">✎</span> Zeichenpad</Eintrag>
               <Eintrag aktiv={mitte === TOOL_UMFRAGE} onClick={() => tool(TOOL_UMFRAGE)}><span className="w-4 text-center">▤</span> Umfrage</Eintrag>
               {/* Ein Eintrag fuer den Kreis (Timo, 30.09.2026: "nicht trennen,
                   einfach Kreisprozess"). Ohne ihn ist es ein normales Meeting. */}

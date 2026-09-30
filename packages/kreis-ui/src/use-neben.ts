@@ -6,9 +6,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import {
-  LEERE_NOTIZ, istNotiz, istStimme, istStrich, istUmfrage, notizGilt, notizSchreiben,
+  LEERE_NOTIZ, elementeEinmischen, inPakete, istNotiz, istZeichenElement, istStimme, istStrich, istUmfrage, notizGilt, notizSchreiben,
   standEinmischen, stimmeDazu, strichDazu, umfrageEinmischen, umfrageNeu, umfrageSchliessen,
-  type GeteilteNotiz, type Strich, type Umfrage,
+  type GeteilteNotiz, type Strich, type Umfrage, type ZeichenElement,
 } from "@kreis/core"
 import type { KreisVerbindung, NebenNachricht } from "./use-kreis"
 
@@ -70,6 +70,11 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
   umfrageRef.current = umfrage
   const tafelRef = useRef(tafel)
   tafelRef.current = tafel
+  // Das Zeichenpad (Excalidraw): alle Elemente, auch geloeschte, bei allen.
+  // Einigung wie bei Excalidraw selbst, siehe @kreis/core/zeichnung.
+  const [pad, setPad] = useState<readonly ZeichenElement[]>([])
+  const padRef = useRef(pad)
+  padRef.current = pad
   // Wer ist wer: Teilnehmer im Raum -> Kennung in der App (DID). Jeder
   // stellt sich beim Betreten vor, und wer neu kommt, fragt nach.
   const [kennungen, setKennungen] = useState<ReadonlyMap<string, string>>(new Map())
@@ -117,6 +122,12 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
       zeichenSetzen(n.wer, n.zeichen as ZeichenArt)
     } else if (n.art === "transkript" && n.zeile && typeof n.zeile === "object") {
       protokollZeile(n.zeile as ProtokollZeile)
+    } else if (n.art === "pad-elemente" && Array.isArray(n.elemente)) {
+      const fremde = (n.elemente as unknown[]).filter(istZeichenElement)
+      setPad((alt) => elementeEinmischen(alt, fremde))
+    } else if (n.art === "pad-frage") {
+      // Nur wer etwas hat, antwortet; in Paketen, damit nichts zu gross wird.
+      for (const paket of inPakete(padRef.current)) v.nebenSenden({ art: "pad-elemente", elemente: paket })
     } else if (n.art === "tafel-strich" && istStrich(n.strich)) {
       const strich = n.strich
       setTafel((t) => strichDazu(t, strich))
@@ -148,6 +159,7 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
   useEffect(() => {
     if (v.zustand === "drin") {
       v.nebenSenden({ art: "tafel-frage" })
+      v.nebenSenden({ art: "pad-frage" })
       v.nebenSenden({ art: "werkzeug-frage" })
       if (kennungRef.current) v.nebenSenden({ art: "vorstellen", kennung: kennungRef.current })
       v.nebenSenden({ art: "vorstellen-frage" })
@@ -167,7 +179,7 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
   useEffect(() => {
     if (v.zustand !== "draussen") return
     setKennungen(new Map())
-    setChat([]); setHaende(new Set()); setZeichen(new Map()); setProtokoll([]); setTafel([]); setNotiz(LEERE_NOTIZ); setUmfrage(null)
+    setChat([]); setHaende(new Set()); setZeichen(new Map()); setProtokoll([]); setTafel([]); setNotiz(LEERE_NOTIZ); setUmfrage(null); setPad([])
     sollLaufenRef.current = false
     erkennungRef.current?.abort()
     erkennungRef.current = null
@@ -258,6 +270,13 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
     .map((z) => `${new Date(z.wann).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} ${z.name}: ${z.text}`)
     .join("\n"), [protokoll])
 
+  /** Eigene Aenderungen am Pad: einmischen und in Paketen an alle. */
+  const padSenden = useCallback((elemente: readonly ZeichenElement[]) => {
+    if (elemente.length === 0) return
+    setPad((alt) => elementeEinmischen(alt, elemente))
+    for (const paket of inPakete(elemente)) v.nebenSenden({ art: "pad-elemente", elemente: paket })
+  }, [v])
+
   const tafelStrich = useCallback((strich: Strich) => {
     setTafel((t) => strichDazu(t, strich))
     v.nebenSenden({ art: "tafel-strich", strich })
@@ -313,6 +332,7 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
     notiz, notizSetzen,
     umfrage, umfrageStarten, abstimmen, umfrageBeenden, umfrageVerwerfen,
     tafel, tafelStrich, tafelLeeren,
+    pad, padSenden,
     chat, chatSenden,
     haende, handUmschalten,
     zeichen, zeichenGeben,

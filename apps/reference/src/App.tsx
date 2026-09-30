@@ -535,6 +535,11 @@ function NetzwerkeImportHost({ beispielwelt }: { beispielwelt: boolean }) {
   )
 }
 
+// Excalidraw (Zeichenpad) laedt seine Schriften von hier, nicht aus einem
+// fremden Netz (public/excalidraw/fonts, Open Source, selbst ausgeliefert).
+;(window as unknown as { EXCALIDRAW_ASSET_PATH?: string }).EXCALIDRAW_ASSET_PATH =
+  `${window.location.origin}${import.meta.env.BASE_URL}excalidraw/`
+
 const BeitrittLazy = lazy(() => import("@kreis/ui/flaechen").then((m) => ({ default: m.BeitrittsKonferenz })))
 
 /**

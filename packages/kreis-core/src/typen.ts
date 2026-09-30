@@ -101,6 +101,12 @@ export interface Sitzung {
   regeln?: Regeln
   /** Der Gong am Ende einer Redezeit. `nr` zaehlt jeden, damit er einmal klingt. */
   gong?: { nr: number; wann: number } | null
+  /**
+   * Das Zeichenpad in der Mitte: wer praesentiert und ob alle zeichnen
+   * duerfen ("Mehrere Benutzer" wie in Big Blue Button). Fehlt es, zeichnen
+   * alle (aeltere Fassung).
+   */
+  pad?: { praesentiert: string; alle: boolean } | null
 }
 
 /** Was nach Ablauf der Redezeit mit dem Redestab geschieht. */
