@@ -106,7 +106,14 @@ export interface Sitzung {
    * duerfen ("Mehrere Benutzer" wie in Big Blue Button). Fehlt es, zeichnen
    * alle (aeltere Fassung).
    */
-  pad?: { praesentiert: string; alle: boolean } | null
+  pad?: {
+    praesentiert: string
+    alle: boolean
+    /** Folien aus einer PDF: welche Datei (Id im Raum), ihr Name, wie viele Seiten. */
+    folien?: { datei: string; name: string; seiten: number } | null
+    /** Die Seite, die alle sehen (ab 1). Ohne Folien die freie Flaeche. */
+    seite?: number
+  } | null
 }
 
 /** Was nach Ablauf der Redezeit mit dem Redestab geschieht. */

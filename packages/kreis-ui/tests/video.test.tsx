@@ -17,13 +17,19 @@ import { VideoRaumFlaeche } from "../src/video/video-raum-flaeche"
 // eine Attrappe mit denselben Anschluessen: Sie zeigt, wie viele Elemente sie
 // hat, und kann selbst eines zeichnen.
 vi.mock("../src/video/zeichenpad-flaeche", () => ({
-  default: ({ elemente, onAenderung, nurLesen }: { elemente: readonly unknown[]; onAenderung: (e: unknown[]) => void; nurLesen: boolean }) => (
+  default: ({ elemente, onAenderung, nurLesen, hintergrund }: { elemente: readonly unknown[]; onAenderung: (e: unknown[]) => void; nurLesen: boolean; hintergrund?: { id: string } | null }) => (
     <div>
       <span>Elemente: {elemente.length}</span>
+      <span>Hintergrund: {hintergrund?.id ?? "keiner"}</span>
       <span>{nurLesen ? "nur ansehen" : "zeichnen erlaubt"}</span>
       <button type="button" onClick={() => onAenderung([{ id: `strich-${elemente.length}`, version: 1, versionNonce: 1 }])}>Strich ziehen</button>
     </div>
   ),
+}))
+// pdf.js braucht einen echten Browser; die Attrappe kennt drei Seiten.
+vi.mock("../src/video/pdf-seiten", () => ({
+  seitenZahl: async () => 3,
+  seiteAlsBild: async (datei: string, _b: Uint8Array, seite: number) => ({ id: `folie-${datei}:${seite}`, dataURL: "data:", breite: 10, hoehe: 10 }),
 }))
 
 ;(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true
@@ -378,6 +384,42 @@ describe("Die Konferenz nach Big Blue Button", () => {
     await clara.betreten()
     await act(async () => { await new Promise((r) => setTimeout(r, 0)) })
     expect(clara.text()).toContain("Elemente: 2")
+  })
+
+  it("Folien: PDF hochladen, sie kommt in Stuecken bei allen an, gemeinsam blaettern, Nachzuegler bekommt sie", async () => {
+    const kanal = kanalNetz()
+    const anna = mensch(kanal, "a-anna", "Anna", "video")
+    const bert = mensch(kanal, "b-bert", "Bert", "video")
+    await anna.betreten()
+    await bert.betreten()
+    await anna.aria("Aktionen")
+    await anna.klick("Zeichenpad")
+    const warten = async (ms = 0) => { await act(async () => { await new Promise((r) => setTimeout(r, ms)) }) }
+    await warten()
+
+    // Eine PDF von gut 60 KB: mehrere Stuecke
+    const inhalt = new Uint8Array(60_000).map((_, i) => i % 251)
+    const datei = new File([inhalt], "Vortrag.pdf", { type: "application/pdf" })
+    const feld = anna.huelle.querySelector('input[type="file"]') as HTMLInputElement
+    Object.defineProperty(feld, "files", { value: [datei], configurable: true })
+    await act(async () => { feld.dispatchEvent(new Event("change", { bubbles: true })) })
+    await warten(200)
+
+    expect(bert.text()).toContain("Folie 1 von 3")
+    expect(bert.text()).toContain("Vortrag.pdf")
+    await warten(50)
+    expect(bert.text()).toMatch(/Hintergrund: folie-[a-z0-9]+:1/)
+
+    await anna.aria("Nächste Folie")
+    await warten(20)
+    expect(bert.text()).toContain("Folie 2 von 3")
+    expect(bert.text()).toMatch(/Hintergrund: folie-[a-z0-9]+:2/)
+
+    const clara = mensch(kanal, "c-clara", "Clara", "video")
+    await clara.betreten()
+    await warten(300)
+    expect(clara.text()).toContain("Folie 2 von 3")
+    expect(clara.text()).toMatch(/Hintergrund: folie-[a-z0-9]+:2/)
   })
 
   it("ein fremdes Modul liegt fuer alle in der Mitte", async () => {

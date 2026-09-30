@@ -6,9 +6,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import {
-  LEERE_NOTIZ, elementeEinmischen, inPakete, istNotiz, istZeichenElement, istStimme, istStrich, istUmfrage, notizGilt, notizSchreiben,
+  LEERE_NOTIZ, eingangNeu, elementeEinmischen, inPakete, inStuecke, nachBase64, stueckDazu, istNotiz, istZeichenElement, istStimme, istStrich, istUmfrage, notizGilt, notizSchreiben,
   standEinmischen, stimmeDazu, strichDazu, umfrageEinmischen, umfrageNeu, umfrageSchliessen,
-  type GeteilteNotiz, type Strich, type Umfrage, type ZeichenElement,
+  type GeteilteNotiz, type Strich, type Umfrage, type ZeichenElement, type Eingang,
 } from "@kreis/core"
 import type { KreisVerbindung, NebenNachricht } from "./use-kreis"
 
@@ -72,9 +72,15 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
   tafelRef.current = tafel
   // Das Zeichenpad (Excalidraw): alle Elemente, auch geloeschte, bei allen.
   // Einigung wie bei Excalidraw selbst, siehe @kreis/core/zeichnung.
-  const [pad, setPad] = useState<readonly ZeichenElement[]>([])
+  // Je Folie eine eigene Zeichnung; die freie Flaeche heisst "frei".
+  const [pad, setPad] = useState<Readonly<Record<string, readonly ZeichenElement[]>>>({})
   const padRef = useRef(pad)
   padRef.current = pad
+  // Dateien im Raum (Folien als PDF), nur fuer diese Sitzung.
+  const [dateien, setDateien] = useState<ReadonlyMap<string, { name: string; bytes: Uint8Array }>>(new Map())
+  const dateienRef = useRef(dateien)
+  dateienRef.current = dateien
+  const eingaenge = useRef(new Map<string, Eingang>())
   // Wer ist wer: Teilnehmer im Raum -> Kennung in der App (DID). Jeder
   // stellt sich beim Betreten vor, und wer neu kommt, fragt nach.
   const [kennungen, setKennungen] = useState<ReadonlyMap<string, string>>(new Map())
@@ -107,7 +113,13 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
   }, [])
 
   // Was von den anderen kommt.
-  useEffect(() => v.beiNeben((n, von) => {
+  // Der Empfaenger meldet sich EINMAL an und liest die Verarbeitung aus
+  // einem Ref. Frueher meldete er sich bei jedem Neuzeichnen ab und wieder an;
+  // eine Antwort, die genau dazwischen kam (etwa eine Datei fuer einen
+  // Nachzuegler), ging verloren.
+  const verarbeiten = useRef<(n: NebenNachricht, von: string) => void>(() => {})
+  useEffect(() => v.beiNeben((n, von) => verarbeiten.current(n, von)), [v.beiNeben])
+  verarbeiten.current = (n, von) => {
     if (n.art === "vorstellen" && typeof n.kennung === "string" && von) {
       const k = n.kennung
       setKennungen((alt) => (alt.get(von) === k ? alt : new Map(alt).set(von, k)))
@@ -124,10 +136,31 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
       protokollZeile(n.zeile as ProtokollZeile)
     } else if (n.art === "pad-elemente" && Array.isArray(n.elemente)) {
       const fremde = (n.elemente as unknown[]).filter(istZeichenElement)
-      setPad((alt) => elementeEinmischen(alt, fremde))
+      const schluessel = typeof n.schluessel === "string" ? n.schluessel : "frei"
+      setPad((alt) => {
+        const bisher = alt[schluessel] ?? []
+        const neu = elementeEinmischen(bisher, fremde)
+        return neu === bisher ? alt : { ...alt, [schluessel]: neu }
+      })
     } else if (n.art === "pad-frage") {
       // Nur wer etwas hat, antwortet; in Paketen, damit nichts zu gross wird.
-      for (const paket of inPakete(padRef.current)) v.nebenSenden({ art: "pad-elemente", elemente: paket })
+      for (const [schluessel, liste] of Object.entries(padRef.current)) {
+        for (const paket of inPakete(liste)) v.nebenSenden({ art: "pad-elemente", schluessel, elemente: paket })
+      }
+    } else if (n.art === "datei-kopf" && typeof n.id === "string" && typeof n.name === "string" && typeof n.teile === "number") {
+      if (!dateienRef.current.has(n.id) && !eingaenge.current.has(n.id)) eingaenge.current.set(n.id, eingangNeu(n.name, n.teile))
+    } else if (n.art === "datei-teil" && typeof n.id === "string" && typeof n.nr === "number" && typeof n.d === "string") {
+      const e = eingaenge.current.get(n.id)
+      if (!e) return
+      const fertig = stueckDazu(e, n.nr, n.d)
+      if (fertig) {
+        eingaenge.current.delete(n.id)
+        const id = n.id
+        setDateien((alt) => new Map(alt).set(id, { name: e.name, bytes: fertig }))
+      }
+    } else if (n.art === "datei-frage" && typeof n.id === "string") {
+      const d = dateienRef.current.get(n.id)
+      if (d) void dateiSenden(n.id, d.name, d.bytes)
     } else if (n.art === "tafel-strich" && istStrich(n.strich)) {
       const strich = n.strich
       setTafel((t) => strichDazu(t, strich))
@@ -153,13 +186,14 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
       const stand = (n.striche as unknown[]).filter(istStrich)
       setTafel((t) => standEinmischen(t, stand))
     }
-  }), [v, zeichenSetzen, protokollZeile])
+  }
 
   // Wer hereinkommt, fragt nach dem Stand der Tafel.
   useEffect(() => {
     if (v.zustand === "drin") {
       v.nebenSenden({ art: "tafel-frage" })
       v.nebenSenden({ art: "pad-frage" })
+      eingaenge.current.clear()
       v.nebenSenden({ art: "werkzeug-frage" })
       if (kennungRef.current) v.nebenSenden({ art: "vorstellen", kennung: kennungRef.current })
       v.nebenSenden({ art: "vorstellen-frage" })
@@ -179,7 +213,7 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
   useEffect(() => {
     if (v.zustand !== "draussen") return
     setKennungen(new Map())
-    setChat([]); setHaende(new Set()); setZeichen(new Map()); setProtokoll([]); setTafel([]); setNotiz(LEERE_NOTIZ); setUmfrage(null); setPad([])
+    setChat([]); setHaende(new Set()); setZeichen(new Map()); setProtokoll([]); setTafel([]); setNotiz(LEERE_NOTIZ); setUmfrage(null); setPad({}); setDateien(new Map())
     sollLaufenRef.current = false
     erkennungRef.current?.abort()
     erkennungRef.current = null
@@ -270,11 +304,33 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
     .map((z) => `${new Date(z.wann).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} ${z.name}: ${z.text}`)
     .join("\n"), [protokoll])
 
-  /** Eigene Aenderungen am Pad: einmischen und in Paketen an alle. */
-  const padSenden = useCallback((elemente: readonly ZeichenElement[]) => {
+  /** Eigene Aenderungen am Pad (einer Folie): einmischen und in Paketen an alle. */
+  const padSenden = useCallback((schluessel: string, elemente: readonly ZeichenElement[]) => {
     if (elemente.length === 0) return
-    setPad((alt) => elementeEinmischen(alt, elemente))
-    for (const paket of inPakete(elemente)) v.nebenSenden({ art: "pad-elemente", elemente: paket })
+    setPad((alt) => ({ ...alt, [schluessel]: elementeEinmischen(alt[schluessel] ?? [], elemente) }))
+    for (const paket of inPakete(elemente)) v.nebenSenden({ art: "pad-elemente", schluessel, elemente: paket })
+  }, [v])
+
+  /** Eine Datei an alle im Raum, in Stuecken. Zwischendurch Luft holen, damit Bild und Ton weiterlaufen. */
+  const dateiSenden = useCallback(async (id: string, name: string, bytes: Uint8Array) => {
+    const stuecke = inStuecke(nachBase64(bytes))
+    v.nebenSenden({ art: "datei-kopf", id, name, teile: stuecke.length })
+    for (let nr = 0; nr < stuecke.length; nr++) {
+      v.nebenSenden({ art: "datei-teil", id, nr, d: stuecke[nr] })
+      if (nr % 25 === 24) await new Promise((r) => setTimeout(r, 30))
+    }
+  }, [v])
+
+  /** Eine eigene Datei in den Raum geben. */
+  const dateiTeilen = useCallback((id: string, name: string, bytes: Uint8Array) => {
+    setDateien((alt) => new Map(alt).set(id, { name, bytes }))
+    void dateiSenden(id, name, bytes)
+  }, [dateiSenden])
+
+  /** Eine Datei erbitten, die hier fehlt (Nachzuegler). */
+  const dateiAnfragen = useCallback((id: string) => {
+    if (dateienRef.current.has(id)) return
+    v.nebenSenden({ art: "datei-frage", id })
   }, [v])
 
   const tafelStrich = useCallback((strich: Strich) => {
@@ -333,6 +389,7 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
     umfrage, umfrageStarten, abstimmen, umfrageBeenden, umfrageVerwerfen,
     tafel, tafelStrich, tafelLeeren,
     pad, padSenden,
+    dateien, dateiTeilen, dateiAnfragen,
     chat, chatSenden,
     haende, handUmschalten,
     zeichen, zeichenGeben,

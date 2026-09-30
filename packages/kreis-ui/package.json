@@ -37,7 +37,8 @@
   "dependencies": {
     "@excalidraw/excalidraw": "0.18.1",
     "@kreis/core": "workspace:*",
-    "@real-life-stack/toolkit": "workspace:*"
+    "@real-life-stack/toolkit": "workspace:*",
+    "pdfjs-dist": "^6.3.289"
   },
   "peerDependencies": {
     "lucide-react": "*",

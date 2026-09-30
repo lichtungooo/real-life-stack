@@ -208,6 +208,35 @@ export function padUebernehmen(s: Sitzung, wer: string, anwesend: readonly strin
   return weiter(s, wer, { pad: { ...s.pad, praesentiert: wer } })
 }
 
+/** Folien aus einer PDF auflegen oder wieder abnehmen. Nur wer praesentiert. */
+export function padFolienSetzen(
+  s: Sitzung,
+  folien: { datei: string; name: string; seiten: number } | null,
+  wer: string,
+): Sitzung {
+  if (!s.pad || s.pad.praesentiert !== wer) return s
+  if (folien && folien.seiten < 1) return s
+  return weiter(s, wer, { pad: { ...s.pad, folien, seite: folien ? 1 : undefined } })
+}
+
+/** Blaettern. Nur wer praesentiert; die Seite bleibt zwischen 1 und der letzten. */
+export function padBlaettern(s: Sitzung, seite: number, wer: string): Sitzung {
+  const f = s.pad?.folien
+  if (!s.pad || !f || s.pad.praesentiert !== wer) return s
+  const neu = Math.min(f.seiten, Math.max(1, Math.round(seite)))
+  if (neu === (s.pad.seite ?? 1)) return s
+  return weiter(s, wer, { pad: { ...s.pad, seite: neu } })
+}
+
+/**
+ * Unter welchem Schluessel die Zeichnung der aktuellen Seite liegt: jede
+ * Folie hat ihre eigene, die freie Flaeche heisst "frei".
+ */
+export function padSchluessel(s: Sitzung): string {
+  const f = s.pad?.folien
+  return f ? `${f.datei}:${s.pad?.seite ?? 1}` : "frei"
+}
+
 /** Darf dieser Mensch auf dem Pad zeichnen? */
 export function darfZeichnen(s: Sitzung, wer: string): boolean {
   return !s.pad || s.pad.alle || s.pad.praesentiert === wer
