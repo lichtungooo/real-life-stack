@@ -192,6 +192,7 @@ Ein White-Label-Kontext ist nicht automatisch ein Space (Regel 4 oben) — er KA
 | `network` | `Group.data.network: <spaceId>` | das Netzwerk, zu dem dieser Space gehört |
 | `kind` | `Group.data.kind: <id>` | die Art dieses Space, ein Schlüssel aus `spaceKinds` seines Netzwerks |
 | `domain` | `Group.data.domain: <hostname>` | die Domain der Landingpage eines Netzwerks (nur an Netzwerken, nur Auskunft) |
+| `adoptsUnassigned` | `Group.data.adoptsUnassigned: true \| <kind-id>` | Spaces ohne `network` erscheinen in diesem Netzwerk, bei einer Art-Id als diese Art (nur an Netzwerken, nur Anzeige; trustdonation, Naht A-Sammelnetzwerk) |
 
 Ein Eintrag in `spaceKinds` trägt `id` (`[a-z0-9-]{1,32}`, ein Schlüssel, kein Anzeigename), `label` (Einzahl), `labelPlural` (Mehrzahl) und optional `color` (`#rrggbb`).
 
@@ -206,6 +207,8 @@ Regeln:
 7. Netzwerk und Art steuern **keine** Modul-Aktivierung und **keine** Rechte und **keine** Sichtbarkeit. Welche Module ein Space führt, bleibt `Group.data.modules`; was ein Mitglied darf, bleibt Sache der Autorisierung; was ein Mensch sieht, bleibt Sache seiner Mitgliedschaften. Zugehörigkeit zu einem Netzwerk ist Ordnung und Darstellung, kein Zugang: Wer im Netzwerk ist, sieht dessen Gruppen im Space-Wechsel nur, wenn er auch in ihnen Mitglied ist. Was im Netzwerk für alle sichtbar sein soll, legen die Mitglieder dort ab; ein automatisches Erscheinen aus anderen Spaces ist Sache von [09-mirror-bridge.md](09-mirror-bridge.md).
 8. Ein Netzwerk ist keine Typ-Hierarchie: Flächen zeigen immer genau eine Ebene, das aktive Netzwerk und seine Spaces. Dass ein Space darin selbst Netzwerk ist, wird dort nicht aufgefaltet — wer hinein will, macht ihn zum aktiven Netzwerk.
 9. `domain` ist Auskunft, kein Routing: Sie sagt, wo die Landingpage des Netzwerks liegt, und dient dem Menschen, der dort einen Knopf setzt. Der Link in einen Space ist die Adresse der App plus Space; wer dort kein Mitglied ist, sieht keinen Zugang. **Ein Beitritt über einen Link ohne Einladung ist nicht Teil dieses Vertrags** und gehört zu Einladung und Verifikation ([05-confirmations-and-trust.md](05-confirmations-and-trust.md)).
+
+10. **`adoptsUnassigned` (trustdonation, 30.09.2026):** Trägt **genau ein** Netzwerk dieses Feld, erscheinen alle Spaces, die kein Netzwerk nennen und selbst keines sind, in aufzählenden Flächen als Teil dieses Netzwerks. Das ist eine Ableitung **nur in der Anzeige** und steht nicht im Widerspruch zu Regel 6: In den Space wird nichts geschrieben, seine eigene Wahl im Gruppen-Dialog geht immer vor. Zweck: Spaces aus einer anderen App auf demselben Relay (Antons Real Life Stack) stehen geordnet, ohne dass jemand in fremde Spaces schreibt. Tragen es zwei Netzwerke, gilt es für keines.
 
 ## Profile
 

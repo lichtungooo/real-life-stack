@@ -62,3 +62,46 @@ export function gliedereNachArt<T extends { id: string; kind?: string }>(
   const ohneArt = spaces.filter((s) => !s.kind || !bekannt.has(s.kind))
   return { arten: abschnitte, ohneArt }
 }
+
+/** Was die Zuordnung ohne Netzwerk von einem Space wissen muss. */
+export interface ZuordnungsEintrag {
+  id: string
+  scope?: string
+  isNetwork?: boolean
+  network?: string
+  kind?: string
+  /**
+   * Nur an einem Netzwerk: Spaces ohne Netzwerk gehoeren hierher
+   * (`Group.data.adoptsUnassigned`). `true`, oder die Id der Art, als die
+   * sie erscheinen.
+   */
+  adoptsUnassigned?: true | string
+}
+
+/**
+ * Spaces ohne Netzwerk dem Netzwerk zuordnen, das sie aufnimmt.
+ *
+ * Timo, 30.09.2026: Die Gruppen aus Antons Real Life Stack sollen unter
+ * Real Life stehen, auch jede, die dort neu entsteht. Sie tragen kein
+ * `data.network`, und wir schreiben keines hinein: Es sind die Spaces
+ * anderer Menschen. Darum geschieht die Zuordnung nur in der Anzeige.
+ *
+ * Regeln:
+ * 1. Es gilt nur, wenn **genau ein** Netzwerk `adoptsUnassigned` traegt.
+ *    Zwei waeren ein Widerspruch; dann bleibt alles, wie es ist.
+ * 2. Zugeordnet wird nur, was kein Netzwerk ist und keines nennt. Wer sein
+ *    Netzwerk im Zahnrad waehlt, zieht dorthin um.
+ * 3. Traegt `adoptsUnassigned` eine Art, bekommen Spaces ohne Art diese.
+ * 4. Die Eingabe bleibt unveraendert; zugeordnete Spaces sind Kopien.
+ */
+export function ohneNetzwerkZuordnen<T extends ZuordnungsEintrag>(spaces: readonly T[]): T[] {
+  const sammler = spaces.filter((w) => w.isNetwork === true && w.adoptsUnassigned)
+  if (sammler.length !== 1) return [...spaces]
+  const netz = sammler[0]
+  const art = typeof netz.adoptsUnassigned === "string" ? netz.adoptsUnassigned : undefined
+  return spaces.map((w) =>
+    w.scope === "overview" || w.isNetwork === true || w.network || w.id === netz.id
+      ? w
+      : { ...w, network: netz.id, ...(w.kind || !art ? {} : { kind: art }) },
+  )
+}

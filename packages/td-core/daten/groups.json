@@ -72,6 +72,7 @@
         }
       ],
       "domain": "reallife.network",
+      "adoptsUnassigned": "gruppe",
       "primaryColor": "#485565"
     }
   },

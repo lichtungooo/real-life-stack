@@ -540,6 +540,11 @@ export function GroupDialog({
   // Netzwerk sein UND zu einem gehoeren; ein Netzwerk traegt die Arten seiner
   // Gruppen. Leer = keins / keine.
   const [isNetwork, setIsNetwork] = useState(() => isEdit && mode.group.data?.isNetwork === true)
+  // Naht A-Sammelnetzwerk: Spaces ohne Netzwerk gehoeren hierher, als Art.
+  const [adopts, setAdopts] = useState<string | null>(() => {
+    const v = isEdit ? mode.group.data?.adoptsUnassigned : undefined
+    return v === true ? "" : typeof v === "string" ? v : null
+  })
   const [network, setNetwork] = useState<string>(() =>
     isEdit
       ? (typeof mode.group.data?.network === "string" ? mode.group.data.network : "")
@@ -588,6 +593,10 @@ export function GroupDialog({
   const handleIsNetworkChange = (value: boolean) => {
     setIsNetwork(value)
     patchData({ isNetwork: value ? true : null }, "Netzwerk")
+  }
+  const handleAdoptsChange = (value: string | null) => {
+    setAdopts(value)
+    patchData({ adoptsUnassigned: value === null ? null : value || true }, "Netzwerk")
   }
   const handleNetworkChange = (value: string) => {
     setNetwork(value)
@@ -1713,6 +1722,38 @@ export function GroupDialog({
                     </p>
                     <KindsEditor rows={kindRows} onChange={setKindRows} onCommit={commitKinds} onRemove={removeKind} />
                   </div>
+                  {/* Naht A-Sammelnetzwerk: Gruppen, die kein Netzwerk nennen,
+                      erscheinen hier, ohne dass in sie geschrieben wird. */}
+                  {isEdit && (
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={adopts !== null}
+                          onChange={(e) => handleAdoptsChange(e.target.checked ? "" : null)}
+                          className="h-4 w-4 accent-primary"
+                        />
+                        Gruppen ohne Netzwerk gehören hierher
+                      </label>
+                      {adopts !== null && (
+                        <div className="pl-6">
+                          <Label htmlFor="group-adopts-kind" className="text-xs text-muted-foreground">Sie erscheinen als</Label>
+                          <div className="mt-1">
+                            <NativeSelect
+                              id="group-adopts-kind"
+                              options={kindRows.filter((r) => r.id).map((r) => ({ id: r.id, label: r.labelPlural || r.label || r.id }))}
+                              value={adopts}
+                              emptyLabel="ohne Art"
+                              onChange={(v) => handleAdoptsChange(v)}
+                            />
+                          </div>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            Nur in der Anzeige. Wer im eigenen Zahnrad ein Netzwerk wählt, zieht dorthin um.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </>
               )}
 

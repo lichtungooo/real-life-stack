@@ -19,6 +19,7 @@ export {
   gliedereNachArt,
   type OrdnungsEintrag,
 } from "./space-ordnung.js"
+export { ohneNetzwerkZuordnen, type ZuordnungsEintrag } from "./space-ordnung.js"
 
 export {
   zeileVollstaendig,

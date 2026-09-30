@@ -86,6 +86,26 @@ function ordneSpaces(spaces: readonly Workspace[], uebersicht: Workspace, startN
 }
 
 /**
+ * Naht A-Sammelnetzwerk (docs/NAEHTE.md): Spaces ohne Netzwerk gehoeren zu
+ * dem einen Netzwerk, das `adoptsUnassigned` traegt; traegt es eine Art,
+ * bekommen Spaces ohne Art diese. Nur in der Anzeige: In fremde Spaces wird
+ * nichts geschrieben (Timo, 30.09.2026: Antons Gruppen unter Real Life, auch
+ * jede neue). Dieselbe Regel steht geprueft in `@trustdonation/core`
+ * (`ohneNetzwerkZuordnen`); das Toolkit haengt von keinem App-Paket ab.
+ */
+function ohneNetzwerkZuordnen(spaces: readonly Workspace[]): Workspace[] {
+  const sammler = spaces.filter((w) => w.isNetwork === true && w.adoptsUnassigned)
+  if (sammler.length !== 1) return [...spaces]
+  const netz = sammler[0]
+  const art = typeof netz.adoptsUnassigned === "string" ? netz.adoptsUnassigned : undefined
+  return spaces.map((w) =>
+    w.scope === "overview" || w.isNetwork === true || w.network || w.id === netz.id
+      ? w
+      : { ...w, network: netz.id, ...(w.kind || !art ? {} : { kind: art }) },
+  )
+}
+
+/**
  * Der kanonische Pfad fuer einen Redirect.
  *
  * Query und Fragment gehoeren zum Ort, nicht zum Modul: `?connector=` waehlt
@@ -191,7 +211,7 @@ export function useWorkspaceRouting({ fallbackModule }: WorkspaceRoutingOptions 
     // Mitglied, faellt es still weg: ein Eintrag, der ins Leere fuehrt, waere
     // schlimmer als keiner. Netzwerk, Art und Domain liest `workspaceOf`.
     const homeId = getRuntimeConfig().homeSpaceId
-    const list = groups.map(workspaceOf)
+    const list = ohneNetzwerkZuordnen(groups.map(workspaceOf))
     const hatNetzwerke = list.some((w) => w.isNetwork)
     return ordneSpaces(list, overviewWorkspace(hatNetzwerke), homeId)
   }, [groups])

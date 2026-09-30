@@ -119,6 +119,16 @@ Stellen, an denen ein Haken fehlt und wir ihn uns wünschen.
 | **Risiko bei Update** | gering, eine Zeile; bei Kollision Antons Test prüfen |
 | **Wunsch an Anton** | Dialog und Routing gleich machen: ohne Liste die Vorgaben. Wir bringen das als kleinen PR mit dem Anwendungsfall |
 
+### A-Sammelnetzwerk. Gruppen ohne Netzwerk erscheinen in einem Netzwerk (30.09.2026)
+
+| | |
+|---|---|
+| **Dateien** | `packages/toolkit/src/components/layout/workspace-switcher.tsx` (Feld `adoptsUnassigned` im `Workspace`, in `workspaceOf` gelesen, 8 Zeilen), `packages/toolkit/src/components/router/workspace-routing.tsx` (`ohneNetzwerkZuordnen`, 18 Zeilen, und der Aufruf), `packages/toolkit/src/components/layout/group-dialog.tsx` (Häkchen „Gruppen ohne Netzwerk gehören hierher“ mit Art, rund 40 Zeilen), `packages/toolkit/tests/sammelnetzwerk.test.ts` (unser Test). Die Regel selbst geprüft in `packages/td-core/src/space-ordnung.ts` (`ohneNetzwerkZuordnen`) |
+| **Was wir tun** | Trägt genau ein Netzwerk `data.adoptsUnassigned` (`true` oder eine Art-Id), erscheinen alle Spaces ohne `network` in ihm, bei einer Art-Id als diese Art. Nur in der Anzeige; in fremde Spaces wird nichts geschrieben. Spec 04, Regel 10 |
+| **Warum kein Haken** | Die Liste der Spaces entsteht in `workspace-routing.tsx` aus `workspaceOf`, ohne Stelle, an der eine App sie umordnen kann. Anlass: Timo, 30.09.2026: Die Gruppen aus Antons Real Life Stack (etwa Emils) sollen bei uns unter Real Life stehen, auch jede neue, und bei Anton unverändert bleiben. Jeder entscheidet danach selbst im Zahnrad, wohin seine Gruppe gehört |
+| **Risiko bei Update** | mittel: drei Dateien, die Anton oft anfasst; die Stellen sind klein und benannt |
+| **Wunsch an Anton** | Ein Haken zum Umordnen der Space-Liste (etwa `arrangeWorkspaces` am Rahmen) oder das Feld selbst in Spec 04 |
+
 ## B. Nähte, die verschwinden
 
 Stellen, die nur deshalb Nähte sind, weil wir in Antons Referenz-App gearbeitet haben. Mit `apps/trustdonation` werden es unsere eigenen Dateien.

@@ -33,6 +33,12 @@ export interface Workspace {
   kinds?: readonly SpaceKind[]
   /** Domain der Landingpage eines Netzwerks (`Group.data.domain`); nur bei `isNetwork`. */
   domain?: string
+  /**
+   * Nur an einem Netzwerk: Spaces ohne Netzwerk gehoeren hierher
+   * (`Group.data.adoptsUnassigned`, Naht A-Sammelnetzwerk); `true` oder die
+   * Art, als die sie erscheinen.
+   */
+  adoptsUnassigned?: true | string
   /** Tönung der Flächen, 0–1 (`data.tint`); fehlt sie, bleiben sie neutral. */
   tint?: number
   /** Neutrale Skala oder "auto" (`data.gray`); fehlt sie, erbt der Space von der Instanz. */
@@ -67,6 +73,8 @@ export function workspaceOf(g: Group): Workspace {
     network: typeof g.data?.network === "string" ? g.data.network : undefined,
     kinds: g.data?.isNetwork === true ? parseSpaceKinds(g.data?.spaceKinds, `Space "${g.name}", spaceKinds`) : undefined,
     domain: g.data?.isNetwork === true && typeof g.data?.domain === "string" ? g.data.domain : undefined,
+    adoptsUnassigned: g.data?.isNetwork === true && (g.data?.adoptsUnassigned === true || typeof g.data?.adoptsUnassigned === "string")
+      ? (g.data.adoptsUnassigned as true | string) : undefined,
   }
 }
 

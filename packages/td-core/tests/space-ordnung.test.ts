@@ -1,7 +1,7 @@
 // Die Ordnung des Umschalters ist eine Liste, und Listen laufen auseinander.
 // Darum steht jede Regel aus Spec 11 hier als eigener Fall.
 import { describe, it, expect } from "vitest"
-import { ordneSpaces, gliedereNachArt } from "../src/space-ordnung.js"
+import { ordneSpaces, gliedereNachArt, ohneNetzwerkZuordnen } from "../src/space-ordnung.js"
 
 const uebersicht = { id: "__overview__" }
 const netz = (id: string) => ({ id, isNetwork: true })
@@ -93,5 +93,39 @@ describe("gliedereNachArt", () => {
     const raus = gliedereNachArt([{ id: "a", kind: "projekt" }], [])
     expect(raus.arten).toEqual([])
     expect(raus.ohneArt.map((s) => s.id)).toEqual(["a"])
+  })
+})
+
+describe("Spaces ohne Netzwerk", () => {
+  const rl = { id: "rl", isNetwork: true as const, adoptsUnassigned: "gruppe" as const }
+  const td = { id: "td", isNetwork: true as const }
+  const tratsch = { id: "tratsch" }
+  const ux = { id: "ux", kind: "projekt" }
+  const lichtung = { id: "lichtung", network: "td", kind: "projekt" }
+
+  it("gehören zum Netzwerk, das sie aufnimmt, als dessen Art", () => {
+    const [, , a, b, c] = ohneNetzwerkZuordnen([rl, td, tratsch, ux, lichtung])
+    expect(a).toEqual({ id: "tratsch", network: "rl", kind: "gruppe" })
+    expect(b).toEqual({ id: "ux", network: "rl", kind: "projekt" })
+    expect(c).toBe(lichtung)
+  })
+
+  it("Netzwerke, die Übersicht und das Netzwerk selbst bleiben, wie sie sind", () => {
+    const uebersicht = { id: "__overview__", scope: "overview" }
+    const aus = ohneNetzwerkZuordnen([rl, td, uebersicht])
+    expect(aus[0]).toBe(rl)
+    expect(aus[1]).toBe(td)
+    expect(aus[2]).toBe(uebersicht)
+  })
+
+  it("ohne oder mit zwei aufnehmenden Netzwerken ändert sich nichts", () => {
+    expect(ohneNetzwerkZuordnen([td, tratsch])[1]).toBe(tratsch)
+    const zweites = { id: "x", isNetwork: true as const, adoptsUnassigned: true as const }
+    expect(ohneNetzwerkZuordnen([rl, zweites, tratsch])[2]).toBe(tratsch)
+  })
+
+  it("ohne Art im Netzwerk bleibt die Art leer", () => {
+    const rlOhneArt = { id: "rl", isNetwork: true as const, adoptsUnassigned: true as const }
+    expect(ohneNetzwerkZuordnen([rlOhneArt, tratsch])[1]).toEqual({ id: "tratsch", network: "rl" })
   })
 })
