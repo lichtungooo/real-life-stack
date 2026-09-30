@@ -6,6 +6,7 @@ Das Image liegt auf dem Server als `trustdonation-app:proto-N`. Zurückgedreht w
 
 | Stand | Commit | Datum | Was drin ist |
 |---|---|---|---|
+| **proto-45** | `f94c369a` | 30.09.2026 | Das Zahnrad-Menü der Moderation schwebt frei; in der schmalen Leiste war es rechts abgeschnitten (im Browser gesehen). |
 | **proto-44** | `13780310` | 30.09.2026 | **Meeting-Überblick** nach dem Lernanalyse-Dashboard: je Mensch Online-, Rede- und Kamerazeit, Nachrichten, Reaktionen, Hände; Download als CSV. Jedes Gerät zählt nur, was es selbst sieht, nichts wird gespeichert; keine Punktzahl für Menschen. |
 | **proto-43** | `1a70725f` | 30.09.2026 | **Gruppenräume wie in BBB.** Anzahl, Dauer, selbst aussuchen, Menschen per Ziehen oder zufällig zuordnen; Countdown, eigener Raum je Gruppe, Restzeit und „Zurück in den Hauptraum“, zur Zeit geht jeder von selbst zurück. |
 | **proto-42** | `1b7cd7a0` | 30.09.2026 | **Moderation wie in BBB, auf Augenhöhe.** Zahnrad bei Teilnehmer: Neue stumm, alle stumm bis auf die Präsentierenden, Chat schließen, Notizen nur lesen, Bildschirm sperren, **Warteraum** mit „Hereinholen“, Namen speichern, Reaktionen löschen. Jeder darf, jedes Gerät hält sich daran. |
