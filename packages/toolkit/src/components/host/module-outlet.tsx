@@ -46,7 +46,7 @@ export function ModuleOutlet({ activeWorkspace, activeModule, groups, urlSpaceId
   // Regel 2a). Ihre Beschriftung nennt darum den Space, nicht das Modul.
   const searchLabel = activeWorkspace ? `In ${activeWorkspace.name} suchen` : undefined
   const wrap = (id: string, node: ReactNode) => (
-    <ModuleFrame moduleId={id} searchLabel={searchLabel}>{node}</ModuleFrame>
+    <ModuleFrame moduleId={id} searchLabel={searchLabel} bare={getModule(id)?.frame === "bare"}>{node}</ModuleFrame>
   )
 
   return (

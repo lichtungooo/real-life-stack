@@ -99,6 +99,16 @@ Stellen, an denen ein Haken fehlt und wir ihn uns wünschen.
 
 ---
 
+### A-Rahmen. Ein Modul ohne Suche, Filter und Plusknopf (30.09.2026)
+
+| | |
+|---|---|
+| **Dateien** | `packages/toolkit/src/lib/module-register.ts` (Feld `frame` im `ModuleEntry`, 7 Zeilen mit Kommentar), `packages/toolkit/src/components/host/module-host.tsx` (1 Zeile: kein `CreateFab` bei `bare`), `packages/toolkit/src/components/host/module-outlet.tsx` (1 Zeile), `packages/toolkit/src/components/layout/module-frame.tsx` (Prop `bare`, 4 Zeilen), `packages/toolkit/tests/modul-rahmen-bare.test.tsx` (unser Test) |
+| **Was wir tun** | Ein Registereintrag mit `frame: "bare"` bekommt vom Rahmen weder Suche noch Filter-Pille noch den Plusknopf. Die Konferenz (`video`) meldet sich so an. Test: `packages/toolkit/tests/modul-rahmen-bare.test.tsx` |
+| **Warum kein Haken** | Der Rahmen legt Suche und Filter um jede Fläche, sobald es einen Filter-Besitzer gibt, und der Host zeigt den Plusknopf, sobald der Connector schreiben kann. Ein Modul, das keine Items auflistet, kann beides nicht abbestellen. In der Konferenz lagen „Filter" und „+" über ihren eigenen Knöpfen (Timo, 30.09.2026, mit Bildschirmfoto) |
+| **Risiko bei Update** | gering, vier kleine Stellen |
+| **Wunsch an Anton** | Genau dieses Feld oder ein gleichwertiges in `ModuleEntry`, damit Module ohne Item-Liste (Konferenz, Spiele, Werkzeuge) den Rahmen abbestellen können. **Zweiter Wunsch, Grundaufbau (Timo):** Die Suche nimmt oben viel Platz. Vorschlag: eine Lupe, die ein Such-Fenster öffnet, statt einer breiten Leiste in jedem Modul |
+
 ## B. Nähte, die verschwinden
 
 Stellen, die nur deshalb Nähte sind, weil wir in Antons Referenz-App gearbeitet haben. Mit `apps/trustdonation` werden es unsere eigenen Dateien.

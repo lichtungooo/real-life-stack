@@ -322,7 +322,7 @@ function HostSurface({ entry, groupId, active, groups: groupsProp, selectionFocu
   const [anchor, setAnchor] = useState<Element | null>(null)
   const anchorRef = useMemo(() => ({ current: anchor }), [anchor])
   const suggestType = entry.options?.suggestType
-  const showFab = !!create && active && !isPicking && isWritable(connector)
+  const showFab = !!create && active && !isPicking && isWritable(connector) && entry.frame !== "bare"
 
   const value = useMemo<ModuleHostValue>(
     () => ({

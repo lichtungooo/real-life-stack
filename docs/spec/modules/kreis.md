@@ -16,7 +16,7 @@ Der Kreis ersetzt die Begegnung im echten Leben nicht. Er bereitet sie vor: Ist 
 
 | Frage | Antwort |
 |---|---|
-| Space Module? | Ja |
+| Space Module? | **Nein, seit v0.2 (30.09.2026):** eine *Module Component* im [Video](video.md), ein „Tool im Modul“ in der Mitte der Konferenz (Antons Regel 7). Der Kreis braucht Menschen, Bild und Ton; darum lebt er dort. `KreisRaumFlaeche` bleibt als eigenständige Fläche für Tests und Apps ohne Video |
 | App-Shell-Fläche? | Nein |
 | Module Components | `KreisRund` (Teilnehmer im Kreis mit Mitte), `Redestab`, `Klangschale`, `ProzessLeiste` (Schritt, Anleitung, Fragen, Empfehlungen), `ProzessWahl`, `StilleSchleier`, `PausenSchleier` |
 | Primäre Datenbasis | Capability `KreisRaumCapable` (Live-Raum), Items für Prozess-Vorlagen und Protokolle |

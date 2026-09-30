@@ -223,6 +223,8 @@ export interface ModuleFrameProps extends Partial<ModuleLayout> {
    * Modul, in dem man gerade steht.
    */
   searchLabel?: string
+  /** Ohne Suche und Filter (Registereintrag `frame: "bare"`). */
+  bare?: boolean
   /**
    * Items, aus denen das Vokabular abgeleitet wird, wenn es **keinen**
    * Connector gibt — der Fall einer freistehenden Ansicht (Story,
@@ -250,7 +252,7 @@ export interface ModuleFrameProps extends Partial<ModuleLayout> {
  * die volle Breite und der Inhalt auf die um die Leiste verminderte — die
  * halbe Leistenbreite Versatz, sichtbar an jeder Kartenkante.
  */
-export function ModuleFrame({ moduleId, searchLabel, fallbackItems, children, ...vorgaben }: ModuleFrameProps) {
+export function ModuleFrame({ moduleId, searchLabel, fallbackItems, children, bare = false, ...vorgaben }: ModuleFrameProps) {
   const layout = resolveModuleLayout({ moduleId, ...vorgaben })
   const bleed = layout.fill === "bleed"
   const overlay = layout.panelFit === "overlay"
@@ -269,7 +271,8 @@ export function ModuleFrame({ moduleId, searchLabel, fallbackItems, children, ..
   // durch alle Module (Anton, 19.09.2026). Ohne Filter-Besitzer rendert die
   // Suche nichts; dann entscheiden wieder allein die Beitraege der Module, ob
   // der Kopf ueberhaupt eine Zeile bekommt (Spec 01, Regel 4).
-  const hatSuche = !!useOptionalSharedFilter()
+  const filterBesitzer = useOptionalSharedFilter()
+  const hatSuche = !bare && !!filterBesitzer
   const kopf = useMemo<ModuleHeadValue>(
     () => ({
       hatFilterBesitzer: hatSuche,

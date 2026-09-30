@@ -22,6 +22,20 @@ Es ersetzt die eigenständige Seite `kreis.wir.ooo`. Was dort lief, läuft hier 
 | Primäre Datenbasis | Capability `KreisRaumCapable` (derselbe Live-Raum wie der Kreis), Modul-Register |
 | Externe Semantik | keine |
 
+## Tools im Modul (v0.3, 30.09.2026)
+
+Timo: *„Der mittlere Bereich ist für mich der Modul-im-Modul-Bereich.“* In der Mitte liegt ein **Tool im Modul**, für alle. Der Aktions-Knopf (+) unten links legt es hinein:
+
+| Tool | Herkunft |
+|---|---|
+| Alle zeigen | keines: die Menschen groß |
+| Tafel | das Video selbst |
+| Kreis mit Redestab, Kreis mit Prozess (Wir-Prozess, Klärungskreis …) | `@kreis/core`, als Module Component (Spec [kreis.md](kreis.md)) |
+| jedes Modul des Space | Antons Modul-Register über `ModuleOutlet` |
+| Folien (geplant) | braucht Dateien; siehe Offene Punkte |
+
+Links eine Leiste wie bei Big Blue Button: **Nachrichten** (Gemeinsamer Chat), **Notizen** (Protokoll; geteilte Notizen geplant), **Teilnehmer** mit Namen. Ein Eintrag klappt eine Spalte daneben auf, der Pfeil klappt sie zu. Oben rechts: gehen, ⋮ (Vollbild).
+
 ## Aufbau (nach Big Blue Button, v0.2)
 
 | Ort | Was dort steht |
@@ -94,6 +108,9 @@ Chat, Hand und Zeichen sind **flüchtig**: Sie reisen als Neben-Nachrichten übe
 - `lichtungooo/kreis-server`, `seite/` (die eigenständige Seite, die dieses Modul ablöst) und `token/` (Token-Dienst)
 
 ## Offene Punkte
+
+- **Folien brauchen Dateien.** Antons Stack führt heute keine Capability für Dateianhänge; Bilder liegen als eingebettete Daten in `data.image`. Für PDFs reicht das nicht. Übergang: Folien nur für die Sitzung auf dem Raum-Server. **Wunsch an Anton:** eine `BlobCapable` (ablegen, holen, an ein Item hängen), dann bleiben Folien als Item im Space.
+- **Aufnahme je Person und Transkript danach** (Timo, 30.09.2026): jede Stimme einzeln aufnehmen und nachträglich transkribieren, zusätzlich zum Live-Protokoll. Braucht die Zustimmung aller und eine Regel dafür.
 
 - Moderatorenrechte: welche Rolle darf stummschalten? Vorschlag: der Space-Admin, über `GroupManager`.
 - Kleingruppen in Unterräumen, gemeinsam mit dem Kreis.

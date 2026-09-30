@@ -105,6 +105,13 @@ export interface ModuleEntry {
   /** Standard: "inset". */
   panelFit?: ModulePanelFit
   /**
+   * Was der Rahmen um die Flaeche legt. `full` (Standard): Suche, Filter und
+   * der Plusknopf zum Erstellen. `bare`: nichts davon — fuer Flaechen, die
+   * keine Items auflisten und ihre eigene Steuerung mitbringen (die Konferenz).
+   * Naht lichtungooo (NAEHTE.md, B-Rahmen), Wunsch an Anton.
+   */
+  frame?: "full" | "bare"
+  /**
    * Flaeche im Baum halten statt beim Modulwechsel abzubauen. Fuer Module,
    * deren Aufbau teuer ist — die Karte braucht WebGL-Kontext, Worker und
    * einen entfernten Style, zusammen rund eine Sekunde pro Mount.

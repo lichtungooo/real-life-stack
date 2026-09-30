@@ -18,8 +18,8 @@ import { raumKennung } from "@kreis/core"
 import { useReiterWechsel } from "../reiter"
 import { VideoRaumFlaeche, type ModulWahl } from "./video-raum-flaeche"
 
-/** Das Video holt sich nicht selbst herein. */
-const NICHT_IN_DER_KONFERENZ = new Set(["video"])
+/** Das Video holt sich nicht selbst herein, und der Kreis ist schon sein eigenes Tool. */
+const NICHT_IN_DER_KONFERENZ = new Set(["video", "kreis"])
 
 export function VideoFlaeche({ groupId }: ModuleViewProps) {
   const { data: groups } = useGroups()
@@ -71,7 +71,6 @@ export function VideoFlaeche({ groupId }: ModuleViewProps) {
       vorschlagName={user?.displayName}
       module={module}
       modulZeigen={modulZeigen}
-      zumKreis={reiter.fuehrt("kreis") ? () => reiter.wechseln("kreis") : undefined}
       protokollSpeichern={protokollSpeichern}
     />
   )

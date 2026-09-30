@@ -7,7 +7,7 @@
 // ausdruecklich ersetzt (`extensions` mit `replaces: ["view"]`).
 
 import { Suspense, lazy } from "react"
-import { Blocks, CircleDot, Sparkles, Video } from "lucide-react"
+import { Blocks, Sparkles, Video } from "lucide-react"
 import {
   TOOLKIT_DEFINITION,
   composeModules,
@@ -19,13 +19,11 @@ import { CompanionView } from "./views/companion-view"
 
 const Baukasten = ({ groupId }: ModuleViewProps) => <BaukastenView groupId={groupId} />
 
-// Kreis und Video werden nachgeladen statt mitgeliefert: Wer den Reiter nie
-// oeffnet, laedt ihre Flaechen nicht. Die Verbindung selbst (Provider in
-// App.tsx) ist klein und bleibt im Hauptstueck.
-const KreisLazy = lazy(() => import("@kreis/ui/flaechen").then((m) => ({ default: m.KreisFlaeche })))
+// Das Video wird nachgeladen statt mitgeliefert: Wer den Reiter nie oeffnet,
+// laedt seine Flaeche nicht. Die Verbindung selbst (Provider in App.tsx) ist
+// klein und bleibt im Hauptstueck.
 const VideoLazy = lazy(() => import("@kreis/ui/flaechen").then((m) => ({ default: m.VideoFlaeche })))
 const laedt = <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Einen Moment …</div>
-const Kreis = (p: ModuleViewProps) => <Suspense fallback={laedt}><KreisLazy {...p} /></Suspense>
 const VideoModul = (p: ModuleViewProps) => <Suspense fallback={laedt}><VideoLazy {...p} /></Suspense>
 
 // Einmal komponiert, einmal gebunden, danach unveraenderlich (Spec 01, Regel 3).
@@ -50,15 +48,14 @@ export const MODULE_REGISTRY = composeModules([
     // gibt.
     { id: "companion", label: "Begleitung", icon: Sparkles, maxWidth: "max-w-3xl", view: CompanionView },
   ] },
-  // Der Kreis (docs/spec/modules/kreis.md): eine eigene Schicht, damit er
-  // ohne trustdonation zu Anton hinuebergehen kann. `keepMounted`, weil ein
-  // Wechsel zur Karte die Sitzung nicht beenden darf: Wer im Kreis sitzt,
-  // bleibt drin, auch wenn er kurz etwas nachsieht.
+  // Das Video (docs/spec/modules/video.md), eine eigene Schicht, damit es
+  // ohne trustdonation zu Anton hinuebergehen kann. Der Kreis mit Redestab
+  // und Prozessen ist kein eigener Reiter mehr, sondern ein Tool im Modul:
+  // eine Module Component in der Mitte der Konferenz (Timo, 30.09.2026;
+  // Antons Regel 7 in docs/spec/modules/README.md). `keepMounted`, weil ein
+  // Wechsel zur Karte die Sitzung nicht beenden darf.
   { name: "kreis", definitions: [
-    { id: "kreis", label: "Kreis", icon: CircleDot, fill: "bleed", keepMounted: true, view: Kreis },
-    // Das Video (docs/spec/modules/video.md): dieselbe Verbindung wie der
-    // Kreis, und Gastgeber fuer jedes andere Modul des Space.
-    { id: "video", label: "Video", icon: Video, fill: "bleed", keepMounted: true, view: VideoModul },
+    { id: "video", label: "Video", icon: Video, fill: "bleed", keepMounted: true, frame: "bare", view: VideoModul },
   ] },
   { name: "app", definitions: [], extensions: [] },
 ])

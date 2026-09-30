@@ -17,7 +17,6 @@
         "calendar",
         "map",
         "baukasten",
-        "kreis",
         "video"
       ],
       "isNetwork": true,
@@ -56,7 +55,6 @@
         "calendar",
         "map",
         "baukasten",
-        "kreis",
         "video"
       ],
       "isNetwork": true,
@@ -134,7 +132,6 @@
         "calendar",
         "map",
         "baukasten",
-        "kreis",
         "video"
       ],
       "isNetwork": true,

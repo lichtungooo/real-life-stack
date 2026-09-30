@@ -69,77 +69,92 @@ function mensch(kanal: ReturnType<typeof kanalNetz>, id: string, name: string, f
   const betreten = async () => {
     await act(async () => { huelle.querySelector("form")!.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })) })
   }
-  return { huelle, text, klick, betreten }
+  const aria = async (label: string) => {
+    const b = huelle.querySelector(`button[aria-label="${label}"]`) as HTMLButtonElement | null
+    if (!b) throw new Error(`Kein Knopf [${label}] bei ${name}: ${text()}`)
+    await act(async () => { b.click() })
+  }
+  return { huelle, text, klick, betreten, aria }
 }
 
-describe("Video und Kreis, ein Raum", () => {
+describe("Die Konferenz nach Big Blue Button", () => {
   it("der Vorraum nennt die Konferenz", () => {
     const bert = mensch(kanalNetz(), "b", "Bert", "video")
     expect(bert.text()).toContain("Konferenz")
     expect(bert.text()).toContain("Der Konferenz beitreten")
   })
 
-  it("den Stab aus dem Kreis sieht die Konferenz, die Klangschale aus der Konferenz der Kreis", async () => {
-    const kanal = kanalNetz()
-    const anna = mensch(kanal, "a-anna", "Anna", "kreis")
-    const bert = mensch(kanal, "b-bert", "Bert", "video")
-    await anna.betreten()
-    await bert.betreten()
-    expect(bert.text()).toContain("2 Menschen")
-
-    await anna.klick("Den Stab nehmen")
-    expect(bert.text()).toContain("Anna hält den Stab")
-
-    await bert.klick("Schale")
-    expect(anna.text()).toContain("Stille")
-    expect(bert.text()).toContain("Stille")
-  })
-
-  it("links stehen Menschen und Chat; Chat und Hand gehen durch", async () => {
+  it("links stehen Nachrichten, Notizen und Teilnehmer; ohne Tool zeigt die Mitte alle", async () => {
     const kanal = kanalNetz()
     const anna = mensch(kanal, "a-anna", "Anna", "video")
     const bert = mensch(kanal, "b-bert", "Bert", "video")
     await anna.betreten()
     await bert.betreten()
-    expect(bert.text()).toContain("Menschen · 2")
+    expect(bert.text()).toContain("Gemeinsamer Chat")
+    expect(bert.text()).toContain("Teilnehmer (2)")
+    expect(bert.text()).not.toContain("liegt in der Mitte")
+  })
 
+  it("der Kreis ist ein Tool im Modul: ueber + in die Mitte, mit Prozess, fuer alle", async () => {
+    const kanal = kanalNetz()
+    const anna = mensch(kanal, "a-anna", "Anna", "video")
+    const bert = mensch(kanal, "b-bert", "Bert", "video")
+    await anna.betreten()
+    await bert.betreten()
+
+    await anna.aria("Aktionen")
+    await anna.klick(/Wir-Prozess$/)
+    expect(bert.text()).toContain("Kreis · Wir-Prozess")
+    expect(bert.text()).toContain("liegt in der Mitte, für alle")
+
+    await anna.klick("Den Stab nehmen")
+    expect(bert.text()).toContain("Anna hält den Stab")
+
+    await bert.aria("Die Klangschale schlagen: Stille für alle")
+    expect(anna.text()).toContain("Stille")
+
+    await bert.klick("Alle zeigen")
+    expect(anna.text()).not.toContain("liegt in der Mitte")
+  })
+
+  it("Chat klappt als Spalte auf und zu; Chat und Hand gehen durch", async () => {
+    const kanal = kanalNetz()
+    const anna = mensch(kanal, "a-anna", "Anna", "video")
+    const bert = mensch(kanal, "b-bert", "Bert", "video")
+    await anna.betreten()
+    await bert.betreten()
+
+    await anna.klick("Gemeinsamer Chat")
     const feld = anna.huelle.querySelector("textarea")!
     await act(async () => {
       const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")!.set!
       setter.call(feld, "Schön, dass ihr da seid")
       feld.dispatchEvent(new Event("input", { bubbles: true }))
     })
-    const senden = anna.huelle.querySelector('button[aria-label="Senden"]') as HTMLButtonElement
-    await act(async () => { senden.click() })
+    await anna.aria("Senden")
+    await anna.aria("Spalte schließen")
+    expect(anna.huelle.querySelector("textarea")).toBeNull()
+
+    await bert.klick("Gemeinsamer Chat")
     expect(bert.text()).toContain("Schön, dass ihr da seid")
 
-    await anna.klick(/^Hand/)
+    await anna.aria("Hand heben oder senken")
     expect(bert.huelle.querySelector('[aria-label="Hand oben"]')).not.toBeNull()
-
-    // Chat zu, Chat auf
-    await act(async () => { (bert.huelle.querySelector('button[title="Chat auf und zu"]') as HTMLButtonElement).click() })
-    expect(bert.huelle.querySelector("textarea")).toBeNull()
-    await bert.klick(/^Menschen/)
-    expect(bert.huelle.querySelector("textarea")).not.toBeNull()
   })
 
-  it("was einer in die Mitte legt, liegt dort fuer alle: Tafel und fremdes Modul", async () => {
+  it("Tafel und fremdes Modul liegen fuer alle in der Mitte", async () => {
     const kanal = kanalNetz()
     const anna = mensch(kanal, "a-anna", "Anna", "video")
     const bert = mensch(kanal, "b-bert", "Bert", "video")
     await anna.betreten()
     await bert.betreten()
 
-    await anna.klick(/^Mitte/)
+    await anna.aria("Aktionen")
     await anna.klick("Tafel")
-    expect(bert.text()).toContain("liegt in der Mitte, für alle")
     expect(bert.huelle.querySelector('canvas[aria-label="Tafel zum Zeichnen"]')).not.toBeNull()
 
-    await bert.klick(/^Mitte/)
+    await bert.aria("Aktionen")
     await bert.klick("Kanban")
     expect(anna.text()).toContain("Fläche von kanban")
-
-    await anna.klick("zurück zu den Menschen")
-    expect(bert.text()).not.toContain("Fläche von kanban")
   })
 })

@@ -155,7 +155,7 @@ function StabIcon({ className }: { className?: string }) {
   )
 }
 
-function ImKreis({ kreis, raumName, zurKonferenz }: { kreis: KreisVerbindung; raumName: string; zurKonferenz?: () => void }) {
+function ImKreis({ kreis, raumName, zurKonferenz, nurBuehne = false }: { kreis: KreisVerbindung; raumName: string; zurKonferenz?: () => void; nurBuehne?: boolean }) {
   const { raum, teilnehmer, ich, sitzung, prozess, jetzt, handle } = kreis
   const anwesend = useMemo(() => teilnehmer.map((t) => t.id), [teilnehmer])
   const meinName = teilnehmer.find((t) => t.id === ich)?.name ?? "Gast"
@@ -239,6 +239,42 @@ function ImKreis({ kreis, raumName, zurKonferenz }: { kreis: KreisVerbindung; ra
     </>
   )
 
+  // Die Buehne des Kreises: das Rund mit Redestab und Klangschale und die
+  // Leiste zum Prozess. Die Konferenz setzt sie als Tool in ihre Mitte.
+  const buehne = (
+        <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto p-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="flex min-w-0 items-center justify-center">
+            <KreisRund
+              teilnehmer={teilnehmer}
+              ich={ich}
+              raum={raum}
+              stabHalter={halterDa ? halter : null}
+              gruppen={sitzung.gruppen}
+              mitte={mitte}
+            />
+          </div>
+  
+          <aside className="min-w-0 rounded-2xl bg-card p-4 shadow-sm">
+            {prozess ? (
+              <ProzessLeiste
+                prozess={prozess}
+                sitzung={sitzung}
+                jetzt={jetzt}
+                teilnehmer={teilnehmer}
+                onSchritt={(r) => handle((s, t) => schrittGehen(s, prozess, r, wer, t))}
+                onBeenden={() => handle((s, t) => prozessBeenden(s, wer, t))}
+                onGruppenEinteilen={(g) => handle((s) => gruppenEinteilen(s, anwesend, g, wer))}
+                onGruppenAufloesen={() => handle((s) => gruppenAufloesen(s, wer))}
+              />
+            ) : (
+              <ProzessWahl onWaehlen={(p) => handle((s, t) => prozessWaehlen(s, p, wer, t))} />
+            )}
+          </aside>
+        </div>
+  )
+
+  if (nurBuehne) return buehne
+
   return (
     <div className="flex h-full w-full flex-col overflow-hidden">
       <header className="flex shrink-0 items-baseline gap-3 px-4 pt-3">
@@ -253,35 +289,7 @@ function ImKreis({ kreis, raumName, zurKonferenz }: { kreis: KreisVerbindung; ra
         )}
       </header>
 
-      <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto p-4 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="flex min-w-0 items-center justify-center">
-          <KreisRund
-            teilnehmer={teilnehmer}
-            ich={ich}
-            raum={raum}
-            stabHalter={halterDa ? halter : null}
-            gruppen={sitzung.gruppen}
-            mitte={mitte}
-          />
-        </div>
-
-        <aside className="min-w-0 rounded-2xl bg-card p-4 shadow-sm">
-          {prozess ? (
-            <ProzessLeiste
-              prozess={prozess}
-              sitzung={sitzung}
-              jetzt={jetzt}
-              teilnehmer={teilnehmer}
-              onSchritt={(r) => handle((s, t) => schrittGehen(s, prozess, r, wer, t))}
-              onBeenden={() => handle((s, t) => prozessBeenden(s, wer, t))}
-              onGruppenEinteilen={(g) => handle((s) => gruppenEinteilen(s, anwesend, g, wer))}
-              onGruppenAufloesen={() => handle((s) => gruppenAufloesen(s, wer))}
-            />
-          ) : (
-            <ProzessWahl onWaehlen={(p) => handle((s, t) => prozessWaehlen(s, p, wer, t))} />
-          )}
-        </aside>
-      </div>
+      {buehne}
 
       <footer className="flex shrink-0 flex-wrap items-center justify-center gap-2 border-t border-border px-4 py-2.5">
         {raum.traegtMedien && mich && (
@@ -323,4 +331,12 @@ function ImKreis({ kreis, raumName, zurKonferenz }: { kreis: KreisVerbindung; ra
       </footer>
     </div>
   )
+}
+
+/**
+ * Der Kreis als Tool im Modul: nur die Buehne, ohne Kopf und Steuerleiste.
+ * Die Konferenz legt ihn in ihre Mitte (Spec video, "Tools im Modul").
+ */
+export function KreisWerkzeug({ kreis }: { kreis: KreisVerbindung }) {
+  return <ImKreis kreis={kreis} raumName={kreis.raumName ?? ""} nurBuehne />
 }
