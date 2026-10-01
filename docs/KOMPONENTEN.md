@@ -1,0 +1,193 @@
+# Komponenten bauen
+
+Das Werkstattbuch für Komponenten der Erweiterungen. Geschrieben beim Bau der ersten, des **Project Profile** (01.10.2026, proto-62), damit daraus ein Skill wird.
+
+Timo: *"Wir halten uns natürlich an Antons definierte Vorgaben, damit es super integriert werden kann. Wir entwickeln jedoch ganz neue und unterschiedliche UX, die sich ähnlich anfühlen, jedoch vom Aufbau her verschieden sind, und wie aus einem Guss funktionieren. Modernes UX/UI-Design in Perfektion."*
+
+Die Definition steht in `DEFINITION.md` Teil 8, Abschnitt „Was eine Komponente ist“. Dieses Buch sagt, **wie** man eine baut.
+
+---
+
+## 1. Was eine Komponente ist
+
+Eine **fertige Darstellung für einen Typ**. Ein Modul ist eine Fläche im Space, eine Komponente bestimmt, wie ein Eintrag aussieht, wenn man ihn öffnet.
+
+| | |
+|---|---|
+| Verzeichnis | `packages/td-core/src/erweiterungen.ts`, `art: "komponente"`, `name`, `fuerTyp` |
+| Wahl im Space | `Group.data.komponenten: string[]`, über `patchData` |
+| Andocken | eigene Darstellungsschicht im Typ-Register, Slot `detail`. **Keine Naht** |
+| Greift, wenn | der aktuelle Space sie gewählt hat **und** der Eintrag ihre Felder trägt |
+| Sonst | Antons Darstellung aus dem Feld-Register, unverändert |
+
+Die Arten der Erweiterungen: **Module**, **Komponenten**, **Themes** (kommen), **Widgets** (Timos Wunsch vom 01.10.2026, siehe Gedächtnis `project_gamification_komponenten.md`).
+
+---
+
+## 2. Der Ablauf in neun Schritten
+
+Jeder Schritt mit der Datei, in der er beim Project Profile stand.
+
+### Schritt 1: Definieren
+
+In `DEFINITION.md` Teil 8 einen Abschnitt mit:
+
+- Timos Satz, warum es die Komponente gibt
+- einer Tabelle **Abschnitt · Frage · Felder in `data`**, in der Reihenfolge, wie ein Besucher liest
+- den Regeln: was bei fehlenden Angaben passiert, welche Zahlen Beispiele sind
+
+Skill `/td-definieren`. Erst danach Code.
+
+### Schritt 2: Der Kern in td-core
+
+`packages/td-core/src/<name>.ts`, ohne Browser. Eine Funktion nimmt die rohen `data` und gibt fertig auf, was die Seite zeigt (`projektProfil(daten, tags)`).
+
+- **Was fehlt oder die falsche Form hat, fällt weg.** `null` oder leere Liste, nie „unbekannt“.
+- **Zahlen rechnen, nicht glauben:** Anteile auf 0 bis 1 begrenzen, Rest nie unter null.
+- **Adressen prüfen:** nur `https?://`, eigene Pfade ohne `..`, `data:image/`. Nie `javascript:`.
+- **Eine Prüffunktion**, ob ein Eintrag genug trägt (`traegtProjektProfil`).
+- Tests in `packages/td-core/tests/<name>.test.ts`: leer, kaputt, gefährlich, gerechnet.
+
+### Schritt 3: Der Eintrag im Verzeichnis
+
+In `ERWEITERUNGEN` (td-core):
+
+```ts
+{ id: PROJEKT_PROFIL, art: "komponente", name: "Project Profile", fuerTyp: "project",
+  erbauer: "…", reife: "beta", beschreibung: "…" }
+```
+
+Die Id als Konstante exportieren. Neue Komponenten starten als **Beta**.
+
+### Schritt 4: Die Darstellung in td-ui
+
+`packages/td-ui/src/<name>.tsx`, mit **eigenem Einstieg** in `packages/td-ui/package.json`:
+
+```json
+"./projekt-profil": {
+  "types": "./dist/src/projekt-profil.d.ts",
+  "development": "./src/projekt-profil.tsx",
+  "import": "./dist/src/projekt-profil.js"
+}
+```
+
+**Nicht** in `td-ui/src/index.ts` aufnehmen: Alles im Index landet im Hauptteil der App.
+
+Der **Standard-Export nimmt rohe Daten** (`ProjektProfilAusDaten({ daten, tags, bildUrl })`) und ruft den Kern selbst. So liegt auch der Kern im nachgeladenen Stück.
+
+### Schritt 5: Die Bindung in der App
+
+In `apps/reference/src/type-register.tsx`, **nach** der Schicht, die die Felder des Typs bringt:
+
+```ts
+// 1. Die Darstellung, die gilt, solange die Komponente nicht gewählt ist.
+const PROJEKT_META = resolveTypePresentation("project").detail
+// 2. Nachladen.
+const Seite = lazy(() => import("@trustdonation/ui/projekt-profil"))
+// 3. Wählen: Space hat sie gewählt und der Eintrag trägt etwas.
+function ProjektOderMeta({ item }: ItemSlotProps) {
+  const space = useCurrentGroup()
+  const daten = item.data ?? {}
+  if (!komponenteAktiv(space?.data, PROJEKT_PROFIL) || !traegtProjektProfil(daten)) return <PROJEKT_META item={item} />
+  return <Suspense fallback={…}><Seite daten={daten} tags={item.tags} bildUrl={bildUrl} /></Suspense>
+}
+// 4. Eigene Schicht, eigener Name.
+registerTypePresentation("trustdonation-projekt-profil", { extensions: [{ id: "project", detail: ProjektOderMeta }] })
+```
+
+Warum eine **eigene Schicht**: Das Register lässt einen Slot nur einmal setzen. Wer die Rückfall-Darstellung **vor** dem Registrieren abholt, hat Antons Meta-Box in der Hand und braucht keine Naht.
+
+### Schritt 6: Der Reiter in den Erweiterungen
+
+Die Bindung `apps/reference/src/views/erweiterungen-abschnitt.tsx` hängt `komponentenAus()` an die Module an, gibt jeder ein Symbol (`IdCard`) und schreibt beim Schalten `Group.data.komponenten` statt `modules`. Bei einer neuen Komponente ist hier nichts zu tun, außer sie braucht ein eigenes Symbol.
+
+### Schritt 7: Musterdaten
+
+- Ein Eintrag in `packages/td-core/daten/items.json` mit `muster: true` und sichtbar erfundenen Angaben (`example.org`, `0561 000 000`, „Musterweg 1“)
+- Seine Id in `group-items.json` beim Demo-Space
+- Die Komponente in `groups.json` → `data.komponenten` des Demo-Space
+- **Beide Versionen hochzählen:** `SEED_VERSION` (local-connector) und `MUSTERDATEN_VERSION` (td-core). Sie müssen gleich sein.
+
+**Bilder:** gezeichnete SVG-Illustrationen in `apps/reference/public/muster/`, keine Fotos fremder Menschen. Im Eintrag als Pfad `muster/<datei>.svg`; die Bindung macht daraus über `import.meta.env.BASE_URL` eine Adresse.
+
+### Schritt 8: Ansehen
+
+```bash
+pnpm --filter reference dev                    # App starten
+node td-tools/komponente-ansehen.mjs 30455be1-a5f9-465d-8d19-a72dd8da2d83/map/<item-id>
+```
+
+Fotografiert Karte und ganze Ansicht auf Rechner, Handy und dunkel, zählt Seitenfehler. **Jedes Bild ansehen.** Ohne diesen Schritt wäre der Text über dem Etikett „Musterprojekt“ live gegangen.
+
+### Schritt 9: Tore, Ausliefern, Festhalten
+
+`python td-tools/pruefen.py`, alle acht grün, nach **jeder** Änderung neu. Dann `/td-ausliefern`, Zeile in `AUSLIEFERUNGEN.md`, Stand im Gedächtnis.
+
+---
+
+## 3. Die Designsprache: aus einem Guss
+
+Jede Komponente bekommt ihren **eigenen Aufbau**, passend zu ihrem Zweck. Was sie verbindet, sind diese Bausteine.
+
+### Zwei Ansichten
+
+| Ansicht | Wo | Was |
+|---|---|---|
+| **Karte** | Antons Detail-Leiste (schmal, um 400 px) | Titelbild ohne Text darüber, ein Satz, das Wichtigste (beim Projekt der Spendenstand), Knopf „Ganzes … öffnen“ |
+| **Ganze Ansicht** | `Dialog` über den ganzen Bildschirm (`showCloseButton={false}`, eigener Schließen-Knopf auf dem Bild) | die ganze Geschichte |
+
+In der schmalen Leiste **nie Text über ein Bild legen**: Er stößt an Etiketten und wird unlesbar.
+
+### Bausteine
+
+| Baustein | Klassen und Regel |
+|---|---|
+| **Fläche** | `rounded-3xl` (ganz) oder `rounded-2xl` (Karte), Farbe `bg-<farbe>-50/60`, dunkel `dark:bg-<farbe>-950/40`. **Kein Rahmen** |
+| **Schwebende Karte** | `bg-card shadow-xl shadow-black/5` (dunkel `shadow-black/30`). Schatten statt Rahmen |
+| **Überschrift eines Abschnitts** | Symbol plus `text-xs font-semibold uppercase tracking-wider text-muted-foreground` |
+| **Kopf** | Bild über die ganze Breite, `h-[46vh]`, Verlauf `from-black/85` nach oben, Titel `text-3xl sm:text-5xl font-bold` |
+| **Kennzahlen** | bis zu vier Karten, die mit `-mt-10` halb über dem Kopf liegen |
+| **Bento-Raster** | `grid sm:grid-cols-6`; Abschnitte mit `sm:col-span-6`, `-4`/`-2`, `-3`/`-3`. Ein Bild füllt die Lücke neben einem Text |
+| **Mitlaufende Spalte** | `lg:grid-cols-[minmax(0,1fr)_360px]`, Seitenspalte `lg:sticky lg:top-6 lg:self-start` |
+| **Handy** | Was rechts mitläuft, wird unten zur festen Leiste (`fixed inset-x-0 bottom-0 … lg:hidden`), Inhalt mit `pb-28` |
+| **Bilder** | `object-cover`, Hover `group-hover:scale-105`, Klick öffnet die Großansicht (Escape schließt) |
+| **Ehrlichkeit** | Etikett „Musterprojekt“, Hinweis „Beispielzahlen“. Ein Knopf ohne Ziel steht still mit dem Grund („Spendenseite folgt“) |
+
+### Farben nach Bedeutung
+
+| Farbe | Bedeutung |
+|---|---|
+| Smaragd | Geben, Handlung, Fortschritt |
+| Bernstein | Was fehlt, das Bedürfnis |
+| Grün | Wirkung |
+| Orange | Geld und Bedarfe |
+| Himmelblau | Schritte und Zeit |
+| Violett | Kontakt |
+| Muted | Erzählung, Team |
+
+### Vorbilder
+
+Kampagnenseiten, die 2026 gut funktionieren: Fortschritt sichtbar, **Beträge mit ihrer Wirkung** („150 €: ein Hochbeet“), der Knopf immer in Reichweite, Bento-Raster mit sechs bis neun Kacheln. Quellen beim Bau: Übersichten zu Bento-Layouts und zu Spendenseiten (Sticky-Button, Fortschrittsbalken als ehrliche soziale Bestätigung).
+
+---
+
+## 4. Fallen, in die wir getreten sind
+
+| Falle | Was half |
+|---|---|
+| **Budget gerissen** (größtes Stück 2003 KB von 2000), obwohl alles „nachgeladen“ war | Kern **und** Übersicht der Erweiterungen in eigene Einstiege; nichts davon über den Index von td-ui |
+| Text über dem Titelbild in der schmalen Leiste stieß an das Etikett | Karte ohne Text auf dem Bild, ganze Ansicht für die große Wirkung |
+| Radix-Dialog im Space-Dialog nimmt keine Klicks | eigener `Dialog`, Radix stapelt sie |
+| Ein Test erwartete noch den Platzhalter „Komponenten kommen“ | Tests mit der Funktion ändern, nicht hinterher |
+| Ein Test verlangte, jeder Verzeichnis-Eintrag sei ein Modul | Regel auf `art: "modul"` begrenzt, eigene Regel für Komponenten (Name, Typ, keine Id-Kollision) |
+| Nachgeladener Abschnitt war im Test noch nicht da | im Test warten, bis ein Knopf steht |
+| Bildschirmfotos: `setContent` lädt keine `file://`-Bilder; Git Bash macht aus `/pfad` einen Windows-Pfad | über eine HTML-Datei laden; Pfad ohne führenden Schrägstrich übergeben |
+
+---
+
+## 5. Was als Nächstes kommt
+
+1. **Stiftungsprofil** als zweite Komponente (`fuerTyp: "place"` mit Stiftungsfeldern, oder eigener Typ über die Manifest-Schicht), mit den vier entschiedenen Verbesserungen: „Stiftung“ statt „Ort“, Website und Anschrift mit Quelle, Bild mit Platzhalter, Kontakt und Antrag oben.
+2. **Open Collective live:** Stand über die öffentliche GraphQL-Schnittstelle abrufen, statt ihn im Eintrag zu tragen.
+3. **Bearbeiten:** Die Felder der Komponente im Formular des Typs (Antons `fields`), damit ein Projekt sein Profil selbst füllt.
+4. **Widgets und HUD** als vierte Art (Gedächtnis `project_gamification_komponenten.md`).

@@ -12,6 +12,16 @@
       "types": "./dist/src/index.d.ts",
       "development": "./src/index.ts",
       "import": "./dist/src/index.js"
+    },
+    "./erweiterungen": {
+      "types": "./dist/src/erweiterungen.d.ts",
+      "development": "./src/erweiterungen.tsx",
+      "import": "./dist/src/erweiterungen.js"
+    },
+    "./projekt-profil": {
+      "types": "./dist/src/projekt-profil.d.ts",
+      "development": "./src/projekt-profil.tsx",
+      "import": "./dist/src/projekt-profil.js"
     }
   },
   "files": ["dist"],

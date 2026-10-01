@@ -310,7 +310,7 @@ Eine Erweiterung ist Werkzeug. Ein Angebot ist ein Anliegen. Wer beides denselbe
 | Art | Was | Stand |
 |---|---|---|
 | **Module** | Flächen im Space: Feed, Kalender, Karte, Circeling | gebaut |
-| **Komponenten** | fertige Teile, die man ganz nimmt, nicht zusammensetzt: ein Profil, eine Landingpage | kommt |
+| **Komponenten** | fertige Teile, die man ganz nimmt, nicht zusammensetzt: ein Profil, eine Landingpage | erste gebaut: **Project Profile** |
 | **Themes** | das Aussehen eines Space | kommt |
 
 Timo: *"Nicht einzelnes Baukastensystem, sondern wir bauen komplette Profile."*
@@ -343,7 +343,8 @@ Timo und Anton am 01.10.2026: Die Übersicht ist kein Reiter oben im Menü. Sie 
 | `beschreibung` | `td-core`, Verzeichnis `erweiterungen.ts` | ein bis zwei Sätze, wofür es da ist |
 | `erbauer` | `td-core`, Verzeichnis | wer es gebaut hat, klein gezeigt |
 | `reife` | `td-core`, Verzeichnis | `geprueft` oder `beta` |
-| `art` | `td-core`, Verzeichnis | `modul`; später `komponente`, `theme` |
+| `art` | `td-core`, Verzeichnis | `modul`, `komponente`; später `theme` |
+| `fuerTyp` | `td-core`, Verzeichnis | bei einer Komponente: der Typ, den sie darstellt |
 
 ### Regeln
 
@@ -402,6 +403,55 @@ Später und mit eigenen Regeln. Was jetzt schon feststeht:
 3. Es wird beim **Bau der Instanz** eingebunden. Nachladen zur Laufzeit ist kein Ziel.
 4. Bis dahin ist der Weg für ein Codemodul derselbe wie heute: ein Pull Request.
 
+
+### Was eine Komponente ist
+
+**Frage:** Was folgt daraus, dass ein Space eine Komponente gewählt hat?
+
+Timo am 01.10.2026: *"Ein richtig cooles Projektprofil … mit Kontaktdaten … ein Spendenbereich, der über Open Collective läuft … Und das wird unsere erste Komponente, die wir fertig designen, die du auswählen kannst und die dann integriert werden kann. Und dann bauen wir verschiedene Profilmodelle, auch für Stiftungen."*
+
+Eine Komponente ist **eine fertige Darstellung für einen Typ**. Ein Modul ist eine Fläche im Space; eine Komponente bestimmt, wie ein Eintrag aussieht, wenn man ihn öffnet.
+
+| | |
+|---|---|
+| **Wo sie steht** | im Verzeichnis `td-core/erweiterungen.ts`, Art `komponente`, mit `fuerTyp` |
+| **Wo die Wahl liegt** | `Group.data.komponenten`, eine Liste von Ids, geschrieben über `patchData` |
+| **Wie sie andockt** | als eigene Darstellungsschicht im Typ-Register (`registerTypePresentation`, Slot `detail`). Keine Naht |
+| **Wann sie greift** | der Space, in dem man gerade ist, hat sie gewählt, **und** der Eintrag trägt ihre Felder |
+| **Sonst** | die Darstellung aus Antons Feld-Register, unverändert |
+
+Regeln:
+
+1. **Eine Komponente ersetzt keine Daten.** Sie zeigt, was der Eintrag trägt. Abwählen lässt jede Angabe stehen.
+2. **Was fehlt, erscheint nicht.** Ein Abschnitt ohne Angabe fällt weg, kein Strich, kein „unbekannt“ (Teil 9).
+3. **Ids, die die Instanz nicht kennt, bleiben** in `Group.data.komponenten` stehen (wie Regel 4 oben).
+4. **Nachgeladen**, erst wenn ein Eintrag sie braucht. Wer nie ein Projekt öffnet, lädt sie nie.
+
+#### Project Profile (`projekt-profil`, für `project`)
+
+Die Seite, mit der sich ein Projekt einer Stiftung und Spendenden zeigt. Reihenfolge, wie ein Besucher liest:
+
+| Abschnitt | Frage | Felder in `data` |
+|---|---|---|
+| **Kopf** | Was ist das? | `bilder` (erstes ist das Titelbild), `kurz`, `tags`, `address`, `zeitraum` |
+| **Kennzahlen** | Wie groß ist das? | `kennzahlen [{ wert, was }]`, höchstens vier |
+| **Unterstützen** | Wie kann ich helfen? | `spende { ziel, gesammelt, unterstuetzende, opencollective, beispiel, stufen [{ betrag, bewirkt }] }` |
+| **Was fehlt** | Warum braucht es das? | `beduerfnis` (eine Lücke, kein Selbstbild) |
+| **Worum es geht** | Was passiert da? | `description` |
+| **Was sich ändert** | Was bewirkt es? | `wirkung` (Liste) |
+| **Wohin das Geld geht** | Wofür genau? | `bedarfe [{ wofuer, betrag }]` |
+| **Schritte** | Wo steht es? | `schritte [{ titel, wann, erledigt }]` |
+| **Wer dahinter steht** | Mit wem habe ich es zu tun? | `team [{ name, rolle }]` |
+| **Kontakt** | An wen wende ich mich? | `kontakt { person, rolle, mail, telefon, website }`, `address` |
+| **Bilder** | Wie sieht es aus? | `bilder` ab dem zweiten |
+
+**Zwei Ansichten, ein Guss** (Timo, 01.10.2026: *"ganz neue und unterschiedliche UX, die sich ähnlich anfühlen, jedoch vom Aufbau her verschieden sind"*). In Antons Detail-Leiste steht eine **Karte**: Titelbild, ein Satz, Spendenstand, Knopf, und „Ganzes Profil öffnen“. Die **ganze Ansicht** liegt über dem Bildschirm: großes Titelbild, Kennzahlen, die Geschichte als Bento-Raster, rechts eine mitlaufende Spendenkarte, auf dem Handy eine feste Spendenleiste unten. Vorbild sind Kampagnenseiten, die gerade gut funktionieren: Fortschritt sichtbar, Beträge mit ihrer Wirkung, der Knopf immer in Reichweite.
+
+**Beträge mit Wirkung.** `spende.stufen` nennt Beträge und was jeder bewirkt („150 €: ein Hochbeet aus Lärchenholz“). Die Wahl führt zur Spendenseite bei Open Collective mit dem Betrag (`…/donate?amount=`).
+
+**Spenden über Open Collective.** Der Knopf führt zur Seite des Projekts bei Open Collective, dort läuft das Geld. Den Stand (`gesammelt`, `unterstuetzende`) liest später ein Abruf bei Open Collective; bis dahin steht er im Eintrag. Trägt `spende.beispiel` den Wert `true`, steht sichtbar „Beispielzahlen“ daneben. Ohne `opencollective` steht der Knopf still mit „Spendenseite folgt“.
+
+**Musterprojekt.** `muster: true` zeigt den Hinweis „Musterprojekt“. Das Musterprojekt in den Demodaten trägt Platzhalterbilder (gezeichnet, keine Fotos fremder Menschen) und erfundene Namen, sichtbar als Muster.
 
 ---
 

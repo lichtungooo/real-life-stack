@@ -7,15 +7,23 @@
 //
 // Import this module once, before first render (main.tsx).
 
-import type { ComponentType } from "react"
+import { lazy, Suspense, type ComponentType } from "react"
 import { composeTypeManifest, TOOLKIT_TYPE_LAYER } from "@real-life-stack/data-interface"
 import {
   registerTypePresentation,
   resolveTypePresentation,
   setTypeManifest,
+  useCurrentGroup,
   type ItemSlotProps,
 } from "@real-life-stack/toolkit"
-import { traegtProfil, bauplanFuer, profilAufbauen } from "@trustdonation/core"
+import {
+  traegtProfil,
+  bauplanFuer,
+  profilAufbauen,
+  komponenteAktiv,
+  traegtProjektProfil,
+  PROJEKT_PROFIL,
+} from "@trustdonation/core"
 import { ProfilFlaeche } from "@trustdonation/ui"
 
 /** The app's composed manifest — today the toolkit's, unchanged. */
@@ -76,4 +84,34 @@ registerTypePresentation("trustdonation", {
       marker: { icon: "sprout", color: "#2E7D5B", shape: "round" },
     },
   ],
+})
+
+// Das Project Profile (DEFINITION Teil 8, erste Komponente). Eine eigene
+// Schicht, damit die Meta-Box aus Antons Feld-Register vorher feststeht:
+// Ein Projekt in einem Space ohne diese Wahl behaelt genau sie. Keine Naht.
+const PROJEKT_META: ComponentType<ItemSlotProps> = resolveTypePresentation("project").detail
+
+// Nachgeladen: Wer nie ein Projekt oeffnet, laedt die Seite nie (Regel 4).
+const ProjektProfilSeite = lazy(() => import("@trustdonation/ui/projekt-profil"))
+
+/** Pfade der Instanz (`muster/garten.svg`) unter dem Basis-Pfad der App laden. */
+function bildUrl(pfad: string): string {
+  return /^(https?:|data:)/i.test(pfad) ? pfad : `${import.meta.env.BASE_URL}${pfad.replace(/^\//, "")}`
+}
+
+function ProjektOderMeta({ item }: ItemSlotProps) {
+  const space = useCurrentGroup()
+  const daten = (item.data ?? {}) as Record<string, unknown>
+  if (!komponenteAktiv(space?.data as Record<string, unknown> | undefined, PROJEKT_PROFIL) || !traegtProjektProfil(daten)) {
+    return <PROJEKT_META item={item} />
+  }
+  return (
+    <Suspense fallback={<div className="aspect-[16/9] w-full animate-pulse rounded-2xl bg-muted" />}>
+      <ProjektProfilSeite daten={daten} tags={item.tags} bildUrl={bildUrl} />
+    </Suspense>
+  )
+}
+
+registerTypePresentation("trustdonation-projekt-profil", {
+  extensions: [{ id: "project", detail: ProjektOderMeta }],
 })

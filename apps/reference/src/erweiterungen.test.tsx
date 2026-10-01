@@ -19,10 +19,19 @@ const wurzeln: Root[] = []
 afterEach(() => { act(() => { wurzeln.forEach((w) => w.unmount()) }); wurzeln.length = 0; document.body.innerHTML = "" })
 
 describe("Verzeichnis und Register", () => {
-  it("jeder Eintrag im Verzeichnis meint ein Modul, das es im Register gibt", () => {
+  it("jeder Modul-Eintrag im Verzeichnis meint ein Modul, das es im Register gibt", () => {
     const ids = new Set(getModules().map((m) => m.id))
-    const fremd = ERWEITERUNGEN.filter((e) => !ids.has(e.id)).map((e) => e.id)
+    const fremd = ERWEITERUNGEN.filter((e) => e.art === "modul" && !ids.has(e.id)).map((e) => e.id)
     expect(fremd, "Eintrag ohne Modul: Tippfehler oder Modul entfernt").toEqual([])
+  })
+
+  it("jede Komponente nennt Namen und Typ und kollidiert mit keinem Modul", () => {
+    const ids = new Set(getModules().map((m) => m.id))
+    for (const k of ERWEITERUNGEN.filter((e) => e.art === "komponente")) {
+      expect(k.name, k.id).toBeTruthy()
+      expect(k.fuerTyp, k.id).toBeTruthy()
+      expect(ids.has(k.id), k.id).toBe(false)
+    }
   })
 
   it("jedes Modul im Register hat einen Eintrag (sonst steht es ohne Beschreibung da)", () => {
@@ -39,6 +48,10 @@ describe("Der Abschnitt Erweiterungen", () => {
     const w = createRoot(huelle)
     wurzeln.push(w)
     await act(async () => { w.render(<>{ERWEITERUNGEN_ABSCHNITT.render({ group, canEdit, patchData })}</>) })
+    // Der Abschnitt laedt nach (Budget): warten, bis er steht.
+    for (let i = 0; i < 50 && !huelle.querySelector("button"); i++) {
+      await act(async () => { await new Promise((r) => setTimeout(r, 10)) })
+    }
     return { huelle, patchData }
   }
   const knopf = (text: string) => [...document.querySelectorAll("button")].find((b) => b.textContent?.includes(text) || b.getAttribute("aria-label") === text) as HTMLButtonElement
@@ -72,10 +85,21 @@ describe("Der Abschnitt Erweiterungen", () => {
     expect(knopf("Kanban in den Space nehmen").disabled).toBe(true)
   })
 
-  it("Komponenten und Themes sind angekuendigt, nicht vorgetaeuscht", async () => {
-    await zeigen({ id: "g1", name: "Garten", data: {} } as unknown as Group)
+  it("Komponenten: das Project Profile steht unter Beta und landet in Group.data.komponenten", async () => {
+    const { patchData } = await zeigen({ id: "g1", name: "Garten", data: { modules: ["feed"], komponenten: ["fremd"] } } as unknown as Group)
     await klick("Alle Erweiterungen ansehen")
     await klick("Komponenten")
-    expect(document.body.textContent).toContain("Komponenten kommen")
+    const beta = [...document.body.querySelectorAll<HTMLButtonElement>('[role="tab"]')].find((b) => b.textContent?.startsWith("Beta"))!
+    await act(async () => { beta.click() })
+    expect(document.body.textContent).toContain("Project Profile")
+    await klick("Project Profile in den Space nehmen")
+    expect(patchData).toHaveBeenCalledWith({ komponenten: ["fremd", "projekt-profil"] })
+  })
+
+  it("Themes sind angekuendigt, nicht vorgetaeuscht", async () => {
+    await zeigen({ id: "g1", name: "Garten", data: {} } as unknown as Group)
+    await klick("Alle Erweiterungen ansehen")
+    await klick("Themes")
+    expect(document.body.textContent).toContain("Themes kommen")
   })
 })

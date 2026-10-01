@@ -1,6 +1,176 @@
 [
   {
     "@context": [
+      "https://real-life-stack.org/vocab/base/v1"
+    ],
+    "id": "projekt-gruenes-klassenzimmer",
+    "type": "project",
+    "createdAt": "2026-10-01T18:00:00.000Z",
+    "createdBy": "timo",
+    "tags": [
+      "Schulgarten",
+      "Kinder",
+      "Handwerk",
+      "Kassel"
+    ],
+    "data": {
+      "title": "Grünes Klassenzimmer Nordstadt",
+      "muster": true,
+      "kurz": "Kinder aus der Nordstadt bauen ihren eigenen Schulgarten und lernen dabei Gärtnern, Werken und Kochen.",
+      "beduerfnis": "In der Kasseler Nordstadt hat fast kein Kind einen Garten. Die Grundschule liegt zwischen Straßen und Parkplätzen, und das Wissen, wie aus einem Samen ein Essen wird, geht verloren.",
+      "description": "Auf einer brachliegenden Wiese neben der Grundschule entsteht ein Garten zum Anfassen. Die Kinder bauen Hochbeete und Nistkästen in einer kleinen Werkstatt, säen, pflegen und ernten selbst.\n\nEinmal in der Woche kochen sie mit dem, was gewachsen ist. Eltern, Nachbarn und Handwerksbetriebe aus dem Viertel helfen mit, so wächst neben dem Gemüse auch ein Netz im Stadtteil.",
+      "address": "Musterweg 1, 34127 Kassel",
+      "position": {
+        "type": "Point",
+        "coordinates": [
+          9.4985,
+          51.3275
+        ]
+      },
+      "zeitraum": {
+        "von": "März 2027",
+        "bis": "Oktober 2028"
+      },
+      "bilder": [
+        "muster/projekt-garten.svg",
+        "muster/projekt-werkstatt.svg",
+        "muster/projekt-saemlinge.svg",
+        "muster/projekt-kreis.svg",
+        "muster/projekt-ernte.svg"
+      ],
+      "wirkung": [
+        "120 Kinder gärtnern jede Woche unter freiem Himmel",
+        "Zwölf Hochbeete und eine offene Werkstatt für das ganze Viertel",
+        "Einmal pro Woche ein gemeinsames Essen aus eigener Ernte",
+        "Handwerksbetriebe aus dem Stadtteil geben ihr Wissen weiter"
+      ],
+      "bedarfe": [
+        {
+          "wofuer": "Hochbeete und Holz",
+          "betrag": 6500
+        },
+        {
+          "wofuer": "Werkzeug für die Kinderwerkstatt",
+          "betrag": 4200
+        },
+        {
+          "wofuer": "Gartenhaus und Wasseranschluss",
+          "betrag": 4800
+        },
+        {
+          "wofuer": "Saatgut, Erde und Pflanzen",
+          "betrag": 1500
+        },
+        {
+          "wofuer": "Kochkiste und Geschirr",
+          "betrag": 1000
+        }
+      ],
+      "schritte": [
+        {
+          "titel": "Fläche mit der Stadt geklärt",
+          "wann": "Juli 2026",
+          "erledigt": true
+        },
+        {
+          "titel": "Planung mit den Kindern",
+          "wann": "September 2026",
+          "erledigt": true
+        },
+        {
+          "titel": "Geld sammeln",
+          "wann": "bis Februar 2027"
+        },
+        {
+          "titel": "Bautage mit Eltern und Betrieben",
+          "wann": "März 2027"
+        },
+        {
+          "titel": "Erste Aussaat",
+          "wann": "April 2027"
+        },
+        {
+          "titel": "Erntefest im Viertel",
+          "wann": "September 2027"
+        }
+      ],
+      "team": [
+        {
+          "name": "Mara Feld",
+          "rolle": "Projektleitung"
+        },
+        {
+          "name": "Jonas Brandt",
+          "rolle": "Tischler, Werkstatt"
+        },
+        {
+          "name": "Ayla Demir",
+          "rolle": "Lehrerin"
+        },
+        {
+          "name": "Ole Hansen",
+          "rolle": "Gärtner"
+        },
+        {
+          "name": "Elternrat",
+          "rolle": "Bautage"
+        }
+      ],
+      "kontakt": {
+        "person": "Mara Feld",
+        "rolle": "Projektleitung",
+        "mail": "hallo@example.org",
+        "telefon": "0561 000 000",
+        "website": "example.org"
+      },
+      "spende": {
+        "ziel": 18000,
+        "gesammelt": 7340,
+        "unterstuetzende": 52,
+        "beispiel": true,
+        "stufen": [
+          {
+            "betrag": 25,
+            "bewirkt": "Saatgut und Erde für ein Beet"
+          },
+          {
+            "betrag": 60,
+            "bewirkt": "ein Werkzeugset für die Kinderwerkstatt"
+          },
+          {
+            "betrag": 150,
+            "bewirkt": "ein Hochbeet aus Lärchenholz"
+          },
+          {
+            "betrag": 500,
+            "bewirkt": "ein Bautag mit Material für alle"
+          }
+        ]
+      },
+      "color": "#2E7D5B",
+      "icon": "sprout",
+      "kennzahlen": [
+        {
+          "wert": "120",
+          "was": "Kinder jede Woche"
+        },
+        {
+          "wert": "12",
+          "was": "Hochbeete"
+        },
+        {
+          "wert": "600 m²",
+          "was": "Garten"
+        },
+        {
+          "wert": "8",
+          "was": "Betriebe helfen mit"
+        }
+      ]
+    }
+  },
+  {
+    "@context": [
       "https://real-life-stack.org/vocab/base/v1",
       "https://real-life-stack.org/vocab/place/v1"
     ],

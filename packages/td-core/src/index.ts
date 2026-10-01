@@ -67,9 +67,26 @@ export {
 export {
   ERWEITERUNGEN,
   erweiterungenAus,
+  komponentenAus,
+  komponentenImSpace,
+  komponenteAktiv,
   modulSchalten,
+  PROJEKT_PROFIL,
   type Erweiterung,
   type ErweiterungsArt,
   type ErweiterungsEintrag,
   type Reife,
 } from "./erweiterungen.js"
+export {
+  projektProfil,
+  traegtProjektProfil,
+  euro,
+  spendenLink,
+  type ProjektProfil,
+  type ProjektKennzahl,
+  type ProjektSpende,
+  type ProjektBedarf,
+  type ProjektSchritt,
+  type ProjektMensch,
+  type ProjektKontakt,
+} from "./projekt-profil.js"

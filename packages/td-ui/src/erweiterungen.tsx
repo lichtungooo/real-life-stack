@@ -4,7 +4,8 @@
 // in der Modul-Auswahl eines Space, der eine Uebersicht ueber den ganzen
 // Bildschirm oeffnet. Zwei Reiter: was geprueft ist und was noch Beta ist.
 // Jede Erweiterung als Karte mit Symbol, Name, Beschreibung und klein dem
-// Erbauer. Spaeter dazu Komponenten (ganze Profile) und Themes.
+// Erbauer. Dazu Komponenten (ganze Profile, seit 01.10.2026 das Project
+// Profile); Themes kommen.
 //
 // Ohne Connector und ohne Hooks des Stacks: Was angezeigt wird und wie
 // geschrieben wird, reicht die Bindung herein (apps/reference).
@@ -19,7 +20,7 @@ export type ErweiterungsModul = { id: string; label: string; icon?: ComponentTyp
 
 export interface ErweiterungenProps {
   erweiterungen: readonly Erweiterung<ErweiterungsModul>[]
-  /** Die Module, die der Space gerade fuehrt. */
+  /** Die Module und Komponenten, die der Space gerade fuehrt. */
   imSpace: ReadonlySet<string>
   /** Darf dieser Mensch die Module des Space waehlen? Sonst nur schauen. */
   darfAendern: boolean
@@ -44,7 +45,7 @@ export function ErweiterungenAbschnitt(p: ErweiterungenProps) {
   return (
     <div className="flex flex-col gap-4">
       <p className="text-sm text-muted-foreground">
-        Was dieser Space dazunehmen kann: Module, später fertige Komponenten wie ganze Profile und Themes.
+        Was dieser Space dazunehmen kann: Module, fertige Komponenten wie ganze Profile, später Themes.
         Jede mit Beschreibung und dem, der sie gebaut hat.
       </p>
       <div className="flex gap-3 text-sm">
@@ -91,15 +92,11 @@ export function ErweiterungenUebersicht(p: ErweiterungenProps & { offen: boolean
           </nav>
         </header>
 
-        {art !== "modul" ? (
+        {art === "theme" ? (
           <div className="flex flex-1 items-center justify-center p-8 text-center">
             <div className="max-w-md">
-              <p className="text-lg font-semibold">{art === "komponente" ? "Komponenten kommen" : "Themes kommen"}</p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {art === "komponente"
-                  ? "Fertige Teile, die man ganz nimmt statt sie zusammenzusetzen: etwa ein komplettes Profil oder eine Landingpage."
-                  : "Das Aussehen eines Space als Ganzes, zum Auswählen."}
-              </p>
+              <p className="text-lg font-semibold">Themes kommen</p>
+              <p className="mt-2 text-sm text-muted-foreground">Das Aussehen eines Space als Ganzes, zum Auswählen.</p>
             </div>
           </div>
         ) : (
@@ -109,11 +106,14 @@ export function ErweiterungenUebersicht(p: ErweiterungenProps & { offen: boolean
                 {REIFEN.map((r) => (
                   <button key={r.id} type="button" role="tab" aria-selected={reife === r.id} onClick={() => setReife(r.id)}
                     className={`rounded-full px-4 py-1.5 text-sm ${reife === r.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
-                    {r.titel} <span className="opacity-70">{p.erweiterungen.filter((e) => e.art === "modul" && e.reife === r.id).length}</span>
+                    {r.titel} <span className="opacity-70">{p.erweiterungen.filter((e) => e.art === art && e.reife === r.id).length}</span>
                   </button>
                 ))}
               </div>
               <p className="text-xs text-muted-foreground">{hinweis}</p>
+              {art === "komponente" && (
+                <p className="w-full text-xs text-muted-foreground">Fertige Darstellungen, die man ganz nimmt: Im Space gewählt, zeigt sich jeder passende Eintrag so, sobald man ihn öffnet.</p>
+              )}
             </div>
             {!p.darfAendern && (
               <p className="mx-6 mt-3 rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">Nur wer den Space verwaltet, nimmt Erweiterungen dazu. Du kannst dich umsehen.</p>

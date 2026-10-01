@@ -8,19 +8,26 @@
 /** Geprueft: durch das grosse Testing und freigegeben. Beta: laeuft, noch nicht freigegeben. Keine Bewertung. */
 export type Reife = "geprueft" | "beta"
 
-/** Module heute; Komponenten (etwa ein ganzes Profil) und Themes kommen. */
+/** Module, Komponenten (fertige Darstellungen, etwa ein ganzes Profil); Themes kommen. */
 export type ErweiterungsArt = "modul" | "komponente" | "theme"
 
 export interface ErweiterungsEintrag {
-  /** Die Modul-Id aus Antons Register. */
+  /** Die Modul-Id aus Antons Register, bei einer Komponente ihre eigene Id. */
   id: string
   art: ErweiterungsArt
+  /** Bei einer Komponente: ihr Name. Ein Modul traegt ihn in Antons Register. */
+  name?: string
+  /** Bei einer Komponente: der Typ, den sie darstellt (DEFINITION Teil 8). */
+  fuerTyp?: string
   beschreibung: string
   erbauer: string
   reife: Reife
 }
 
 const ANTON = "Anton Tranelis · Real Life Stack"
+
+/** Die Id der ersten Komponente. */
+export const PROJEKT_PROFIL = "projekt-profil"
 
 /** Das Verzeichnis. Eintraege ohne Modul im Register erscheinen nicht (Regel 3). */
 export const ERWEITERUNGEN: readonly ErweiterungsEintrag[] = [
@@ -32,6 +39,7 @@ export const ERWEITERUNGEN: readonly ErweiterungsEintrag[] = [
   { id: "collection", art: "modul", erbauer: ANTON, reife: "geprueft", beschreibung: "Alle Einträge als Liste, zum Durchsehen und Sortieren." },
   { id: "graph", art: "modul", erbauer: ANTON, reife: "geprueft", beschreibung: "Wie Einträge miteinander verbunden sind, als Netz." },
   { id: "video", art: "modul", erbauer: "Timo Martin und Eli · Real Life Network", reife: "beta", beschreibung: "Treffen mit Bild und Ton, Kreis mit Redestab, Zeichenpad, Gruppenräume und Mitschrift auf dem eigenen Server." },
+  { id: PROJEKT_PROFIL, art: "komponente", name: "Project Profile", fuerTyp: "project", erbauer: "Timo Martin und Eli · trustdonation", reife: "beta", beschreibung: "Die Seite, mit der sich ein Projekt zeigt: Titelbild, was fehlt, was sich ändert, wohin das Geld geht, Schritte, Team, Kontakt und Spenden über Open Collective." },
   { id: "companion", art: "modul", erbauer: "Eli · trustdonation", reife: "beta", beschreibung: "Eine Begleitung, die die Einträge des Space liest und beim nächsten Schritt hilft." },
 ]
 
@@ -91,4 +99,36 @@ export function modulSchalten(
   const drin = basis.includes(id)
   if (an === drin) return basis
   return an ? [...basis, id] : basis.filter((m) => m !== id)
+}
+
+/**
+ * Die Komponenten aus dem Verzeichnis. Sie stehen nicht in Antons
+ * Modul-Register; ihre Quelle ist allein dieses Verzeichnis.
+ */
+export function komponentenAus(
+  verzeichnis: readonly ErweiterungsEintrag[] = ERWEITERUNGEN,
+): Erweiterung<{ id: string; label: string }>[] {
+  return verzeichnis
+    .filter((e) => e.art === "komponente")
+    .map((e) => ({
+      id: e.id,
+      name: e.name ?? e.id,
+      art: e.art,
+      beschreibung: e.beschreibung,
+      erbauer: e.erbauer,
+      reife: e.reife,
+      bekannt: true,
+      modul: { id: e.id, label: e.name ?? e.id },
+    }))
+}
+
+/** Die Komponenten, die ein Space gewaehlt hat (`Group.data.komponenten`). */
+export function komponentenImSpace(daten: Record<string, unknown> | null | undefined): readonly string[] {
+  const roh = daten?.komponenten
+  return Array.isArray(roh) ? roh.filter((k): k is string => typeof k === "string") : []
+}
+
+/** Hat der Space diese Komponente gewaehlt? */
+export function komponenteAktiv(daten: Record<string, unknown> | null | undefined, id: string): boolean {
+  return komponentenImSpace(daten).includes(id)
 }

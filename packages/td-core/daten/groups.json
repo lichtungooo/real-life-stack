@@ -33,6 +33,9 @@
           "labelPlural": "Stiftungen",
           "color": "#194294"
         }
+      ],
+      "komponenten": [
+        "projekt-profil"
       ]
     }
   },
