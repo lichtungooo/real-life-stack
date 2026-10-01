@@ -30,6 +30,7 @@ vi.mock("../src/mitschrift-aufnahme", async (echt) => {
 const { AbschnittSchneider, alsInt16 } = await import("../src/mitschrift-aufnahme")
 const { KreisRaumProvider } = await import("../src/raum-kontext")
 const { VideoRaumFlaeche } = await import("../src/video/video-raum-flaeche")
+const { VORGABEN, vorliebenSetzen } = await import("../src/vorlieben")
 
 function kanalNetz() {
   const enden = new Map<string, Set<{ onmessage: ((e: { data: unknown }) => void) | null }>>()
@@ -105,8 +106,8 @@ describe("Der Schneider macht aus Bloecken Abschnitte", () => {
   })
 })
 
-describe("Die Mitschrift in der Konferenz", () => {
-  it("Anna laesst sich mitschreiben: Bert sieht ihre Zeile mit Name, Uhrzeit und Dauer, und die Redezeit", async () => {
+describe("Die Mitschrift in der Konferenz: ein Hebel fuer alle, jeder kann sich ausnehmen", () => {
+  it("Anna legt den Hebel um: beide werden mitgeschrieben, Bert sieht den Hinweis und Annas Zeile mit Name, Uhrzeit, Dauer", async () => {
     const kanal = kanalNetz()
     const anna = mensch(kanal, "a-anna", "Anna", flaeche("Anna"))
     const bert = mensch(kanal, "b-bert", "Bert", flaeche("Bert"))
@@ -114,22 +115,24 @@ describe("Die Mitschrift in der Konferenz", () => {
     await bert.betreten()
 
     await anna.klick("Protokoll")
-    expect(anna.text()).toContain("unserem eigenen Server")
-    await anna.klick("Mich mitschreiben lassen")
-    expect(aufnahmen).toHaveLength(1)
+    expect(anna.text()).toContain("Fragt in der Runde")
+    expect(aufnahmen).toHaveLength(0)
+    await anna.klick("Mitschrift für alle starten")
+
+    // Jedes Geraet schreibt sein eigenes Mikrofon mit.
+    expect(aufnahmen).toHaveLength(2)
     expect(aufnahmen[0].o.url).toBe("wss://test/mitschrift")
+    expect(bert.huelle.querySelector('[aria-label="Mitschrift läuft"]')).not.toBeNull()
+    expect(bert.huelle.querySelector('[role="dialog"][aria-label="Mitschrift läuft"]')?.textContent).toContain("Anna hat die Mitschrift für alle eingeschaltet")
+    expect(bert.huelle.querySelectorAll('[aria-label="wird mitgeschrieben"]')).toHaveLength(2)
 
-    // Bert sieht an Anna, dass sie mitgeschrieben wird.
-    expect(bert.huelle.querySelector('[aria-label="wird mitgeschrieben"]')).not.toBeNull()
-
+    const annas = aufnahmen.find((a) => a.o.hoerer)!.o.hoerer
     const beginn = new Date(2026, 9, 1, 10, 0, 5).getTime()
-    const h = aufnahmen[0].o.hoerer
-    await act(async () => { h.abschnitt("m-1", beginn, beginn + 23_000) })
+    await act(async () => { annas.abschnitt("m-1", beginn, beginn + 23_000) })
+    await bert.klick("Verstanden")
     await bert.klick("Protokoll")
     expect(bert.text()).toContain("…")
-    await act(async () => { h.text("m-1", "Wir pflanzen im April.") })
-
-    expect(bert.text()).toContain("Anna")
+    await act(async () => { annas.text("m-1", "Wir pflanzen im April.") })
     expect(bert.text()).toContain("Wir pflanzen im April.")
     expect(bert.text()).toContain("10:00:05")
     expect(bert.text()).toContain("0:23")
@@ -141,31 +144,49 @@ describe("Die Mitschrift in der Konferenz", () => {
     expect(liste?.textContent).toContain("0:23")
 
     // Nichts erkannt: die vorlaeufige Zeile verschwindet wieder.
-    await act(async () => { h.abschnitt("m-2", beginn + 30_000, beginn + 31_000) })
-    await act(async () => { h.text("m-2", "") })
+    await act(async () => { annas.abschnitt("m-2", beginn + 30_000, beginn + 31_000) })
+    await act(async () => { annas.text("m-2", "") })
     expect(bert.huelle.textContent?.match(/…/g) ?? []).toHaveLength(0)
 
-    await anna.klick("Ich werde mitgeschrieben, anhalten")
-    expect(aufnahmen[0].gestoppt).toBe(true)
+    // Anna beendet fuer alle: jede Aufnahme stoppt.
+    await anna.klick("Mitschrift für alle beenden")
+    expect(aufnahmen.every((a) => a.gestoppt)).toBe(true)
     expect(bert.huelle.querySelector('[aria-label="wird mitgeschrieben"]')).toBeNull()
   })
 
-  it("Anna bittet alle; Bert sagt ja und schreibt sein eigenes Mikrofon mit", async () => {
+  it("Bert nimmt sich aus und wieder auf; Anna sieht es an seinem Namen", async () => {
     const kanal = kanalNetz()
     const anna = mensch(kanal, "a-anna", "Anna", flaeche("Anna"))
     const bert = mensch(kanal, "b-bert", "Bert", flaeche("Bert"))
     await anna.betreten()
     await bert.betreten()
     await anna.klick("Protokoll")
-    await anna.klick("Mich mitschreiben lassen")
-    await anna.klick("Alle bitten, sich mitschreiben zu lassen")
-
-    const dialog = bert.huelle.querySelector('[aria-label="Bitte um Mitschrift"]')
-    expect(dialog?.textContent).toContain("Anna bittet")
-    await bert.klick("Mich mitschreiben lassen")
+    await anna.klick("Mitschrift für alle starten")
     expect(aufnahmen).toHaveLength(2)
-    expect(bert.huelle.querySelector('[aria-label="Bitte um Mitschrift"]')).toBeNull()
-    // Annas Liste zeigt jetzt beide.
-    expect(anna.text()).toMatch(/Mitgeschrieben: .*Anna.*Bert|Mitgeschrieben: .*Bert.*Anna/)
+
+    await bert.klick("Mich ausnehmen")
+    expect(aufnahmen.filter((a) => a.gestoppt)).toHaveLength(1)
+    expect(anna.huelle.querySelectorAll('[aria-label="wird mitgeschrieben"]')).toHaveLength(1)
+    expect(bert.huelle.querySelector('[aria-label="Mitschrift läuft"]')?.textContent).toContain("ohne dich")
+
+    await bert.klick("Protokoll")
+    await bert.klick("Mich wieder mitschreiben")
+    expect(aufnahmen).toHaveLength(3)
+    expect(anna.huelle.querySelectorAll('[aria-label="wird mitgeschrieben"]')).toHaveLength(2)
+  })
+
+  it("wer in den Einstellungen \"Mich nie mitschreiben\" gewaehlt hat, bleibt draussen", async () => {
+    vorliebenSetzen({ ...VORGABEN, nieMitschreiben: true })
+    try {
+      const kanal = kanalNetz()
+      const anna = mensch(kanal, "a-anna", "Anna", flaeche("Anna"))
+      await anna.betreten()
+      await anna.klick("Protokoll")
+      await anna.klick("Mitschrift für alle starten")
+      expect(aufnahmen).toHaveLength(0)
+      expect(anna.text()).toContain("in deinen Einstellungen")
+    } finally {
+      vorliebenSetzen(VORGABEN)
+    }
   })
 })

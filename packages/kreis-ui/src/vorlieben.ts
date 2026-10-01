@@ -40,6 +40,8 @@ export interface Vorlieben {
   bildschirmAnderer: boolean
   /** Wie die Konferenz aufgeteilt ist. */
   layout: LayoutArt
+  /** Mich nie mitschreiben, auch wenn jemand die Mitschrift fuer alle einschaltet. */
+  nieMitschreiben: boolean
 }
 
 // Die Vorgaben folgen Big Blue Button: Hinweise nur beim Handheben.
@@ -59,6 +61,7 @@ export const VORGABEN: Vorlieben = {
   kamerasAnderer: true,
   bildschirmAnderer: true,
   layout: "oben",
+  nieMitschreiben: false,
 }
 
 export const SCHRIFT_STUFEN = [80, 90, 100, 110, 120, 130] as const
@@ -87,6 +90,7 @@ export function vorliebenLesen(roh: string | null): Vorlieben {
       kamerasAnderer: bool("kamerasAnderer"),
       bildschirmAnderer: bool("bildschirmAnderer"),
       layout: istLayout(g.layout) ? g.layout : VORGABEN.layout,
+      nieMitschreiben: bool("nieMitschreiben"),
     }
   } catch {
     return VORGABEN

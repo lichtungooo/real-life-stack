@@ -176,6 +176,8 @@ function InDerKonferenz({ kreis, raumName, raumId, module = [], modulZeigen, pro
   const vorlieben = useVorlieben()
   // Hinweise wie in Big Blue Button: je Anlass ein Ton und eine Einblendung.
   const [einblendungen, setEinblendungen] = useState<{ id: number; text: string }[]>([])
+  // Welche Runde der Mitschrift ich schon bestaetigt habe (ihr `seit`).
+  const [hebelGesehen, setHebelGesehen] = useState<number | null>(null)
   // Die eigene Ansicht aller: nur fuer mich, das Tool bleibt fuer die anderen
   // in der Mitte (Timo: man muss nicht immer das Redekreisfenster sehen).
   const [nurMenschen, setNurMenschen] = useState(false)
@@ -681,14 +683,27 @@ function InDerKonferenz({ kreis, raumName, raumId, module = [], modulZeigen, pro
           <EinstellungenDialog regeln={regelnVon(sitzung)} stilleVorgabe={stilleSekundenVon({ ...sitzung, regeln: undefined }, prozess)}
             onZu={() => setEinstellungenOffen(false)} onRegelnSpeichern={(r) => handle((s, t) => regelnSetzen(s, r, wer, t))} />
         )}
-        {neben.mitschriftBitte && !neben.protokollLaeuft && (
-          <div role="dialog" aria-label="Bitte um Mitschrift" className="absolute left-1/2 top-14 z-40 w-80 -translate-x-1/2 rounded-xl bg-slate-800/95 p-3.5 text-sm text-slate-100 shadow-xl ring-1 ring-white/10">
-            <p><strong>{neben.mitschriftBitte.von}</strong> bittet, das Gespräch mitzuschreiben. Mit deinem Namen, Uhrzeit und Dauer; erkannt auf unserem eigenen Server.</p>
+        {neben.mitschriftHebel && hebelGesehen !== neben.mitschriftHebel.seit && (
+          <div role="dialog" aria-label="Mitschrift läuft" className="absolute left-1/2 top-14 z-40 w-80 -translate-x-1/2 rounded-xl bg-slate-800/95 p-3.5 text-sm text-slate-100 shadow-xl ring-1 ring-white/10">
+            <p>
+              <strong>{teilnehmer.find((t) => t.id === neben.mitschriftHebel?.von)?.name ?? "Jemand"}</strong> hat die Mitschrift für alle eingeschaltet.{" "}
+              {neben.mitschriftAusgenommen
+                ? (neben.nieMitschreiben ? "Du bist laut deinen Einstellungen ausgenommen." : "Du bist ausgenommen.")
+                : "Was du sagst, kommt mit deinem Namen, Uhrzeit und Dauer ins Protokoll. Erkannt auf unserem eigenen Server."}
+            </p>
             <div className="mt-3 flex gap-2">
-              <button type="button" onClick={() => { neben.protokollStarten(); neben.mitschriftBitteWeg() }}
-                className="flex-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700">Mich mitschreiben lassen</button>
-              <button type="button" onClick={neben.mitschriftBitteWeg} className="rounded-lg bg-white/10 px-3 py-1.5 text-xs hover:bg-white/20">Lieber nicht</button>
+              <button type="button" onClick={() => setHebelGesehen(neben.mitschriftHebel?.seit ?? null)}
+                className="flex-1 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium hover:bg-white/20">Verstanden</button>
+              {!neben.mitschriftAusgenommen && (
+                <button type="button" onClick={() => { neben.mitschriftAusnehmen(); setHebelGesehen(neben.mitschriftHebel?.seit ?? null) }}
+                  className="rounded-lg bg-rose-600/80 px-3 py-1.5 text-xs font-medium text-white hover:bg-rose-600">Mich ausnehmen</button>
+              )}
             </div>
+          </div>
+        )}
+        {neben.mitschriftHebel && (
+          <div className="pointer-events-none absolute left-3 top-3 z-30 flex items-center gap-1.5 rounded-full bg-slate-900/80 px-2.5 py-1 text-[11px] font-medium text-emerald-300 shadow" aria-label="Mitschrift läuft">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" /> Mitschrift{neben.mitschriftAusgenommen ? ", ohne dich" : ""}
           </div>
         )}
         {einblendungen.length > 0 && (

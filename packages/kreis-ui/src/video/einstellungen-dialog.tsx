@@ -101,6 +101,9 @@ export function EinstellungenDialog({
                   <Zeile titel="Push-to-Talk" hinweis="Leertaste halten, um zu sprechen.">
                     <Schalter name="Push-to-Talk" an={entwurf.pushToTalk} onWechsel={(v) => setze("pushToTalk", v)} />
                   </Zeile>
+                  <Zeile titel="Mich nie mitschreiben" hinweis="Gilt auch, wenn jemand die Mitschrift für alle einschaltet. Dein Gesagtes kommt dann nicht ins Protokoll.">
+                    <Schalter name="Mich nie mitschreiben" an={entwurf.nieMitschreiben} onWechsel={(v) => setze("nieMitschreiben", v)} />
+                  </Zeile>
                   <Zeile titel="Selbstansicht" hinweis="Das eigene Bild bei den anderen zeigen.">
                     <Schalter name="Selbstansicht" an={entwurf.selbstansicht} onWechsel={(v) => setze("selbstansicht", v)} />
                   </Zeile>

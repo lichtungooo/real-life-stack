@@ -12,6 +12,7 @@ import {
 } from "@kreis/core"
 import type { KreisVerbindung, NebenNachricht } from "./use-kreis"
 import { MitschriftAufnahme } from "./mitschrift-aufnahme"
+import { useVorlieben } from "./vorlieben"
 
 /** Was im Meeting festgehalten wurde: eine Aufgabe oder ein Beschluss. */
 export interface Ergebnis {
@@ -90,8 +91,8 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
   const aufnahmeRef = useRef<MitschriftAufnahme | null>(null)
   // Wer gerade mitgeschrieben wird (Raum-Ids), sichtbar fuer alle.
   const [mitschreibende, setMitschreibende] = useState<ReadonlySet<string>>(new Set())
-  // Jemand bittet alle, die Mitschrift einzuschalten.
-  const [mitschriftBitte, setMitschriftBitte] = useState<{ von: string; wann: number } | null>(null)
+  // In welcher Runde des Hebels ich mich ausgenommen habe (sein `seit`).
+  const [ausgenommenSeit, setAusgenommenSeit] = useState<number | null>(null)
 
   const meinName = v.teilnehmer.find((t) => t.ichSelbst)?.name ?? "Gast"
 
@@ -142,8 +143,7 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
       protokollZeile(n.zeile as ProtokollZeile)
     } else if (n.art === "mitschrift-an") {
       setMitschreibende((alt) => { const neu = new Set(alt); if (n.an) neu.add(von); else neu.delete(von); return neu })
-    } else if (n.art === "mitschrift-bitte" && typeof n.name === "string") {
-      setMitschriftBitte({ von: n.name, wann: Date.now() })
+
     } else if (n.art === "pad-elemente" && Array.isArray(n.elemente)) {
       const fremde = (n.elemente as unknown[]).filter(istZeichenElement)
       const schluessel = typeof n.schluessel === "string" ? n.schluessel : "frei"
@@ -251,7 +251,7 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
     aufnahmeRef.current = null
     setProtokollLaeuft(false)
     setMitschreibende(new Set())
-    setMitschriftBitte(null)
+    setAusgenommenSeit(null)
   }, [v.zustand])
 
   const chatSenden = useCallback((text: string) => {
@@ -333,7 +333,8 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
   }, [v, protokollZeile])
 
   const protokollHalten = useCallback(() => {
-    aufnahmeRef.current?.stoppen()
+    if (!aufnahmeRef.current) return
+    aufnahmeRef.current.stoppen()
     aufnahmeRef.current = null
     setProtokollLaeuft(false)
     if (v.ich) {
@@ -346,10 +347,20 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
   // Ich verlasse die Flaeche: die Aufnahme endet mit.
   useEffect(() => () => { aufnahmeRef.current?.stoppen(); aufnahmeRef.current = null }, [])
 
-  /** Alle bitten, die Mitschrift einzuschalten. Jeder entscheidet selbst. */
-  const mitschriftErbitten = useCallback(() => {
-    v.nebenSenden({ art: "mitschrift-bitte", name: meinNameRef.current })
-  }, [v])
+  // Der Hebel (Sitzung.mitschrift): Steht er auf an, schreibt jedes Geraet
+  // sein eigenes Mikrofon mit, ausser man hat sich ausgenommen, fuer diese
+  // Runde oder in den Einstellungen fuer immer. Geht er aus, endet alles.
+  const vorlieben = useVorlieben()
+  const hebel = v.sitzung.mitschrift?.an ? v.sitzung.mitschrift : null
+  const mitschriftAusgenommen = Boolean(hebel) && (vorlieben.nieMitschreiben || ausgenommenSeit === hebel?.seit)
+  const sollMitschreiben = v.zustand === "drin" && mitschriftMoeglich && Boolean(hebel) && !mitschriftAusgenommen
+  useEffect(() => {
+    if (sollMitschreiben) protokollStarten()
+    else protokollHalten()
+  }, [sollMitschreiben, protokollStarten, protokollHalten])
+
+  const mitschriftAusnehmen = useCallback(() => { if (hebel) setAusgenommenSeit(hebel.seit) }, [hebel])
+  const mitschriftWiederAufnehmen = useCallback(() => setAusgenommenSeit(null), [])
 
   /** Das Protokoll als Datei: Name, von bis, Dauer, Text, Redezeiten. */
   const protokollAlsMarkdown = useCallback((raum: string) =>
@@ -476,7 +487,8 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
     haende, handUmschalten,
     zeichen, zeichenGeben,
     protokoll, protokollLaeuft, protokollFehler, protokollStarten, protokollHalten, protokollAlsText, protokollAlsMarkdown,
-    mitschriftMoeglich, mitschreibende, mitschriftBitte, mitschriftErbitten, mitschriftBitteWeg: () => setMitschriftBitte(null),
+    mitschriftMoeglich, mitschreibende, mitschriftHebel: hebel, mitschriftAusgenommen, mitschriftAusnehmen, mitschriftWiederAufnehmen,
+    nieMitschreiben: vorlieben.nieMitschreiben,
     protokollLeeren: () => setProtokoll([]),
   }
 }

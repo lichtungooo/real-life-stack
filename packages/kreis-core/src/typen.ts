@@ -132,6 +132,12 @@ export interface Sitzung {
    * die Hooks des Stacks.
    */
   dokument?: { item: string } | null
+  /**
+   * Der Hebel der Mitschrift (Timo, 01.10.2026): Einer fragt in der Runde und
+   * schaltet sie fuer alle ein; jeder kann sich selbst ausnehmen. `von` ist
+   * die Raum-Id dessen, der geschaltet hat, `seit` der Zeitpunkt.
+   */
+  mitschrift?: { an: true; von: string; seit: number } | null
 }
 
 /** Was nach Ablauf der Redezeit mit dem Redestab geschieht. */

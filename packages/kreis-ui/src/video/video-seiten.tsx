@@ -1,8 +1,8 @@
 // Die linke Seite der Konferenz: Menschen mit Namen, Chat, Protokoll.
 
-import { dauerText, moderationVon, redezeiten } from "@kreis/core"
+import { dauerText, mitschriftHebel, moderationVon, redezeiten } from "@kreis/core"
 import { useCallback, useEffect, useRef, useState } from "react"
-import { CircleDot, Download, Hand, MicOff, MonitorUp, Save, ScrollText, Send, Trash2, Users } from "lucide-react"
+import { CircleDot, Download, Hand, MicOff, MonitorUp, Save, ScrollText, Send, Trash2 } from "lucide-react"
 import type { KreisTeilnehmer } from "@kreis/core"
 import type { KreisKontext } from "../raum-kontext"
 
@@ -86,8 +86,10 @@ export function Protokoll({ kreis, speichern }: { kreis: KreisKontext; speichern
   const raum = kreis.raumTitel ?? kreis.raumName ?? "Konferenz"
   const fest = n.protokoll.filter((z) => !z.vorlaeufig)
   const rz = redezeiten(n.protokoll)
-  const andere = kreis.teilnehmer.filter((t) => !t.ichSelbst)
-  const ohneMitschrift = andere.filter((t) => !n.mitschreibende.has(t.id))
+  const hebel = n.mitschriftHebel
+  const ich = kreis.ich ?? ""
+  const nameVon = (id: string) => kreis.teilnehmer.find((t) => t.id === id)?.name ?? "Jemand"
+  const hebelStellen = (an: boolean) => kreis.handle((s, t) => mitschriftHebel(s, an, ich, t))
 
   const herunterladen = () => {
     const md = n.protokollAlsMarkdown(raum)
@@ -101,10 +103,17 @@ export function Protokoll({ kreis, speichern }: { kreis: KreisKontext; speichern
 
   return (
     <div className="flex h-full flex-col">
-      {!n.protokollLaeuft && n.protokoll.length === 0 && (
+      {!hebel && n.protokoll.length === 0 && (
         <p className="mx-3 mb-2 rounded-xl bg-emerald-500/10 p-3 text-[11px] leading-relaxed text-emerald-100">
           <ScrollText className="mb-0.5 mr-1 inline h-3 w-3" />
-          Jeder schreibt nur sein eigenes Mikrofon mit, darum steht immer der richtige Name dabei, mit Uhrzeit und Dauer. Erkannt wird auf unserem eigenen Server mit freier Software; der Ton bleibt nirgends liegen. Mitgeschrieben wird nur, wer es selbst einschaltet.
+          Fragt in der Runde, ob ihr mitschreiben wollt, dann legt den Hebel um. Jeder schreibt nur sein eigenes Mikrofon mit, darum steht immer der richtige Name dabei, mit Uhrzeit und Dauer. Erkannt wird auf unserem eigenen Server mit freier Software; der Ton bleibt nirgends liegen. Wer nicht will, nimmt sich aus.
+        </p>
+      )}
+      {hebel && (
+        <p className="mx-3 mb-2 rounded-xl bg-emerald-500/15 p-2.5 text-[11px] text-emerald-100">
+          <span className="mr-1.5 inline-block h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+          Mitschrift läuft seit {uhrzeit(hebel.seit)}, eingeschaltet von {nameVon(hebel.von)}.
+          {n.mitschriftAusgenommen && <> Du bist ausgenommen{n.nieMitschreiben ? " (in deinen Einstellungen)" : ""}.</>}
         </p>
       )}
       {n.protokollFehler && <p className="mx-3 mb-2 rounded-xl bg-rose-500/15 p-2.5 text-[11px] text-rose-300">{n.protokollFehler}</p>}
@@ -149,16 +158,16 @@ export function Protokoll({ kreis, speichern }: { kreis: KreisKontext; speichern
           )}
         </div>
       )}
-      {n.protokollLaeuft && ohneMitschrift.length > 0 && (
-        <button type="button" onClick={n.mitschriftErbitten}
-          className="mx-3 mt-1 flex items-center justify-center gap-2 rounded-xl bg-white/5 px-3 py-2 text-[11px] text-slate-300 hover:bg-white/10">
-          <Users className="h-3.5 w-3.5" /> Alle bitten, sich mitschreiben zu lassen
+      {hebel && !n.nieMitschreiben && (
+        <button type="button" onClick={n.mitschriftAusgenommen ? n.mitschriftWiederAufnehmen : n.mitschriftAusnehmen}
+          className="mx-3 mt-1 rounded-xl bg-white/5 px-3 py-2 text-[11px] text-slate-300 hover:bg-white/10">
+          {n.mitschriftAusgenommen ? "Mich wieder mitschreiben" : "Mich ausnehmen"}
         </button>
       )}
       <div className="flex items-center gap-2 p-3">
-        <button type="button" onClick={() => (n.protokollLaeuft ? n.protokollHalten() : n.protokollStarten())}
-          className={`flex-1 rounded-xl px-3 py-2 text-xs font-medium ${n.protokollLaeuft ? "bg-emerald-500/20 text-emerald-300" : "bg-white/10 text-slate-200 hover:bg-white/20"}`}>
-          {n.protokollLaeuft ? "Ich werde mitgeschrieben, anhalten" : "Mich mitschreiben lassen"}
+        <button type="button" onClick={() => hebelStellen(!hebel)}
+          className={`flex-1 rounded-xl px-3 py-2 text-xs font-medium ${hebel ? "bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30" : "bg-emerald-600 text-white hover:bg-emerald-700"}`}>
+          {hebel ? "Mitschrift für alle beenden" : "Mitschrift für alle starten"}
         </button>
         {fest.length > 0 && speichern && (
           <button type="button" title="Als Beitrag im Space ablegen" aria-label="Protokoll speichern"

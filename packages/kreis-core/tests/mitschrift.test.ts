@@ -95,3 +95,17 @@ describe("Redezeit und Datei", () => {
     expect(md).not.toContain("Cara |")
   })
 })
+
+describe("Der Hebel der Mitschrift", () => {
+  it("schaltet fuer alle ein und aus, merkt wer und seit wann, doppelt umlegen aendert nichts", async () => {
+    const { leereSitzung, mitschriftHebel } = await import("../src/sitzung")
+    const s0 = leereSitzung(0)
+    const an = mitschriftHebel(s0, true, "a-anna", 1000)
+    expect(an.mitschrift).toEqual({ an: true, von: "a-anna", seit: 1000 })
+    expect(an.v).toBe(s0.v + 1)
+    expect(mitschriftHebel(an, true, "b-bert", 2000)).toBe(an)
+    const aus = mitschriftHebel(an, false, "b-bert", 3000)
+    expect(aus.mitschrift).toBeNull()
+    expect(aus.von).toBe("b-bert")
+  })
+})

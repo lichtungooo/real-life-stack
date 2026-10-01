@@ -243,6 +243,12 @@ export function dokumentSetzen(s: Sitzung, item: string | null, wer: string): Si
   return weiter(s, wer, { dokument: item ? { item } : null })
 }
 
+/** Der Hebel der Mitschrift: fuer alle ein oder aus. Ausnehmen kann sich jeder selbst. */
+export function mitschriftHebel(s: Sitzung, an: boolean, wer: string, jetzt: number): Sitzung {
+  if (Boolean(s.mitschrift?.an) === an) return s
+  return weiter(s, wer, { mitschrift: an ? { an: true, von: wer, seit: jetzt } : null })
+}
+
 /** Ein Layout fuer alle uebernehmen. */
 export function layoutFuerAlle(s: Sitzung, art: string, wer: string): Sitzung {
   return weiter(s, wer, { layout: { art, nr: (s.layout?.nr ?? 0) + 1 } })
