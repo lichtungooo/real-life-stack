@@ -6,6 +6,10 @@ Das Image liegt auf dem Server als `trustdonation-app:proto-N`. Zurückgedreht w
 
 | Stand | Commit | Datum | Was drin ist |
 |---|---|---|---|
+| **proto-61** | `2604c3a` | 01.10.2026 | **Konferenz rechnet leichter: Video als H.264.** Gemessen mit zwei Menschen im echten LiveKit-Raum, simulierter 720p-Kamera und den Statistiken von WebRTC: Mit VP8 läuft Kodieren und Dekodieren in Software (libvpx), mit H.264 dekodiert die Grafikkarte (D3D11). Renderer beider zusammen 68 bis 76 statt 66 bis 114 Prozent eines Kerns, also im Schnitt 74 statt 92 und ruhiger. Kodieren bleibt Software (OpenH264). Alle Browser spielen H.264. Vergleich jederzeit über `?codec=vp8`. |
+| **proto-60** | `643a4d7` | 01.10.2026 | Messschalter `?codec=` (vp8, h264, vp9, av1) für den Vergleich beim Kodieren. |
+| **proto-59** | `f22cf8a` | 01.10.2026 | Messschalter `?video=` (360, 540, 720). Befund: 540p gegen 720p gleich in der Rechenlast (Renderer 106 gegen 107, Streuung größer als der Abstand). 540p bleibt Standard, weil es die Leitung nach oben schont. |
+| **proto-58** | `b4064818` | 01.10.2026 | **Video schlanker:** Kamera 540p, Simulcast-Stufen 180p und 360p, DTX (Ton schweigt in Pausen), Teilnehmerliste nur bei echter Änderung neu (`gleicheTeilnehmer`, Test `teilnehmer-gleich.test.ts`). Hauptstrang war vorher schon ruhig (2 Prozent, keine langen Aufgaben); die Last liegt im Video. |
 | **proto-57** | `1f38f7b0` | 01.10.2026 | **Konferenz stabil** nach dem Meeting Timo/Emil (Abbruch, Mikrofon weg bis Neustart, „Ein Wort zur Zeit“ ging nicht aus). Server unauffällig, Ursachen im Client, gefunden mit Prüfkreis Kimi (zwei Runden) und Zwei-Browser-Test gegen echtes LiveKit: Mitschrift schließt Mikrofon auch bei Stopp während des Öffnens, kein endloser Fehlstart; kein doppelter Beitritt; Gehen bricht laufenden Beitritt ab; Wiederverbinden nach Abriss (1/3/8 s); Stand alle 15 s; Audiofilter ohne zweiten Mikrofon-Start; Schalter aus dem Sitzungsstand; Leertaste über Ref; Spuren nachhängen. Live geprüft: Stummschalten, 3× Gehen/Kommen, Kamera, Ein Wort an/aus, 40 s und 120 s Netz-Aus (LiveKit nimmt die Sitzung wieder auf). |
 | **proto-56** | `b991f485` | 01.10.2026 | **Import lässt dem Browser Luft:** Timo: *„Seite reagiert nicht“* nach dem Ja. Atempause (40 ms) nach jedem Eintrag, sichtbarer Fortschritt, Ziel-Space ausdrücklich (`createItem(…, { group })`). Bereits Geschriebenes bleibt, ein zweiter Lauf überspringt es. |
 | **proto-55** | `3ed2bee7` | 01.10.2026 | **Ein Link für die Stiftungen im echten Space:** `trustdonation.org/app/?connector=wot&import=stiftungen` findet das Netzwerk trustdonation selbst (`importZiel`), springt hinein und fragt nach; ohne Space Hinweis auf „Netzwerke übernehmen“. Timo: *„pack alle Stiftungen auf die trustdonation, auf beide“*. |
@@ -66,4 +70,4 @@ Das Image liegt auf dem Server als `trustdonation-app:proto-N`. Zurückgedreht w
 
 ## Was noch nicht ausgeliefert ist
 
-Nichts. Der Stand auf `trustdonation.org/app` ist `d2cc526`.
+Nichts. Der Stand auf `trustdonation.org/app` ist `2604c3a` (proto-61).
