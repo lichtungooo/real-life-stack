@@ -5,3 +5,7 @@
 .chrome-zugang/
 
 __pycache__/
+
+# Kimi-Prüfkreis: der Unterschied für Kimi und die gemerkte Sitzung.
+# Die Berichte selbst gehören ins Repo, sie sind die Erfahrung.
+berichte/.kimi-*
