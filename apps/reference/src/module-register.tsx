@@ -61,8 +61,8 @@ export const MODULE_REGISTRY = composeModules([
   // Wechsel zur Karte die Sitzung nicht beenden darf.
   { name: "kreis", definitions: [
     // Id bleibt `video` (steht in `Group.data.modules`), der Name heisst
-    // Conferencing (Timo, 30.09.2026).
-    { id: "video", label: "Conferencing", icon: Video, enabledByDefault: true, fill: "bleed", keepMounted: true, frame: "bare", view: VideoModul },
+    // Circling (Timo, 01.10.2026; vorher „Conferencing“, 30.09.2026).
+    { id: "video", label: "Circling", icon: Video, enabledByDefault: true, fill: "bleed", keepMounted: true, frame: "bare", view: VideoModul },
   ] },
   // Die Grundausstattung eines Space ohne eigene Liste: Feed, Kalender,
   // Karte, dazu das Video. Kanban bleibt im Register und laesst sich im

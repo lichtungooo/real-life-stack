@@ -100,6 +100,9 @@ export class AbschnittSchneider {
 
   constructor(private readonly h: SchneiderHoerer, private readonly praefix = "a") {}
 
+  /** Der Abschnitt, der gerade laeuft, oder `null` in der Stille. */
+  get offeneId(): string | null { return this.offen }
+
   block(pcm: Float32Array, pegel: number, jetzt: number): void {
     const { zustand, ereignis } = waechterSchritt(this.zustand, pegel, BLOCK_MS, jetzt)
     this.zustand = zustand
@@ -151,6 +154,15 @@ export class MitschriftAufnahme {
   // Was hinaus soll, solange der Dienst (noch) nicht bereit ist; knapp eine Minute.
   private ausgang: Post[] = []
   private zeiten = new Map<string, { beginn: number; ende: number; behalten: boolean }>()
+  // Der zuletzt gemeldete Text je Abschnitt. Reisst die Verbindung, bleibt er
+  // stehen, und was nach dem Wiederverbinden kommt, haengt sich an.
+  private zuletzt = new Map<string, string>()
+  private vorher = new Map<string, string>()
+  private wiederverbunden = false
+  private mitVorher(id: string, text: string): string {
+    const v = this.vorher.get(id)
+    return v ? [v, text].filter(Boolean).join(" ").trim() : text
+  }
   private schneider: AbschnittSchneider
 
   constructor(private readonly o: MitschriftOptionen) {
@@ -226,13 +238,27 @@ export class MitschriftAufnahme {
         this.bereit = true
         this.versuche = 0
         this.o.hoerer.verbunden(true)
+        // Nach einem Abriss: Der laufende Abschnitt geht beim Dienst neu auf,
+        // unter derselben Id; der Text bis zum Abriss bleibt davor stehen.
+        const offen = this.schneider.offeneId
+        if (this.wiederverbunden && offen) {
+          this.vorher.set(offen, this.zuletzt.get(offen) ?? "")
+          ws.send(JSON.stringify({ typ: "beginn", id: offen }))
+        }
+        this.wiederverbunden = false
         for (const p of this.ausgang.splice(0)) ws.send(p)
       } else if (n.typ === "live" && typeof n.id === "string") {
-        this.o.hoerer.live(n.id, n.text ?? "", n.vorlaeufig ?? "")
+        const v = this.vorher.get(n.id)
+        const text = v ? [v, n.text ?? ""].filter(Boolean).join(" ") : n.text ?? ""
+        this.zuletzt.set(n.id, [text, n.vorlaeufig ?? ""].filter(Boolean).join(" "))
+        this.o.hoerer.live(n.id, text, n.vorlaeufig ?? "")
       } else if (n.typ === "text" && typeof n.id === "string") {
         const z = this.zeiten.get(n.id)
         this.zeiten.delete(n.id)
-        if (z) this.o.hoerer.fertig(n.id, n.verworfen ? "" : n.text ?? "", z.beginn, z.ende, z.behalten)
+        const text = this.mitVorher(n.id, n.verworfen ? "" : n.text ?? "")
+        this.zuletzt.delete(n.id)
+        this.vorher.delete(n.id)
+        if (z) this.o.hoerer.fertig(n.id, text, z.beginn, z.ende, z.behalten)
         if (n.verworfen && n.grund === "voll") this.o.hoerer.fehler("Die Mitschrift kam nicht nach; ein Stück fehlt.")
       } else if (n.typ === "fehler" && typeof n.text === "string") {
         this.o.hoerer.fehler(n.text)
@@ -241,9 +267,16 @@ export class MitschriftAufnahme {
     ws.onclose = (e) => {
       if (this.ws !== ws) return
       this.bereit = false
+      this.wiederverbunden = true
       this.o.hoerer.verbunden(false)
-      // Was unterwegs war, kommt nicht mehr: offene Zeilen schliessen.
-      for (const [id, z] of this.zeiten) this.o.hoerer.fertig(id, "", z.beginn, z.ende, false)
+      // Was beendet, aber noch nicht erkannt war, kommt nicht mehr: Diese
+      // Abschnitte behalten den Text, der bis zum Abriss da war.
+      for (const [id, z] of this.zeiten) {
+        const bis = this.zuletzt.get(id) ?? ""
+        this.o.hoerer.fertig(id, bis, z.beginn, z.ende, z.behalten && bis !== "")
+        this.zuletzt.delete(id)
+        this.vorher.delete(id)
+      }
       this.zeiten.clear()
       if (this.gestoppt) return
       if (e.code === 4403) { this.gestoppt = true; return }

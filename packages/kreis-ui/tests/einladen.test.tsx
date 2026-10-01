@@ -93,7 +93,7 @@ describe("Der Einladungstext", () => {
     expect(t).toContain("Einladung zur Session „Garten“")
     expect(t).toContain("Wir planen das Frühjahr.")
     expect(t).toContain("https://x.org/einladung/?konferenz=1")
-    expect(t).toContain("Conferencing ist ein Modul vom Real Life Network.")
+    expect(t).toContain("Circling ist ein Modul vom Real Life Network.")
   })
 
   it("ohne Beschreibung bleibt keine leere Zeile", () => {
