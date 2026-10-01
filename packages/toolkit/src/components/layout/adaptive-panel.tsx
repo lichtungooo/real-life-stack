@@ -920,7 +920,10 @@ export function AdaptivePanel({
 
           {/* Close + pin + mode switch buttons (modal and sidebar) */}
           {mode !== "drawer" && (
-            <div className="absolute top-3 right-3 z-10 flex items-center gap-0.5">
+            // NAHT trustdonation (A-PanelKopf): eine feste Kopfzeile mit eigener
+            // Flaeche wie der Kommentar-Fuss, statt absolut ueber dem Inhalt —
+            // sonst scrollt der Inhalt unter das ✕ (Timo, 01.10.2026).
+            <div className="flex-shrink-0 flex items-center justify-end gap-0.5 border-b px-3 py-1 surface-glass-inner">
               {/* Platz fuer die Aktionen des Inhalts (⋮), links neben den
                   eigenen Knoepfen des Panels — siehe PanelHeaderActions. */}
               <div ref={setHeaderSlot} className="flex items-center gap-0.5" />

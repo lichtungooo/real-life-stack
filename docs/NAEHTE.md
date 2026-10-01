@@ -1,6 +1,6 @@
 # Nähte
 
-**Stand:** 01.10.2026 (dazu Naht A-Marker), zusammengeführt mit Antons `31d13fc3` (8 Commits, App-Abschnitte im Space-Dialog rls#551). Davor 29.09.2026 mit `bb8487b1`
+**Stand:** 01.10.2026 (dazu Nähte A-Marker und A-PanelKopf), zusammengeführt mit Antons `31d13fc3` (8 Commits, App-Abschnitte im Space-Dialog rls#551). Davor 29.09.2026 mit `bb8487b1`
 **Regeln:** [ARCHITEKTUR.md, Teil 4](ARCHITEKTUR.md)
 
 Eine **Naht** ist eine Stelle, an der wir Antons Code ändern, weil kein Haken dafür da ist. Nähte sind erlaubt. Unbenannte Nähte sind es nicht.
@@ -130,6 +130,17 @@ Stellen, an denen ein Haken fehlt und wir ihn uns wünschen.
 | **Risiko bei Update** | mittel: sechs Dateien, je unter zwanzig Zeilen, alle mit `NAHT trustdonation (A-Marker)` markiert. Antons 56 Tests für Karte, Marker und Darstellung grün |
 | **Wunsch an Anton** | Ein Feld `marker` je Typ in der Darstellung (Spec 06) und Formen mit eigenem Anker. Anwendungsfall: Auf einer Karte mit Stiftungen, Projekten und Menschen soll man die Art auf einen Blick erkennen, ohne jeden Eintrag einzeln einzufärben |
 | **Zwischenschritt** | Unser Test `apps/reference/src/marker-art.test.ts` hält fest, was gelten muss |
+
+### A-PanelKopf. Die Knöpfe des Panels stehen in einer festen Kopfzeile (01.10.2026)
+
+| | |
+|---|---|
+| **Datei** | `packages/toolkit/src/components/layout/adaptive-panel.tsx` (+4/-1, markiert `NAHT trustdonation (A-PanelKopf)`) |
+| **Was wir tun** | Die Knopfleiste (⋮, Moduswechsel, ✕) ist keine absolut liegende Gruppe über dem Inhalt mehr, sondern eine feste Zeile oben mit eigener Glasfläche (`surface-glass-inner`, `border-b`), schmaler als der Kommentar-Fuß. Der Inhalt scrollt darunter, wie unten über dem Kommentar-Fuß |
+| **Warum kein Haken** | Die Leiste ist fest verdrahtet. Timo, 01.10.2026, mit Bildschirmfoto des Project Profile: *"Wenn ich nach oben scrolle, läuft das oben raus … das X wird überdeckt … oben eine kleine Leiste, in die das X eingebettet ist, etwas kleiner als unten die Kommentarzeile"* |
+| **Risiko bei Update** | gering: eine Zeile Klassen; bei Kollision Antons neue Fassung nehmen und die Klassen wieder setzen |
+| **Wunsch an Anton** | Die Knopfleiste des Panels als feste Kopfzeile, für alle Inhalte. Anwendungsfall: Ein Detail mit großem Titelbild schiebt sich beim Scrollen unter ✕ und ⋮, beide werden unlesbar |
+| **Zwischenschritt** | keiner nötig |
 
 ### A-Sammelnetzwerk. Gruppen ohne Netzwerk erscheinen in einem Netzwerk (30.09.2026)
 
