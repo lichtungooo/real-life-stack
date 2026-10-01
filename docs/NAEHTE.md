@@ -1,6 +1,6 @@
 # Nähte
 
-**Stand:** 29.09.2026, zusammengeführt mit Antons `bb8487b1` (92 Commits, Modul-Host B0 bis B5)
+**Stand:** 01.10.2026, zusammengeführt mit Antons `31d13fc3` (8 Commits, App-Abschnitte im Space-Dialog rls#551). Davor 29.09.2026 mit `bb8487b1`
 **Regeln:** [ARCHITEKTUR.md, Teil 4](ARCHITEKTUR.md)
 
 Eine **Naht** ist eine Stelle, an der wir Antons Code ändern, weil kein Haken dafür da ist. Nähte sind erlaubt. Unbenannte Nähte sind es nicht.
@@ -51,6 +51,7 @@ Stellen, an denen ein Haken fehlt und wir ihn uns wünschen.
 | **Warum kein Haken** | `spaceConfigSections` ist eine feste Funktion, kein Register mit Schichten. Die Inhalts-Blöcke stehen direkt im Dialog. |
 | **Risiko bei Update** | **hoch.** Antons meistbearbeitete Datei. Jede Umgestaltung des Dialogs trifft uns. |
 | **Wunsch an Anton** | Das Muster, das er beim Modul- und Typ-Register selbst gewählt hat, auch hier: `composeSpaceConfigSections(layers)` mit Core- und App-Schicht, und je Bereich ein Inhalts-Slot. Dann liefert unsere App ihre zwei Bereiche als Schicht, und seine Datei bleibt unberührt. |
+| **Erfüllt am 30.09.2026** | Anton hat den Haken gebaut: `GroupDialog appSections` / `AppFrame spaceSections` (rls#551). Die Erweiterungen hängen schon daran (DEFINITION Teil 8). **Nächster Schritt:** unsere Bereiche Netzwerk und Landingpage als App-Abschnitte herausziehen; dann schrumpft diese Naht von rund 380 Zeilen auf die Häkchen für Netzwerk und Sammelnetzwerk. |
 | **Zwischenschritt** | Die 383 Zeilen nach `td-ui` ziehen. Im Dialog bleibt ein Aufruf je Bereich. Aus 383 werden etwa 20. |
 
 ### A2. Gliederung im Space-Wechsel
@@ -284,3 +285,9 @@ python td-tools/anton-stand.py
 ```
 
 Der Bericht zählt die Nähte, gleicht sie mit dieser Datei ab und nennt jede Datei, die hier fehlt. Er hat die Abschnitte F und G selbst gefunden.
+
+## Neue Wünsche an Anton (01.10.2026)
+
+| Wunsch | Warum |
+|---|---|
+| `description` und `author` im Modul-Register (`ModuleEntry`) | Die Erweiterungen zeigen je Modul Beschreibung und Erbauer. Heute stehen sie in unserem Verzeichnis `td-core/src/erweiterungen.ts`, verschlüsselt über die Modul-Id. Kennt sein Register die Felder, bringt jedes Modul sie selbst mit, auch fremde, und bei uns bleibt nur die Reife (geprüft oder Beta). |
