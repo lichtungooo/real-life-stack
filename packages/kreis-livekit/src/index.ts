@@ -38,6 +38,8 @@ export interface LiveKitRaumOptionen {
   mitschriftUrl?: string
   /** Aufnahme der Kamera. Standard "h540" (gemessen: Video ist die Last). */
   video?: "h360" | "h540" | "h720"
+  /** Video-Codec. Standard von LiveKit ist vp8 (reine Software). */
+  codec?: "vp8" | "h264" | "vp9" | "av1"
   /** Mikrofon beim Betreten an. Standard: an. */
   mikroBeimBetreten?: boolean
 }
@@ -151,6 +153,7 @@ export function liveKitKreisRaum(optionen: LiveKitRaumOptionen = KREIS_WIR_OOO):
         videoEncoding: VideoPresets[optionen.video ?? "h540"].encoding,
         videoSimulcastLayers: [VideoPresets.h180, VideoPresets.h360],
         dtx: true,
+        ...(optionen.codec ? { videoCodec: optionen.codec } : {}),
       },
     })
     for (const ereignis of [

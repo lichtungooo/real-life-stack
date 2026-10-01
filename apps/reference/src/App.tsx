@@ -53,9 +53,14 @@ function videoAusAdresse(): "h360" | "h540" | "h720" | undefined {
   const v = new URLSearchParams(window.location.search).get("video")
   return v === "720" ? "h720" : v === "360" ? "h360" : v === "540" ? "h540" : undefined
 }
+// `?codec=h264` (vp8, vp9, av1) fuer denselben Vergleich beim Kodieren.
+function codecAusAdresse(): "vp8" | "h264" | "vp9" | "av1" | undefined {
+  const c = new URLSearchParams(window.location.search).get("codec")
+  return c === "vp8" || c === "h264" || c === "vp9" || c === "av1" ? c : undefined
+}
 const kreisFabrik = new URLSearchParams(window.location.search).get("kreis") === "lokal"
   ? () => lokalerKreisRaum()
-  : () => liveKitKreisRaum({ ...KREIS_WIR_OOO, video: videoAusAdresse() })
+  : () => liveKitKreisRaum({ ...KREIS_WIR_OOO, video: videoAusAdresse(), codec: codecAusAdresse() })
 import { MapLibreAdapterProvider } from "@real-life-stack/toolkit/maplibre"
 import { MockConnector } from "@real-life-stack/mock-connector"
 import { LocalConnector } from "@real-life-stack/local-connector"
