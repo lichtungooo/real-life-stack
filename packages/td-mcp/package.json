@@ -1,0 +1,31 @@
+{
+  "name": "@trustdonation/mcp",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "description": "MCP-Server: Der eigene Agent eines Menschen entwirft ein Projektprofil für trustdonation. Er speichert nichts; er gibt einen Link, den der Mensch in der App öffnet (DEFINITION 13.6).",
+  "type": "module",
+  "bin": {
+    "td-mcp": "./dist/src/index.js"
+  },
+  "main": "./dist/src/server.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "start": "node dist/src/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@trustdonation/core": "workspace:*",
+    "zod": "^4"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.3",
+    "typescript": "~5.7.2",
+    "vitest": "^4.1.0"
+  }
+}

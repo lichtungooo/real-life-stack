@@ -38,6 +38,7 @@ import { traegtProfil } from "@trustdonation/core"
 import { NetzwerkeImport, StiftungenImport, importZiel } from "@trustdonation/ui"
 import { SpaceProfilPanel } from "./views/profil-panel"
 import { ERWEITERUNGEN_ABSCHNITT } from "./views/erweiterungen-abschnitt"
+import { ProjektEntwurfHost } from "./views/projekt-entwurf-host"
 // Der Kreis bekommt seinen Raum von der App (Spec kreis, "Der Raum-Adapter").
 // LiveKit unter kreis.wir.ooo traegt Bild und Ton; `?kreis=lokal` waehlt den
 // Probe-Raum, der nur die Fenster auf einem Geraet verbindet, ohne Server.
@@ -403,6 +404,9 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
             gibt, den eine Stiftung versehentlich drückt:
             .../<space>/feed?connector=wot&import=stiftungen */}
         <StiftungenImportHost beispielwelt={activeConnectorId === "local"} />
+        {/* Ein Projektprofil aus dem Entwurf eines Agenten (td-mcp): Der Link
+            traegt ihn im Fragment, der Mensch legt selbst an (DEFINITION 13.6). */}
+        <ProjektEntwurfHost beispielwelt={activeConnectorId === "local"} />
         {/* Unsere Netzwerke als echte Spaces anlegen (Timo, 30.09.2026).
             Ausgeloest ueber den Knopf in der Kopfzeile oder ?import=netzwerke. */}
         <NetzwerkeImportHost beispielwelt={activeConnectorId === "local"} />

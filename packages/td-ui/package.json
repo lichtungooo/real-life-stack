@@ -18,6 +18,11 @@
       "development": "./src/erweiterungen.tsx",
       "import": "./dist/src/erweiterungen.js"
     },
+    "./projekt-entwurf": {
+      "types": "./dist/src/projekt-entwurf.d.ts",
+      "development": "./src/projekt-entwurf.tsx",
+      "import": "./dist/src/projekt-entwurf.js"
+    },
     "./projekt-profil": {
       "types": "./dist/src/projekt-profil.d.ts",
       "development": "./src/projekt-profil.tsx",

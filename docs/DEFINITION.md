@@ -667,6 +667,45 @@ Drei Wege stehen offen, und die Wahl gehört Timo und Anton:
 
 Der dritte ist der, der zum Rest passt: Der Werkzeug-Vertrag steht schon als Register, und ein Space, der einen MCP-Server nennen kann, bringt jede App ihre Werkzeuge selbst mit. Dasselbe Muster wie `presents` bei den Modulen.
 
+### 13.6 Profil-Entwürfe über den eigenen Agenten (01.10.2026)
+
+**Frage:** Was folgt daraus, dass ein Mensch seinen eigenen Agenten ein Projektprofil entwerfen lässt?
+
+Timo am 01.10.2026: *"Profile selber zu generieren ist echt Profiarbeit … derjenige, der das Projekt präsentiert, gibt Text und Bilder ein und kann dann sein Profil erstellen … das wäre doch sinnvoll, jetzt mal zu testen, ob das funktioniert, so einen Begleiter aufzubauen."* Gewählt: gleich der MCP-Server (Stufe 2).
+
+Das ist der erste Schritt des dritten Wegs aus 13.4. Der Mensch bringt seinen Agenten mit: Claude, Kimi oder ein offenes Modell, jeder MCP-fähige Client. Die Instanz zahlt nichts, und kein Schlüssel liegt im Browser.
+
+**Der Agent entwirft, der Mensch speichert.** Ein fremder Agent kann nicht mit der Identität des Menschen im Web of Trust unterschreiben. Er legt also nichts im Space ab. Er liefert einen **Link**, der den geprüften Entwurf trägt. Der Mensch öffnet ihn in der App, sieht die Vorschau, wählt den Space und speichert selbst. Damit bleibt Regel 13.3 stehen: Kein Werkzeug schreibt.
+
+**Der Entwurf reist im Fragment des Links** (`…#projekt-entwurf=<base64url>`). Der Teil nach `#` geht nie an einen Server, auch nicht an unseren. Es gibt keinen Zwischenspeicher, der Daten hält, kein Konto und keine Frist.
+
+#### Die Werkzeuge
+
+| Werkzeug | Was es tut | Schreibt |
+|---|---|---|
+| `projekt_profil_vorgabe` | gibt die Felder mit Frage und Form, die Regeln (Bedürfnis als Lücke, nichts erfinden, Beispielzahlen kennzeichnen) und das Musterprojekt als Beispiel | nein |
+| `projekt_profil_pruefen` | nimmt einen Entwurf und sagt, welche Abschnitte erscheinen, was fehlt und was verworfen wird (unsichere Adressen, falsche Formen) | nein |
+| `projekt_profil_link` | prüft, ergänzt auf Wunsch die Koordinaten zur Anschrift und gibt den Link zur App | nein |
+
+#### Die eine Quelle
+
+| Was | Wo |
+|---|---|
+| welche Felder ein Projektprofil hat, mit Frage und Form | `PROJEKT_PROFIL_FELDER` in `td-core/src/projekt-entwurf.ts` |
+| was davon sicher und gültig ist | `projektProfil()` (dieselbe Schleuse wie beim Anzeigen) |
+| Prüfbericht, Kodieren und Lesen des Entwurfs | `projektEntwurfPruefen`, `entwurfKodieren`, `entwurfLesen` in `td-core/src/projekt-entwurf.ts` |
+| der MCP-Server | `packages/td-mcp`, ruft nur td-core; keine eigene Feldliste |
+| die Vorschau und das Speichern | `apps/reference`, über `createItem(…, { group })`, den Weg des Stacks |
+
+#### Regeln
+
+1. **Eine Feldliste.** Vorgabe, Prüfung und Test leiten sich aus `PROJEKT_PROFIL_FELDER` ab. Ein Test hält fest, dass `projektProfil` jedes Feld der Liste liest.
+2. **Der Entwurf geht durch dieselbe Schleuse** wie jeder andere Eintrag. Was dort wegfällt, fällt auch hier weg, und der Prüfbericht nennt es.
+3. **Unbekannte Felder** im Entwurf bleiben erhalten und werden als „unbekannt, bleibt liegen“ gemeldet. Sie erscheinen nicht.
+4. **Nichts wird gespeichert ohne den Menschen.** Die App zeigt die Vorschau und den Ziel-Space; erst ein Klick legt an.
+5. **Größe:** Ein Entwurf über 48 KB wird abgelehnt (Bilder als Adressen, nicht eingebettet).
+6. **Was die Werkzeuge nicht tragen:** kein Schreiben in einen Space, keine Schlüssel, keine Bewertung des Projekts, kein Hochladen von Bildern.
+
 ### 13.5 Regeln
 
 1. Der Companion ist **eine** Fläche und trägt **eine** Werkzeug-Liste. Eine zweite Aufzählung von Werkzeugen ist ein Fehler (Muster 1).

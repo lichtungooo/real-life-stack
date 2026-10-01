@@ -49,6 +49,14 @@ export interface ProjektProfilSeiteProps {
 
 type Symbol = ComponentType<{ className?: string }>
 
+// Die Kennzahlen füllen die Breite, wie viele es auch sind (eine bis vier).
+const KENNZAHL_SPALTEN: Record<number, string> = {
+  1: "grid-cols-1",
+  2: "grid-cols-2",
+  3: "grid-cols-2 md:grid-cols-3",
+  4: "grid-cols-2 md:grid-cols-4",
+}
+
 const FARBEN = ["bg-emerald-600", "bg-amber-600", "bg-sky-600", "bg-rose-600", "bg-violet-600", "bg-teal-600"]
 
 function Ueberschrift({ icon: Icon, children }: { icon: Symbol; children: ReactNode }) {
@@ -237,7 +245,7 @@ export function ProjektProfilVoll({
 
         {/* Kennzahlen, halb über dem Kopf */}
         {p.kennzahlen.length > 0 && (
-          <ul className="relative z-10 mx-auto -mt-10 grid max-w-6xl grid-cols-2 gap-3 px-5 sm:px-8 md:grid-cols-4" aria-label="Kennzahlen">
+          <ul className={`relative z-10 mx-auto -mt-10 grid max-w-6xl gap-3 px-5 sm:px-8 ${KENNZAHL_SPALTEN[p.kennzahlen.length] ?? KENNZAHL_SPALTEN[4]}`} aria-label="Kennzahlen">
             {p.kennzahlen.map((z) => (
               <li key={`${z.wert}-${z.was}`} className="rounded-2xl bg-card p-4 shadow-lg shadow-black/5 dark:shadow-black/30">
                 <p className="text-2xl font-bold tracking-tight text-emerald-700 sm:text-3xl dark:text-emerald-300">{z.wert}</p>
