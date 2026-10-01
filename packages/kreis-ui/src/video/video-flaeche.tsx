@@ -28,6 +28,7 @@ import { VideoRaumFlaeche } from "./video-raum-flaeche"
 import type { KonferenzEinladen } from "./einladen"
 import { TextDokument, TextdokumentAnlegen, type TextdokumentAnschluss } from "./textdokument"
 import { dokumentTitel } from "./markdown-werkzeug"
+import { MiniKonferenz } from "./mini-konferenz"
 
 /**
  * Der Link zum Einladen. Nur die App kennt Adresse und Basispfad, darum gibt
@@ -35,10 +36,11 @@ import { dokumentTitel } from "./markdown-werkzeug"
  */
 export type EinladungsLink = (gruppeId: string, gruppeName: string) => string
 
-export function VideoFlaeche({ groupId, einladungsLink }: ModuleViewProps & { einladungsLink?: EinladungsLink }) {
+export function VideoFlaeche({ groupId, active, einladungsLink }: ModuleViewProps & { einladungsLink?: EinladungsLink }) {
   const { data: groups } = useGroups()
   const { data: user } = useCurrentUser()
   const createItem = useCreateItem()
+  const navigate = useNavigate()
   const space = (groups ?? []).find((g) => g.id === groupId)
   const raumName = space?.name ?? groupId ?? "kreis"
 
@@ -111,9 +113,15 @@ export function VideoFlaeche({ groupId, einladungsLink }: ModuleViewProps & { ei
   // In der Uebersicht ("Mein Netzwerk") gehoert die Konferenz keiner Gruppe.
   // Sie zeigt dann die Gruppen, in denen man sich treffen kann (Timo,
   // 30.09.2026: im Login stand dort `__overview__` als Raumname).
-  if (!space) return <GruppeWaehlen />
+  // Ist ein anderes Modul vorne, laeuft die Konferenz im Kleinen weiter
+  // (Anton, 01.10.2026). Ton und Verbindung bleiben ohnehin, das Modul ist gehalten.
+  const mini = !active && <MiniKonferenz onZurueck={(gruppe) => navigate(`/${gruppe || groupId}/video`)} />
+
+  if (!space) return <>{mini}<GruppeWaehlen /></>
 
   return (
+    <>
+    {mini}
     <VideoRaumFlaeche
       raumName={raumName}
       raumId={space.id}
@@ -123,6 +131,7 @@ export function VideoFlaeche({ groupId, einladungsLink }: ModuleViewProps & { ei
       ergebnisAblegen={ergebnisAblegen}
       textdokument={textdokument}
     />
+    </>
   )
 }
 

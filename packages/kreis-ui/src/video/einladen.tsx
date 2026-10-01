@@ -47,7 +47,7 @@ export function einladungsText(gruppe: string, link: string, beschreibung?: stri
     "Wir treffen uns im Video-Raum der Gruppe: Bild, Ton, Chat und der Kreis mit dem Redestab. Ein Klick führt hinein.",
     link,
     "Zum ersten Mal dabei? Du legst dir deinen eigenen Zugang an, zwölf Wörter, die nur dir gehören. Dann nimmt dich die Runde in die Gruppe auf.",
-    "Circling ist ein Modul vom Real Life Network.",
+    "Circeling ist ein Modul vom Real Life Network.",
   ]
   return teile.filter(Boolean).join("\n\n")
 }
