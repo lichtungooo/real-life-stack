@@ -37,6 +37,29 @@ async function stiftungen() {
   return musterItems.filter((i) => String(i.id).startsWith("stiftung-"))
 }
 
+/** Was ein zweiter Lauf an einer schon eingespielten Stiftung nachzieht. */
+const NACHZUG = ["icon", "address", "position", "sitz", "ortGenauigkeit", "website", "anschriftQuelle"] as const
+
+/**
+ * Was an einer schon eingespielten Stiftung nachgezogen wird, oder `null`.
+ *
+ * Das Symbol (01.10.2026) kommt immer, wenn es fehlt. Ort, Anschrift und
+ * Website nur, solange der Eintrag noch unsere Recherche ist (`quelle`
+ * unveraendert): Hat eine Stiftung ihn uebernommen und selbst gepflegt,
+ * bleibt er, wie sie ihn haben will.
+ */
+export function nachtrag(da: Record<string, unknown>, neu: Record<string, unknown>): Record<string, unknown> | null {
+  const unsere = da.quelle === neu.quelle
+  const patch: Record<string, unknown> = {}
+  for (const k of NACHZUG) {
+    if (neu[k] === undefined) continue
+    const fehlt = da[k] === undefined || da[k] === null || da[k] === ""
+    const anders = JSON.stringify(da[k]) !== JSON.stringify(neu[k])
+    if (k === "icon" ? fehlt : unsere && anders) patch[k] = neu[k]
+  }
+  return Object.keys(patch).length ? patch : null
+}
+
 /**
  * Schreibt die Stiftungen in den aktiven Space.
  *
@@ -57,12 +80,12 @@ export async function stiftungenSchreiben(
   }
 
   const liste = await stiftungen()
-  // Titel -> was schon da ist (Id und Symbol), damit ein zweiter Lauf
-  // nachtraegt, was neu dazukam, statt nur nichts zu verdoppeln.
-  let vorhanden = new Map<string, { id: string; icon: unknown }>()
+  // Titel -> was schon da ist, damit ein zweiter Lauf nachtraegt, was neu
+  // dazukam, statt nur nichts zu verdoppeln.
+  let vorhanden = new Map<string, { id: string; data: Record<string, unknown> }>()
   try {
     const da = await connector.getItems({ type: "place" })
-    vorhanden = new Map(da.map((i) => [String((i.data as { title?: string })?.title ?? ""), { id: i.id, icon: (i.data as { icon?: unknown })?.icon }]))
+    vorhanden = new Map(da.map((i) => [String((i.data as { title?: string })?.title ?? ""), { id: i.id, data: (i.data ?? {}) as Record<string, unknown> }]))
   } catch {
     // Wenn die Liste nicht kommt, wird eben alles versucht. Doppelte sind
     // ärgerlich, ein Abbruch wäre schlimmer.
@@ -75,11 +98,9 @@ export async function stiftungenSchreiben(
     const titel = String((item.data as { title?: string })?.title ?? "")
     const da = titel ? vorhanden.get(titel) : undefined
     if (da) {
-      // Das Symbol im Marker (01.10.2026) fehlt Stiftungen, die vorher
-      // eingespielt wurden: nachtragen, sonst nichts anfassen.
-      const icon = (item.data as { icon?: unknown })?.icon
-      if (icon && !da.icon && typeof connector.updateItem === "function") {
-        try { await connector.updateItem(da.id, { data: { icon } }); geschrieben++ } catch { uebersprungen++ }
+      const patch = nachtrag(da.data, item.data as Record<string, unknown>)
+      if (patch && typeof connector.updateItem === "function") {
+        try { await connector.updateItem(da.id, { data: patch }); geschrieben++ } catch { uebersprungen++ }
       } else {
         uebersprungen++
       }

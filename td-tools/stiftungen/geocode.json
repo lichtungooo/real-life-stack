@@ -1,0 +1,754 @@
+{
+ "{\"city\": \"Aachen\", \"countrycodes\": \"de\", \"postalcode\": \"52064\", \"street\": \"Goethestraße 43\"}": [
+  6.07572,
+  50.76148
+ ],
+ "{\"city\": \"Aichtal\", \"countrycodes\": \"de\", \"postalcode\": \"72631\", \"street\": \"Gutenbergstraße 4\"}": [
+  9.229145,
+  48.630152
+ ],
+ "{\"city\": \"Amsterdam\", \"countrycodes\": \"nl\", \"postalcode\": \"1016 BX\", \"street\": \"Herengracht 276-h\"}": [
+  4.886563,
+  52.370944
+ ],
+ "{\"city\": \"Augsburg\", \"countrycodes\": \"de\", \"postalcode\": \"86152\", \"street\": \"Fuggerei 56\"}": [
+  10.903745,
+  48.369614
+ ],
+ "{\"city\": \"Aurich\", \"countrycodes\": \"de\", \"postalcode\": \"26605\", \"street\": \"Dreekamp 5\"}": [
+  7.461999,
+  53.468826
+ ],
+ "{\"city\": \"Baar\", \"countrycodes\": \"ch\", \"postalcode\": \"6340\", \"street\": \"Neuhofstrasse 4\"}": [
+  8.513576,
+  47.190199
+ ],
+ "{\"city\": \"Bad Dürrheim\", \"countrycodes\": \"de\", \"postalcode\": \"78073\", \"street\": \"Schabelweg 4-6\"}": [
+  8.528189,
+  48.017147
+ ],
+ "{\"city\": \"Bad Homburg v. d. Höhe\", \"countrycodes\": \"de\", \"postalcode\": \"61352\", \"street\": \"Seedammweg 55\"}": [
+  8.639852,
+  50.229259
+ ],
+ "{\"city\": \"Bamberg\", \"countrycodes\": \"de\", \"postalcode\": \"96047\", \"street\": \"Willy-Lessing-Straße 1\"}": [
+  10.892516,
+  49.892556
+ ],
+ "{\"city\": \"Basel\", \"countrycodes\": \"ch\", \"postalcode\": \"4001\", \"street\": \"Gerbergasse 30\"}": [
+  7.588099,
+  47.556618
+ ],
+ "{\"city\": \"Bayreuth\", \"countrycodes\": \"de\", \"postalcode\": \"95444\", \"street\": \"Lisztstraße 16\"}": [
+  11.583923,
+  49.939718
+ ],
+ "{\"city\": \"Berlin\", \"countrycodes\": \"de\", \"postalcode\": \"10115\", \"street\": \"Caroline-Michaelis-Str. 1\"}": [
+  13.385284,
+  52.531741
+ ],
+ "{\"city\": \"Berlin\", \"countrycodes\": \"de\", \"postalcode\": \"10115\", \"street\": \"Caroline-Michaelis-Strasse 1\"}": [
+  13.385284,
+  52.531741
+ ],
+ "{\"city\": \"Berlin\", \"countrycodes\": \"de\", \"postalcode\": \"10117\", \"street\": \"Am Festungsgraben 1\"}": [
+  13.395498,
+  52.518524
+ ],
+ "{\"city\": \"Berlin\", \"countrycodes\": \"de\", \"postalcode\": \"10117\", \"street\": \"Anton-Wilhelm-Amo-Straße 20/21\"}": [
+  13.390759,
+  52.511864
+ ],
+ "{\"city\": \"Berlin\", \"countrycodes\": \"de\", \"postalcode\": \"10117\", \"street\": \"Leipziger Straße 116-118\"}": [
+  13.393041,
+  52.510613
+ ],
+ "{\"city\": \"Berlin\", \"countrycodes\": \"de\", \"postalcode\": \"10117\", \"street\": \"Pariser Platz 6\"}": [
+  13.378319,
+  52.516941
+ ],
+ "{\"city\": \"Berlin\", \"countrycodes\": \"de\", \"postalcode\": \"10117\", \"street\": \"Reinhardtstr. 25\"}": [
+  13.38309,
+  52.523027
+ ],
+ "{\"city\": \"Berlin\", \"countrycodes\": \"de\", \"postalcode\": \"10117\", \"street\": \"Reinhardtstraße 37\"}": [
+  13.380206,
+  52.522587
+ ],
+ "{\"city\": \"Berlin\", \"countrycodes\": \"de\", \"postalcode\": \"10117\", \"street\": \"Schumannstraße 8\"}": [
+  13.38296,
+  52.523769
+ ],
+ "{\"city\": \"Berlin\", \"countrycodes\": \"de\", \"postalcode\": \"10119\", \"street\": \"Linienstraße 65a\"}": [
+  13.404085,
+  52.529218
+ ],
+ "{\"city\": \"Berlin\", \"countrycodes\": \"de\", \"postalcode\": \"10178\", \"street\": \"Spreeufer 5\"}": [
+  13.405063,
+  52.516945
+ ],
+ "{\"city\": \"Berlin\", \"countrycodes\": \"de\", \"postalcode\": \"10405\", \"street\": \"Greifswalder Straße 33a\"}": [
+  13.430184,
+  52.533282
+ ],
+ "{\"city\": \"Berlin\", \"countrycodes\": \"de\", \"postalcode\": \"10587\", \"street\": \"Helmholtzstraße 2-9\"}": [
+  13.323609,
+  52.521202
+ ],
+ "{\"city\": \"Berlin\", \"countrycodes\": \"de\", \"postalcode\": \"10627\", \"street\": \"Schillerstrasse 59\"}": [
+  13.298682,
+  52.509831
+ ],
+ "{\"city\": \"Berlin\", \"countrycodes\": \"de\", \"postalcode\": \"10707\", \"street\": \"Brandenburgische Str. 36\"}": [
+  13.30693,
+  52.499186
+ ],
+ "{\"city\": \"Berlin\", \"countrycodes\": \"de\", \"postalcode\": \"12099\", \"street\": \"Tempelhofer Damm 156\"}": [
+  13.385267,
+  52.464489
+ ],
+ "{\"city\": \"Berlin\", \"countrycodes\": \"de\"}": [
+  13.395131,
+  52.517389
+ ],
+ "{\"city\": \"Bielefeld\", \"countrycodes\": \"de\", \"postalcode\": \"33613\", \"street\": \"Campus Handwerk 1\"}": [
+  8.535625,
+  52.032607
+ ],
+ "{\"city\": \"Bielefeld\", \"countrycodes\": \"de\", \"postalcode\": \"33617\", \"street\": \"Königsweg 1\"}": [
+  8.523454,
+  52.012531
+ ],
+ "{\"city\": \"Bochum\", \"countrycodes\": \"de\", \"postalcode\": \"44789\", \"street\": \"Christstraße 9\"}": [
+  7.219507,
+  51.470895
+ ],
+ "{\"city\": \"Bonn\", \"countrycodes\": \"de\", \"postalcode\": \"53113\", \"street\": \"Friedrich-Ebert-Allee 71-77, Haus 3\"}": [],
+ "{\"city\": \"Bonn\", \"countrycodes\": \"de\", \"postalcode\": \"53113\", \"street\": \"Menuhinstraße 6\"}": [
+  7.132973,
+  50.707603
+ ],
+ "{\"city\": \"Bonn\", \"countrycodes\": \"de\", \"postalcode\": \"53113\", \"street\": \"Schlegelstraße 1\"}": [
+  7.121922,
+  50.717382
+ ],
+ "{\"city\": \"Bonn\", \"countrycodes\": \"de\", \"postalcode\": \"53113\"}": [
+  7.102463,
+  50.735262
+ ],
+ "{\"city\": \"Bonn\", \"countrycodes\": \"de\", \"postalcode\": \"53123\", \"street\": \"Rochusstraße 8-10\"}": [
+  7.060857,
+  50.720972
+ ],
+ "{\"city\": \"Bonn\", \"countrycodes\": \"de\", \"postalcode\": \"53173\", \"street\": \"Jean-Paul-Strasse 12\"}": [
+  7.165804,
+  50.68744
+ ],
+ "{\"city\": \"Bonn\", \"countrycodes\": \"de\", \"postalcode\": \"53175\", \"street\": \"Godesberger Allee 149\"}": [
+  7.134856,
+  50.702013
+ ],
+ "{\"city\": \"Bonn\", \"countrycodes\": \"de\", \"postalcode\": \"53175\", \"street\": \"Heinemannstr. 36\"}": [
+  7.143231,
+  50.705392
+ ],
+ "{\"city\": \"Burladingen\", \"countrycodes\": \"de\"}": [
+  9.113469,
+  48.289285
+ ],
+ "{\"city\": \"Darmstadt\", \"countrycodes\": \"de\", \"postalcode\": \"64293\", \"street\": \"Emanuel-Merck-Platz 1\"}": [],
+ "{\"city\": \"Darmstadt\", \"countrycodes\": \"de\", \"postalcode\": \"64293\"}": [
+  8.651177,
+  49.872775
+ ],
+ "{\"city\": \"Darmstadt\", \"countrycodes\": \"de\", \"postalcode\": \"64297\", \"street\": \"Am Eichwäldchen 6\"}": [
+  8.653196,
+  49.827138
+ ],
+ "{\"city\": \"Darmstadt\", \"countrycodes\": \"de\", \"postalcode\": \"64297\", \"street\": \"Zerninstraße 10\"}": [
+  8.637571,
+  49.817196
+ ],
+ "{\"city\": \"Dortmund\", \"countrycodes\": \"de\", \"postalcode\": \"44263\", \"street\": \"Wilopark 1\"}": [
+  7.479166,
+  51.481297
+ ],
+ "{\"city\": \"Dortmund\", \"countrycodes\": \"de\", \"postalcode\": \"44309\", \"street\": \"Asselner Hellweg 1-3\"}": [
+  7.566074,
+  51.525537
+ ],
+ "{\"city\": \"Dresden\", \"countrycodes\": \"de\", \"postalcode\": \"01099\", \"street\": \"Tannenstraße 4 b\"}": [
+  13.758586,
+  51.073476
+ ],
+ "{\"city\": \"Dresden\", \"countrycodes\": \"de\", \"postalcode\": \"01109\", \"street\": \"Karl-Liebknecht-Straße 56\"}": [
+  13.753105,
+  51.113885
+ ],
+ "{\"city\": \"Dresden\", \"countrycodes\": \"de\", \"postalcode\": \"01309\", \"street\": \"Barteldesplatz 2\"}": [
+  13.803759,
+  51.053941
+ ],
+ "{\"city\": \"Duisburg\", \"countrycodes\": \"de\", \"postalcode\": \"47119\", \"street\": \"Franz-Haniel-Platz 1\"}": [
+  6.73363,
+  51.451534
+ ],
+ "{\"city\": \"Düsseldorf\", \"countrycodes\": \"de\", \"postalcode\": \"40211\", \"street\": \"Cantadorstr. 3\"}": [
+  6.79064,
+  51.227784
+ ],
+ "{\"city\": \"Düsseldorf\", \"countrycodes\": \"de\", \"postalcode\": \"40212\", \"street\": \"Martin-Luther-Platz 28\"}": [
+  6.781715,
+  51.224837
+ ],
+ "{\"city\": \"Düsseldorf\", \"countrycodes\": \"de\", \"postalcode\": \"40217\", \"street\": \"Kirchfeldstraße 60\"}": [
+  6.777355,
+  51.212709
+ ],
+ "{\"city\": \"Düsseldorf\", \"countrycodes\": \"de\", \"postalcode\": \"40549\", \"street\": \"Ferdinand-Braun-Platz 1\"}": [
+  6.732587,
+  51.235553
+ ],
+ "{\"city\": \"Eberdingen-Hochdorf\", \"countrycodes\": \"de\", \"postalcode\": \"71735\", \"street\": \"Hemminger Strasse 4\"}": [
+  9.002526,
+  48.885213
+ ],
+ "{\"city\": \"Enskede\", \"countrycodes\": \"se\", \"postalcode\": \"122 62\", \"street\": \"Stockholmsvägen 23\"}": [
+  18.087135,
+  59.284303
+ ],
+ "{\"city\": \"Erfurt\", \"countrycodes\": \"de\", \"postalcode\": \"99084\", \"street\": \"Trommsdorffstraße 5\"}": [
+  11.037963,
+  50.976605
+ ],
+ "{\"city\": \"Essen\", \"countrycodes\": \"de\", \"postalcode\": \"45127\", \"street\": \"Gildehofstrasse 2\"}": [
+  7.015536,
+  51.454309
+ ],
+ "{\"city\": \"Essen\", \"countrycodes\": \"de\", \"postalcode\": \"45128\", \"street\": \"Baedekerstraße 1\"}": [
+  7.009887,
+  51.447799
+ ],
+ "{\"city\": \"Essen\", \"countrycodes\": \"de\", \"postalcode\": \"45128\", \"street\": \"Huyssenallee 40\"}": [
+  7.010116,
+  51.447491
+ ],
+ "{\"city\": \"Essen\", \"countrycodes\": \"de\", \"postalcode\": \"45133\", \"street\": \"Huegel 15\"}": [
+  7.008904,
+  51.409118
+ ],
+ "{\"city\": \"Essen\", \"countrycodes\": \"de\", \"postalcode\": \"45359\", \"street\": \"Deichmannweg 9\"}": [
+  6.928132,
+  51.461873
+ ],
+ "{\"city\": \"Essen\", \"countrycodes\": \"de\"}": [
+  7.015817,
+  51.458224
+ ],
+ "{\"city\": \"Filderstadt\", \"countrycodes\": \"de\"}": [
+  9.219965,
+  48.6664
+ ],
+ "{\"city\": \"Frankfurt am Main\", \"countrycodes\": \"de\", \"postalcode\": \"60311\", \"street\": \"Kaiserstraße 16\"}": [
+  8.674363,
+  50.111238
+ ],
+ "{\"city\": \"Frankfurt am Main\", \"countrycodes\": \"de\", \"postalcode\": \"60311\", \"street\": \"Neue Mainzer Straße 47-53\"}": [
+  8.674256,
+  50.109775
+ ],
+ "{\"city\": \"Frankfurt am Main\", \"countrycodes\": \"de\", \"postalcode\": \"60311\", \"street\": \"Weißfrauenstraße 1-3\"}": [
+  8.677114,
+  50.109443
+ ],
+ "{\"city\": \"Frankfurt am Main\", \"countrycodes\": \"de\", \"postalcode\": \"60313\", \"street\": \"Alte Rothofstraße 8-10\"}": [
+  8.675179,
+  50.113623
+ ],
+ "{\"city\": \"Frankfurt am Main\", \"countrycodes\": \"de\", \"postalcode\": \"60313\", \"street\": \"Börsenplatz 5\"}": [
+  8.677972,
+  50.114682
+ ],
+ "{\"city\": \"Frankfurt am Main\", \"countrycodes\": \"de\", \"postalcode\": \"60313\", \"street\": \"Hochstraße 49\"}": [
+  8.673723,
+  50.115399
+ ],
+ "{\"city\": \"Frankfurt am Main\", \"countrycodes\": \"de\", \"postalcode\": \"60314\", \"street\": \"Hanauer Landstraße 166\"}": [
+  8.718361,
+  50.113397
+ ],
+ "{\"city\": \"Frankfurt am Main\", \"countrycodes\": \"de\", \"postalcode\": \"60322\", \"street\": \"Auf der Körnerwiese 5\"}": [
+  8.672991,
+  50.122608
+ ],
+ "{\"city\": \"Frankfurt am Main\", \"countrycodes\": \"de\", \"postalcode\": \"60322\", \"street\": \"Eschersheimer Landstraße 14\"}": [
+  8.678416,
+  50.119656
+ ],
+ "{\"city\": \"Frankfurt am Main\", \"countrycodes\": \"de\", \"postalcode\": \"60322\", \"street\": \"Justinianstraße 5\"}": [
+  8.679177,
+  50.126156
+ ],
+ "{\"city\": \"Frankfurt am Main\", \"countrycodes\": \"de\", \"postalcode\": \"60323\", \"street\": \"Grüneburgweg 105\"}": [
+  8.663607,
+  50.123173
+ ],
+ "{\"city\": \"Frankfurt am Main\", \"countrycodes\": \"de\", \"postalcode\": \"60325\", \"street\": \"Bockenheimer Landstraße 21\"}": [
+  8.668368,
+  50.115767
+ ],
+ "{\"city\": \"Frankfurt am Main\", \"countrycodes\": \"de\", \"postalcode\": \"60329\", \"street\": \"Niddastraße 35\"}": [
+  8.666328,
+  50.110276
+ ],
+ "{\"city\": \"Frankfurt am Main\", \"countrycodes\": \"de\", \"postalcode\": \"60329\", \"street\": \"Untermainanlage 5\"}": [
+  8.672799,
+  50.10742
+ ],
+ "{\"city\": \"Frankfurt am Main\", \"countrycodes\": \"de\", \"postalcode\": \"60486\", \"street\": \"Solmsstraße 2-22/Haus 18\"}": [],
+ "{\"city\": \"Frankfurt am Main\", \"countrycodes\": \"de\", \"postalcode\": \"60486\"}": [
+  8.682092,
+  50.110644
+ ],
+ "{\"city\": \"Frankfurt am Main\", \"countrycodes\": \"de\", \"postalcode\": \"65926\", \"street\": \"Industriepark Hoechst\"}": [],
+ "{\"city\": \"Frankfurt am Main\", \"countrycodes\": \"de\", \"postalcode\": \"65926\"}": [
+  8.682092,
+  50.110644
+ ],
+ "{\"city\": \"Frankfurt\", \"countrycodes\": \"de\"}": [
+  8.682092,
+  50.110644
+ ],
+ "{\"city\": \"Frankfurt/Berlin\", \"countrycodes\": \"de\"}": [],
+ "{\"city\": \"Freising\", \"countrycodes\": \"de\", \"postalcode\": \"85354\", \"street\": \"Domberg 38/40\"}": [
+  11.74555,
+  48.398985
+ ],
+ "{\"city\": \"Friedrichshafen\", \"countrycodes\": \"de\", \"postalcode\": \"88046\", \"street\": \"Löwentaler Straße 20\"}": [
+  9.484437,
+  47.655745
+ ],
+ "{\"city\": \"Friedrichshafen\", \"countrycodes\": \"de\", \"postalcode\": \"88048\", \"street\": \"Klufterner Straße 85\"}": [
+  9.419211,
+  47.680782
+ ],
+ "{\"city\": \"Fritzlar\", \"countrycodes\": \"de\"}": [
+  9.264511,
+  51.153707
+ ],
+ "{\"city\": \"Fulda\", \"countrycodes\": \"de\", \"postalcode\": \"36037\", \"street\": \"Heinrichstraße 79\"}": [
+  9.686245,
+  50.550323
+ ],
+ "{\"city\": \"Fulda\", \"countrycodes\": \"de\", \"postalcode\": \"36037\", \"street\": \"Paulustor 5\"}": [
+  9.671856,
+  50.555788
+ ],
+ "{\"city\": \"Fulda\", \"countrycodes\": \"de\", \"postalcode\": \"36037\", \"street\": \"Rittergasse 4\"}": [
+  9.673956,
+  50.55274
+ ],
+ "{\"city\": \"Fulda\", \"countrycodes\": \"de\", \"postalcode\": \"36037\", \"street\": \"Wilhelmstraße 2\"}": [
+  9.672242,
+  50.553127
+ ],
+ "{\"city\": \"Gifhorn\", \"countrycodes\": \"de\", \"postalcode\": \"38518\", \"street\": \"Prof.-Kalmbacher-Str. 10\"}": [
+  10.545935,
+  52.480143
+ ],
+ "{\"city\": \"Guetersloh\", \"countrycodes\": \"de\", \"postalcode\": \"33311\", \"street\": \"Carl-Bertelsmann-Strasse 256\"}": [
+  8.418977,
+  51.908538
+ ],
+ "{\"city\": \"Halle (Saale)\", \"countrycodes\": \"de\", \"postalcode\": \"06108\", \"street\": \"Neuwerk 11\"}": [
+  11.957514,
+  51.492722
+ ],
+ "{\"city\": \"Halle (Saale)\", \"countrycodes\": \"de\", \"postalcode\": \"06110\", \"street\": \"Franckeplatz 2\"}": [
+  11.9706,
+  51.477697
+ ],
+ "{\"city\": \"Hamburg\", \"countrycodes\": \"de\", \"postalcode\": \"20095\", \"street\": \"Schopenstehl 31\"}": [
+  9.997779,
+  53.548648
+ ],
+ "{\"city\": \"Hamburg\", \"countrycodes\": \"de\", \"postalcode\": \"20099\", \"street\": \"Am Mariendom 4\"}": [
+  10.013773,
+  53.557071
+ ],
+ "{\"city\": \"Hamburg\", \"countrycodes\": \"de\", \"postalcode\": \"20099\", \"street\": \"Georgsplatz 10\"}": [
+  10.002675,
+  53.553808
+ ],
+ "{\"city\": \"Hamburg\", \"countrycodes\": \"de\", \"postalcode\": \"20148\", \"street\": \"Feldbrunnenstraße 56\"}": [
+  9.991145,
+  53.567887
+ ],
+ "{\"city\": \"Hamburg\", \"countrycodes\": \"de\", \"postalcode\": \"20355\", \"street\": \"Axel-Springer-Platz 1\"}": [
+  9.984774,
+  53.552783
+ ],
+ "{\"city\": \"Hamburg\", \"countrycodes\": \"de\", \"postalcode\": \"20355\", \"street\": \"Axel-Springer-Platz 3\"}": [
+  9.984463,
+  53.552193
+ ],
+ "{\"city\": \"Hamburg\", \"countrycodes\": \"de\", \"postalcode\": \"20355\", \"street\": \"Holstenwall 12\"}": [
+  9.976998,
+  53.553148
+ ],
+ "{\"city\": \"Hamburg\", \"countrycodes\": \"de\", \"postalcode\": \"20457\", \"street\": \"Kehrwieder 12\"}": [
+  9.984136,
+  53.543439
+ ],
+ "{\"city\": \"Hamburg\", \"countrycodes\": \"de\", \"postalcode\": \"20457\", \"street\": \"Versmannstraße 60\"}": [
+  10.016156,
+  53.538937
+ ],
+ "{\"city\": \"Hamburg\", \"countrycodes\": \"de\", \"postalcode\": \"22179\", \"street\": \"Werner-Otto-Straße 1-7\"}": [
+  10.074724,
+  53.601332
+ ],
+ "{\"city\": \"Hamburg\", \"countrycodes\": \"de\", \"postalcode\": \"22179\", \"street\": \"Werner-Otto-Straße 13c\"}": [
+  10.071956,
+  53.597109
+ ],
+ "{\"city\": \"Hamburg\", \"countrycodes\": \"de\", \"postalcode\": \"22297\", \"street\": \"New-York-Ring 6\"}": [
+  10.020383,
+  53.602949
+ ],
+ "{\"city\": \"Hamburg\", \"countrycodes\": \"de\", \"postalcode\": \"22419\", \"street\": \"Langenhorner Chaussee 384\"}": [
+  10.004139,
+  53.660838
+ ],
+ "{\"city\": \"Hamburg\", \"countrycodes\": \"de\"}": [
+  10.001316,
+  53.550172
+ ],
+ "{\"city\": \"Hannover\", \"countrycodes\": \"de\", \"postalcode\": \"30175\", \"street\": \"Loebensteinstrasse 38\"}": [
+  9.763229,
+  52.380108
+ ],
+ "{\"city\": \"Hannover\", \"countrycodes\": \"de\", \"postalcode\": \"30419\", \"street\": \"Herrenhäuser Straße 12\"}": [
+  9.692203,
+  52.393226
+ ],
+ "{\"city\": \"Hannover\", \"countrycodes\": \"de\", \"postalcode\": \"30519\", \"street\": \"Kastanienallee 35\"}": [
+  9.768323,
+  52.332465
+ ],
+ "{\"city\": \"Hannover\", \"countrycodes\": \"de\", \"postalcode\": \"30539\", \"street\": \"Mailänder Straße 4a\"}": [
+  9.820888,
+  52.322353
+ ],
+ "{\"city\": \"Hannover\", \"countrycodes\": \"de\"}": [
+  9.738553,
+  52.374478
+ ],
+ "{\"city\": \"Heidelberg\", \"countrycodes\": \"de\", \"postalcode\": \"69118\", \"street\": \"Schloss-Wolfsbrunnenweg 33\"}": [
+  8.73444,
+  49.415881
+ ],
+ "{\"city\": \"Heidelberg\", \"countrycodes\": \"de\", \"postalcode\": \"69120\", \"street\": \"Brückenstraße 45\"}": [
+  8.691832,
+  49.416425
+ ],
+ "{\"city\": \"Heidenheim\", \"countrycodes\": \"de\", \"postalcode\": \"89522\", \"street\": \"Sankt Pöltener Straße 43\"}": [],
+ "{\"city\": \"Heidenheim\", \"countrycodes\": \"de\", \"postalcode\": \"89522\"}": [
+  10.152923,
+  48.676764
+ ],
+ "{\"city\": \"Heilbronn\", \"countrycodes\": \"de\", \"postalcode\": \"74076\", \"street\": \"Bildungscampus 9\"}": [
+  9.215145,
+  49.148519
+ ],
+ "{\"city\": \"Homberg (Efze)\", \"countrycodes\": \"de\"}": [
+  9.404841,
+  51.011723
+ ],
+ "{\"city\": \"Homburg\", \"countrycodes\": \"de\", \"postalcode\": \"66424\", \"street\": \"Talstr. 30\"}": [
+  7.339673,
+  49.322741
+ ],
+ "{\"city\": \"Karlsruhe\", \"countrycodes\": \"de\"}": [
+  8.40342,
+  49.00687
+ ],
+ "{\"city\": \"Kassel\", \"countrycodes\": \"de\", \"postalcode\": \"34117\", \"street\": \"Koelnische Strasse 8\"}": [
+  9.495384,
+  51.316577
+ ],
+ "{\"city\": \"Kassel\", \"countrycodes\": \"de\", \"postalcode\": \"34117\", \"street\": \"Kölnische Straße 8\"}": [
+  9.495384,
+  51.316577
+ ],
+ "{\"city\": \"Kassel\", \"countrycodes\": \"de\", \"postalcode\": \"34117\", \"street\": \"Rudolf-Schwander-Str. 1\"}": [
+  9.492807,
+  51.316854
+ ],
+ "{\"city\": \"Kassel\", \"countrycodes\": \"de\", \"postalcode\": \"34117\", \"street\": \"Scheidemannplatz 2\"}": [
+  9.49283,
+  51.315864
+ ],
+ "{\"city\": \"Kassel\", \"countrycodes\": \"de\", \"postalcode\": \"34117\", \"street\": \"Ständeplatz 19\"}": [
+  9.489904,
+  51.313613
+ ],
+ "{\"city\": \"Kassel\", \"countrycodes\": \"de\", \"postalcode\": \"34117\", \"street\": \"Ständeplatz 6-10\"}": [
+  9.490644,
+  51.315772
+ ],
+ "{\"city\": \"Kassel\", \"countrycodes\": \"de\"}": [
+  9.497848,
+  51.315783
+ ],
+ "{\"city\": \"Koblenz\", \"countrycodes\": \"de\", \"postalcode\": \"56073\", \"street\": \"Ferdinand-Sauerbruch-Straße 2\"}": [
+  7.570093,
+  50.356483
+ ],
+ "{\"city\": \"Koeln\", \"countrycodes\": \"de\", \"postalcode\": \"50667\", \"street\": \"Hahnenstrasse 57\"}": [
+  6.940874,
+  50.935348
+ ],
+ "{\"city\": \"Korbach\", \"countrycodes\": \"de\"}": [
+  8.842696,
+  51.255904
+ ],
+ "{\"city\": \"Köln\", \"countrycodes\": \"de\", \"postalcode\": \"50667\", \"street\": \"St.-Apern-Straße 32\"}": [
+  6.946207,
+  50.939517
+ ],
+ "{\"city\": \"Köln\", \"countrycodes\": \"de\", \"postalcode\": \"50672\", \"street\": \"Apostelnkloster 13-15\"}": [
+  6.943931,
+  50.936388
+ ],
+ "{\"city\": \"Köln\", \"countrycodes\": \"de\", \"postalcode\": \"50935\", \"street\": \"Werthmannstraße 3a\"}": [
+  6.894106,
+  50.923502
+ ],
+ "{\"city\": \"Künzelsau\", \"countrycodes\": \"de\", \"postalcode\": \"74653\", \"street\": \"Reinhold-Würth-Straße 12-17\"}": [
+  9.682638,
+  49.259154
+ ],
+ "{\"city\": \"Ladenburg\", \"countrycodes\": \"de\", \"postalcode\": \"68526\", \"street\": \"Dr.-Carl-Benz-Platz 2\"}": [
+  8.606502,
+  49.470781
+ ],
+ "{\"city\": \"Leipzig\", \"countrycodes\": \"de\", \"postalcode\": \"04109\", \"street\": \"Dorotheenplatz 2\"}": [
+  12.368665,
+  51.338364
+ ],
+ "{\"city\": \"Leverkusen\", \"countrycodes\": \"de\", \"postalcode\": \"51368\", \"street\": \"Kaiser-Wilhelm-Allee 1\"}": [
+  6.982517,
+  51.01352
+ ],
+ "{\"city\": \"Ludwigsburg\", \"countrycodes\": \"de\", \"postalcode\": \"71638\", \"street\": \"Hohenzollernstraße 45\"}": [
+  9.190864,
+  48.883514
+ ],
+ "{\"city\": \"Ludwigshafen am Rhein\", \"countrycodes\": \"de\", \"postalcode\": \"67063\", \"street\": \"Geibelstrasse 3\"}": [
+  8.427339,
+  49.493688
+ ],
+ "{\"city\": \"Lörrach\", \"countrycodes\": \"de\", \"postalcode\": \"79541\", \"street\": \"Industriestraße 2\"}": [
+  7.680019,
+  47.635252
+ ],
+ "{\"city\": \"Mainz\", \"countrycodes\": \"de\", \"postalcode\": \"55116\", \"street\": \"Fischtorplatz 11\"}": [
+  8.27695,
+  49.999849
+ ],
+ "{\"city\": \"Mainz\", \"countrycodes\": \"de\", \"postalcode\": \"55116\", \"street\": \"Schusterstrasse 46-48\"}": [
+  8.271812,
+  50.001104
+ ],
+ "{\"city\": \"Mainz\", \"countrycodes\": \"de\", \"postalcode\": \"55131\", \"street\": \"Römerwall 40\"}": [
+  8.259193,
+  49.996094
+ ],
+ "{\"city\": \"Mannheim\", \"countrycodes\": \"de\", \"postalcode\": \"68165\", \"street\": \"Erzbergerstr. 9-15\"}": [
+  8.487017,
+  49.484738
+ ],
+ "{\"city\": \"Mannheim\", \"countrycodes\": \"de\", \"postalcode\": \"68169\", \"street\": \"Friesenheimer Str. 17\"}": [
+  8.457755,
+  49.514272
+ ],
+ "{\"city\": \"Mannheim\", \"countrycodes\": \"de\", \"postalcode\": \"68199\", \"street\": \"August-Borsig-Straße 6\"}": [
+  8.503262,
+  49.459116
+ ],
+ "{\"city\": \"Melsungen\", \"countrycodes\": \"de\", \"postalcode\": \"34212\", \"street\": \"Huberg 4\"}": [
+  9.550345,
+  51.131715
+ ],
+ "{\"city\": \"Melsungen\", \"countrycodes\": \"de\", \"postalcode\": \"34212\", \"street\": \"Rotenburger Str. 11\"}": [
+  9.54584,
+  51.128462
+ ],
+ "{\"city\": \"Melsungen\", \"countrycodes\": \"de\", \"postalcode\": \"34212\", \"street\": \"Sparkassenplatz 1\"}": [
+  9.54184,
+  51.133619
+ ],
+ "{\"city\": \"Melsungen\", \"countrycodes\": \"de\", \"postalcode\": \"34212\", \"street\": \"Stadtwaldpark 2\"}": [],
+ "{\"city\": \"Melsungen\", \"countrycodes\": \"de\", \"postalcode\": \"34212\"}": [
+  9.583316,
+  51.142594
+ ],
+ "{\"city\": \"Muelheim an der Ruhr\", \"countrycodes\": \"de\", \"postalcode\": \"45476\", \"street\": \"Burgstrasse 37\"}": [
+  6.861182,
+  51.44099
+ ],
+ "{\"city\": \"Muenchen\", \"countrycodes\": \"de\", \"postalcode\": \"80331\", \"street\": \"Alter Hof 2\"}": [
+  11.577844,
+  48.138106
+ ],
+ "{\"city\": \"Muenchen\", \"countrycodes\": \"de\", \"postalcode\": \"80469\", \"street\": \"Klenzestrasse 37\"}": [
+  11.574842,
+  48.1307
+ ],
+ "{\"city\": \"Muenchen\", \"countrycodes\": \"de\", \"postalcode\": \"80538\", \"street\": \"Praterinsel 3\"}": [
+  11.590276,
+  48.136233
+ ],
+ "{\"city\": \"Mülheim an der Ruhr\", \"countrycodes\": \"de\", \"postalcode\": \"45476\", \"street\": \"Burgstraße 37\"}": [
+  6.861182,
+  51.44099
+ ],
+ "{\"city\": \"München\", \"countrycodes\": \"de\", \"postalcode\": \"80336\", \"street\": \"Pettenkoferstraße 26-28\"}": [
+  11.557179,
+  48.134707
+ ],
+ "{\"city\": \"München\", \"countrycodes\": \"de\", \"postalcode\": \"80336\", \"street\": \"Zweigstraße 10\"}": [
+  11.562288,
+  48.138458
+ ],
+ "{\"city\": \"München\", \"countrycodes\": \"de\", \"postalcode\": \"80539\", \"street\": \"Maximilianstraße 35 C\"}": [
+  11.584548,
+  48.138428
+ ],
+ "{\"city\": \"München\", \"countrycodes\": \"de\", \"postalcode\": \"80637\", \"street\": \"Landshuter Allee 12-14\"}": [
+  11.537428,
+  48.148595
+ ],
+ "{\"city\": \"München\", \"countrycodes\": \"de\", \"postalcode\": \"80801\", \"street\": \"Kaiserstraße 16\"}": [
+  11.583939,
+  48.160904
+ ],
+ "{\"city\": \"München\", \"countrycodes\": \"de\", \"postalcode\": \"80802\", \"street\": \"Königinstraße 107\"}": [
+  11.588726,
+  48.156155
+ ],
+ "{\"city\": \"München\", \"countrycodes\": \"de\", \"postalcode\": \"81679\", \"street\": \"Schumannstraße 10\"}": [
+  11.603037,
+  48.141334
+ ],
+ "{\"city\": \"Nürnberg\", \"countrycodes\": \"de\"}": [
+  11.077298,
+  49.453872
+ ],
+ "{\"city\": \"Osnabrück\", \"countrycodes\": \"de\", \"postalcode\": \"49090\", \"street\": \"An der Bornau 2\"}": [
+  8.031973,
+  52.286279
+ ],
+ "{\"city\": \"Paderborn\", \"countrycodes\": \"de\", \"postalcode\": \"33098\", \"street\": \"Kamp 22\"}": [
+  8.757088,
+  51.716637
+ ],
+ "{\"city\": \"Paderborn\", \"countrycodes\": \"de\", \"postalcode\": \"33098\", \"street\": \"Waldenburger Straße 19\"}": [
+  8.733905,
+  51.708553
+ ],
+ "{\"city\": \"Ravensburg\", \"countrycodes\": \"de\", \"postalcode\": \"88214\", \"street\": \"Otto-Maier-Straße 1\"}": [
+  9.598124,
+  47.769018
+ ],
+ "{\"city\": \"Rüsselsheim am Main\", \"countrycodes\": \"de\", \"postalcode\": \"65428\", \"street\": \"Ludwig-Dörfler-Allee 9\"}": [
+  8.417337,
+  49.998559
+ ],
+ "{\"city\": \"Saarbrücken\", \"countrycodes\": \"de\", \"postalcode\": \"66117\", \"street\": \"Neumarkt 17\"}": [
+  6.989647,
+  49.234577
+ ],
+ "{\"city\": \"Saarbrücken\", \"countrycodes\": \"de\", \"postalcode\": \"66123\", \"street\": \"Haldystraße 5\"}": [
+  7.018118,
+  49.242207
+ ],
+ "{\"city\": \"Schaan\", \"countrycodes\": \"li\", \"postalcode\": \"9494\", \"street\": \"Feldkircher Strasse 100\"}": [
+  9.524125,
+  47.179396
+ ],
+ "{\"city\": \"St. Wendel\", \"countrycodes\": \"de\", \"postalcode\": \"66606\", \"street\": \"Leipziger Str. 8\"}": [
+  7.152684,
+  49.462965
+ ],
+ "{\"city\": \"Stuttgart\", \"countrycodes\": \"de\", \"postalcode\": \"70174\", \"street\": \"Kriegsbergstrasse 42\"}": [
+  9.175068,
+  48.783654
+ ],
+ "{\"city\": \"Stuttgart\", \"countrycodes\": \"de\", \"postalcode\": \"70182\", \"street\": \"Olgastrasse 57A\"}": [
+  9.183869,
+  48.772336
+ ],
+ "{\"city\": \"Stuttgart\", \"countrycodes\": \"de\", \"postalcode\": \"70184\", \"street\": \"Heidehofstraße 31\"}": [
+  9.198815,
+  48.777777
+ ],
+ "{\"city\": \"Stuttgart\", \"countrycodes\": \"de\", \"postalcode\": \"70193\", \"street\": \"Leibnizstraße 35\"}": [
+  9.144864,
+  48.781409
+ ],
+ "{\"city\": \"Stuttgart\", \"countrycodes\": \"de\", \"postalcode\": \"70435\", \"street\": \"Porscheplatz 1\"}": [
+  9.152355,
+  48.834085
+ ],
+ "{\"city\": \"Stuttgart\", \"countrycodes\": \"de\", \"postalcode\": \"70499\", \"street\": \"Ingersheimer Straße 24\"}": [
+  9.095004,
+  48.824832
+ ],
+ "{\"city\": \"Stühlingen\", \"countrycodes\": \"de\", \"postalcode\": \"79780\", \"street\": \"Ehrenbachstraße 1\"}": [
+  8.472961,
+  47.767844
+ ],
+ "{\"city\": \"Verden\", \"countrycodes\": \"de\", \"postalcode\": \"27283\", \"street\": \"Artilleriestrasse 6\"}": [
+  9.247101,
+  52.926994
+ ],
+ "{\"city\": \"Wallerfangen\", \"countrycodes\": \"de\"}": [
+  6.718365,
+  49.327705
+ ],
+ "{\"city\": \"Weinheim\", \"countrycodes\": \"de\", \"postalcode\": \"69469\", \"street\": \"Freudenbergstraße 2\"}": [
+  8.668572,
+  49.546784
+ ],
+ "{\"city\": \"Wetter\", \"countrycodes\": \"de\", \"postalcode\": \"58300\", \"street\": \"Hartmannstr. 24\"}": [
+  7.377285,
+  51.368962
+ ],
+ "{\"city\": \"Wiesbaden\", \"countrycodes\": \"de\", \"postalcode\": \"65185\", \"street\": \"Gerichtsstraße 2\"}": [
+  8.237879,
+  50.074978
+ ],
+ "{\"city\": \"Wiesbaden\", \"countrycodes\": \"de\", \"postalcode\": \"65185\", \"street\": \"Luisenstraße 3 (Hinterhaus)\"}": [],
+ "{\"city\": \"Wiesbaden\", \"countrycodes\": \"de\", \"postalcode\": \"65185\"}": [
+  8.241656,
+  50.082038
+ ],
+ "{\"city\": \"Wiesbaden\", \"countrycodes\": \"de\", \"postalcode\": \"65189\", \"street\": \"Rosenstraße 5-9\"}": [
+  8.249925,
+  50.082049
+ ],
+ "{\"city\": \"Wiesbaden\", \"countrycodes\": \"de\"}": [
+  8.241656,
+  50.082038
+ ],
+ "{\"city\": \"Winnenden\", \"countrycodes\": \"de\", \"postalcode\": \"71364\", \"street\": \"Alfred-Kaercher-Strasse 28-40\"}": [
+  9.395729,
+  48.877961
+ ],
+ "{\"city\": \"Würzburg\", \"countrycodes\": \"de\", \"postalcode\": \"97070\", \"street\": \"Kolpingplatz 1\"}": [
+  9.932623,
+  49.796932
+ ]
+}

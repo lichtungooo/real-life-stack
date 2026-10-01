@@ -37,10 +37,10 @@ describe("Stiftungen schreiben", () => {
 
     const ende = staende.at(-1)
     expect(ende?.art).toBe("fertig")
-    expect(geschrieben.length).toBeGreaterThan(200)
+    expect(geschrieben.length).toBeGreaterThan(180)
 
     // Die Musterdaten tragen auch Spaces und Projekte. Der Import fasst sie
-    // nicht an: Wer 234 Stiftungen holt, bekommt keine fremden Gruppen dazu.
+    // nicht an: Wer die Stiftungen holt (194 seit dem 01.10.2026), bekommt keine fremden Gruppen dazu.
     expect(geschrieben.every((g) => g.title.length > 0)).toBe(true)
   })
 
@@ -95,12 +95,12 @@ describe("Stiftungen schreiben", () => {
   })
 
   it("meldet Fortschritt, damit das Fenster nicht tot wirkt", async () => {
-    // 234 Schreibvorgänge über ein Relay dauern. Ohne Anzeige hält ein Mensch
+    // Rund 200 Schreibvorgänge über ein Relay dauern. Ohne Anzeige hält ein Mensch
     // das für einen Absturz und lädt die Seite neu, mitten im Schreiben.
     const { connector } = attrappe()
     const staende = await laufen(connector)
     const laufend = staende.filter((s) => s.art === "laeuft")
-    expect(laufend.length).toBeGreaterThan(200)
+    expect(laufend.length).toBeGreaterThan(180)
   })
 })
 
@@ -123,5 +123,22 @@ describe("Ein zweiter Lauf traegt das Symbol nach (01.10.2026)", () => {
     expect(angelegt.some((i) => (i as { data: { title: string } }).data.title === titel)).toBe(false)
     expect(angelegt.every((i) => (i as { data: { icon?: string } }).data.icon === "hands")).toBe(true)
     expect(ende).toMatchObject({ art: "fertig" })
+  })
+})
+
+describe("Was ein zweiter Lauf nachzieht (01.10.2026)", () => {
+  it("zieht Ort und Anschrift nach, solange der Eintrag noch unsere Recherche ist", async () => {
+    const { nachtrag } = await import("../src/stiftungen-import.js")
+    const da = { title: "A", quelle: "Recherche X", address: "Essen", position: { type: "Point", coordinates: [7, 51] }, icon: "hands" }
+    const neu = { title: "A", quelle: "Recherche X", address: "Huyssenallee 52, 45128 Essen", position: { type: "Point", coordinates: [7.01, 51.45] }, ortGenauigkeit: "anschrift", icon: "hands" }
+    expect(nachtrag(da, neu)).toEqual({ address: neu.address, position: neu.position, ortGenauigkeit: "anschrift" })
+  })
+
+  it("laesst einen uebernommenen Eintrag in Ruhe, nur das fehlende Symbol kommt", async () => {
+    const { nachtrag } = await import("../src/stiftungen-import.js")
+    const da = { title: "A", quelle: "Die Stiftung selbst", address: "Ihre eigene Anschrift" }
+    const neu = { title: "A", quelle: "Recherche X", address: "Andere Anschrift", icon: "hands" }
+    expect(nachtrag(da, neu)).toEqual({ icon: "hands" })
+    expect(nachtrag({ ...da, icon: "eigenes" }, neu)).toBeNull()
   })
 })

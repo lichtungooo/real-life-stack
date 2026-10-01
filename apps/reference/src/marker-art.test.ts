@@ -34,7 +34,7 @@ describe("Projekte", () => {
 describe("Stiftungen", () => {
   it("tragen die gebende Hand und behalten ihr Blau, in der Stecknadel", () => {
     const stiftungen = musterItems.filter((i) => String(i.id).startsWith("stiftung-")) as unknown as Item[]
-    expect(stiftungen.length).toBe(234)
+    expect(stiftungen.length).toBeGreaterThan(180)
     expect(stiftungen.every((s) => (s.data as { icon?: string }).icon === "hands")).toBe(true)
     const [m] = mapLensMarkers(stiftungen.slice(0, 1))
     expect(m.icon).toBe("hands")
