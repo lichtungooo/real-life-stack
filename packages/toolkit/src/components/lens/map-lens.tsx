@@ -4,6 +4,7 @@ import type { Item } from "@real-life-stack/data-interface"
 
 import { latLngFromPoint } from "../../lib/geo"
 import { getItemColor, getSpacePrimaryColor } from "../../lib/utils"
+import { resolveTypePresentation } from "../preview/type-presentation"
 import {
   focusActiveItemInVisibleArea,
   initialSelectionFocusVisibleAreaState,
@@ -63,13 +64,17 @@ export function mapLensMarkers(
     const position = latLngFromPoint(item.data.position)
     if (!position) continue
     const { lng, lat } = position
+    // NAHT trustdonation (A-Marker): the type's marker fills what the item
+    // leaves open; the item's own `data.color` / `data.icon` still win.
+    const vorgabe = resolveTypePresentation(item.type).marker
 
     markers.push({
       id: item.id,
       position: [lng, lat],
       label: typeof item.data.title === "string" ? item.data.title : item.id,
-      color: getItemColor(item, { groupColor: resolveGroupColor?.(item) ?? getSpacePrimaryColor("map") }),
-      icon: typeof item.data.icon === "string" ? item.data.icon : item.tags?.[0],
+      color: typeof item.data.color === "string" || !vorgabe?.color ? getItemColor(item, { groupColor: resolveGroupColor?.(item) ?? getSpacePrimaryColor("map") }) : vorgabe.color,
+      icon: typeof item.data.icon === "string" ? item.data.icon : vorgabe?.icon ?? item.tags?.[0],
+      ...(vorgabe?.shape ? { shape: vorgabe.shape } : {}),
       selected: item.id === activeItemId || highlightedItemIds.includes(item.id),
       glowColor: resolveGroupColor?.(item),
     })

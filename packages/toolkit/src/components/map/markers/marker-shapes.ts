@@ -1,7 +1,9 @@
 /** Marker pin shapes Utopia shipped and we support. */
-export type MarkerShape = "circle" | "square"
+export type MarkerShape = "circle" | "square" | "round"
 
-export const MARKER_SHAPES: readonly MarkerShape[] = ["circle", "square"]
+// NAHT trustdonation (NAEHTE.md A-Marker): `round` is a plain disc without a
+// tail, anchored at its centre (projects; Timo, 01.10.2026).
+export const MARKER_SHAPES: readonly MarkerShape[] = ["circle", "square", "round"]
 export const DEFAULT_SHAPE: MarkerShape = "circle"
 
 /** All shapes share one pin viewBox, size and anchor. */
@@ -11,10 +13,15 @@ export const PIN_SIZE = { width: 35, height: 45 }
 export const PIN_ANCHOR = { x: 17.5, y: 45 }
 /** Centre of the glyph slot (the pin's top circle) in viewBox units. */
 export const GLYPH_CENTER = { x: 17.5, y: 16.7 }
+/** Geographic anchor and glyph centre per shape; `round` sits on its centre. */
+const ROUND_CENTER = { x: 17.5, y: 22.5 }
+export const shapeAnchor = (shape?: MarkerShape) => (shape === "round" ? ROUND_CENTER : PIN_ANCHOR)
+export const shapeGlyphCenter = (shape?: MarkerShape) => (shape === "round" ? ROUND_CENTER : GLYPH_CENTER)
 
 // `{fill}` = marker colour, `{border}` = outline. Path geometry is taken
 // verbatim from Utopia's MarkerIconFactory (lib/src/Utils/MarkerIconFactory.ts).
 const SHAPE_BODY: Record<MarkerShape, string> = {
+  round: '<circle cx="17.5" cy="22.5" r="15" fill="{fill}"/><circle cx="17.5" cy="22.5" r="15" fill="none" stroke="{border}" stroke-width="1.2"/>',
   circle:
     '<path d="M17.5 2.746c-8.284 0-15 6.853-15 15.307 0 .963.098 1.902.265 2.816a15.413 15.413 0 002.262 5.684l.134.193 12.295 17.785 12.439-17.863.056-.08a15.422 15.422 0 002.343-6.112c.123-.791.206-1.597.206-2.423 0-8.454-6.716-15.307-15-15.307" fill="{fill}"/><path d="M17.488 2.748c-8.284 0-15 6.853-15 15.307 0 .963.098 1.902.265 2.816a15.413 15.413 0 002.262 5.684l.134.193 12.295 17.785 12.44-17.863.055-.08a15.422 15.422 0 002.343-6.112c.124-.791.206-1.597.206-2.423 0-8.454-6.716-15.307-15-15.307m0 1.071c7.68 0 13.929 6.386 13.929 14.236 0 .685-.064 1.423-.193 2.258-.325 2.075-1.059 3.99-2.164 5.667l-.055.078-11.557 16.595L6.032 26.14l-.12-.174a14.256 14.256 0 01-2.105-5.29 14.698 14.698 0 01-.247-2.62c0-7.851 6.249-14.237 13.928-14.237" fill="{border}"/>',
   square:

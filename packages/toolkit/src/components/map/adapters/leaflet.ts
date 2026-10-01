@@ -40,7 +40,7 @@ import type {
 /** Farbe des eigenen Standorts — dieselbe wie die Primaerfarbe der Oberflaeche. */
 const USER_POSITION_COLOR = "#2563eb"
 import { markerDataUrl } from "../markers/render-marker-svg"
-import { PIN_SIZE, PIN_ANCHOR } from "../markers/marker-shapes"
+import { PIN_SIZE, shapeAnchor } from "../markers/marker-shapes"
 import { iconRegistryVersion } from "../../../lib/icons/icon-registry"
 
 const DEFAULT_TILE_SOURCE = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -100,8 +100,9 @@ function buildMarkerIcon(leaflet: typeof L, spec: MapMarkerSpec): L.Icon {
       shape: spec.shape,
     }),
     iconSize: [PIN_SIZE.width, PIN_SIZE.height],
-    iconAnchor: [PIN_ANCHOR.x, PIN_ANCHOR.y],
-    tooltipAnchor: [0, -PIN_ANCHOR.y],
+    // NAHT trustdonation (A-Marker): `round` anchors at its centre.
+    iconAnchor: [shapeAnchor(spec.shape).x, shapeAnchor(spec.shape).y],
+    tooltipAnchor: [0, -shapeAnchor(spec.shape).y],
     className: "rls-marker-shadow",
   })
 }

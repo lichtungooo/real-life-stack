@@ -103,3 +103,25 @@ describe("Stiftungen schreiben", () => {
     expect(laufend.length).toBeGreaterThan(200)
   })
 })
+
+describe("Ein zweiter Lauf traegt das Symbol nach (01.10.2026)", () => {
+  it("eine schon eingespielte Stiftung ohne Symbol bekommt es, sonst wird nichts angefasst", async () => {
+    const { stiftungenSchreiben } = await import("../src/stiftungen-import.js")
+    const { musterItems } = await import("@trustdonation/core/musterdaten")
+    const erste = musterItems.find((i) => String(i.id).startsWith("stiftung-"))!
+    const titel = (erste.data as { title: string }).title
+    const geaendert: { id: string; data: unknown }[] = []
+    const angelegt: unknown[] = []
+    const connector = {
+      getItems: async () => [{ id: "schon-da", type: "place", data: { title: titel } }],
+      createItem: async (i: unknown) => { angelegt.push(i) },
+      updateItem: async (id: string, u: { data?: unknown }) => { geaendert.push({ id, data: u.data }) },
+    }
+    let ende: unknown = null
+    await stiftungenSchreiben(connector as never, (s) => { if (s.art === "fertig") ende = s })
+    expect(geaendert).toEqual([{ id: "schon-da", data: { icon: "hands" } }])
+    expect(angelegt.some((i) => (i as { data: { title: string } }).data.title === titel)).toBe(false)
+    expect(angelegt.every((i) => (i as { data: { icon?: string } }).data.icon === "hands")).toBe(true)
+    expect(ende).toMatchObject({ art: "fertig" })
+  })
+})

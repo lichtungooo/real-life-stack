@@ -1,6 +1,6 @@
 # Nähte
 
-**Stand:** 01.10.2026, zusammengeführt mit Antons `31d13fc3` (8 Commits, App-Abschnitte im Space-Dialog rls#551). Davor 29.09.2026 mit `bb8487b1`
+**Stand:** 01.10.2026 (dazu Naht A-Marker), zusammengeführt mit Antons `31d13fc3` (8 Commits, App-Abschnitte im Space-Dialog rls#551). Davor 29.09.2026 mit `bb8487b1`
 **Regeln:** [ARCHITEKTUR.md, Teil 4](ARCHITEKTUR.md)
 
 Eine **Naht** ist eine Stelle, an der wir Antons Code ändern, weil kein Haken dafür da ist. Nähte sind erlaubt. Unbenannte Nähte sind es nicht.
@@ -119,6 +119,17 @@ Stellen, an denen ein Haken fehlt und wir ihn uns wünschen.
 | **Warum kein Haken** | Antons Space-Dialog zeigt für einen Space ohne Liste schon die Vorgaben an (`group-dialog.tsx`, `defaults()`), sein Routing aber jedes Modul. Im Login trugen Timos echte Gruppen und die Übersicht so alle zehn Module (Timo, 30.09.2026, mit Bildschirmfoto: *"Das überlädt ja wirklich alles"*). Einen Haken für diese Rückfallregel gibt es nicht |
 | **Risiko bei Update** | gering, eine Zeile; bei Kollision Antons Test prüfen |
 | **Wunsch an Anton** | Dialog und Routing gleich machen: ohne Liste die Vorgaben. Wir bringen das als kleinen PR mit dem Anwendungsfall |
+
+### A-Marker. Ein Marker je Art: Symbol, Farbe, Form (01.10.2026)
+
+| | |
+|---|---|
+| **Dateien** | `packages/toolkit/src/components/preview/type-presentation.tsx` (+14/-1: Feld `marker` in Eintrag, Fragment und Auflösung, in `SCALAR_SLOTS`), `packages/toolkit/src/components/map/markers/marker-shapes.ts` (+9/-2: Form `round`, `shapeAnchor`, `shapeGlyphCenter`), `packages/toolkit/src/components/map/markers/render-marker-svg.ts` (+3/-3: Symbol in der Mitte seiner Form), `packages/toolkit/src/components/map/adapters/leaflet.ts` (+4/-3: Anker je Form), `packages/toolkit/src/components/map/adapters/maplibre.ts` (+17/-4: Merkmal `round`, Anker und Versatz als Ausdruck, eigener Leuchtring ohne Versatz), `packages/toolkit/src/components/lens/map-lens.tsx` (+7/-2: Vorgabe der Art, wo das Item nichts trägt) |
+| **Was wir tun** | Eine Art trägt in ihrer Darstellung einen Marker (`{ icon, color, shape }`). Die Karte nimmt zuerst `data.color`/`data.icon` des Items, sonst diese Vorgabe. Neue Form `round`: eine Scheibe ohne Spitze, die auf ihrer Mitte sitzt. Unsere App-Schicht setzt Projekt auf rund, Waldgrün, Spross (Timo, 01.10.2026); Mensch folgt (eckig) |
+| **Warum kein Haken** | Die Karte kennt kein Aussehen je Art, nur Felder des einzelnen Items. Formen sind eine feste Liste mit einem Anker für alle (`PIN_ANCHOR`), und MapLibre setzt Anker und Leuchtring als Konstanten |
+| **Risiko bei Update** | mittel: sechs Dateien, je unter zwanzig Zeilen, alle mit `NAHT trustdonation (A-Marker)` markiert. Antons 56 Tests für Karte, Marker und Darstellung grün |
+| **Wunsch an Anton** | Ein Feld `marker` je Typ in der Darstellung (Spec 06) und Formen mit eigenem Anker. Anwendungsfall: Auf einer Karte mit Stiftungen, Projekten und Menschen soll man die Art auf einen Blick erkennen, ohne jeden Eintrag einzeln einzufärben |
+| **Zwischenschritt** | Unser Test `apps/reference/src/marker-art.test.ts` hält fest, was gelten muss |
 
 ### A-Sammelnetzwerk. Gruppen ohne Netzwerk erscheinen in einem Netzwerk (30.09.2026)
 

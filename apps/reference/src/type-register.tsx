@@ -57,5 +57,23 @@ function OrtOderProfil({ item }: ItemSlotProps) {
 }
 
 registerTypePresentation("trustdonation", {
-  extensions: [{ id: "place", detail: OrtOderProfil }],
+  extensions: [
+    { id: "place", detail: OrtOderProfil },
+    // Projekte (Timo, 01.10.2026): auf der Karte rund, ohne Spitze, in
+    // Waldgrün mit Spross. Antons `project` bringt keine Felder mit; ohne
+    // den Ort liesse sich ein Projekt nicht auf die Karte setzen. Das Feld
+    // `address` mit dem Location-Widget schreibt Adresse und Position, wie
+    // beim Ort. `marker` ist die Naht A-Marker (NAEHTE.md): die Vorgabe der
+    // Art, wo ein Projekt keine eigene Farbe oder kein eigenes Symbol traegt.
+    {
+      id: "project",
+      fields: [
+        { key: "title", widget: "title", pos: "head" },
+        { key: "description", widget: "text", pos: "content", label: "Beschreibung" },
+        { key: "address", widget: "location", pos: "meta" },
+        { key: "tags", widget: "tags", pos: "tags" },
+      ],
+      marker: { icon: "sprout", color: "#2E7D5B", shape: "round" },
+    },
+  ],
 })

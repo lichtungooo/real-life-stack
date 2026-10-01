@@ -98,6 +98,9 @@ export interface TypePresentationEntry extends RegisterLists {
   id: string
   /** Display name; the manifest deliberately carries none (SRP). */
   label: string
+  /** NAHT trustdonation (NAEHTE.md A-Marker): how items of this type look on
+   *  the map when the item carries no own `data.icon` / `data.color`. */
+  marker?: TypeMarker
   /** Badge styling. Absent = deliberately no badge (e.g. plain posts). */
   badge?: TypeBadgeStyle
   /** Feldliste (Spec 06, Feld- und Kantenregister). */
@@ -196,6 +199,8 @@ export interface TypePresentationFragment extends RegisterLists {
   selfActions?: readonly SelfActionOverride[]
   /** Qualifier-Werte samt Anzeige für Toolkit-Kanten (Regel 20). */
   qualifierValues?: readonly QualifierValuesEntry[]
+  /** NAHT trustdonation (A-Marker): set only where the base has none. */
+  marker?: TypeMarker
   badge?: TypeBadgeStyle
   composerWidgets?: readonly string[]
   /** United by key; an existing key is a conflict. */
@@ -213,9 +218,17 @@ export interface TypePresentationLayer {
 }
 
 /** What surfaces consume: entry with every fallback already applied. */
+/** A type's default map marker (NAHT trustdonation, NAEHTE.md A-Marker). */
+export interface TypeMarker {
+  icon?: string
+  color?: string
+  shape?: import("../map/markers/marker-shapes").MarkerShape
+}
+
 export interface ResolvedTypePresentation extends RegisterLists {
   id: string
   label: string
+  marker?: TypeMarker
   badge?: TypeBadgeStyle
   composerWidgets?: readonly string[]
   relationWidgets?: Readonly<Record<string, string>>
@@ -651,7 +664,7 @@ export function registerTypePresentation(
   }
 }
 
-const SCALAR_SLOTS = ["badge", "composerWidgets", "preview", "detail", "detailSlot", "footer", "composer"] as const
+const SCALAR_SLOTS = ["badge", "composerWidgets", "preview", "detail", "detailSlot", "footer", "composer", "marker"] as const
 
 function composePresentation(): Map<string, TypePresentationEntry> {
   if (composedCache) return composedCache

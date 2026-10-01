@@ -91,6 +91,8 @@ const USER_POSITION_DOT_LAYER = "rls-user-dot"
 const USER_POSITION_COLOR = "#2563eb"
 const MARKER_SYMBOL_LAYER = "rls-marker-symbols"
 const MARKER_GLOW_LAYER = "rls-marker-glow"
+/** NAHT trustdonation (A-Marker): the glow of a `round` marker, centred, not lifted onto a pin body. */
+const MARKER_GLOW_ROUND_LAYER = "rls-marker-glow-round"
 const CLUSTER_CIRCLE_LAYER = "rls-marker-clusters"
 const CLUSTER_COUNT_LAYER = "rls-marker-cluster-count"
 /** Neutral cluster-bubble colour (spec allows a neutral default; dominant
@@ -614,6 +616,7 @@ export class MapLibreMapAdapter implements MapAdapter, GlobeCapable, ClusterCapa
         label: m.label ?? "",
         selected: m.selected ? 1 : 0,
         glowColor: m.glowColor ?? "",
+        round: m.shape === "round" ? 1 : 0,
         color: m.color ?? DEFAULT_MARKER_COLOR,
       }
       const geometry: GeoJSON.Point = { type: "Point", coordinates: m.position }
@@ -671,7 +674,7 @@ export class MapLibreMapAdapter implements MapAdapter, GlobeCapable, ClusterCapa
         id: MARKER_GLOW_LAYER,
         type: "circle",
         source: MARKER_SOURCE,
-        filter: ["all", ["==", ["get", "selected"], 1], ["!", ["has", "point_count"]]],
+        filter: ["all", ["==", ["get", "selected"], 1], ["!", ["has", "point_count"]], ["!=", ["get", "round"], 1]],
         paint: {
           "circle-color": ["get", "glowColor"],
           // Larger than the pin so the halo reads around it (a small circle hides
@@ -683,6 +686,15 @@ export class MapLibreMapAdapter implements MapAdapter, GlobeCapable, ClusterCapa
           "circle-translate": [0, -26],
           "circle-translate-anchor": "viewport",
         },
+      })
+    }
+    if (!map.getLayer(MARKER_GLOW_ROUND_LAYER)) {
+      map.addLayer({
+        id: MARKER_GLOW_ROUND_LAYER,
+        type: "circle",
+        source: MARKER_SOURCE,
+        filter: ["all", ["==", ["get", "selected"], 1], ["!", ["has", "point_count"]], ["==", ["get", "round"], 1]],
+        paint: { "circle-color": ["get", "glowColor"], "circle-radius": 24, "circle-blur": 0.7, "circle-opacity": 0.65 },
       })
     }
     // Cluster bubble + count — present only when the source clusters.
@@ -732,8 +744,9 @@ export class MapLibreMapAdapter implements MapAdapter, GlobeCapable, ClusterCapa
           // The pin's tip is the bottom-centre of the pin within the image; the
           // image has PIN_SHADOW_PAD extra below it, so shift down by that pad to
           // keep the tip on the coordinate ("bottom" anchors the padded bottom).
-          "icon-anchor": "bottom",
-          "icon-offset": [0, PIN_SHADOW_PAD],
+          // NAHT trustdonation (A-Marker): a `round` marker sits on its centre.
+          "icon-anchor": ["case", ["==", ["get", "round"], 1], "center", "bottom"] as never,
+          "icon-offset": ["case", ["==", ["get", "round"], 1], ["literal", [0, 0]], ["literal", [0, PIN_SHADOW_PAD]]] as never,
           "icon-size": 1,
           "icon-allow-overlap": true,
           "icon-ignore-placement": true,
@@ -838,7 +851,7 @@ export class MapLibreMapAdapter implements MapAdapter, GlobeCapable, ClusterCapa
    *  settings (clustering on/off, or a changed cluster radius). Wired event
    *  handlers persist (keyed by layer id) and are not re-added. */
   private teardownMarkerLayers(map: MlMap): void {
-    for (const id of [CLUSTER_COUNT_LAYER, CLUSTER_CIRCLE_LAYER, MARKER_SYMBOL_LAYER, MARKER_GLOW_LAYER]) {
+    for (const id of [CLUSTER_COUNT_LAYER, CLUSTER_CIRCLE_LAYER, MARKER_SYMBOL_LAYER, MARKER_GLOW_LAYER, MARKER_GLOW_ROUND_LAYER]) {
       if (map.getLayer(id)) map.removeLayer(id)
     }
     if (map.getSource(MARKER_SOURCE)) map.removeSource(MARKER_SOURCE)

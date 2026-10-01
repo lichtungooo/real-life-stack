@@ -17,7 +17,7 @@
 //
 //     trustdonation.org/app/<space-id>/feed?connector=wot&import=stiftungen
 import { useEffect, useState } from "react"
-import type { DataInterface, CreateItemInput } from "@real-life-stack/data-interface"
+import type { DataInterface, CreateItemInput, Item } from "@real-life-stack/data-interface"
 
 export type ImportStand =
   | { art: "ruht" }
@@ -45,7 +45,10 @@ async function stiftungen() {
  * nicht auf; am Ende steht, was ankam.
  */
 export async function stiftungenSchreiben(
-  connector: DataInterface & { createItem?: (i: CreateItemInput) => Promise<unknown> },
+  connector: DataInterface & {
+    createItem?: (i: CreateItemInput) => Promise<unknown>
+    updateItem?: (id: string, updates: Partial<Item>) => Promise<unknown>
+  },
   melden: (stand: ImportStand) => void,
 ): Promise<void> {
   if (typeof connector.createItem !== "function") {
@@ -54,10 +57,12 @@ export async function stiftungenSchreiben(
   }
 
   const liste = await stiftungen()
-  let vorhanden = new Set<string>()
+  // Titel -> was schon da ist (Id und Symbol), damit ein zweiter Lauf
+  // nachtraegt, was neu dazukam, statt nur nichts zu verdoppeln.
+  let vorhanden = new Map<string, { id: string; icon: unknown }>()
   try {
     const da = await connector.getItems({ type: "place" })
-    vorhanden = new Set(da.map((i) => String((i.data as { title?: string })?.title ?? "")))
+    vorhanden = new Map(da.map((i) => [String((i.data as { title?: string })?.title ?? ""), { id: i.id, icon: (i.data as { icon?: unknown })?.icon }]))
   } catch {
     // Wenn die Liste nicht kommt, wird eben alles versucht. Doppelte sind
     // ärgerlich, ein Abbruch wäre schlimmer.
@@ -68,8 +73,16 @@ export async function stiftungenSchreiben(
   for (const [nr, item] of liste.entries()) {
     melden({ art: "laeuft", fertig: nr, gesamt: liste.length })
     const titel = String((item.data as { title?: string })?.title ?? "")
-    if (titel && vorhanden.has(titel)) {
-      uebersprungen++
+    const da = titel ? vorhanden.get(titel) : undefined
+    if (da) {
+      // Das Symbol im Marker (01.10.2026) fehlt Stiftungen, die vorher
+      // eingespielt wurden: nachtragen, sonst nichts anfassen.
+      const icon = (item.data as { icon?: unknown })?.icon
+      if (icon && !da.icon && typeof connector.updateItem === "function") {
+        try { await connector.updateItem(da.id, { data: { icon } }); geschrieben++ } catch { uebersprungen++ }
+      } else {
+        uebersprungen++
+      }
       continue
     }
     try {

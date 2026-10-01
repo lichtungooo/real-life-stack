@@ -6,7 +6,7 @@ import {
   DEFAULT_SHAPE,
   PIN_VIEWBOX,
   PIN_SIZE,
-  GLYPH_CENTER,
+  shapeGlyphCenter,
   type MarkerShape,
 } from "./marker-shapes"
 
@@ -71,7 +71,7 @@ export function renderMarkerSvg({
   const fill = dark ? mixHex(color, DARK_BACKDROP, DARK_FILL_MIX) : color
   const glyphColor = getReadableTextColor(fill)
   const pin = markerShapeBody(shape, fill, dark ? BORDER_DARK : BORDER_LIGHT)
-  const glyph = placeGlyph(resolveIcon(icon) ?? DEFAULT_ICON, glyphColor)
+  const glyph = placeGlyph(resolveIcon(icon) ?? DEFAULT_ICON, glyphColor, shapeGlyphCenter(shape))
   // The drop shadow is applied by the adapters via the `.rls-marker-shadow` CSS
   // class (a CSS `filter: drop-shadow`), which is reliable for `<img>`-embedded
   // SVG across browsers — an in-SVG `feDropShadow` is not.
@@ -88,7 +88,7 @@ export function markerDataUrl(opts: RenderMarkerOptions): string {
 }
 
 /** Centre a glyph in the pin's slot, scaled to a uniform size by its viewBox. */
-function placeGlyph(data: IconData, color: string): string {
+function placeGlyph(data: IconData, color: string, GLYPH_CENTER: { x: number; y: number }): string {
   const [minX, minY, w, h] = data.viewBox.split(/\s+/).map(Number)
   const scale = GLYPH_TARGET / Math.max(w, h)
   const tx = round(GLYPH_CENTER.x - (w * scale) / 2 - minX * scale)

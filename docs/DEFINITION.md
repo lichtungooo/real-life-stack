@@ -237,6 +237,20 @@ Jedes davon bekommt vor dem Bau einen eigenen Abschnitt hier, nach demselben Ras
 
 ---
 
+### Der Marker einer Art (01.10.2026)
+
+**Frage:** Was folgt auf der Karte daraus, dass ein Eintrag zu einer Art gehört?
+
+Timo: *"Für Stiftungen ein schönes Icon im Pin. Die Projekte hätte ich gern rund … alle Marker sollen Icons haben."* Man erkennt die Art auf einen Blick.
+
+| Art | Form | Symbol | Farbe | Quelle |
+|---|---|---|---|---|
+| Stiftung (`place` mit Profil) | Stecknadel | `hands` | ihr eigenes Blau `data.color` | Felder der Musterdaten, `data.icon` |
+| Projekt (`project`) | `round` | `sprout` | `#2E7D5B` | Vorgabe der Art (`marker`) in `type-register.tsx` |
+| Mensch | eckig (`square`) | `person` | offen | kommt |
+
+Regeln: Die eine Quelle ist das Feld `marker` der Typ-Darstellung (Naht A-Marker, Wunsch an Anton). Was ein Eintrag selbst trägt (`data.color`, `data.icon`), gewinnt. Eine Art ohne Vorgabe fällt auf Antons Regel zurück (Farbe aus Schlagwort oder Space, Symbol aus dem ersten Schlagwort). Der Marker trägt keine Bewertung und keine Rechte.
+
 ## Teil 7: Das Feld-Register
 
 **Frage, die dieser Abschnitt beantwortet:** Was folgt daraus, dass ein Datensatz dieses Feld trägt?
