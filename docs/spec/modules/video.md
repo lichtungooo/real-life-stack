@@ -47,6 +47,8 @@ Dazu, ebenfalls im Aktions-Knopf: **Zufällig jemanden wählen** (das Los steht 
 
 **Folien (30.09.2026, Schritt B):** Wer präsentiert, legt über „Folien hochladen“ eine **PDF** auf (bis 15 MB). Sie reist **in Stücken über den Kanal des Raums** (`datei-kopf`, `datei-teil`, `datei-frage` für Nachzügler; `@kreis/core/dateien`), ohne Server, und lebt nur in der Sitzung (der Stack trägt keine Dateianhänge; Wunsch an Anton: `BlobCapable`). Jedes Gerät zeichnet die Seite selbst mit **pdf.js** (Apache 2.0, Worker aus dem Bau) als Bild und legt es gesperrt unter die Zeichnung. **Jede Folie hat ihre eigene Zeichnung** (`padSchluessel`). Blättern (‹ Folie n ›) nur, wer präsentiert (`padBlaettern`); „Folien abnehmen“ führt zur freien Fläche zurück. **Gefunden und behoben:** Der Neben-Kanal meldete seinen Empfänger bei jedem Neuzeichnen ab und an; eine Antwort genau dazwischen ging verloren. Jetzt meldet er sich einmal an und liest die Verarbeitung aus einem Ref.
 
+**Mitschrift (01.10.2026):** Timo: *„da steht der Name drin, wenn man was spricht … wenn jemand anders spricht, muss das System erkennen, jetzt spricht der … und auch die Zeiten … wie lang … dass wir das messen.“* Jeder schreibt **nur sein eigenes Mikrofon** mit, darum stimmt der Name ohne Sprechererkennung. Der Browser trennt Sprache von Stille (`waechterSchritt` in `@kreis/core`: Grundrauschen gelernt, Beginn nach 0,2 s Sprache, Ende nach 0,9 s Stille, Schnitt nach 25 s, unter 0,5 s fällt weg), schneidet Abschnitte (`AbschnittSchneider`) und schickt jeden als 16-kHz-Ton an den **Mitschrift-Dienst** (`kreis-server/mitschrift`, `wss://kreis.wir.ooo/mitschrift`). Der erkennt mit **Nemotron 3.5 ASR Streaming 0.6B** (Gewichte OpenMDW 1.1, frei) über transcribe.cpp (MIT) auf der CPU (Weg aus Antons Redekreis, MIT; Modell aus dessen Volume) und gibt den Text zurück. Zutritt nur mit dem LiveKit-Token des Raums (`KreisRaum.mitschriftZugang`); Ton bleibt nirgends liegen. Eine Zeile reist mit **Name, Beginn, Ende**; erst vorläufig („…“), dann mit Text. **Gemessen wird:** Dauer je Zeile, Redezeit und Beiträge je Mensch mit Anteil (`redezeiten`). **Zustimmung:** Mitgeschrieben wird nur, wer „Mich mitschreiben lassen“ drückt; „Alle bitten“ fragt die anderen, jeder entscheidet selbst; an der Person in der Teilnehmerliste steht sichtbar, wer mitgeschrieben wird. Ist das Mikrofon in der Konferenz aus, hört die Mitschrift nicht hin. **Ablage:** als Beitrag im Space (`post`, Markdown in `content`) oder als `.md`-Datei (`protokollMarkdown`: Kopf mit Zeit und Dabei, Verlauf, Tabelle Redezeit). **Grenze:** ein Modell trägt einen Strom zugleich; alle Abschnitte laufen durch eine Warteschlange, bei 3,3-facher Echtzeit reicht das für ein Gespräch, in dem meist einer spricht. Googles Web Speech ist raus (Timo: *„immer alles open source“*).
+
 **Textdokument (30.09.2026):** Timo: *„wie im HedgeDoc zeitgleich mitschreiben im Markdown-Format, mit oben einer kleinen Leiste“*. **Anton: ganz normale Real Life Stack Items.** Das Dokument ist darum ein **Beitrag (`post`) im Space**, das Markdown steht in `content`, der Titel folgt der ersten Überschrift. Die Sitzung merkt sich nur die Id (`Sitzung.dokument`, `dokumentSetzen`); gelesen und geschrieben wird über Antons Hooks `useItem` und `useUpdateItem` (App: `TextdokumentItem` in `video-flaeche.tsx`), synchronisiert von seinem Stack. Kein eigenes Yjs, die Grenz-Regel bleibt heil. Editor CodeMirror 6 (MIT), gesteuert: eigene Änderungen gehen gebündelt (0,7 s) hinaus, eine neue Fassung von außen kommt herein, sobald man 1,5 s nicht tippt. **Grenze:** Schreiben zwei zugleich an derselben Stelle, gilt die zuletzt gespeicherte Fassung. Leiste: Fett, Kursiv, Überschriften, Liste, Aufgabe, Zitat, Code, Link, Tabelle, Rückgängig; Ansicht Schreiben · Beides · Vorschau (react-markdown, MIT); als `.md` herunterladen. **Nebenbei behoben:** Protokoll und Beschlüsse schrieben ihren Text in `text`, Antons `post` erwartet `content`.
 
 **Meeting-Überblick (30.09.2026):** Zahnrad bei Teilnehmer → **Meeting-Überblick**, nach dem Lernanalyse-Dashboard von BBB: Karten (Aktive Teilnehmer, Nachrichten, Redezeit gesamt, Umfragen) und je Mensch Onlinezeit, **Redezeit**, Kamerazeit, Nachrichten, Reaktionen, gehobene Hände, Status; „Konferenzdaten herunterladen“ als CSV (Semikolon). **Datensparsam:** Jedes Gerät zählt, was es selbst seit dem Betreten gesehen hat (`useUeberblick`, ein Takt je Sekunde); nichts wird gespeichert oder verschickt. Aktivitätswert und Quizze aus BBB sind bewusst weggelassen: Menschen in einem Kreis bekommen keine Punktzahl.
@@ -124,7 +126,7 @@ Daraus folgen die Schnittstellen in beide Richtungen:
 | Modul-Register | ja | Toolkit | welche Module sich in die Konferenz holen lassen |
 | Items | nein | `DataInterface` | das Protokoll |
 
-Chat, Hand und Zeichen sind **flüchtig**: Sie reisen als Neben-Nachrichten über den Daten-Kanal und enden mit der Sitzung. Das Protokoll wird erst auf Wunsch ein Item (`note`, `data.text`, `data.raum`, `data.teilnehmer`).
+Chat, Hand und Zeichen sind **flüchtig**: Sie reisen als Neben-Nachrichten über den Daten-Kanal und enden mit der Sitzung. Das Protokoll wird erst auf Wunsch ein Item (`post`, `data.content` als Markdown, `data.raum`, `data.teilnehmer`).
 
 ## Capabilities
 
@@ -133,7 +135,7 @@ Chat, Hand und Zeichen sind **flüchtig**: Sie reisen als Neben-Nachrichten übe
 | `KreisRaumCapable` mit Medien | Bild, Ton, Bildschirm | ohne Medien (lokaler Adapter): Teilnehmer, Chat, Hand, Kreis; Kacheln mit Anfangsbuchstaben |
 | `KreisRaumCapable` fehlt | — | Hinweis, dass die App keinen Raum gibt |
 | `ItemWriter` | Protokoll speichern | Speichern ausblenden |
-| Web Speech API | Live-Protokoll des eigenen Mikrofons | Protokoll-Knopf ausblenden. **Hinweis in der Fläche:** Chrome schickt das Audio an Google; für Gesundheitsdaten ungeeignet |
+| `KreisRaum.mitschriftZugang` (Mitschrift-Dienst) | Mitschrift des eigenen Mikrofons mit Name, Zeit, Dauer | Protokoll-Eintrag ausblenden (lokaler Raum ohne Dienst) |
 
 ## Aktionen
 
@@ -146,7 +148,7 @@ Chat, Hand und Zeichen sind **flüchtig**: Sie reisen als Neben-Nachrichten übe
 | Anheften | — | eine Person bleibt groß, lokal |
 | Hand heben, Zeichen geben | Raum | für alle sichtbar, Zeichen verschwinden nach vier Sekunden |
 | Chat | Raum | Zeile an alle |
-| Protokoll | Web Speech | eigene Zeilen an alle |
+| Protokoll | Mitschrift-Dienst (Nemotron) | eigene Zeilen mit Beginn und Ende an alle |
 | Modul öffnen | Modul-Register | das Modul erscheint in der Seitenleiste, lokal |
 | Klangschale, Redestab | Raum | wie im Kreis |
 

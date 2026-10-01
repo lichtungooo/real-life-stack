@@ -1,5 +1,5 @@
 // Was neben dem Sitzungszustand durch den Raum reist: Chat, Hand, Zeichen,
-// Protokoll. Fluechtig, es endet mit der Sitzung.
+// Protokoll (Mitschrift). Fluechtig, es endet mit der Sitzung.
 //
 // Es lebt im Provider, nicht in einer Flaeche: Wer im Kreis-Reiter sitzt,
 // waehrend jemand im Video schreibt, findet die Zeile beim Wechsel vor.
@@ -7,10 +7,11 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import {
   LEERE_NOTIZ, eingangNeu, elementeEinmischen, inPakete, inStuecke, nachBase64, stueckDazu, istNotiz, istZeichenElement, istStimme, istStrich, istUmfrage, notizGilt, notizSchreiben,
-  standEinmischen, stimmeDazu, strichDazu, umfrageEinmischen, umfrageNeu, umfrageSchliessen,
+  protokollMarkdown, standEinmischen, stimmeDazu, strichDazu, umfrageEinmischen, umfrageNeu, umfrageSchliessen,
   type GeteilteNotiz, type Strich, type Umfrage, type ZeichenElement, type Eingang,
 } from "@kreis/core"
 import type { KreisVerbindung, NebenNachricht } from "./use-kreis"
+import { MitschriftAufnahme } from "./mitschrift-aufnahme"
 
 /** Was im Meeting festgehalten wurde: eine Aufgabe oder ein Beschluss. */
 export interface Ergebnis {
@@ -32,7 +33,8 @@ function istErgebnis(w: unknown): w is Ergebnis {
 }
 
 export interface ChatZeile { id: string; wer: string; name: string; text: string; wann: number }
-export interface ProtokollZeile extends ChatZeile { vorlaeufig: boolean }
+/** Eine Zeile der Mitschrift. `wann` ist der Beginn, `bis` das Ende des Gesagten. */
+export interface ProtokollZeile extends ChatZeile { vorlaeufig: boolean; bis?: number }
 
 /** Die Zeichen, die jemand in den Raum geben kann. */
 export const ZEICHEN = {
@@ -46,32 +48,6 @@ export type ZeichenArt = keyof typeof ZEICHEN
 
 /** So lange steht ein Zeichen ueber der Kachel. */
 export const ZEICHEN_DAUER = 4000
-
-// Die Web Speech API steht in keiner Standard-Typdefinition.
-interface Erkennung {
-  lang: string
-  continuous: boolean
-  interimResults: boolean
-  start(): void
-  stop(): void
-  abort(): void
-  onresult: ((e: { resultIndex: number; results: ArrayLike<{ isFinal: boolean; 0?: { transcript?: string } }> }) => void) | null
-  onerror: ((e: { error?: string }) => void) | null
-  onend: (() => void) | null
-}
-
-function erkennungBauen(): Erkennung | null {
-  if (typeof window === "undefined") return null
-  const w = window as unknown as { SpeechRecognition?: new () => Erkennung; webkitSpeechRecognition?: new () => Erkennung }
-  const Bauplan = w.SpeechRecognition ?? w.webkitSpeechRecognition
-  return Bauplan ? new Bauplan() : null
-}
-
-export function spracherkennungVorhanden(): boolean {
-  if (typeof window === "undefined") return false
-  const w = window as unknown as Record<string, unknown>
-  return Boolean(w.SpeechRecognition ?? w.webkitSpeechRecognition)
-}
 
 export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null) {
   const [chat, setChat] = useState<ChatZeile[]>([])
@@ -111,16 +87,21 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
   const [kennungen, setKennungen] = useState<ReadonlyMap<string, string>>(new Map())
   const kennungRef = useRef(kennung)
   kennungRef.current = kennung
-  const erkennungRef = useRef<Erkennung | null>(null)
-  const sollLaufenRef = useRef(false)
+  const aufnahmeRef = useRef<MitschriftAufnahme | null>(null)
+  // Wer gerade mitgeschrieben wird (Raum-Ids), sichtbar fuer alle.
+  const [mitschreibende, setMitschreibende] = useState<ReadonlySet<string>>(new Set())
+  // Jemand bittet alle, die Mitschrift einzuschalten.
+  const [mitschriftBitte, setMitschriftBitte] = useState<{ von: string; wann: number } | null>(null)
 
   const meinName = v.teilnehmer.find((t) => t.ichSelbst)?.name ?? "Gast"
 
   const protokollZeile = useCallback((z: ProtokollZeile) => {
     setProtokoll((vorher) => {
-      // Von jeder Person gibt es hoechstens eine vorlaeufige Zeile.
-      const ohne = vorher.filter((alt) => !(alt.wer === z.wer && alt.vorlaeufig))
-      return z.text.trim() ? [...ohne, z].slice(-500) : ohne
+      // Eine Zeile kommt zweimal: erst vorlaeufig ("…"), dann mit Text. Leer
+      // heisst: nichts erkannt, die Zeile faellt weg. Geordnet nach Beginn.
+      const ohne = vorher.filter((alt) => alt.id !== z.id)
+      if (!z.text.trim()) return ohne.length === vorher.length ? vorher : ohne
+      return [...ohne, z].sort((a, b) => a.wann - b.wann).slice(-800)
     })
   }, [])
 
@@ -159,6 +140,10 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
       zeichenSetzen(n.wer, n.zeichen as ZeichenArt)
     } else if (n.art === "transkript" && n.zeile && typeof n.zeile === "object") {
       protokollZeile(n.zeile as ProtokollZeile)
+    } else if (n.art === "mitschrift-an") {
+      setMitschreibende((alt) => { const neu = new Set(alt); if (n.an) neu.add(von); else neu.delete(von); return neu })
+    } else if (n.art === "mitschrift-bitte" && typeof n.name === "string") {
+      setMitschriftBitte({ von: n.name, wann: Date.now() })
     } else if (n.art === "pad-elemente" && Array.isArray(n.elemente)) {
       const fremde = (n.elemente as unknown[]).filter(istZeichenElement)
       const schluessel = typeof n.schluessel === "string" ? n.schluessel : "frei"
@@ -251,6 +236,10 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
     const da = new Set(anwesend.split(","))
     setHaende((h) => { const neu = new Set([...h].filter((id) => da.has(id))); return neu.size === h.size ? h : neu })
     setKennungen((k) => { const neu = new Map([...k].filter(([id]) => da.has(id))); return neu.size === k.size ? k : neu })
+    setMitschreibende((m) => { const neu = new Set([...m].filter((id) => da.has(id))); return neu.size === m.size ? m : neu })
+    // Wer neu kommt, erfaehrt, dass ich mitgeschrieben werde.
+    if (aufnahmeRef.current) v.nebenSenden({ art: "mitschrift-an", an: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [anwesend])
 
   // Die Sitzung endet: alles Fluechtige mit ihr.
@@ -258,10 +247,11 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
     if (v.zustand !== "draussen") return
     setKennungen(new Map())
     setChat([]); setHaende(new Set()); setZeichen(new Map()); setProtokoll([]); setTafel([]); setNotiz(LEERE_NOTIZ); setUmfrage(null); setPad({}); setDateien(new Map()); setErgebnisse([]); setHereingeholt(new Set())
-    sollLaufenRef.current = false
-    erkennungRef.current?.abort()
-    erkennungRef.current = null
+    aufnahmeRef.current?.stoppen()
+    aufnahmeRef.current = null
     setProtokollLaeuft(false)
+    setMitschreibende(new Set())
+    setMitschriftBitte(null)
   }, [v.zustand])
 
   const chatSenden = useCallback((text: string) => {
@@ -285,63 +275,85 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
     v.nebenSenden({ art: "zeichen", wer: v.ich, zeichen: art })
   }, [v, zeichenSetzen])
 
+  // Ist mein Mikrofon in der Konferenz aus, hoert die Mitschrift nicht hin.
+  const mikroAnRef = useRef(false)
+  mikroAnRef.current = v.teilnehmer.find((t) => t.ichSelbst)?.mikroAn ?? false
+  const meinNameRef = useRef(meinName)
+  meinNameRef.current = meinName
+
+  /** Ob es hier eine Mitschrift gibt: nur im Konferenzraum mit Dienst. */
+  const mitschriftMoeglich = typeof v.raum.mitschriftZugang === "function"
+
   /**
-   * Das Protokoll starten. Der Kniff: jeder schreibt sein EIGENES Mikrofon
-   * mit und schickt die Zeilen in den Raum, darum stimmt die Zuordnung von
-   * selbst. ⚠ Chrome schickt das Audio dafuer an Google; die Flaeche sagt das.
+   * Die Mitschrift einschalten (Spec video, "Mitschrift"). Der Kniff: jeder
+   * schreibt sein EIGENES Mikrofon mit und schickt die Zeilen in den Raum,
+   * darum stimmt der Name von selbst. Erkannt wird auf unserem Server
+   * (Nemotron, kreis-server/mitschrift), quelloffen; Ton bleibt nirgends liegen.
    */
   const protokollStarten = useCallback((sprache = "de-DE") => {
-    if (!v.ich) return
-    const erkennung = erkennungBauen()
-    if (!erkennung) { setProtokollFehler("Dieser Browser kennt keine Spracherkennung. Chrome oder Edge tragen sie."); return }
+    if (!v.ich || aufnahmeRef.current) return
+    const zugang = v.raum.mitschriftZugang?.()
+    if (!zugang) { setProtokollFehler("Die Mitschrift läuft nur in der Konferenz mit Server."); return }
     const ich = v.ich
-    erkennung.lang = sprache
-    erkennung.continuous = true
-    erkennung.interimResults = true
-    erkennung.onresult = (e) => {
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        const ergebnis = e.results[i]
-        const text = String(ergebnis[0]?.transcript ?? "").trim()
-        if (!text) continue
-        const zeile: ProtokollZeile = { id: `${ich}-${Date.now()}-${i}`, wer: ich, name: meinName, text, wann: Date.now(), vorlaeufig: !ergebnis.isFinal }
-        protokollZeile(zeile)
-        v.nebenSenden({ art: "transkript", zeile })
-      }
+    const zeile = (id: string, text: string, beginn: number, ende: number, vorlaeufig: boolean) => {
+      const z: ProtokollZeile = { id: `${ich}-${id}`, wer: ich, name: meinNameRef.current, text, wann: beginn, bis: ende, vorlaeufig }
+      protokollZeile(z)
+      v.nebenSenden({ art: "transkript", zeile: z })
     }
-    erkennung.onerror = (e) => {
-      const art = String(e?.error ?? "unbekannt")
-      // "no-speech" und "aborted" sind Alltag, keine Stoerung.
-      if (art === "no-speech" || art === "aborted") return
-      if (art === "not-allowed" || art === "service-not-allowed") {
-        setProtokollFehler("Das Mikrofon ist für die Spracherkennung gesperrt.")
-        sollLaufenRef.current = false
-        setProtokollLaeuft(false)
-        return
-      }
-      setProtokollFehler(`Die Spracherkennung meldet: ${art}`)
-    }
-    // Chrome beendet die Erkennung nach einer Weile Stille von selbst.
-    erkennung.onend = () => {
-      if (!sollLaufenRef.current) { setProtokollLaeuft(false); return }
-      try { erkennung.start() } catch { sollLaufenRef.current = false; setProtokollLaeuft(false) }
-    }
-    try {
-      erkennung.start()
-      erkennungRef.current = erkennung
-      sollLaufenRef.current = true
-      setProtokollLaeuft(true)
-      setProtokollFehler(null)
-    } catch (e) {
-      setProtokollFehler(e instanceof Error ? e.message : "Die Spracherkennung startete nicht.")
-    }
-  }, [v, meinName, protokollZeile])
+    const zeiten = new Map<string, { beginn: number; ende: number }>()
+    const aufnahme = new MitschriftAufnahme({
+      url: zugang.url,
+      token: zugang.token,
+      sprache,
+      darfHoeren: () => mikroAnRef.current,
+      hoerer: {
+        abschnitt: (id, beginn, ende) => { zeiten.set(id, { beginn, ende }); zeile(id, "…", beginn, ende, true) },
+        text: (id, text) => {
+          const t = zeiten.get(id)
+          zeiten.delete(id)
+          if (t) zeile(id, text, t.beginn, t.ende, false)
+        },
+        verbunden: (an) => { if (an) setProtokollFehler(null) },
+        fehler: (text) => setProtokollFehler(text),
+      },
+    })
+    aufnahmeRef.current = aufnahme
+    setProtokollLaeuft(true)
+    setProtokollFehler(null)
+    v.nebenSenden({ art: "mitschrift-an", an: true })
+    setMitschreibende((alt) => new Set(alt).add(ich))
+    aufnahme.starten().catch((e: unknown) => {
+      aufnahmeRef.current = null
+      setProtokollLaeuft(false)
+      v.nebenSenden({ art: "mitschrift-an", an: false })
+      setMitschreibende((alt) => { const neu = new Set(alt); neu.delete(ich); return neu })
+      const name = e instanceof Error ? e.name : ""
+      setProtokollFehler(name === "NotAllowedError" ? "Das Mikrofon ist für die Mitschrift gesperrt." : "Die Mitschrift startete nicht.")
+    })
+  }, [v, protokollZeile])
 
   const protokollHalten = useCallback(() => {
-    sollLaufenRef.current = false
-    erkennungRef.current?.stop()
-    erkennungRef.current = null
+    aufnahmeRef.current?.stoppen()
+    aufnahmeRef.current = null
     setProtokollLaeuft(false)
-  }, [])
+    if (v.ich) {
+      const ich = v.ich
+      v.nebenSenden({ art: "mitschrift-an", an: false })
+      setMitschreibende((alt) => { const neu = new Set(alt); neu.delete(ich); return neu })
+    }
+  }, [v])
+
+  // Ich verlasse die Flaeche: die Aufnahme endet mit.
+  useEffect(() => () => { aufnahmeRef.current?.stoppen(); aufnahmeRef.current = null }, [])
+
+  /** Alle bitten, die Mitschrift einzuschalten. Jeder entscheidet selbst. */
+  const mitschriftErbitten = useCallback(() => {
+    v.nebenSenden({ art: "mitschrift-bitte", name: meinNameRef.current })
+  }, [v])
+
+  /** Das Protokoll als Datei: Name, von bis, Dauer, Text, Redezeiten. */
+  const protokollAlsMarkdown = useCallback((raum: string) =>
+    protokollMarkdown(protokoll, { raum, teilnehmer: v.teilnehmer.map((t) => t.name) }), [protokoll, v.teilnehmer])
 
   const protokollAlsText = useCallback(() => protokoll
     .filter((z) => !z.vorlaeufig)
@@ -463,7 +475,8 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
     chat, chatSenden,
     haende, handUmschalten,
     zeichen, zeichenGeben,
-    protokoll, protokollLaeuft, protokollFehler, protokollStarten, protokollHalten, protokollAlsText,
+    protokoll, protokollLaeuft, protokollFehler, protokollStarten, protokollHalten, protokollAlsText, protokollAlsMarkdown,
+    mitschriftMoeglich, mitschreibende, mitschriftBitte, mitschriftErbitten, mitschriftBitteWeg: () => setMitschriftBitte(null),
     protokollLeeren: () => setProtokoll([]),
   }
 }

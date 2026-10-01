@@ -32,7 +32,7 @@ import { UeberblickDialog, useUeberblick } from "./ueberblick"
 import { EinstellungenDialog } from "./einstellungen-dialog"
 import { useKreisVerbindung, type KreisKontext } from "../raum-kontext"
 import { AndererRaum, KreisWerkzeug, OhneRaum, Vorraum } from "../kreis-raum-flaeche"
-import { ZEICHEN, spracherkennungVorhanden, type ZeichenArt } from "../use-neben"
+import { ZEICHEN, type ZeichenArt } from "../use-neben"
 import { VideoBuehne } from "./video-buehne"
 import { VideoKachel } from "./video-kachel"
 import { Tafel } from "./tafel"
@@ -372,7 +372,7 @@ function InDerKonferenz({ kreis, raumName, raumId, module = [], modulZeigen, pro
             className={`mx-2 flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-left ${spalte === "notizen" ? "bg-white/10" : "hover:bg-white/5"}`}>
             <FileText className="h-4 w-4 text-slate-300" /> Geteilte Notizen
           </button>
-          {spracherkennungVorhanden() && (
+          {neben.mitschriftMoeglich && (
             <>
               <button type="button" onClick={() => spalteZeigen("protokoll")} aria-pressed={spalte === "protokoll"}
                 className={`mx-2 flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-left ${spalte === "protokoll" ? "bg-white/10" : "hover:bg-white/5"}`}>
@@ -426,7 +426,7 @@ function InDerKonferenz({ kreis, raumName, raumId, module = [], modulZeigen, pro
               <p className="px-3 pb-2 pt-1 text-[11px] text-slate-500">Auf Augenhöhe: Jeder darf das, und jedes Gerät hält sich selbst daran.</p>
             </Menue>
           </div>
-          <Menschen teilnehmer={teilnehmer} haende={neben.haende} stab={halterDa ? sitzung.stab.halter : null} medien={raum.traegtMedien} />
+          <Menschen teilnehmer={teilnehmer} haende={neben.haende} stab={halterDa ? sitzung.stab.halter : null} medien={raum.traegtMedien} mitschreibende={neben.mitschreibende} />
           {einladen && <NeuImRaum kreis={kreis} einladen={einladen} />}
         </nav>
       )}
@@ -680,6 +680,16 @@ function InDerKonferenz({ kreis, raumName, raumId, module = [], modulZeigen, pro
         {einstellungenOffen && (
           <EinstellungenDialog regeln={regelnVon(sitzung)} stilleVorgabe={stilleSekundenVon({ ...sitzung, regeln: undefined }, prozess)}
             onZu={() => setEinstellungenOffen(false)} onRegelnSpeichern={(r) => handle((s, t) => regelnSetzen(s, r, wer, t))} />
+        )}
+        {neben.mitschriftBitte && !neben.protokollLaeuft && (
+          <div role="dialog" aria-label="Bitte um Mitschrift" className="absolute left-1/2 top-14 z-40 w-80 -translate-x-1/2 rounded-xl bg-slate-800/95 p-3.5 text-sm text-slate-100 shadow-xl ring-1 ring-white/10">
+            <p><strong>{neben.mitschriftBitte.von}</strong> bittet, das Gespräch mitzuschreiben. Mit deinem Namen, Uhrzeit und Dauer; erkannt auf unserem eigenen Server.</p>
+            <div className="mt-3 flex gap-2">
+              <button type="button" onClick={() => { neben.protokollStarten(); neben.mitschriftBitteWeg() }}
+                className="flex-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700">Mich mitschreiben lassen</button>
+              <button type="button" onClick={neben.mitschriftBitteWeg} className="rounded-lg bg-white/10 px-3 py-1.5 text-xs hover:bg-white/20">Lieber nicht</button>
+            </div>
+          </div>
         )}
         {einblendungen.length > 0 && (
           <div aria-live="polite" className="pointer-events-none absolute right-3 top-14 z-40 flex w-72 flex-col gap-2">

@@ -34,6 +34,8 @@ export interface LiveKitRaumOptionen {
   serverUrl: string
   /** Der Token-Dienst, z. B. `https://kreis.wir.ooo/token`. */
   tokenUrl: string
+  /** Der Mitschrift-Dienst, z. B. `wss://kreis.wir.ooo/mitschrift`. Ohne ihn keine Mitschrift. */
+  mitschriftUrl?: string
   /** Mikrofon beim Betreten an. Standard: an. */
   mikroBeimBetreten?: boolean
 }
@@ -41,6 +43,7 @@ export interface LiveKitRaumOptionen {
 export const KREIS_WIR_OOO: LiveKitRaumOptionen = {
   serverUrl: "wss://kreis.wir.ooo",
   tokenUrl: "https://kreis.wir.ooo/token",
+  mitschriftUrl: "wss://kreis.wir.ooo/mitschrift",
 }
 
 async function json<T>(adresse: string, was: string): Promise<T> {
@@ -54,6 +57,8 @@ async function json<T>(adresse: string, was: string): Promise<T> {
 
 export function liveKitKreisRaum(optionen: LiveKitRaumOptionen = KREIS_WIR_OOO): KreisRaum {
   let raum: Room | null = null
+  // Das Token des Raums. Die Mitschrift weist sich damit aus (kreis-server/mitschrift).
+  let zugangsToken: string | null = null
   const aenderungen = new Set<() => void>()
   const nachrichten = new Set<(n: unknown, von: string) => void>()
   const melden = () => aenderungen.forEach((fn) => fn())
@@ -137,6 +142,7 @@ export function liveKitKreisRaum(optionen: LiveKitRaumOptionen = KREIS_WIR_OOO):
 
       await r.connect(optionen.serverUrl, token)
       raum = r
+      zugangsToken = token
       if (optionen.mikroBeimBetreten ?? true) {
         await r.localParticipant.setMicrophoneEnabled(true, tonFilter()).catch(() => {
           // Ohne Freigabe fuers Mikrofon bleibt man stumm im Kreis, statt draussen.
@@ -153,6 +159,8 @@ export function liveKitKreisRaum(optionen: LiveKitRaumOptionen = KREIS_WIR_OOO):
     },
 
     ich: () => raum?.localParticipant.identity ?? null,
+
+    mitschriftZugang: () => (raum && zugangsToken && optionen.mitschriftUrl ? { url: optionen.mitschriftUrl, token: zugangsToken } : null),
 
     teilnehmer(): readonly KreisTeilnehmer[] {
       if (!raum) return []

@@ -45,6 +45,12 @@ export interface KreisRaum {
   bildschirm?(an: boolean): Promise<void>
   /** Optional: den geteilten Bildschirm eines Teilnehmers an ein Element haengen. */
   bildschirmAnhaengen?(id: string, element: HTMLVideoElement): () => void
+  /**
+   * Optional: wohin die Mitschrift den Ton schickt und womit sie sich
+   * ausweist (das Token dieses Raums). `null`, solange man draussen ist oder
+   * der Adapter keine Mitschrift kennt. Spec video, "Mitschrift".
+   */
+  mitschriftZugang?(): { url: string; token: string } | null
 }
 
 /** Macht aus einem Namen eine Raumkennung: klein, ASCII, Strich statt Leerzeichen. */
