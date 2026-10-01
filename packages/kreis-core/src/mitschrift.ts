@@ -14,6 +14,8 @@ export interface MitschriftZeile {
   text: string
   wann: number
   bis?: number
+  /** Wie lange wirklich gesprochen wurde, ohne die Pausen dazwischen (ms). */
+  ms?: number
   vorlaeufig?: boolean
 }
 
@@ -38,8 +40,10 @@ export const WAECHTER_STANDARD: WaechterEinstellung = {
   schwelleMin: 0.012, // wie im Redekreis (PEGEL_SCHWELLE)
   ueberRauschen: 2.5,
   anMs: 200,
-  ausMs: 900,
-  maxMs: 25_000,
+  // Timo, 01.10.2026: "die Pausen reagieren zu schnell". Erst zwei Sekunden
+  // Stille beenden einen Abschnitt; der Text waechst ohnehin live mit.
+  ausMs: 2000,
+  maxMs: 90_000,
   minMs: 500,
 }
 
@@ -104,8 +108,8 @@ export function waechterSchritt(
 
 // --- Messen --------------------------------------------------------------------
 
-/** Wie lange eine Zeile dauerte, in ms (0 ohne Ende). */
-export const zeilenDauer = (z: MitschriftZeile): number => (z.bis && z.bis > z.wann ? z.bis - z.wann : 0)
+/** Wie lange in einer Zeile gesprochen wurde, in ms: die reine Sprechzeit, sonst Beginn bis Ende. */
+export const zeilenDauer = (z: MitschriftZeile): number => (typeof z.ms === "number" ? z.ms : z.bis && z.bis > z.wann ? z.bis - z.wann : 0)
 
 export interface Redezeit { name: string; beitraege: number; ms: number; anteil: number }
 

@@ -87,18 +87,32 @@ const GRUPPE = "4f1c2a9e-7b3d-4e21-9a55-0c6d8e2f1b77"
 const flaeche = (name: string) => <VideoRaumFlaeche raumId={GRUPPE} raumName="Garten" vorschlagName={name} />
 
 describe("Der Schneider macht aus Bloecken Abschnitte", () => {
-  it("ein Satz wird ein Abschnitt mit Beginn, Ende und Ton, samt Vorlauf", () => {
-    const fertig: { id: string; beginn: number; ende: number; laenge: number }[] = []
-    const s = new AbschnittSchneider((id, beginn, ende, ton) => fertig.push({ id, beginn, ende, laenge: ton.length }))
-    const block = (w: number) => new Float32Array(2048).fill(w)
+  /** Spielt Pegel durch den Schneider und schreibt mit, was er meldet. */
+  function schneiden(folge: [number, number][]) {
+    const log: string[] = []
+    let bloecke = 0
+    const ende: { beginn: number; ende: number; behalten: boolean }[] = []
+    const s = new AbschnittSchneider({
+      beginn: (id, _w, vorlauf) => { log.push(`beginn ${id}`); bloecke += vorlauf.length },
+      block: () => { bloecke++ },
+      ende: (id, beginn, e, behalten) => { log.push(`ende ${id}`); ende.push({ beginn, ende: e, behalten }) },
+    })
     let t = 1_000_000
-    for (let i = 0; i < 10; i++) s.block(block(0.001), 0.001, (t += 128))
-    for (let i = 0; i < 20; i++) s.block(block(0.1), 0.1, (t += 128))
-    for (let i = 0; i < 10; i++) s.block(block(0.001), 0.001, (t += 128))
-    expect(fertig).toHaveLength(1)
-    expect(fertig[0].ende - fertig[0].beginn).toBe(20 * 128)
+    for (const [n, w] of folge) for (let i = 0; i < n; i++) s.block(new Float32Array(2048).fill(w), w, (t += 128))
+    return { log, bloecke, ende }
+  }
+
+  it("ein Satz: Beginn sofort, dann jeder Block live, das Ende nach zwei Sekunden Stille, samt Vorlauf", () => {
+    const { log, bloecke, ende } = schneiden([[10, 0.001], [20, 0.1], [20, 0.001]])
+    expect(log).toEqual(["beginn a-1", "ende a-1"])
+    expect(ende[0].ende - ende[0].beginn).toBe(20 * 128)
     // Der Ton reicht etwas vor den Beginn (Vorlauf), damit kein Anlaut fehlt.
-    expect(fertig[0].laenge).toBeGreaterThan(20 * 2048)
+    expect(bloecke).toBeGreaterThan(20)
+  })
+
+  it("eine Pause von einer Sekunde bleibt ein Abschnitt", () => {
+    const { log } = schneiden([[15, 0.1], [8, 0.001], [15, 0.1], [20, 0.001]])
+    expect(log).toEqual(["beginn a-1", "ende a-1"])
   })
 
   it("Int16 fuer die Leitung: Grenzen bleiben heil", () => {
@@ -126,13 +140,18 @@ describe("Die Mitschrift in der Konferenz: ein Hebel fuer alle, jeder kann sich 
     expect(bert.huelle.querySelector('[role="dialog"][aria-label="Mitschrift läuft"]')?.textContent).toContain("Anna hat die Mitschrift für alle eingeschaltet")
     expect(bert.huelle.querySelectorAll('[aria-label="wird mitgeschrieben"]')).toHaveLength(2)
 
-    const annas = aufnahmen.find((a) => a.o.hoerer)!.o.hoerer
+    const annas = aufnahmen[0].o.hoerer
     const beginn = new Date(2026, 9, 1, 10, 0, 5).getTime()
-    await act(async () => { annas.abschnitt("m-1", beginn, beginn + 23_000) })
+    await act(async () => { annas.beginn("m-1", beginn) })
     await bert.klick("Verstanden")
     await bert.klick("Protokoll")
     expect(bert.text()).toContain("…")
-    await act(async () => { annas.text("m-1", "Wir pflanzen im April.") })
+    // Der Text waechst, waehrend Anna spricht.
+    await act(async () => { annas.live("m-1", "Wir pflanzen", "im") })
+    // Gebremst auf alle 0,6 s; die neueste Fassung kommt nach.
+    await act(async () => { await new Promise((r) => setTimeout(r, 700)) })
+    expect(bert.text()).toContain("Wir pflanzen im")
+    await act(async () => { annas.fertig("m-1", "Wir pflanzen im April.", beginn, beginn + 23_000, true) })
     expect(bert.text()).toContain("Wir pflanzen im April.")
     expect(bert.text()).toContain("10:00:05")
     expect(bert.text()).toContain("0:23")
@@ -143,9 +162,24 @@ describe("Die Mitschrift in der Konferenz: ein Hebel fuer alle, jeder kann sich 
     expect(liste?.textContent).toContain("Anna")
     expect(liste?.textContent).toContain("0:23")
 
-    // Nichts erkannt: die vorlaeufige Zeile verschwindet wieder.
-    await act(async () => { annas.abschnitt("m-2", beginn + 30_000, beginn + 31_000) })
-    await act(async () => { annas.text("m-2", "") })
+    // Nach einer Pause spricht Anna weiter: dieselbe Zeile waechst, die Redezeit zaehlt nur das Gesprochene.
+    await act(async () => { annas.beginn("m-2", beginn + 26_000) })
+    await act(async () => { annas.fertig("m-2", "Und Bohnen im Mai.", beginn + 26_000, beginn + 30_000, true) })
+    expect(bert.text()).toContain("Wir pflanzen im April. Und Bohnen im Mai.")
+    expect(bert.text()).toContain("0:27")
+
+    // Bert spricht dazwischen; danach beginnt Anna eine neue Zeile.
+    const berts = aufnahmen[1].o.hoerer
+    await act(async () => { berts.beginn("m-1", beginn + 32_000) })
+    await act(async () => { berts.fertig("m-1", "Gute Idee.", beginn + 32_000, beginn + 33_000, true) })
+    await act(async () => { annas.beginn("m-3", beginn + 35_000) })
+    await act(async () => { annas.fertig("m-3", "Dann machen wir das so.", beginn + 35_000, beginn + 37_000, true) })
+    const zeilen = [...bert.huelle.querySelectorAll("p")].map((p) => p.textContent).filter((t) => t && /pflanzen|Idee|machen/.test(t))
+    expect(zeilen).toEqual(["Wir pflanzen im April. Und Bohnen im Mai.", "Gute Idee.", "Dann machen wir das so."])
+
+    // Nichts erkannt (Huesteln): die vorlaeufige Zeile verschwindet wieder.
+    await act(async () => { annas.beginn("m-4", beginn + 60_000) })
+    await act(async () => { annas.fertig("m-4", "", beginn + 60_000, beginn + 60_300, false) })
     expect(bert.huelle.textContent?.match(/…/g) ?? []).toHaveLength(0)
 
     // Anna beendet fuer alle: jede Aufnahme stoppt.

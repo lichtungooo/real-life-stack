@@ -23,7 +23,7 @@ const laut = (n: number) => Array(n).fill(0.08)
 
 describe("Der Waechter trennt Sprache von Stille", () => {
   it("ein Satz: Beginn, dann Ende nach der Stille, ohne die Stille am Ende", () => {
-    const { ereignisse } = durch([...still(10), ...laut(20), ...still(10)])
+    const { ereignisse } = durch([...still(10), ...laut(20), ...still(20)])
     expect(ereignisse.map((e) => e.art)).toEqual(["beginn", "ende"])
     const ende = ereignisse[1] as Extract<WaechterEreignis, { art: "ende" }>
     expect(ende.behalten).toBe(true)
@@ -32,19 +32,19 @@ describe("Der Waechter trennt Sprache von Stille", () => {
     expect(ende.beginn).toBe(10 * BLOCK)
   })
 
-  it("eine kurze Pause im Satz beendet den Abschnitt nicht", () => {
-    const { ereignisse } = durch([...laut(10), ...still(4), ...laut(10), ...still(10)])
+  it("eine Pause von anderthalb Sekunden beendet den Abschnitt nicht (Timo: die Pausen reagieren zu schnell)", () => {
+    const { ereignisse } = durch([...laut(10), ...still(12), ...laut(10), ...still(20)])
     expect(ereignisse.filter((e) => e.art === "ende")).toHaveLength(1)
   })
 
   it("ein Klopfen ist kein Beitrag", () => {
-    const { ereignisse } = durch([...still(5), ...laut(2), ...still(12)])
+    const { ereignisse } = durch([...still(5), ...laut(2), ...still(20)])
     const ende = ereignisse.find((e) => e.art === "ende") as Extract<WaechterEreignis, { art: "ende" }> | undefined
     expect(ende?.behalten ?? false).toBe(false)
   })
 
-  it("wer lange redet, wird nach 25 Sekunden geschnitten, und es geht nahtlos weiter", () => {
-    const bloecke = Math.ceil(60_000 / BLOCK)
+  it("wer lange redet, wird nach 90 Sekunden geschnitten, und es geht nahtlos weiter", () => {
+    const bloecke = Math.ceil(200_000 / BLOCK)
     const { ereignisse } = durch(laut(bloecke))
     const enden = ereignisse.filter((e) => e.art === "ende") as Extract<WaechterEreignis, { art: "ende" }>[]
     expect(enden.length).toBe(2)
@@ -58,7 +58,7 @@ describe("Der Waechter trennt Sprache von Stille", () => {
     const { ereignisse } = durch([...Array(100).fill(0.011), ...Array(100).fill(0.02)])
     expect(ereignisse).toHaveLength(0)
     // Eine Stimme darueber kommt weiter durch.
-    const mitStimme = durch([...Array(100).fill(0.011), ...Array(20).fill(0.09), ...Array(10).fill(0.011)])
+    const mitStimme = durch([...Array(100).fill(0.011), ...Array(20).fill(0.09), ...Array(20).fill(0.011)])
     expect(mitStimme.ereignisse.map((e) => e.art)).toEqual(["beginn", "ende"])
   })
 })
@@ -71,6 +71,10 @@ describe("Redezeit und Datei", () => {
     { name: "Anna", text: "Dann fang du an.", wann: t0 + 66_000, bis: t0 + 68_000 },
     { name: "Cara", text: "…", wann: t0 + 70_000, vorlaeufig: true },
   ]
+
+  it("die reine Sprechzeit zaehlt, wo sie bekannt ist", () => {
+    expect(redezeiten([{ name: "Anna", text: "a", wann: 0, bis: 20_000, ms: 12_000 }])[0].ms).toBe(12_000)
+  })
 
   it("zaehlt Beitraege und Redezeit je Mensch, ohne Vorlaeufiges", () => {
     const rz = redezeiten(zeilen)

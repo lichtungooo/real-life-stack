@@ -1,6 +1,6 @@
 // Die linke Seite der Konferenz: Menschen mit Namen, Chat, Protokoll.
 
-import { dauerText, mitschriftHebel, moderationVon, redezeiten } from "@kreis/core"
+import { dauerText, mitschriftHebel, moderationVon, redezeiten, zeilenDauer } from "@kreis/core"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { CircleDot, Download, Hand, MicOff, MonitorUp, Save, ScrollText, Send, Trash2 } from "lucide-react"
 import type { KreisTeilnehmer } from "@kreis/core"
@@ -130,7 +130,7 @@ export function Protokoll({ kreis, speichern }: { kreis: KreisKontext; speichern
             <div className="flex items-baseline gap-2">
               <span className="text-[11px] font-semibold text-emerald-400">{z.name}</span>
               <span className="text-[10px] text-slate-500">{uhrzeitGenau(z.wann)}</span>
-              {z.bis && z.bis > z.wann && <span className="text-[10px] text-slate-500">· {dauerText(z.bis - z.wann)}</span>}
+              {zeilenDauer(z) > 0 && <span className="text-[10px] text-slate-500">· {dauerText(zeilenDauer(z))}</span>}
             </div>
             <p className="mt-0.5 text-[13px] leading-relaxed text-slate-200">{z.text}</p>
           </div>

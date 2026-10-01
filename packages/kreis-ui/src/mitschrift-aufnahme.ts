@@ -1,9 +1,9 @@
 // Die Aufnahme der Mitschrift im Browser (Spec video, "Mitschrift").
 //
 // Hoert NUR das eigene Mikrofon. Der Waechter (@kreis/core) trennt Sprache
-// von Stille; jeder Abschnitt geht als 16-kHz-Ton an den Mitschrift-Dienst
-// (kreis-server/mitschrift), der Text kommt zurueck. Ton bleibt nirgends
-// liegen, weder hier noch dort.
+// von Stille. Spricht mein Mensch, geht der Ton laufend als 16-kHz-Bloecke an
+// den Mitschrift-Dienst (kreis-server/mitschrift), und der Text kommt zurueck,
+// waehrend gesprochen wird, wie in Antons Redekreis. Ton bleibt nirgends liegen.
 //
 // Die Umrechnung auf 16 kHz stammt aus Antons Redekreis
 // (github.com/antontranelis/talking-circle, public/pcm-worklet.js, MIT).
@@ -13,7 +13,7 @@ import { waechterNeu, waechterSchritt, type WaechterZustand } from "@kreis/core"
 const RATE = 16000
 const BLOCK = 2048 // 128 ms bei 16 kHz
 const BLOCK_MS = (BLOCK / RATE) * 1000
-const VORLAUF_BLOECKE = 3 // ~0,4 s vor dem Beginn, damit kein Satzanfang fehlt
+const VORLAUF_BLOECKE = 4 // ~0,5 s vor dem Beginn, damit kein Satzanfang fehlt
 
 // Der Worklet-Code als Text: so braucht er keine eigene Datei im Bau.
 const WORKLET = `
@@ -47,10 +47,12 @@ registerProcessor("kreis-pcm", KreisPcm);
 `
 
 export interface MitschriftHoerer {
-  /** Ein Abschnitt ist zu Ende und unterwegs; der Text folgt mit derselben Id. */
-  abschnitt(id: string, beginn: number, ende: number): void
-  /** Der Text eines Abschnitts. Leer, wenn nichts erkannt wurde. */
-  text(id: string, text: string): void
+  /** Mein Mensch beginnt zu sprechen. */
+  beginn(id: string, wann: number): void
+  /** Der Text waechst: `text` steht fest, `vorlaeufig` kann sich noch aendern. */
+  live(id: string, text: string, vorlaeufig: string): void
+  /** Der Abschnitt ist erkannt. Leer, wenn nichts erkannt wurde; `behalten` falsch bei Huesteln und Klopfen. */
+  fertig(id: string, text: string, beginn: number, ende: number, behalten: boolean): void
   /** Der Dienst ist bereit (`true`) oder weg (`false`). */
   verbunden(an: boolean): void
   fehler(text: string): void
@@ -77,53 +79,66 @@ export function alsInt16(teile: readonly Float32Array[]): Int16Array {
   return aus
 }
 
+export interface SchneiderHoerer {
+  /** Ein Abschnitt beginnt; `vorlauf` ist der Ton kurz davor samt dem ersten lauten Block. */
+  beginn(id: string, wann: number, vorlauf: readonly Float32Array[]): void
+  /** Ein weiterer Block des laufenden Abschnitts. */
+  block(id: string, pcm: Float32Array): void
+  /** Der Abschnitt endet. `behalten` falsch, wenn er zu kurz war. */
+  ende(id: string, beginn: number, ende: number, behalten: boolean): void
+}
+
 /**
- * Nimmt Bloecke (16 kHz, je 128 ms) mit ihrem Pegel und schneidet daraus
- * Abschnitte. Ohne Browser testbar: `block` von aussen fuettern.
+ * Nimmt Bloecke (16 kHz, je 128 ms) mit ihrem Pegel und meldet Abschnitte:
+ * Beginn, jeden Block, Ende. Ohne Browser testbar.
  */
 export class AbschnittSchneider {
   private zustand: WaechterZustand = waechterNeu()
   private vorlauf: Float32Array[] = []
-  private laufend: Float32Array[] = []
+  private offen: string | null = null
   private nr = 0
 
-  constructor(private readonly fertig: (id: string, beginn: number, ende: number, ton: Int16Array) => void, private readonly praefix = "a") {}
+  constructor(private readonly h: SchneiderHoerer, private readonly praefix = "a") {}
 
   block(pcm: Float32Array, pegel: number, jetzt: number): void {
     const { zustand, ereignis } = waechterSchritt(this.zustand, pegel, BLOCK_MS, jetzt)
     this.zustand = zustand
-    if (zustand.seit === null && !ereignis) {
-      this.vorlauf.push(pcm)
-      if (this.vorlauf.length > VORLAUF_BLOECKE + 2) this.vorlauf.shift()
-      return
-    }
     if (ereignis?.art === "beginn") {
       // Was schon laut war, bevor der Waechter sicher war, gehoert dazu.
-      this.laufend = [...this.vorlauf, pcm]
+      this.offen = `${this.praefix}-${++this.nr}`
+      this.h.beginn(this.offen, ereignis.wann, [...this.vorlauf, pcm])
       this.vorlauf = []
       return
     }
-    if (ereignis?.art === "ende") {
-      const ton = this.laufend
-      this.laufend = ereignis.weiter ? [pcm] : []
-      if (!ereignis.weiter) this.vorlauf = [pcm]
-      if (ereignis.behalten) this.fertig(`${this.praefix}-${++this.nr}`, ereignis.beginn, ereignis.ende, alsInt16(ton))
+    if (ereignis?.art === "ende" && this.offen) {
+      // Die Stille am Ende geht noch mit; sie hilft dem Strom beim Abschliessen.
+      this.h.block(this.offen, pcm)
+      this.h.ende(this.offen, ereignis.beginn, ereignis.ende, ereignis.behalten)
+      this.offen = null
+      if (ereignis.weiter) {
+        this.offen = `${this.praefix}-${++this.nr}`
+        this.h.beginn(this.offen, ereignis.ende, [])
+      }
       return
     }
-    this.laufend.push(pcm)
+    if (this.offen) { this.h.block(this.offen, pcm); return }
+    this.vorlauf.push(pcm)
+    if (this.vorlauf.length > VORLAUF_BLOECKE) this.vorlauf.shift()
   }
 
-  /** Abbrechen, etwa wenn das Mikrofon ausgeht: Der laufende Abschnitt geht noch hinaus. */
+  /** Abbrechen, etwa wenn das Mikrofon ausgeht: Der laufende Abschnitt endet hier. */
   abschliessen(jetzt: number): void {
-    if (this.zustand.seit !== null && this.laufend.length) {
+    if (this.offen && this.zustand.seit !== null) {
       const beginn = this.zustand.seit
-      if (jetzt - beginn >= 500) this.fertig(`${this.praefix}-${++this.nr}`, beginn, jetzt, alsInt16(this.laufend))
+      this.h.ende(this.offen, beginn, jetzt, jetzt - beginn >= 500)
     }
+    this.offen = null
     this.zustand = waechterNeu()
-    this.laufend = []
     this.vorlauf = []
   }
 }
+
+type Post = string | ArrayBuffer
 
 /** Die Aufnahme: Mikrofon, Worklet, Schneider, Verbindung zum Dienst. */
 export class MitschriftAufnahme {
@@ -133,13 +148,23 @@ export class MitschriftAufnahme {
   private bereit = false
   private gestoppt = false
   private versuche = 0
-  private warteschlange: { id: string; ton: Int16Array }[] = []
+  // Was hinaus soll, solange der Dienst (noch) nicht bereit ist; knapp eine Minute.
+  private ausgang: Post[] = []
+  private zeiten = new Map<string, { beginn: number; ende: number; behalten: boolean }>()
   private schneider: AbschnittSchneider
 
   constructor(private readonly o: MitschriftOptionen) {
-    this.schneider = new AbschnittSchneider((id, beginn, ende, ton) => {
-      this.o.hoerer.abschnitt(id, beginn, ende)
-      this.schicken(id, ton)
+    this.schneider = new AbschnittSchneider({
+      beginn: (id, wann, vorlauf) => {
+        this.o.hoerer.beginn(id, wann)
+        this.post(JSON.stringify({ typ: "beginn", id }))
+        for (const b of vorlauf) this.post(alsInt16([b]).buffer as ArrayBuffer)
+      },
+      block: (_id, pcm) => this.post(alsInt16([pcm]).buffer as ArrayBuffer),
+      ende: (id, beginn, ende, behalten) => {
+        this.zeiten.set(id, { beginn, ende, behalten })
+        this.post(JSON.stringify({ typ: "ende", id }))
+      },
     }, `m${Date.now().toString(36)}`)
   }
 
@@ -182,10 +207,9 @@ export class MitschriftAufnahme {
     this.strom = null
     void this.kontext?.close().catch(() => {})
     this.kontext = null
-    // Wartende Abschnitte duerfen noch zu Ende erkannt werden; dann zu.
+    // Der letzte Abschnitt darf noch zu Ende erkannt werden; dann zu.
     const ws = this.ws
-    this.ws = null
-    if (ws) setTimeout(() => ws.close(), 15_000)
+    if (ws) setTimeout(() => { if (this.ws === ws) this.ws = null; ws.close() }, 20_000)
   }
 
   private verbinden(): void {
@@ -196,16 +220,20 @@ export class MitschriftAufnahme {
     ws.onopen = () => ws.send(JSON.stringify({ typ: "hallo", token: this.o.token, sprache: this.o.sprache ?? "de-DE" }))
     ws.onmessage = (e) => {
       if (typeof e.data !== "string") return
-      let n: { typ?: string; id?: string; text?: string; verworfen?: boolean; grund?: string }
+      let n: { typ?: string; id?: string; text?: string; vorlaeufig?: string; verworfen?: boolean; grund?: string }
       try { n = JSON.parse(e.data) } catch { return }
       if (n.typ === "bereit") {
         this.bereit = true
         this.versuche = 0
         this.o.hoerer.verbunden(true)
-        for (const w of this.warteschlange.splice(0)) this.schicken(w.id, w.ton)
+        for (const p of this.ausgang.splice(0)) ws.send(p)
+      } else if (n.typ === "live" && typeof n.id === "string") {
+        this.o.hoerer.live(n.id, n.text ?? "", n.vorlaeufig ?? "")
       } else if (n.typ === "text" && typeof n.id === "string") {
-        this.o.hoerer.text(n.id, typeof n.text === "string" ? n.text : "")
-        if (n.verworfen && n.grund === "voll") this.o.hoerer.fehler("Die Mitschrift kommt gerade nicht nach; ein Satz fehlt.")
+        const z = this.zeiten.get(n.id)
+        this.zeiten.delete(n.id)
+        if (z) this.o.hoerer.fertig(n.id, n.verworfen ? "" : n.text ?? "", z.beginn, z.ende, z.behalten)
+        if (n.verworfen && n.grund === "voll") this.o.hoerer.fehler("Die Mitschrift kam nicht nach; ein Stück fehlt.")
       } else if (n.typ === "fehler" && typeof n.text === "string") {
         this.o.hoerer.fehler(n.text)
       }
@@ -214,6 +242,9 @@ export class MitschriftAufnahme {
       if (this.ws !== ws) return
       this.bereit = false
       this.o.hoerer.verbunden(false)
+      // Was unterwegs war, kommt nicht mehr: offene Zeilen schliessen.
+      for (const [id, z] of this.zeiten) this.o.hoerer.fertig(id, "", z.beginn, z.ende, false)
+      this.zeiten.clear()
       if (this.gestoppt) return
       if (e.code === 4403) { this.gestoppt = true; return }
       // Wieder verbinden, mit wachsender Pause, hoechstens acht Mal.
@@ -222,18 +253,10 @@ export class MitschriftAufnahme {
     }
   }
 
-  private schicken(id: string, ton: Int16Array): void {
+  private post(p: Post): void {
     const ws = this.ws
-    if (!ws || !this.bereit || ws.readyState !== WebSocket.OPEN) {
-      // Kurz halten, bis der Dienst wieder da ist; nicht ewig.
-      this.warteschlange.push({ id, ton })
-      if (this.warteschlange.length > 6) {
-        const weg = this.warteschlange.shift()
-        if (weg) this.o.hoerer.text(weg.id, "")
-      }
-      return
-    }
-    ws.send(JSON.stringify({ typ: "abschnitt", id }))
-    ws.send(ton.buffer)
+    if (ws && this.bereit && ws.readyState === WebSocket.OPEN) { ws.send(p); return }
+    this.ausgang.push(p)
+    if (this.ausgang.length > 450) this.ausgang.splice(0, this.ausgang.length - 450)
   }
 }

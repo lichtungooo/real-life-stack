@@ -35,7 +35,7 @@ function istErgebnis(w: unknown): w is Ergebnis {
 
 export interface ChatZeile { id: string; wer: string; name: string; text: string; wann: number }
 /** Eine Zeile der Mitschrift. `wann` ist der Beginn, `bis` das Ende des Gesagten. */
-export interface ProtokollZeile extends ChatZeile { vorlaeufig: boolean; bis?: number }
+export interface ProtokollZeile extends ChatZeile { vorlaeufig: boolean; bis?: number; ms?: number }
 
 /** Die Zeichen, die jemand in den Raum geben kann. */
 export const ZEICHEN = {
@@ -55,6 +55,8 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
   const [haende, setHaende] = useState<ReadonlySet<string>>(new Set())
   const [zeichen, setZeichen] = useState<ReadonlyMap<string, { art: ZeichenArt; wann: number }>>(new Map())
   const [protokoll, setProtokoll] = useState<ProtokollZeile[]>([])
+  const protokollRef = useRef(protokoll)
+  protokollRef.current = protokoll
   const [protokollLaeuft, setProtokollLaeuft] = useState(false)
   const [protokollFehler, setProtokollFehler] = useState<string | null>(null)
   const [tafel, setTafel] = useState<readonly Strich[]>([])
@@ -295,23 +297,71 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
     const zugang = v.raum.mitschriftZugang?.()
     if (!zugang) { setProtokollFehler("Die Mitschrift läuft nur in der Konferenz mit Server."); return }
     const ich = v.ich
-    const zeile = (id: string, text: string, beginn: number, ende: number, vorlaeufig: boolean) => {
-      const z: ProtokollZeile = { id: `${ich}-${id}`, wer: ich, name: meinNameRef.current, text, wann: beginn, bis: ende, vorlaeufig }
+    // Ein Beitrag: was ich am Stueck sage, eine Zeile im Protokoll. Nach einer
+    // Pause geht er in derselben Zeile weiter, solange niemand anderes dazwischen
+    // sprach und keine zehn Sekunden vergingen (Timo, 01.10.2026: "wenn ich
+    // eine kleine Pause mache, dann reagiert der gleich neu").
+    interface Beitrag { zeile: string; wann: number; bis: number; zuletzt: number; ms: number; teile: Map<string, string>; reihe: string[]; offen: number }
+    let aktuell: Beitrag | null = null
+    const abschnitte = new Map<string, Beitrag>()
+    const gesendet = new Map<string, number>()
+    const nachsenden = new Map<string, ReturnType<typeof setTimeout>>()
+    const melden = (b: Beitrag, sofort: boolean) => {
+      const text = b.reihe.map((id) => b.teile.get(id) ?? "").filter(Boolean).join(" ").trim()
+      const vorlaeufig = b.offen > 0
+      const z: ProtokollZeile = { id: b.zeile, wer: ich, name: meinNameRef.current, text: text || (vorlaeufig ? "…" : ""), wann: b.wann, bis: b.bis, ms: b.ms, vorlaeufig }
       protokollZeile(z)
-      v.nebenSenden({ art: "transkript", zeile: z })
+      // Der wachsende Text reist hoechstens alle 0,6 s zu den anderen, die
+      // neueste Fassung kommt nach, das Ende immer sofort.
+      const jetzt = Date.now()
+      const warten = 600 - (jetzt - (gesendet.get(b.zeile) ?? 0))
+      clearTimeout(nachsenden.get(b.zeile))
+      if (sofort || warten <= 0) {
+        gesendet.set(b.zeile, jetzt)
+        v.nebenSenden({ art: "transkript", zeile: z })
+      } else {
+        nachsenden.set(b.zeile, setTimeout(() => { gesendet.set(b.zeile, Date.now()); v.nebenSenden({ art: "transkript", zeile: z }) }, warten))
+      }
+      if (!z.text && aktuell === b) aktuell = null
     }
-    const zeiten = new Map<string, { beginn: number; ende: number }>()
     const aufnahme = new MitschriftAufnahme({
       url: zugang.url,
       token: zugang.token,
       sprache,
       darfHoeren: () => mikroAnRef.current,
       hoerer: {
-        abschnitt: (id, beginn, ende) => { zeiten.set(id, { beginn, ende }); zeile(id, "…", beginn, ende, true) },
-        text: (id, text) => {
-          const t = zeiten.get(id)
-          zeiten.delete(id)
-          if (t) zeile(id, text, t.beginn, t.ende, false)
+        beginn: (id, wann) => {
+          const a = aktuell
+          const dazwischen = !a || wann - a.zuletzt > 10_000
+            || protokollRef.current.some((z) => z.wer !== ich && z.wann > a.wann && z.text.trim() !== "")
+          const b: Beitrag = dazwischen || !a
+            ? { zeile: `${ich}-${id}`, wann, bis: wann, zuletzt: wann, ms: 0, teile: new Map(), reihe: [], offen: 0 }
+            : a
+          b.reihe.push(id)
+          b.teile.set(id, "")
+          b.offen++
+          b.zuletzt = wann
+          aktuell = b
+          abschnitte.set(id, b)
+          melden(b, true)
+        },
+        live: (id, text, vorlaeufig) => {
+          const b = abschnitte.get(id)
+          if (!b) return
+          b.teile.set(id, [text, vorlaeufig].filter(Boolean).join(" "))
+          b.zuletzt = b.bis = Math.max(b.bis, Date.now())
+          melden(b, false)
+        },
+        fertig: (id, text, beginn, ende, behalten) => {
+          const b = abschnitte.get(id)
+          abschnitte.delete(id)
+          if (!b) return
+          const fest = behalten ? text.trim() : ""
+          b.teile.set(id, fest)
+          if (fest) { b.ms += Math.max(0, ende - beginn); b.bis = Math.max(b.wann, ende) }
+          b.zuletzt = Math.max(b.zuletzt, ende)
+          b.offen = Math.max(0, b.offen - 1)
+          melden(b, true)
         },
         verbunden: (an) => { if (an) setProtokollFehler(null) },
         fehler: (text) => setProtokollFehler(text),
