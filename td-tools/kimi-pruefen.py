@@ -157,6 +157,9 @@ def kimi(auftrag, sitzung=None):
             if zeile.strip():
                 fehler.append(zeile.strip())
             continue
+        # Auch eine nackte Zahl ist gültiges JSON; am 01.10. kam so eine Zeile.
+        if not isinstance(d, dict):
+            continue
         if d.get("role") == "assistant" and isinstance(d.get("content"), str) and d["content"].strip():
             antworten.append(d["content"])
         if d.get("type") == "session.resume_hint":
