@@ -96,7 +96,8 @@ const ProjektProfilSeite = lazy(() => import("@trustdonation/ui/projekt-profil")
 
 /** Pfade der Instanz (`muster/garten.svg`) unter dem Basis-Pfad der App laden. */
 function bildUrl(pfad: string): string {
-  return /^(https?:|data:)/i.test(pfad) ? pfad : `${import.meta.env.BASE_URL}${pfad.replace(/^\//, "")}`
+  // BASE_URL heisst live "/app", lokal "/": den Schraegstrich selbst setzen.
+  return /^(https?:|data:)/i.test(pfad) ? pfad : `${import.meta.env.BASE_URL.replace(/\/+$/, "")}/${pfad.replace(/^\/+/, "")}`
 }
 
 function ProjektOderMeta({ item }: ItemSlotProps) {

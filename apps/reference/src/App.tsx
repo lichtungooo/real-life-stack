@@ -386,7 +386,7 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
         spaceSectionsTitle="Mehr"
         spaceLink={(id, domain) => {
           const start = resolveSpaceModules(spaceModule(id))[0]
-          return domain ? `https://${domain}/app/${id}/${start}` : `${window.location.origin}${import.meta.env.BASE_URL}${id}/${start}`
+          return domain ? `https://${domain}/app/${id}/${start}` : `${window.location.origin}${import.meta.env.BASE_URL.replace(/\/+$/, "")}/${id}/${start}`
         }}
         navbarEnd={
           <>
@@ -554,7 +554,9 @@ function NetzwerkeImportHost({ beispielwelt }: { beispielwelt: boolean }) {
 // Excalidraw (Zeichenpad) laedt seine Schriften von hier, nicht aus einem
 // fremden Netz (public/excalidraw/fonts, Open Source, selbst ausgeliefert).
 ;(window as unknown as { EXCALIDRAW_ASSET_PATH?: string }).EXCALIDRAW_ASSET_PATH =
-  `${window.location.origin}${import.meta.env.BASE_URL}excalidraw/`
+  // BASE_URL heisst live "/app", ohne Schraegstrich am Ende (01.10.2026: so
+  // wurde daraus "/appexcalidraw/" und die Schriften fehlten).
+  `${window.location.origin}${import.meta.env.BASE_URL.replace(/\/+$/, "")}/excalidraw/`
 
 const BeitrittLazy = lazy(() => import("@kreis/ui/flaechen").then((m) => ({ default: m.BeitrittsKonferenz })))
 

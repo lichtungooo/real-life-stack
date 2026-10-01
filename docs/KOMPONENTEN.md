@@ -117,7 +117,7 @@ pnpm --filter reference dev                    # App starten
 node td-tools/komponente-ansehen.mjs 30455be1-a5f9-465d-8d19-a72dd8da2d83/map/<item-id>
 ```
 
-Fotografiert Karte und ganze Ansicht auf Rechner, Handy und dunkel, zählt Seitenfehler. **Jedes Bild ansehen.** Ohne diesen Schritt wäre der Text über dem Etikett „Musterprojekt“ live gegangen.
+Fotografiert Karte und ganze Ansicht auf Rechner, Handy und dunkel, zählt Seitenfehler. Nach dem Ausliefern dasselbe gegen live: `BASIS=https://trustdonation.org/app`. **Jedes Bild ansehen.** Ohne diesen Schritt wäre der Text über dem Etikett „Musterprojekt“ live gegangen.
 
 ### Schritt 9: Tore, Ausliefern, Festhalten
 
@@ -181,6 +181,7 @@ Kampagnenseiten, die 2026 gut funktionieren: Fortschritt sichtbar, **Beträge mi
 | Ein Test erwartete noch den Platzhalter „Komponenten kommen“ | Tests mit der Funktion ändern, nicht hinterher |
 | Ein Test verlangte, jeder Verzeichnis-Eintrag sei ein Modul | Regel auf `art: "modul"` begrenzt, eigene Regel für Komponenten (Name, Typ, keine Id-Kollision) |
 | Nachgeladener Abschnitt war im Test noch nicht da | im Test warten, bis ein Knopf steht |
+| **Bilder lokal heil, live kaputt:** `BASE_URL` heißt live `/app`, ohne Schrägstrich am Ende; daraus wurde `/appmuster/…` (derselbe Fehler steckte seit Wochen in den Zeichenpad-Schriften) | Schrägstrich selbst setzen: `BASE_URL.replace(/\/+$/, "") + "/" + pfad`. **Nach dem Ausliefern live ansehen:** `BASIS=https://trustdonation.org/app node td-tools/komponente-ansehen.mjs …` |
 | Bildschirmfotos: `setContent` lädt keine `file://`-Bilder; Git Bash macht aus `/pfad` einen Windows-Pfad | über eine HTML-Datei laden; Pfad ohne führenden Schrägstrich übergeben |
 
 ---
