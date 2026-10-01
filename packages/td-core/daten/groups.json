@@ -16,7 +16,6 @@
         "kanban",
         "calendar",
         "map",
-        "baukasten",
         "video"
       ],
       "isNetwork": true,
@@ -54,7 +53,6 @@
         "kanban",
         "calendar",
         "map",
-        "baukasten",
         "video"
       ],
       "isNetwork": true,
@@ -92,8 +90,7 @@
         "feed",
         "kanban",
         "calendar",
-        "map",
-        "baukasten"
+        "map"
       ],
       "isNetwork": true,
       "network": "30455be1-a5f9-465d-8d19-a72dd8da2d83",
@@ -132,7 +129,6 @@
         "kanban",
         "calendar",
         "map",
-        "baukasten",
         "video"
       ],
       "isNetwork": true,

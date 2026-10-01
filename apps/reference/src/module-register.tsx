@@ -7,17 +7,14 @@
 // ausdruecklich ersetzt (`extensions` mit `replaces: ["view"]`).
 
 import { Suspense, lazy } from "react"
-import { Blocks, Sparkles, Video } from "lucide-react"
+import { Sparkles, Video } from "lucide-react"
 import {
   TOOLKIT_DEFINITION,
   composeModules,
   setModuleRegistry,
   type ModuleViewProps,
 } from "@real-life-stack/toolkit"
-import { BaukastenView } from "./views/baukasten-view"
 import { CompanionView } from "./views/companion-view"
-
-const Baukasten = ({ groupId }: ModuleViewProps) => <BaukastenView groupId={groupId} />
 
 // Das Video wird nachgeladen statt mitgeliefert: Wer den Reiter nie oeffnet,
 // laedt seine Flaeche nicht. Die Verbindung selbst (Provider in App.tsx) ist
@@ -37,16 +34,15 @@ export const MODULE_REGISTRY = composeModules([
   // Die Schicht von trustdonation. Sie ergaenzt, sie ersetzt nichts: Antons
   // Module bleiben unberuehrt (Spec 01, Regel 2).
   //
-  // `enabledByDefault` fehlt mit Absicht. Der Baukasten erscheint erst, wenn
-  // ein Netzwerk ihn in `Group.data.modules` aufnimmt: Eine Stiftung, die
-  // ihren Eintrag ansieht, braucht ihn nicht.
+  // Der Baukasten stand hier bis zum 01.10.2026 als Modul. Er ist raus
+  // (Timo: "vollkommen Quatsch"); ausgewaehlt wird jetzt in den
+  // Erweiterungen, einem Abschnitt im Space-Dialog (DEFINITION Teil 8).
   //
   // Das Profil steht hier mit Absicht NICHT. Ein Reiter ist eine
   // Arbeitsflaeche; ein Profil ist die Identitaetskarte dessen, mit dem man
   // es zu tun hat. Es erscheint als Komponente im Panel rechts, neben dem
   // Profil eines Menschen (views/profil-panel.tsx, docs/13-profil.md).
   { name: "trustdonation", definitions: [
-    { id: "baukasten", label: "Baukasten", icon: Blocks, fill: "bleed", view: Baukasten },
     // Die Begleitung (DEFINITION Teil 13). `presents` fehlt mit Absicht: Sie
     // ist keine Sicht auf ein Item-Feld, sie liest die Items. Wer sie in die
     // Feld-Praesenz haengt, macht sie zur Karte fuer ein Feld, das es nicht

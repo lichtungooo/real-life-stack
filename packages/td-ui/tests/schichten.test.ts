@@ -24,19 +24,4 @@ describe("Schichten", () => {
     expect(zeileVollstaendig({ id: "", label: "Stiftung", labelPlural: "Stiftungen" })).toBe(true)
     expect(zeileVollstaendig({ id: "", label: "Stiftung", labelPlural: "" })).toBe(false)
   })
-
-  it("schreibt alle registrierten Module auch im Baukasten aus (FND-0029)", () => {
-    const expectedModules = [
-      "feed",
-      "kanban",
-      "calendar",
-      "map",
-      "resonance",
-      "collection",
-      "graph",
-      "baukasten"
-    ]
-    const baukastenModuleIds = core.baukasten.schichten.find(s => s.id === "module")?.stuecke.map(p => p.id) ?? []
-    expect(baukastenModuleIds).toEqual(expectedModules)
-  })
 })

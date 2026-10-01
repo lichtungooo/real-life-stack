@@ -27,13 +27,6 @@ export {
   type ArtZeile,
 } from "./arten.js"
 
-export {
-  baukasten,
-  type Baukasten,
-  type BaukastenSchicht,
-  type BaukastenStueck,
-  type BaukastenLuecke,
-} from "./baukasten.js"
 
 export {
   profilAufbauen,
@@ -71,3 +64,12 @@ export {
   type NetzwerkPlan,
   type NetzwerkSchritt,
 } from "./netzwerke-uebernehmen.js"
+export {
+  ERWEITERUNGEN,
+  erweiterungenAus,
+  modulSchalten,
+  type Erweiterung,
+  type ErweiterungsArt,
+  type ErweiterungsEintrag,
+  type Reife,
+} from "./erweiterungen.js"

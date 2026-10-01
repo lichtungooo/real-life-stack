@@ -4,7 +4,7 @@
 **Ort:** Branch `trustdonation` in `lichtungooo/real-life-stack`
 **Verhältnis zur Spec:** ergänzend, nie widersprechend
 
-Diese Datei sagt, wie wir weiterbauen. Sie steht neben Antons [Spec](spec/README.md) und erweitert sie um die Ebenen, die unser Vorhaben braucht: Arten von Spaces, Felder, Komponenten, ein Baukasten, Profile und das Matching.
+Diese Datei sagt, wie wir weiterbauen. Sie steht neben Antons [Spec](spec/README.md) und erweitert sie um die Ebenen, die unser Vorhaben braucht: Arten von Spaces, Felder, Komponenten, Erweiterungen, Profile und das Matching.
 
 **Die Spec gewinnt.** Wo diese Datei etwas anders sähe als `docs/spec/`, gilt die Spec, und diese Datei wird berichtigt. Wo die Spec schweigt, gilt diese Datei.
 
@@ -278,51 +278,72 @@ Das Typ-Register sagt, **welche Felder** ein Typ mitbringt (über die Vokabular-
 
 ---
 
-## Teil 8: Der Baukasten
+## Teil 8: Erweiterungen
 
-**Frage, die dieser Abschnitt beantwortet:** Wie kommt etwas, das jemand anders gebaut hat, in meinen Space, auf meine Seite, in meine Instanz?
+**Frage, die dieser Abschnitt beantwortet:** Was folgt daraus, dass es für einen Space eine Erweiterung gibt?
 
-**Der Name ist eine Festlegung.** Timo am 17.09.2026: *"Ich würde das Ganze nicht Marktplatz nennen wollen, weil der Marktplatz ist für mich ein Marktplatz, den wir nachher brauchen im Web of Trust."*
+**Berichtigt am 01.10.2026.** Bis dahin hieß dieser Teil „Der Baukasten“, mit einer eigenen Fläche als Modul oben im Menü. Timo: *"Wir haben so etwas gebaut wie ein Baukastenmodul. Das ist vollkommen Quatsch und funktioniert auch nicht."* Wir bauen nichts, wir **wählen aus**. Der Name dafür ist **Erweiterungen** (Timo, 01.10.2026: *"da ja nicht nur Module drin sein werden, sondern auch fertige Komponenten und Themes"*). Das Modul `baukasten` und seine Fläche sind entfernt; die Recherche im Instanz-Repo unter `baukasten/` bleibt als Material liegen.
 
 | Wort | Wofür es bei uns steht |
 |---|---|
-| **Baukasten** | woraus wir bauen: Rohstoffe, Bauteile, Muster, Felder, Arten, Module, Vorlagen, Sprache |
+| **Erweiterung** | was ein Space dazunehmen kann: ein Modul, später eine fertige Komponente (etwa ein ganzes Profil), ein Theme |
 | **Marktplatz** | wo Menschen einander Angebot und Bedarf zeigen. Siehe Teil 5, Lücke „Angebot und Bedarf" |
 
-Ein Baustein ist Werkzeug. Ein Angebot ist ein Anliegen. Wer beides denselben Namen gibt, verwechselt sie später im Code.
+Eine Erweiterung ist Werkzeug. Ein Angebot ist ein Anliegen. Wer beides denselben Namen gibt, verwechselt sie später im Code.
 
-### Acht Schichten, drei Welten
+### Arten von Erweiterungen
 
-Unsere drei Welten tragen **verschiedene Materialien**: Die Landingpage ist HTML und CSS, die App ist React, das Web of Trust sind Daten. Ein Knopf kann darum nicht in allen dreien dasselbe Stück sein.
-
-Was in allen dreien dasselbe sein kann, liegt eine Ebene tiefer. Darauf steht die Schichtung:
-
-| Schicht | Was drin liegt | Reicht bis |
+| Art | Was | Stand |
 |---|---|---|
-| **Rohstoffe** | Farben, Schriften, Abstände, Rundungen, hell und dunkel | alle drei Welten |
-| **Bauteile** | Knopf, Karte, Band, Feld, Etikett, Avatar, Kartennadel | je Welt eine Ausprägung, ein Aussehen |
-| **Muster** | Hero, Einladung, Kontaktblock, Profilkopf, Projektvorstellung | Landingpage und App |
-| **Felder** | Förderrahmen, Antragsfrist, Anschrift, Schwerpunkt, Rechtsform | App und Daten. Siehe Teil 7 |
-| **Arten** | Stiftung, Projekt, Verein, Netzwerk, Unternehmen, Mensch | Web of Trust. Siehe Teil 6 |
-| **Module** | Karte, Liste, Board, Kalender, dazu eigene wie Förderfinder | App |
-| **Vorlagen** | eine fertige Stiftungsseite, ein Space „Stiftung", die Fragebögen | alles zusammen |
-| **Sprache** | Skills, Textbausteine: Erstansprache, Einladung, Absage | überall |
+| **Module** | Flächen im Space: Feed, Kalender, Karte, Circeling | gebaut |
+| **Komponenten** | fertige Teile, die man ganz nimmt, nicht zusammensetzt: ein Profil, eine Landingpage | kommt |
+| **Themes** | das Aussehen eines Space | kommt |
 
-**Die Rohstoffe liegen schon.** `ds-bundle/tokens/tokens.css` im Instanz-Repo führt sie als CSS-Variablen, für Landingpage und App gemeinsam. Bauteile (Band, Knöpfe, Karten) und Muster (Hero, Einladung) stehen daneben.
+Timo: *"Nicht einzelnes Baukastensystem, sondern wir bauen komplette Profile."*
 
-**Was jeder Eintrag zusätzlich trägt:**
+### Reife: geprüft oder Beta
 
-| Feld | Warum |
+Jede Erweiterung steht in genau einem von zwei Reitern.
+
+| Reife | Bedeutet |
 |---|---|
-| `herkunft` | wer es gebaut hat, als Relation auf ein Profil. Dann trägt jeder Baustein seine Vertrauenskette mit |
-| `belege` | wo es schon läuft. „Dieses Muster steht auf trustdonation.org." Das ist wertvoller als jede Bewertung und passt zu Grundsatz 2: Fakten statt Noten |
-| `abstand` | wie weit eine Übernahme sich vom Original entfernt hat. Ohne das laufen zwanzig Stiftungsseiten auseinander, und niemand merkt es, bis die Marke zerfällt |
+| **geprüft** | durch das große Testing gegangen und von den Entwicklern freigegeben |
+| **Beta** | läuft, ist aber noch nicht freigegeben. Circeling steht hier, bis es durch das Testing ist |
 
----
+Reife ist **keine Bewertung**. Sie sagt, ob die Freigabe erfolgt ist, nicht, wie gut etwas ist. Keine Sterne, keine Rangliste (Teil 3, Regel 2).
 
-### Module im Baukasten
+### Die Übersicht
 
-Antons Spec lässt das ausdrücklich offen und sagt zugleich, was **nicht** geht: Das Modul-Register wird vor dem ersten Render einmal zusammengesetzt und eingefroren. Ein Space wählt aus dem Katalog, er trägt nichts bei. Ein Baukasten, der zur Laufzeit fremden Code nachlädt, wäre ein Bruch dieser Regel und ein offenes Tor dazu.
+**Frage:** Wo sieht ein Mensch, welche Erweiterungen es gibt, und nimmt eine in seinen Space?
+
+Timo und Anton am 01.10.2026: Die Übersicht ist kein Reiter oben im Menü. Sie öffnet sich aus der Modul-Auswahl eines Space, über einen Knopf, und zeigt alles groß, über den ganzen Bildschirm: *"nicht alle da reinpacken, das wird viel zu eng."* Jede Erweiterung als Karte mit Symbol, Name, Beschreibung und klein dem Erbauer.
+
+**Der Haken:** Antons App-Abschnitte im Space-Dialog (`AppSpaceSection`, `GroupDialog appSections`, rls#551). Unsere App trägt den Abschnitt **Erweiterungen** ein. Er zeigt kurz, was es gibt, und den Knopf zur Übersicht. Geschrieben wird über `patchData({ modules })` nach `Group.data.modules`, Antons vorgesehener Weg. Keine Naht.
+
+### Eintrag
+
+| Feld | Schicht | Zweck |
+|---|---|---|
+| `id` | Antons Modul-Register | die eine Quelle dafür, **welche** Module es gibt |
+| `label`, `icon` | Antons Modul-Register | Name und Symbol, wie überall in der App |
+| `beschreibung` | `td-core`, Verzeichnis `erweiterungen.ts` | ein bis zwei Sätze, wofür es da ist |
+| `erbauer` | `td-core`, Verzeichnis | wer es gebaut hat, klein gezeigt |
+| `reife` | `td-core`, Verzeichnis | `geprueft` oder `beta` |
+| `art` | `td-core`, Verzeichnis | `modul`; später `komponente`, `theme` |
+
+### Regeln
+
+1. **Welche Module es gibt, sagt allein Antons Register** (`getModules()`). Das Verzeichnis in `td-core` zählt keine Module auf, es **ergänzt** Einträge um Beschreibung, Erbauer und Reife, verschlüsselt über die Modul-Id.
+2. **Ein Modul ohne Eintrag im Verzeichnis erscheint trotzdem**, als Beta, ohne Beschreibung und mit „Erbauer unbekannt“. Nie wegfallen, nie leer (Muster 5).
+3. **Ein Eintrag im Verzeichnis ohne Modul im Register erscheint nicht.** Er beschreibt etwas, das diese Instanz nicht führt. Ein Test hält beide Richtungen fest.
+4. **Ein Space verliert nichts:** Eine Id in `Group.data.modules`, die die Instanz nicht kennt, bleibt beim Schreiben stehen.
+5. **Wer darf:** wie Antons Modul-Auswahl, `canEdit` aus dem Abschnitt-Kontext. Wer nicht darf, sieht die Übersicht und kann nichts ändern.
+6. **Was die Übersicht nicht trägt:** keine Bewertungen, keine Bezahlung, kein Nachladen von Code zur Laufzeit, keine Rechte. Sie wählt aus, was die Instanz schon mitbringt.
+7. **Wunsch an Anton:** `description` und `author` als Felder im Modul-Register. Dann wandern Beschreibung und Erbauer aus unserem Verzeichnis zu ihm, und nur die Reife bleibt bei uns.
+
+### Was ein Modul als Erweiterung ist
+
+Antons Spec lässt das ausdrücklich offen und sagt zugleich, was **nicht** geht: Das Modul-Register wird vor dem ersten Render einmal zusammengesetzt und eingefroren. Ein Space wählt aus dem Katalog, er trägt nichts bei. Eine Übersicht, die zur Laufzeit fremden Code nachlädt, wäre ein Bruch dieser Regel und ein offenes Tor dazu.
 
 Darum zwei Stufen, und die erste kommt ohne fremden Code aus.
 
@@ -367,39 +388,14 @@ Später und mit eigenen Regeln. Was jetzt schon feststeht:
 3. Es wird beim **Bau der Instanz** eingebunden. Nachladen zur Laufzeit ist kein Ziel.
 4. Bis dahin ist der Weg für ein Codemodul derselbe wie heute: ein Pull Request.
 
-### Der Baukasten als Fläche
-
-**Frage:** Wo sieht und wählt ein Mensch, woraus sein Space gebaut wird?
-
-Timo am 18.09.2026: *"Ich finde, der Baukasten gehört in die Einstellungen vom Netzwerk. Allerdings ist er da eigenständig wie ein Dashboard, was über den ganzen Bildschirm geht, mit verschiedenen Kategorien, wo man die Module anwählen kann."*
-
-**Die eine Quelle:** `baukasten/` im Instanz-Repo. Dort wird gepflegt, weil es fachlich ist und weil jemand ohne Bauwerkzeug es ändern können soll. `td-tools/baukasten-holen.py` führt die acht Schichten zu `packages/td-core/daten/baukasten.json` zusammen, auf das, was eine Fläche zeigt.
-
-**Welche Schicht was hält:**
-
-| Schicht | Was |
-|---|---|
-| `baukasten/` (Instanz-Repo) | die Wahrheit: acht Schichten als JSON, mit Herkunft und Belegen |
-| `packages/td-core` | die verkleinerte Fassung für die App, erzeugt |
-| `packages/td-ui` | die Darstellung: `BaukastenFlaeche`, ohne Connector und ohne Hooks |
-| `apps/reference/src/views` | die Bindung: welcher Space, wer darf, wie wird geschrieben |
-| Antons Modul-Register | der Eintrag `baukasten`, über unsere eigene Schicht |
-
-**Was bei Unbekanntem passiert:** Ein Modul, das die Instanz nicht kennt, bleibt in `Group.data.modules` stehen und wird nicht gezeigt (Muster 5). Ein Space verliert sein Modul nicht, weil er gerade in einer anderen App geöffnet wird.
-
-**Die Grenze, die gilt:** Spec 01, Regel 4 sagt, das Modul-Register steht vor dem ersten Render fest. Ein Space wählt aus dem Katalog, er trägt nichts bei. **Die Fläche wählt darum aus, sie lädt nichts nach.** Was sie ändert, ist `Group.data.modules`, und das ist Antons vorgesehener Weg.
-
-**Was heute wirklich etwas ändert:** die Module. Alles andere zeigt, was es gibt. Arten, Bauteile, Muster, Vorlagen und Texte sind Bausteine, die noch niemand zur Laufzeit in einen Space nimmt. Das steht auf der Fläche, statt eine Möglichkeit vorzutäuschen.
-
-**Die Naht dafür:** `resolveAdminView` wird aus dem Toolkit exportiert. Die Fläche stellt dieselbe Frage wie der Space-Dialog (darf dieser Mensch die Module wählen?) und soll dieselbe Antwort bekommen. Siehe `NAEHTE.md` Abschnitt H.
 
 ---
 
-### Was der Baukasten nicht ist
+### Was die Erweiterungen nicht sind
 
-Kein Laden, keine Bezahlung, keine Bewertungen, keine Rangliste. Wer einen Baustein sucht, sieht, was er tut, wer ihn gebaut hat und wo er läuft.
+Kein Laden, keine Bezahlung, keine Bewertungen, keine Rangliste. Wer etwas sucht, sieht, was es tut, wer es gebaut hat und ob es freigegeben ist.
 
-Und er ist **kein Marktplatz**: Dort zeigen Menschen einander, was sie brauchen und was sie geben können. Das ist ein Anliegen, kein Werkzeug, und es bekommt eine eigene Definition.
+Und sie sind **kein Marktplatz**: Dort zeigen Menschen einander, was sie brauchen und was sie geben können. Das ist ein Anliegen, kein Werkzeug, und es bekommt eine eigene Definition.
 
 ---
 

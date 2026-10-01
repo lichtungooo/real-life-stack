@@ -23,7 +23,6 @@ export {
   netzwerkePlanHolen,
   type NetzwerkeStand,
 } from "./netzwerke-import.js"
-export { BaukastenFlaeche, type BaukastenFlaecheProps } from "./baukasten-flaeche.js"
 export { ProfilFlaeche, bildVerkleinern, type ProfilFlaecheProps } from "./profil-flaeche.js"
 
 // Die Begleitung (DEFINITION Teil 13). `presents` bleibt leer: Sie ist keine
@@ -36,3 +35,4 @@ export {
   type CompanionWerkzeug,
   type SpaceUeberblick,
 } from "./companion-flaeche.js"
+export { ErweiterungenAbschnitt, ErweiterungenUebersicht, type ErweiterungenProps, type ErweiterungsModul } from "./erweiterungen.js"

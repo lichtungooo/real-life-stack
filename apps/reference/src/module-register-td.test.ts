@@ -32,11 +32,10 @@ describe("Die Schicht trustdonation", () => {
     expect(begleitung?.presents ?? []).toEqual([])
   })
 
-  it("bringt Baukasten und Begleitung mit", () => {
+  it("bringt die Begleitung mit, den Baukasten nicht mehr (01.10.2026)", () => {
     const ids = getModules().map((m) => m.id)
-    for (const id of ["baukasten", "companion"]) {
-      expect(ids, `${id} fehlt im Register`).toContain(id)
-    }
+    expect(ids, "companion fehlt im Register").toContain("companion")
+    expect(ids).not.toContain("baukasten")
   })
 
   /**

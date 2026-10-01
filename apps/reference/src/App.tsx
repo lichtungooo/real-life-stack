@@ -37,6 +37,7 @@ import { isAuthenticatable, hasMessaging, hasEncounterVerification, hasProfile }
 import { traegtProfil } from "@trustdonation/core"
 import { NetzwerkeImport, StiftungenImport } from "@trustdonation/ui"
 import { SpaceProfilPanel } from "./views/profil-panel"
+import { ERWEITERUNGEN_ABSCHNITT } from "./views/erweiterungen-abschnitt"
 // Der Kreis bekommt seinen Raum von der App (Spec kreis, "Der Raum-Adapter").
 // LiveKit unter kreis.wir.ooo traegt Bild und Ton; `?kreis=lokal` waehlt den
 // Probe-Raum, der nur die Fenster auf einem Geraet verbindet, ohne Server.
@@ -368,6 +369,10 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
         // Netzwerks, wenn es eine hat (dort laeuft seine eigene Instanz unter
         // /app), sonst die Adresse, unter der die App gerade laeuft. Einstieg
         // ist das erste Modul des Space, wie beim Space-Wechsel.
+        // Die Erweiterungen im Space-Dialog, ueber Antons App-Abschnitte
+        // (rls#551, DEFINITION Teil 8). Der Baukasten als Modul ist raus.
+        spaceSections={[ERWEITERUNGEN_ABSCHNITT]}
+        spaceSectionsTitle="Mehr"
         spaceLink={(id, domain) => {
           const start = resolveSpaceModules(spaceModule(id))[0]
           return domain ? `https://${domain}/app/${id}/${start}` : `${window.location.origin}${import.meta.env.BASE_URL}${id}/${start}`
