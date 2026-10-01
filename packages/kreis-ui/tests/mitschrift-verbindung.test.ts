@@ -67,3 +67,22 @@ describe("Die Mitschrift ueberlebt einen Abriss", () => {
     expect(fertig).toEqual(["Die Tomaten wachsen gut aber die Gurken brauchen Wasser."])
   })
 })
+
+describe("Kein Mikrofon bleibt haengen (01.10.2026: \"immer wieder war das Mikro weg\")", () => {
+  it("wird gestoppt, waehrend das Mikrofon noch geoeffnet wird, schliesst es das Mikrofon, sobald es ankommt", async () => {
+    let freigeben: (s: MediaStream) => void = () => {}
+    const stop = vi.fn()
+    vi.stubGlobal("navigator", { mediaDevices: { getUserMedia: () => new Promise<MediaStream>((r) => { freigeben = r }) } })
+    const kontext = vi.fn()
+    vi.stubGlobal("AudioContext", kontext)
+    const hoerer: MitschriftHoerer = { beginn: () => {}, live: () => {}, fertig: () => {}, verbunden: () => {}, fehler: () => {} }
+    const a = new MitschriftAufnahme({ url: "wss://test", token: "t", darfHoeren: () => true, hoerer })
+    const laeuft = a.starten()
+    a.stoppen()
+    freigeben({ getTracks: () => [{ stop }] } as unknown as MediaStream)
+    await laeuft
+    expect(stop).toHaveBeenCalledTimes(1)
+    // Und kein Audio-Kontext, keine Verbindung danach.
+    expect(kontext).not.toHaveBeenCalled()
+  })
+})

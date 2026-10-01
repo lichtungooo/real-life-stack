@@ -80,10 +80,13 @@ export function liveKitKreisRaum(optionen: LiveKitRaumOptionen = KREIS_WIR_OOO):
     if (!lk) return () => {}
     const { RoomEvent } = lk
     let angehaengt: Track | null = null
+    // Eine neue Spur (Mikrofon neu gestartet, erneut abonniert) ersetzt die
+    // alte am Element; sonst bliebe es still oder schwarz auf einer toten
+    // Spur (Pruefkreis Kimi, 01.10.2026, Befund 10).
     const versuche = () => {
-      if (angehaengt) return
       const track = person(id)?.getTrackPublication(quelle as Track.Source)?.track
-      if (!track) return
+      if (!track || track === angehaengt) return
+      angehaengt?.detach(element)
       track.attach(element)
       angehaengt = track
     }
@@ -93,9 +96,11 @@ export function liveKitKreisRaum(optionen: LiveKitRaumOptionen = KREIS_WIR_OOO):
     }
     raum?.on(RoomEvent.TrackSubscribed, spaeter)
     raum?.on(RoomEvent.LocalTrackPublished, versuche)
+    raum?.on(RoomEvent.TrackUnmuted, versuche)
     return () => {
       raum?.off(RoomEvent.TrackSubscribed, spaeter)
       raum?.off(RoomEvent.LocalTrackPublished, versuche)
+      raum?.off(RoomEvent.TrackUnmuted, versuche)
       angehaengt?.detach(element)
     }
   }
@@ -105,54 +110,88 @@ export function liveKitKreisRaum(optionen: LiveKitRaumOptionen = KREIS_WIR_OOO):
   let filter = true
   const tonFilter = () => ({ noiseSuppression: filter, echoCancellation: filter, autoGainControl: filter })
 
+  // Ist der letzte Raum abgerissen, ohne dass jemand "gehen" sagte? Dann
+  // verbindet die App von selbst neu (use-kreis). Wer geht, setzt `gewollt`.
+  let abgerissen = false
+  let gewollt = false
+  // Laeuft ein Beitritt, wartet ein zweiter auf ihn, statt einen zweiten
+  // Raum zu oeffnen, der das Mikrofon festhielte (Pruefkreis Kimi, Befund 4).
+  let betritt: Promise<void> | null = null
+
+  async function betretenEinmal(raumName: string, name: string): Promise<void> {
+    abgerissen = false
+    gewollt = false
+    const zugang = await json<{ moderator: string }>(
+      `${optionen.tokenUrl}/raum?raum=${encodeURIComponent(raumName)}`,
+      "Den Raum zu öffnen",
+    )
+    const adresse = new URL(optionen.tokenUrl)
+    adresse.searchParams.set("raum", raumName)
+    adresse.searchParams.set("name", name)
+    adresse.searchParams.set("zugang", zugang.moderator)
+    const { token } = await json<{ token: string }>(adresse.toString(), "Das Zutritts-Token zu holen")
+    // Hat jemand "gehen" gesagt, waehrend der Beitritt lief? Dann nicht weiter
+    // (Pruefkreis Kimi, 01.10.2026, zweite Runde: sonst ungewollt drin, Mikro an).
+    if (gewollt) return
+
+    const { Room: RaumKlasse, RoomEvent } = await ladeLiveKit()
+    const r = new RaumKlasse({ adaptiveStream: true, dynacast: true })
+    for (const ereignis of [
+      RoomEvent.ParticipantConnected, RoomEvent.ParticipantDisconnected,
+      RoomEvent.TrackSubscribed, RoomEvent.TrackUnsubscribed,
+      RoomEvent.TrackMuted, RoomEvent.TrackUnmuted,
+      RoomEvent.LocalTrackPublished, RoomEvent.LocalTrackUnpublished,
+      RoomEvent.ActiveSpeakersChanged,
+    ]) r.on(ereignis, melden)
+    r.on(RoomEvent.Disconnected, () => {
+      if (raum !== r) return
+      raum = null
+      abgerissen = !gewollt
+      melden()
+    })
+    r.on(RoomEvent.DataReceived, (nutzlast: Uint8Array, von?: RemoteParticipant) => {
+      try {
+        const roh = JSON.parse(new TextDecoder().decode(nutzlast)) as { kreis?: unknown }
+        if (!roh || !("kreis" in roh)) return
+        nachrichten.forEach((fn) => fn(roh.kreis, von?.identity ?? ""))
+      } catch {
+        // Eine unlesbare Nachricht wird verworfen, der Raum laeuft weiter.
+      }
+    })
+
+    try {
+      await r.connect(optionen.serverUrl, token)
+    } catch (e) {
+      await r.disconnect().catch(() => {})
+      throw e
+    }
+    if (gewollt) { await r.disconnect().catch(() => {}); return }
+    raum = r
+    zugangsToken = token
+    if (optionen.mikroBeimBetreten ?? true) {
+      await r.localParticipant.setMicrophoneEnabled(true, tonFilter()).catch(() => {
+        // Ohne Freigabe fuers Mikrofon bleibt man stumm im Kreis, statt draussen.
+      })
+    }
+    melden()
+  }
+
   return {
     traegtMedien: true,
 
+    verbindungVerloren: () => abgerissen,
+
     async betreten(raumName, name) {
       if (raum) return
-      const zugang = await json<{ moderator: string }>(
-        `${optionen.tokenUrl}/raum?raum=${encodeURIComponent(raumName)}`,
-        "Den Raum zu öffnen",
-      )
-      const adresse = new URL(optionen.tokenUrl)
-      adresse.searchParams.set("raum", raumName)
-      adresse.searchParams.set("name", name)
-      adresse.searchParams.set("zugang", zugang.moderator)
-      const { token } = await json<{ token: string }>(adresse.toString(), "Das Zutritts-Token zu holen")
-
-      const { Room: RaumKlasse, RoomEvent } = await ladeLiveKit()
-      const r = new RaumKlasse({ adaptiveStream: true, dynacast: true })
-      for (const ereignis of [
-        RoomEvent.ParticipantConnected, RoomEvent.ParticipantDisconnected,
-        RoomEvent.TrackSubscribed, RoomEvent.TrackUnsubscribed,
-        RoomEvent.TrackMuted, RoomEvent.TrackUnmuted,
-        RoomEvent.LocalTrackPublished, RoomEvent.LocalTrackUnpublished,
-        RoomEvent.ActiveSpeakersChanged,
-      ]) r.on(ereignis, melden)
-      r.on(RoomEvent.Disconnected, () => { raum = null; melden() })
-      r.on(RoomEvent.DataReceived, (nutzlast: Uint8Array, von?: RemoteParticipant) => {
-        try {
-          const roh = JSON.parse(new TextDecoder().decode(nutzlast)) as { kreis?: unknown }
-          if (!roh || !("kreis" in roh)) return
-          nachrichten.forEach((fn) => fn(roh.kreis, von?.identity ?? ""))
-        } catch {
-          // Eine unlesbare Nachricht wird verworfen, der Raum laeuft weiter.
-        }
-      })
-
-      await r.connect(optionen.serverUrl, token)
-      raum = r
-      zugangsToken = token
-      if (optionen.mikroBeimBetreten ?? true) {
-        await r.localParticipant.setMicrophoneEnabled(true, tonFilter()).catch(() => {
-          // Ohne Freigabe fuers Mikrofon bleibt man stumm im Kreis, statt draussen.
-        })
-      }
-      melden()
+      if (betritt) return betritt
+      betritt = betretenEinmal(raumName, name).finally(() => { betritt = null })
+      return betritt
     },
 
     async verlassen() {
       const r = raum
+      gewollt = true
+      abgerissen = false
       raum = null
       await r?.disconnect()
       melden()

@@ -35,7 +35,10 @@ function Lautsprecher({ raum, person }: { raum: KreisRaum; person: KreisTeilnehm
   useEffect(() => {
     if (!ref.current || !raum.tonAnhaengen) return
     return raum.tonAnhaengen(person.id, ref.current)
-  }, [raum, person.id, person.mikroAn])
+    // `mikroAn` ist keine Abhaengigkeit mehr: Der Adapter haengt eine neue
+    // Spur selbst nach (TrackUnmuted, TrackSubscribed), statt dass jedes
+    // Stummschalten den Ton abhaengt und neu anhaengt (Befund 10).
+  }, [raum, person.id])
   return <audio ref={ref} autoPlay />
 }
 

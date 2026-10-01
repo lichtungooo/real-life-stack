@@ -95,6 +95,10 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
   const [mitschreibende, setMitschreibende] = useState<ReadonlySet<string>>(new Set())
   // In welcher Runde des Hebels ich mich ausgenommen habe (sein `seit`).
   const [ausgenommenSeit, setAusgenommenSeit] = useState<number | null>(null)
+  // In welcher Runde der Start scheiterte: dann nicht bei jedem Rendern neu
+  // versuchen (Pruefkreis Kimi, 01.10.2026, Befund 2: Endlosschleife am Geraet).
+  const [fehlstartSeit, setFehlstartSeit] = useState<number | null>(null)
+  const hebelSeitRef = useRef<number | null>(null)
 
   const meinName = v.teilnehmer.find((t) => t.ichSelbst)?.name ?? "Gast"
 
@@ -368,6 +372,8 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
       },
     })
     aufnahmeRef.current = aufnahme
+    // Die Runde des Hebels beim Start, nicht beim Scheitern (Kimi, zweite Runde).
+    const runde = hebelSeitRef.current
     setProtokollLaeuft(true)
     setProtokollFehler(null)
     v.nebenSenden({ art: "mitschrift-an", an: true })
@@ -378,6 +384,8 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
       v.nebenSenden({ art: "mitschrift-an", an: false })
       setMitschreibende((alt) => { const neu = new Set(alt); neu.delete(ich); return neu })
       const name = e instanceof Error ? e.name : ""
+      setFehlstartSeit(runde)
+      aufnahme.stoppen()
       setProtokollFehler(name === "NotAllowedError" ? "Das Mikrofon ist für die Mitschrift gesperrt." : "Die Mitschrift startete nicht.")
     })
   }, [v, protokollZeile])
@@ -403,7 +411,9 @@ export function useNebenHalten(v: KreisVerbindung, kennung: string | null = null
   const vorlieben = useVorlieben()
   const hebel = v.sitzung.mitschrift?.an ? v.sitzung.mitschrift : null
   const mitschriftAusgenommen = Boolean(hebel) && (vorlieben.nieMitschreiben || ausgenommenSeit === hebel?.seit)
+  hebelSeitRef.current = hebel?.seit ?? null
   const sollMitschreiben = v.zustand === "drin" && mitschriftMoeglich && Boolean(hebel) && !mitschriftAusgenommen
+    && fehlstartSeit !== (hebel?.seit ?? null)
   useEffect(() => {
     if (sollMitschreiben) protokollStarten()
     else protokollHalten()

@@ -145,9 +145,14 @@ export function GruppenraeumeHinweis({ kreis, hauptSchluessel, hauptTitel }: { k
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [countdown])
 
-  // Im Gruppenraum: zur Zeit von selbst zurueck.
+  // Im Gruppenraum: zur Zeit von selbst zurueck, einmal je Gruppenraum
+  // (Pruefkreis Kimi, 01.10.2026, Befund 9: der Sekundentakt loeste sonst
+  // mehrfach Gehen und Betreten aus).
+  const zurueckFuer = useRef<number | null>(null)
   useEffect(() => {
-    if (unterraum && jetzt >= unterraum.bis) void kreis.zurueckInHauptraum(meinName)
+    if (!unterraum || jetzt < unterraum.bis || zurueckFuer.current === unterraum.bis) return
+    zurueckFuer.current = unterraum.bis
+    void kreis.zurueckInHauptraum(meinName)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unterraum, jetzt])
 

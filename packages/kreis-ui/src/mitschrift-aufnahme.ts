@@ -184,13 +184,20 @@ export class MitschriftAufnahme {
     this.gestoppt = false
     // Echo- und Rauschunterdrueckung: Was aus den Lautsprechern kommt, ist
     // nicht meine Stimme und soll nicht unter meinem Namen stehen.
-    this.strom = await navigator.mediaDevices.getUserMedia({
+    const strom = await navigator.mediaDevices.getUserMedia({
       audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 },
     })
+    // Gestoppt, waehrend das Mikrofon noch geoeffnet wurde (Gehen, Hebel aus):
+    // sofort wieder schliessen. Sonst bleibt es belegt, bis der Tab zu ist,
+    // und die Konferenz bekommt es beim naechsten Betreten nicht (Timo mit
+    // Emil, 01.10.2026: "immer wieder war das Mikro weg").
+    if (this.gestoppt) { strom.getTracks().forEach((t) => t.stop()); return }
+    this.strom = strom
     const kontext = new AudioContext()
     this.kontext = kontext
     const url = URL.createObjectURL(new Blob([WORKLET], { type: "text/javascript" }))
     try { await kontext.audioWorklet.addModule(url) } finally { URL.revokeObjectURL(url) }
+    if (this.gestoppt) { this.freigeben(); return }
     const quelle = kontext.createMediaStreamSource(this.strom)
     const knoten = new AudioWorkletNode(kontext, "kreis-pcm")
     let hoerteGerade = false
@@ -212,13 +219,18 @@ export class MitschriftAufnahme {
     this.verbinden()
   }
 
-  stoppen(): void {
-    this.gestoppt = true
-    this.schneider.abschliessen(Date.now())
+  /** Mikrofon und Audio-Kontext freigeben. */
+  private freigeben(): void {
     this.strom?.getTracks().forEach((t) => t.stop())
     this.strom = null
     void this.kontext?.close().catch(() => {})
     this.kontext = null
+  }
+
+  stoppen(): void {
+    this.gestoppt = true
+    this.schneider.abschliessen(Date.now())
+    this.freigeben()
     // Der letzte Abschnitt darf noch zu Ende erkannt werden; dann zu.
     const ws = this.ws
     if (ws) setTimeout(() => { if (this.ws === ws) this.ws = null; ws.close() }, 20_000)

@@ -77,17 +77,36 @@ export function useKreisVerbindungHalten(fabrik: KreisRaumFabrik, eigeneProzesse
     return true
   }, [senden])
 
+  // Womit zuletzt betreten wurde: fuer das Wiederverbinden nach einem Abriss.
+  const zuletztRef = useRef<{ name: string; anzeigeName: string; titel?: string } | null>(null)
+  // Jedes "gehen" zaehlt hoch. Ein Wiederverbinden, das unter einer aelteren
+  // Zahl begann, hoert auf (Pruefkreis Kimi, zweite Runde: der Vergleich ueber
+  // das Objekt brach die Leiter nach dem ersten Versuch ab).
+  const gehenRef = useRef(0)
+
   const betreten = useCallback(async (name: string, anzeigeName: string, titel?: string) => {
     setFehler(null)
     setZustand("verbindet")
+    zuletztRef.current = { name, anzeigeName, titel }
+    const absicht = gehenRef.current
     try {
       await raum.betreten(raumKennung(name), anzeigeName.trim() || "Gast")
+      // Inzwischen "gehen" gesagt, oder der Beitritt wurde abgebrochen: nicht
+      // "drin" melden, wo niemand drin ist.
+      if (gehenRef.current !== absicht || !raum.ich()) {
+        setZustand("draussen")
+        return
+      }
       setRaumName(name)
       setRaumTitel(titel ?? name)
       setTeilnehmer(raum.teilnehmer())
       setZustand("drin")
       // Wer neu kommt, fragt nach dem Stand. Wer ihn kennt, antwortet.
+      // Dreimal: Direkt nach dem Verbinden steht der Datenkanal nicht immer,
+      // und eine verlorene Frage liesse den Nachzuegler ohne Stand
+      // (Pruefkreis Kimi, 01.10.2026, Befund 5).
       raum.senden({ art: "kreis-frage" } satisfies KreisNachricht)
+      for (const ms of [1500, 5000]) setTimeout(() => { if (raum.ich()) raum.senden({ art: "kreis-frage" } satisfies KreisNachricht) }, ms)
     } catch (e) {
       setFehler(e instanceof Error ? e.message : "Der Raum ließ sich nicht betreten.")
       setZustand("fehler")
@@ -95,6 +114,8 @@ export function useKreisVerbindungHalten(fabrik: KreisRaumFabrik, eigeneProzesse
   }, [raum])
 
   const verlassen = useCallback(async () => {
+    zuletztRef.current = null
+    gehenRef.current++
     await raum.verlassen()
     setZustand("draussen")
     setRaumName(null)
@@ -153,6 +174,40 @@ export function useKreisVerbindungHalten(fabrik: KreisRaumFabrik, eigeneProzesse
   }, [raum, senden])
 
   useEffect(() => () => { void raum.verlassen() }, [raum])
+
+  // Abgerissen, ohne dass jemand ging: von selbst neu verbinden, mit
+  // demselben Namen und Raum, bis zu dreimal (1 s, 3 s, 8 s). Danach steht
+  // eine Meldung da statt eines stummen, leeren Raums.
+  const verbindetNeuRef = useRef(false)
+  const abgerissen = zustand === "drin" && !!raum.verbindungVerloren?.() && raum.ich() === null
+  useEffect(() => {
+    const z = zuletztRef.current
+    if (!abgerissen || !z || verbindetNeuRef.current) return
+    verbindetNeuRef.current = true
+    const absicht = gehenRef.current
+    void (async () => {
+      for (const ms of [1000, 3000, 8000]) {
+        await new Promise((r) => setTimeout(r, ms))
+        // Wer inzwischen "gehen" sagte, will nicht zurueck.
+        if (gehenRef.current !== absicht) { verbindetNeuRef.current = false; return }
+        await betreten(z.name, z.anzeigeName, z.titel)
+        if (raum.ich()) { verbindetNeuRef.current = false; return }
+      }
+      if (gehenRef.current !== absicht) { verbindetNeuRef.current = false; return }
+      verbindetNeuRef.current = false
+      setFehler("Die Verbindung ist abgerissen und kam nicht wieder. Bitte neu betreten.")
+      setZustand("fehler")
+    })()
+  }, [abgerissen, raum, betreten])
+
+  // Alle 15 Sekunden den eigenen Stand in den Raum: Ging eine Aenderung
+  // verloren (etwa "Ein Wort zur Zeit: aus"), holt sie so jedes Geraet nach
+  // (Pruefkreis Kimi, Befund 5 und 6).
+  useEffect(() => {
+    if (zustand !== "drin") return
+    const t = setInterval(() => { if (sitzungRef.current.v > 0 && raum.ich()) senden(sitzungRef.current) }, 15_000)
+    return () => clearInterval(t)
+  }, [zustand, raum, senden])
 
   // Die Klangschale klingt bei jedem neuen Schlag, bei allen. Ein Schlag, der
   // beim Hereinkommen schon vorbei ist, klingt nicht nach.

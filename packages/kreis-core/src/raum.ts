@@ -51,6 +51,12 @@ export interface KreisRaum {
    * der Adapter keine Mitschrift kennt. Spec video, "Mitschrift".
    */
   mitschriftZugang?(): { url: string; token: string } | null
+  /**
+   * Optional: Ist die letzte Verbindung abgerissen, ohne dass jemand "gehen"
+   * sagte? Dann verbindet die App von selbst neu (Timo mit Emil, 01.10.2026:
+   * die Konferenz brach ab, und nur Gehen und neu Betreten half).
+   */
+  verbindungVerloren?(): boolean
 }
 
 /** Macht aus einem Namen eine Raumkennung: klein, ASCII, Strich statt Leerzeichen. */

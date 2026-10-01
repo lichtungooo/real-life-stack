@@ -186,6 +186,7 @@ function InDerKonferenz({ kreis, raumName, raumId, module = [], modulZeigen, pro
   const [seit] = useState(() => Date.now())
   const [gelesen, setGelesen] = useState(0)
   const [leertaste, setLeertaste] = useState(false)
+  const leertasteRef = useRef(false)
   const [meldung, setMeldung] = useState<string | null>(null)
   const huelle = useRef<HTMLDivElement | null>(null)
   const warStummRef = useRef(false)
@@ -241,15 +242,21 @@ function InDerKonferenz({ kreis, raumName, raumId, module = [], modulZeigen, pro
         if (sitzung.stab.halter === ich) return
         if (!wortNehmen()) return
         wortPerTasteRef.current = true
+        leertasteRef.current = true
         setLeertaste(true)
         return
       }
       warStummRef.current = !mich?.mikroAn
       if (warStummRef.current) void medien("Mikrofon", () => raum.mikro(true))
+      leertasteRef.current = true
       setLeertaste(true)
     }
     const hoch = (e: KeyboardEvent) => {
-      if (e.code !== "Space" || !leertaste) return
+      // Aus dem Ref, nicht aus dem Zustand: Ein kurzes Antippen kommt sonst
+      // beim alten Horcher an, und Mikrofon oder Wort klemmen (Pruefkreis
+      // Kimi, 01.10.2026, Befund 8).
+      if (e.code !== "Space" || !leertasteRef.current) return
+      leertasteRef.current = false
       e.preventDefault()
       if (wortPerTasteRef.current) {
         wortPerTasteRef.current = false
@@ -261,7 +268,7 @@ function InDerKonferenz({ kreis, raumName, raumId, module = [], modulZeigen, pro
     window.addEventListener("keyup", hoch)
     return () => { window.removeEventListener("keydown", runter); window.removeEventListener("keyup", hoch) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [raum, mich?.mikroAn, leertaste, medien, vorlieben.pushToTalk, wortGilt, sitzung.stab.halter, ich])
+  }, [raum, mich?.mikroAn, medien, vorlieben.pushToTalk, wortGilt, sitzung.stab.halter, ich])
 
   // "Fuer alle uebernehmen": jede neue Nummer einmal in die eigene Vorliebe.
   const layoutGesehen = useRef(0)
@@ -287,7 +294,15 @@ function InDerKonferenz({ kreis, raumName, raumId, module = [], modulZeigen, pro
   }, [sitzung.v, moderation.neueStumm, mich, raum, seit])
 
   // Der Audiofilter des Mikrofons folgt der Vorliebe.
-  useEffect(() => { void raum.mikroFilter?.(vorlieben.audiofilter) }, [raum, vorlieben.audiofilter])
+  // Nur wenn sich der Wert aendert: Beim Betreten startete der Filter sonst
+  // das gerade geoeffnete Mikrofon gleich ein zweites Mal (Pruefkreis Kimi,
+  // 01.10.2026, Befund 11). Der Adapter beginnt mit Filter an.
+  const filterGesetzt = useRef(true)
+  useEffect(() => {
+    if (filterGesetzt.current === vorlieben.audiofilter) return
+    filterGesetzt.current = vorlieben.audiofilter
+    void raum.mikroFilter?.(vorlieben.audiofilter)
+  }, [raum, vorlieben.audiofilter])
 
   // Hinweise: neue Chatzeilen der anderen, wer kommt, wer geht, wer die Hand hebt.
   const melde = useCallback((art: HinweisArt, text: string) => {
@@ -416,7 +431,7 @@ function InDerKonferenz({ kreis, raumName, raumId, module = [], modulZeigen, pro
               <Eintrag aktiv={moderation.neueStumm} onClick={() => handle((s) => moderationSetzen(s, { neueStumm: !moderation.neueStumm }, wer))}>
                 <MicOff className="h-4 w-4" /> {moderation.neueStumm ? "Neue Teilnehmer stumm: an" : "Neue Teilnehmer stumm schalten"}
               </Eintrag>
-              <Eintrag aktiv={moderation.einWort} onClick={() => handle((s) => moderationSetzen(s, { einWort: !moderation.einWort }, wer))}>
+              <Eintrag aktiv={moderation.einWort} onClick={() => handle((s) => moderationSetzen(s, { einWort: !moderationVon(s).einWort }, wer))}>
                 <CircleDot className="h-4 w-4" /> {moderation.einWort ? "Ein Wort zur Zeit: an" : "Ein Wort zur Zeit: erst sprechen, wenn das Wort frei ist"}
               </Eintrag>
               <Eintrag onClick={() => { neben.alleStumm(sitzung.pad?.praesentiert ?? sitzung.stab.halter ?? wer); setModerationOffen(false) }}>
