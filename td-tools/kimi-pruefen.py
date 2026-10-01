@@ -143,7 +143,13 @@ def kimi(auftrag, sitzung=None):
     beginn = time.time()
     r = subprocess.run(befehl, cwd=str(REPO), capture_output=True, text=True,
                        encoding="utf-8", errors="replace", timeout=3600)
+    # Die Rohausgabe bleibt liegen (berichte/.kimi-roh-*, nicht im Repo):
+    # Am 01.10.2026 endete ein Lauf nach dem ersten Satz, und ohne sie war
+    # nicht mehr zu sehen, warum.
+    stempel = datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S")
+    (BERICHTE / f".kimi-roh-{stempel}.jsonl").write_text(r.stdout + "\n--- stderr ---\n" + r.stderr, encoding="utf-8")
     antworten, neue_sitzung, fehler = [], sitzung, []
+    sitzung_gemeldet = False
     for zeile in r.stdout.splitlines():
         try:
             d = json.loads(zeile)
@@ -155,9 +161,17 @@ def kimi(auftrag, sitzung=None):
             antworten.append(d["content"])
         if d.get("type") == "session.resume_hint":
             neue_sitzung = d.get("session_id") or neue_sitzung
+            sitzung_gemeldet = True
     # Kimi meldet Fehler mit Exit-Code 0. Darum zählt nur, ob eine Antwort kam.
     if not antworten:
         sys.exit("Kimi hat nicht geantwortet.\n" + "\n".join(fehler[:5] + r.stderr.splitlines()[:5]))
+    # Ein regulaeres Ende meldet die Sitzung. Fehlt sie, hat Kimi mittendrin
+    # aufgehoert (Limit des Abos, Schrittgrenze): laut sagen statt einen
+    # halben Bericht als Pruefung abzulegen.
+    if not sitzung_gemeldet:
+        sys.exit("Kimi hat vorzeitig aufgehört (keine Sitzung gemeldet). Letzte Antwort:\n"
+                 + antworten[-1][:300] + "\n" + "\n".join(fehler[-5:] + r.stderr.splitlines()[-5:])
+                 + f"\nRohausgabe: td-tools/berichte/.kimi-roh-{stempel}.jsonl")
     return antworten[-1], neue_sitzung, round(time.time() - beginn)
 
 

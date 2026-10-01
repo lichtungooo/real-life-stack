@@ -239,7 +239,7 @@ export function ProjektProfilVoll({
         {p.kennzahlen.length > 0 && (
           <ul className="relative z-10 mx-auto -mt-10 grid max-w-6xl grid-cols-2 gap-3 px-5 sm:px-8 md:grid-cols-4" aria-label="Kennzahlen">
             {p.kennzahlen.map((z) => (
-              <li key={z.was} className="rounded-2xl bg-card p-4 shadow-lg shadow-black/5 dark:shadow-black/30">
+              <li key={`${z.wert}-${z.was}`} className="rounded-2xl bg-card p-4 shadow-lg shadow-black/5 dark:shadow-black/30">
                 <p className="text-2xl font-bold tracking-tight text-emerald-700 sm:text-3xl dark:text-emerald-300">{z.wert}</p>
                 <p className="text-sm text-muted-foreground">{z.was}</p>
               </li>
@@ -274,8 +274,8 @@ export function ProjektProfilVoll({
               <section className="rounded-3xl bg-green-50/60 p-6 sm:col-span-6 dark:bg-green-950/40" aria-label="Was sich ändert">
                 <Ueberschrift icon={Check}>Was sich ändert</Ueberschrift>
                 <ul className="grid gap-4 sm:grid-cols-2">
-                  {p.wirkung.map((w) => (
-                    <li key={w} className="flex gap-3">
+                  {p.wirkung.map((w, i) => (
+                    <li key={`${i}-${w}`} className="flex gap-3">
                       <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-green-600 text-white"><Check className="h-4 w-4" /></span>
                       <span className="leading-relaxed">{w}</span>
                     </li>
@@ -288,8 +288,8 @@ export function ProjektProfilVoll({
               <section className={`rounded-3xl bg-orange-50/60 p-6 dark:bg-orange-950/40 ${p.schritte.length ? "sm:col-span-3" : "sm:col-span-6"}`} aria-label="Wohin das Geld geht">
                 <Ueberschrift icon={Wallet}>Wohin das Geld geht</Ueberschrift>
                 <ul className="flex flex-col gap-3">
-                  {p.bedarfe.map((b) => (
-                    <li key={b.wofuer}>
+                  {p.bedarfe.map((b, i) => (
+                    <li key={`${i}-${b.wofuer}`}>
                       <div className="flex justify-between gap-3 text-sm">
                         <span>{b.wofuer}</span>
                         {b.betrag !== null && <span className="font-semibold tabular-nums">{euro(b.betrag)}</span>}
@@ -336,7 +336,7 @@ export function ProjektProfilVoll({
                 <Ueberschrift icon={Users}>Wer dahinter steht</Ueberschrift>
                 <ul className="grid grid-cols-2 gap-3 md:grid-cols-3">
                   {p.team.map((m, i) => (
-                    <li key={m.name} className="flex items-center gap-3 rounded-2xl bg-background/70 p-3">
+                    <li key={`${i}-${m.name}`} className="flex items-center gap-3 rounded-2xl bg-background/70 p-3">
                       <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white ${FARBEN[i % FARBEN.length]}`}>{m.kuerzel}</span>
                       <span className="min-w-0">
                         <span className="block truncate text-sm font-medium">{m.name}</span>
@@ -353,7 +353,7 @@ export function ProjektProfilVoll({
                 <Ueberschrift icon={Images}>Bilder</Ueberschrift>
                 <ul className="grid grid-cols-2 gap-3 md:grid-cols-3">
                   {galerie.map((b, i) => (
-                    <li key={b} className={i === 0 && galerie.length > 2 ? "col-span-2 row-span-2" : ""}>
+                    <li key={`${i}-${b}`} className={i === 0 && galerie.length > 2 ? "col-span-2 row-span-2" : ""}>
                       <button type="button" onClick={() => setGross(b)} className="group block h-full w-full overflow-hidden rounded-2xl" aria-label="Bild groß zeigen">
                         <img src={bildUrl(b)} alt="" loading="lazy" className="aspect-[4/3] h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
                       </button>
@@ -372,10 +372,10 @@ export function ProjektProfilVoll({
                 <SpendenStand s={s} gross />
                 {s.stufen.length > 0 && (
                   <div role="radiogroup" aria-label="Betrag wählen" className="mt-5 grid grid-cols-2 gap-2">
-                    {s.stufen.map((st) => {
+                    {s.stufen.map((st, i) => {
                       const an = betrag === st.betrag
                       return (
-                        <button key={st.betrag} type="button" role="radio" aria-checked={an} onClick={() => setBetrag(st.betrag)}
+                        <button key={`${i}-${st.betrag}`} type="button" role="radio" aria-checked={an} onClick={() => setBetrag(st.betrag)}
                           className={`flex flex-col items-start gap-0.5 rounded-2xl p-3 text-left transition-colors ${an ? "bg-emerald-700 text-white shadow-md" : "bg-emerald-50/70 hover:bg-emerald-100/80 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50"}`}>
                           <span className="text-lg font-bold">{euro(st.betrag)}</span>
                           {st.bewirkt && <span className={`text-xs leading-snug ${an ? "text-white/85" : "text-muted-foreground"}`}>{st.bewirkt}</span>}

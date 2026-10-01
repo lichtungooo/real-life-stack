@@ -108,7 +108,8 @@ function ProjektOderMeta({ item }: ItemSlotProps) {
   }
   return (
     <Suspense fallback={<div className="aspect-[16/9] w-full animate-pulse rounded-2xl bg-muted" />}>
-      <ProjektProfilSeite daten={daten} tags={item.tags} bildUrl={bildUrl} />
+      {/* key: Ein anderes Projekt beginnt frisch (gewaehlter Betrag, offene Ansicht). */}
+      <ProjektProfilSeite key={item.id} daten={daten} tags={item.tags} bildUrl={bildUrl} />
     </Suspense>
   )
 }
