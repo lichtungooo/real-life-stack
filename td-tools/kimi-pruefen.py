@@ -180,6 +180,17 @@ def kimi(auftrag, sitzung=None):
         if d.get("type") == "session.resume_hint":
             neue_sitzung = d.get("session_id") or neue_sitzung
             sitzung_gemeldet = True
+    # Das Kontingent ist der häufigste Grund für Stille (01.10.2026 zweimal,
+    # einmal ganz ohne Meldung). Klar sagen, damit niemand am Code zweifelt.
+    fehlerzeilen = [z for z in (r.stdout + r.stderr).splitlines() if z.startswith("error:")]
+    if any("usage limit" in z or "403" in z for z in fehlerzeilen):
+        sys.exit("Kimi-Kontingent erschöpft (Limit je 5 Stunden oder je Woche). Später erneut, "
+                 "oder Timo entscheidet über ausliefer-tor.py --ohne-kimi \"Grund\".\n"
+                 + "\n".join(fehlerzeilen)[:300])
+    if not antworten and not r.stdout.strip().count("\n"):
+        sys.exit("Kimi hat außer der Versionszeile nichts geliefert, auch keinen Fehler. Meist ist es "
+                 "das Kontingent: mit einem kurzen Aufruf prüfen. "
+                 f"Rohausgabe: td-tools/berichte/.kimi-roh-{stempel}.jsonl")
     # Kimi meldet Fehler mit Exit-Code 0. Darum zählt nur, ob eine Antwort kam.
     if not antworten:
         sys.exit("Kimi hat nicht geantwortet.\n" + "\n".join(fehler[:5] + r.stderr.splitlines()[:5]))
