@@ -27,7 +27,7 @@ function attrappe(vorhandeneTitel: string[] = [], scheiternBei?: string) {
 
 function laufen(connector: never) {
   const staende: ImportStand[] = []
-  return stiftungenSchreiben(connector, (s) => staende.push(s)).then(() => staende)
+  return stiftungenSchreiben(connector, (s) => staende.push(s), undefined, async () => {}).then(() => staende)
 }
 
 describe("Stiftungen schreiben", () => {
@@ -118,7 +118,7 @@ describe("Ein zweiter Lauf traegt das Symbol nach (01.10.2026)", () => {
       updateItem: async (id: string, u: { data?: unknown }) => { geaendert.push({ id, data: u.data }) },
     }
     let ende: unknown = null
-    await stiftungenSchreiben(connector as never, (s) => { if (s.art === "fertig") ende = s })
+    await stiftungenSchreiben(connector as never, (s) => { if (s.art === "fertig") ende = s }, undefined, async () => {})
     expect(geaendert).toEqual([{ id: "schon-da", data: { icon: "hands" } }])
     expect(angelegt.some((i) => (i as { data: { title: string } }).data.title === titel)).toBe(false)
     expect(angelegt.every((i) => (i as { data: { icon?: string } }).data.icon === "hands")).toBe(true)
@@ -151,5 +151,17 @@ describe("Wohin der Link schreibt (01.10.2026)", () => {
     expect(importZiel([gruppe, netz])?.id).toBe("n")
     expect(importZiel([gruppe])?.id).toBe("g")
     expect(importZiel([{ id: "x", name: "Lichtung" }])).toBeUndefined()
+  })
+})
+
+describe("Der Import laesst dem Browser Luft (01.10.2026: Seite reagierte nicht)", () => {
+  it("macht nach jedem Eintrag eine Pause und schreibt in den genannten Space", async () => {
+    const { stiftungenSchreiben } = await import("../src/stiftungen-import.js")
+    const optionen: unknown[] = []
+    let pausen = 0
+    const connector = { getItems: async () => [], createItem: async (_i: unknown, o?: unknown) => { optionen.push(o) } }
+    await stiftungenSchreiben(connector as never, () => {}, "space-td", async () => { pausen++ })
+    expect(pausen).toBe(optionen.length)
+    expect(optionen.every((o) => (o as { group?: string })?.group === "space-td")).toBe(true)
   })
 })

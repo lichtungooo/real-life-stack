@@ -78,10 +78,14 @@ export function nachtrag(da: Record<string, unknown>, neu: Record<string, unknow
  */
 export async function stiftungenSchreiben(
   connector: DataInterface & {
-    createItem?: (i: CreateItemInput) => Promise<unknown>
+    createItem?: (i: CreateItemInput, options?: { group?: string }) => Promise<unknown>
     updateItem?: (id: string, updates: Partial<Item>) => Promise<unknown>
   },
   melden: (stand: ImportStand) => void,
+  /** Der Space, in den geschrieben wird; ohne Angabe der gerade offene. */
+  ziel?: string,
+  /** Atempause fuer den Browser nach jedem Eintrag (Test: sofort). */
+  pause: () => Promise<void> = () => new Promise((r) => setTimeout(r, 40)),
 ): Promise<void> {
   if (typeof connector.createItem !== "function") {
     melden({ art: "fehler", text: "Dieser Connector kann nicht schreiben." })
@@ -104,6 +108,12 @@ export async function stiftungenSchreiben(
   let uebersprungen = 0
   for (const [nr, item] of liste.entries()) {
     melden({ art: "laeuft", fertig: nr, gesamt: liste.length })
+    // Timo, 01.10.2026: "Seite reagiert nicht" nach Ja. Jeder Eintrag wird im
+    // Web of Trust signiert, verschluesselt und abgeglichen, danach zeichnet
+    // die Seite Feed und Karte neu. Ohne Pause dazwischen kam der Browser bei
+    // rund 200 Eintraegen nicht mehr zum Zeichnen. Was geschrieben ist,
+    // bleibt; ein zweiter Lauf ueberspringt es (Vergleich ueber den Titel).
+    await pause()
     const titel = String((item.data as { title?: string })?.title ?? "")
     const da = titel ? vorhanden.get(titel) : undefined
     if (da) {
@@ -121,7 +131,7 @@ export async function stiftungenSchreiben(
       // dazukommt — die Musterdaten tragen `@context`, und ohne Vokabular-
       // Bindung greift nichts mehr, was daran hängt (Spec 06).
       const { id: _id, createdAt, updatedAt, updatedBy, ...rest } = item
-      await connector.createItem(rest)
+      await connector.createItem(rest, ziel ? { group: ziel } : undefined)
       geschrieben++
     } catch {
       uebersprungen++
@@ -142,6 +152,7 @@ export function StiftungenImport({
   spaceName,
   beispielwelt,
   ohneZiel,
+  zielId,
 }: {
   connector: DataInterface | null
   aktiv: boolean
@@ -151,6 +162,8 @@ export function StiftungenImport({
   beispielwelt?: boolean
   /** Kein Ziel-Space: der Grund, den die Flaeche nennt, statt ins Leere zu schreiben. */
   ohneZiel?: string
+  /** Der Space, in den geschrieben wird. */
+  zielId?: string
 }) {
   const [stand, setStand] = useState<ImportStand>({ art: "ruht" })
 
@@ -205,7 +218,7 @@ export function StiftungenImport({
                     setStand({ art: "fehler", text: "Keine Verbindung." })
                     return
                   }
-                  void stiftungenSchreiben(connector as never, setStand)
+                  void stiftungenSchreiben(connector as never, setStand, zielId)
                 }}
                 className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground"
               >

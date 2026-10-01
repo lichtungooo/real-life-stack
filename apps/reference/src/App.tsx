@@ -670,6 +670,7 @@ function StiftungenImportHost({ beispielwelt }: { beispielwelt: boolean }) {
       spaceName={space?.name}
       beispielwelt={beispielwelt}
       ohneZiel={ohneZiel}
+      zielId={space?.id}
     />
   )
 }
