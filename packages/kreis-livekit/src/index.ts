@@ -36,6 +36,8 @@ export interface LiveKitRaumOptionen {
   tokenUrl: string
   /** Der Mitschrift-Dienst, z. B. `wss://kreis.wir.ooo/mitschrift`. Ohne ihn keine Mitschrift. */
   mitschriftUrl?: string
+  /** Aufnahme der Kamera. Standard "h540" (gemessen: Video ist die Last). */
+  video?: "h360" | "h540" | "h720"
   /** Mikrofon beim Betreten an. Standard: an. */
   mikroBeimBetreten?: boolean
 }
@@ -144,9 +146,9 @@ export function liveKitKreisRaum(optionen: LiveKitRaumOptionen = KREIS_WIR_OOO):
     const r = new RaumKlasse({
       adaptiveStream: true,
       dynacast: true,
-      videoCaptureDefaults: { resolution: VideoPresets.h540.resolution },
+      videoCaptureDefaults: { resolution: VideoPresets[optionen.video ?? "h540"].resolution },
       publishDefaults: {
-        videoEncoding: VideoPresets.h540.encoding,
+        videoEncoding: VideoPresets[optionen.video ?? "h540"].encoding,
         videoSimulcastLayers: [VideoPresets.h180, VideoPresets.h360],
         dtx: true,
       },

@@ -47,9 +47,15 @@ import { liveKitKreisRaum, KREIS_WIR_OOO } from "@kreis/livekit"
 
 // Einmal gewaehlt, fuer die ganze Sitzung: Die Fabrik darf nicht bei jedem
 // Rendern neu entstehen, sonst baute der Provider die Verbindung neu auf.
+// `?video=720` (oder 360) stellt die Kamera-Aufnahme fuer einen Vergleich
+// um; ohne Angabe gilt 540p (gemessen, siehe kreis-livekit).
+function videoAusAdresse(): "h360" | "h540" | "h720" | undefined {
+  const v = new URLSearchParams(window.location.search).get("video")
+  return v === "720" ? "h720" : v === "360" ? "h360" : v === "540" ? "h540" : undefined
+}
 const kreisFabrik = new URLSearchParams(window.location.search).get("kreis") === "lokal"
   ? () => lokalerKreisRaum()
-  : () => liveKitKreisRaum(KREIS_WIR_OOO)
+  : () => liveKitKreisRaum({ ...KREIS_WIR_OOO, video: videoAusAdresse() })
 import { MapLibreAdapterProvider } from "@real-life-stack/toolkit/maplibre"
 import { MockConnector } from "@real-life-stack/mock-connector"
 import { LocalConnector } from "@real-life-stack/local-connector"
