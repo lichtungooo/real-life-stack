@@ -134,8 +134,23 @@ export function liveKitKreisRaum(optionen: LiveKitRaumOptionen = KREIS_WIR_OOO):
     // (Pruefkreis Kimi, 01.10.2026, zweite Runde: sonst ungewollt drin, Mikro an).
     if (gewollt) return
 
-    const { Room: RaumKlasse, RoomEvent } = await ladeLiveKit()
-    const r = new RaumKlasse({ adaptiveStream: true, dynacast: true })
+    const { Room: RaumKlasse, RoomEvent, VideoPresets } = await ladeLiveKit()
+    // Leistung (Timo, 01.10.2026: "wir brauchen die volle Performance").
+    // Gemessen: fast die ganze Last einer Konferenz ist Video kodieren und
+    // dekodieren, nicht die Oberflaeche. LiveKit nimmt sonst in 720p mit 30
+    // Bildern auf; 540p mit 25 reicht fuer eine Kachel und spart auf vollen
+    // Laptops spuerbar. Kleine Kacheln bekommen 180p und 360p (Simulcast),
+    // `dtx` laesst Stille im Ton weg.
+    const r = new RaumKlasse({
+      adaptiveStream: true,
+      dynacast: true,
+      videoCaptureDefaults: { resolution: VideoPresets.h540.resolution },
+      publishDefaults: {
+        videoEncoding: VideoPresets.h540.encoding,
+        videoSimulcastLayers: [VideoPresets.h180, VideoPresets.h360],
+        dtx: true,
+      },
+    })
     for (const ereignis of [
       RoomEvent.ParticipantConnected, RoomEvent.ParticipantDisconnected,
       RoomEvent.TrackSubscribed, RoomEvent.TrackUnsubscribed,

@@ -150,7 +150,12 @@ export function useKreisVerbindungHalten(fabrik: KreisRaumFabrik, eigeneProzesse
   }, [])
 
   useEffect(() => {
-    const ab1 = raum.beiAenderung(() => setTeilnehmer(raum.teilnehmer()))
+    // Nur neu setzen, wenn sich wirklich etwas aendert: LiveKit meldet
+    // "wer spricht" mehrmals je Sekunde, oft mit demselben Stand.
+    const ab1 = raum.beiAenderung(() => setTeilnehmer((alt) => {
+      const neu = raum.teilnehmer()
+      return gleicheTeilnehmer(alt, neu) ? alt : neu
+    }))
     const ab2 = raum.beiNachricht((roh, von) => {
       const n = roh as { art?: unknown } | null
       if (!n || typeof n !== "object" || typeof n.art !== "string") return
@@ -259,6 +264,16 @@ export function useKreisVerbindungHalten(fabrik: KreisRaumFabrik, eigeneProzesse
     betreten, verlassen, handle, nebenSenden, beiNeben,
     unterraum, inUnterraum, zurueckInHauptraum,
   }
+}
+
+/** Gleiche Menschen mit gleichem Stand (Name, Sprechen, Mikro, Kamera, Bildschirm)? */
+export function gleicheTeilnehmer(a: readonly KreisTeilnehmer[], b: readonly KreisTeilnehmer[]): boolean {
+  if (a.length !== b.length) return false
+  return a.every((x, i) => {
+    const y = b[i]
+    return x.id === y.id && x.name === y.name && x.ichSelbst === y.ichSelbst && x.spricht === y.spricht
+      && x.mikroAn === y.mikroAn && x.kameraAn === y.kameraAn && !!x.teiltBildschirm === !!y.teiltBildschirm
+  })
 }
 
 export type KreisVerbindung = ReturnType<typeof useKreisVerbindungHalten>
