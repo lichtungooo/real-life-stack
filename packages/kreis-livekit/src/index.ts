@@ -36,9 +36,12 @@ export interface LiveKitRaumOptionen {
   tokenUrl: string
   /** Der Mitschrift-Dienst, z. B. `wss://kreis.wir.ooo/mitschrift`. Ohne ihn keine Mitschrift. */
   mitschriftUrl?: string
-  /** Aufnahme der Kamera. Standard "h540" (gemessen: Video ist die Last). */
+  /** Aufnahme der Kamera. Standard "h540": schont die Leitung nach oben; die
+   * Rechenlast aendert sie kaum (gemessen 01.10.2026, 720p gegen 540p gleich). */
   video?: "h360" | "h540" | "h720"
-  /** Video-Codec. Standard von LiveKit ist vp8 (reine Software). */
+  /** Video-Codec. Standard "h264": dekodiert auf der Grafikkarte, vp8 nur in
+   * Software (gemessen 01.10.2026, zwei Menschen mit 720p-Kamera: Renderer
+   * rund 70 statt 96 Prozent eines Kerns). Alle Browser spielen h264. */
   codec?: "vp8" | "h264" | "vp9" | "av1"
   /** Mikrofon beim Betreten an. Standard: an. */
   mikroBeimBetreten?: boolean
@@ -153,7 +156,7 @@ export function liveKitKreisRaum(optionen: LiveKitRaumOptionen = KREIS_WIR_OOO):
         videoEncoding: VideoPresets[optionen.video ?? "h540"].encoding,
         videoSimulcastLayers: [VideoPresets.h180, VideoPresets.h360],
         dtx: true,
-        ...(optionen.codec ? { videoCodec: optionen.codec } : {}),
+        videoCodec: optionen.codec ?? "h264",
       },
     })
     for (const ereignis of [
