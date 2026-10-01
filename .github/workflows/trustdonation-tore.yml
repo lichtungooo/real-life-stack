@@ -43,13 +43,15 @@ jobs:
       - name: Tor 2, Regeln
         run: pnpm -r test
 
-      # Antons Stand holen, damit die Naht-Messung eine Basis hat. Schlaegt es
-      # fehl (etwa ohne Zugriff), laeuft der Rest weiter.
+      # Antons Stand holen, damit die Naht-Messung eine Basis hat. Hier ist
+      # origin der Fork, und dessen master traegt einen eigenen Commit: Ohne
+      # das + verweigert git das Ueberschreiben, und die Messung lief bis
+      # 01.10.2026 gegen den alten Fork-Stand (185 "unbenannte Naehte", jeder
+      # Lauf rot, verschluckt von "|| true"). Schlaegt es fehl, soll es laut sein.
       - name: Antons Stand holen
-        continue-on-error: true
         run: |
-          git remote add upstream https://github.com/real-life-org/real-life-stack.git || true
-          git fetch upstream master:refs/remotes/origin/master --tags || true
+          git remote add upstream https://github.com/real-life-org/real-life-stack.git
+          git fetch upstream +master:refs/remotes/origin/master --tags --force
 
       - name: Tore 3 bis 6
         run: python td-tools/pruefen.py --schnell

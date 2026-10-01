@@ -136,6 +136,21 @@ def zustand_der_dateien():
     return abdruck
 
 
+def nur_doku(pfad):
+    """Pfade, die kein Code sind. Ein Bericht über Code bleibt gültig, wenn danach nur sie sich ändern."""
+    return pfad.startswith(("docs/", "td-tools/berichte/")) or pfad.endswith(".md")
+
+
+def stand_und_sauber():
+    """Welcher Commit geprüft wird, und ob Code außerhalb davon im Arbeitsbaum lag.
+
+    Das Ausliefer-Tor (td-tools/ausliefer-tor.py) gibt einen Commit nur frei,
+    wenn ein Bericht genau diesen Code geprüft hat.
+    """
+    offen = [z[3:].strip().strip('"') for z in git("status", "--porcelain").splitlines()]
+    return git("rev-parse", "HEAD").strip(), not [p for p in offen if not nur_doku(p)]
+
+
 def kimi(auftrag, sitzung=None):
     befehl = [str(KIMI), "-m", MODELL, "--prompt", auftrag, "--output-format", "stream-json"]
     if sitzung:
@@ -233,6 +248,7 @@ def main():
     else:
         auftrag = AUFTRAG_1.format(basis=name, patch=patch.relative_to(REPO).as_posix())
 
+    stand, sauber = stand_und_sauber()
     vorher = zustand_der_dateien()
     print(f"\nKimi ({MODELL}) prüft{' Runde 2' if a.runde2 else ''} …")
     antwort, sitzung, sekunden = kimi(auftrag, sitzung)
@@ -247,7 +263,8 @@ def main():
     bericht = BERICHTE / f"kimi-{stempel}-runde{runde}.md"
     kopf = (f"# Prüfkreis: Kimi, Runde {runde}\n\n"
             f"- Datum: {stempel}\n- Modell: {MODELL}\n- Basis: {name} (`{basis}`)\n"
-            f"- Dateien: {len(dateien)}\n- Dauer: {sekunden} s\n- Sitzung: `{sitzung}`\n")
+            f"- Dateien: {len(dateien)}\n- Dauer: {sekunden} s\n- Sitzung: `{sitzung}`\n"
+            f"- Stand: `{stand}`\n- Sauber: {'ja' if sauber else 'nein (Code nicht eingecheckt, zählt nicht fürs Ausliefer-Tor)'}\n")
     if veraendert:
         kopf += ("\n**⚠ Während der Prüfung haben sich Dateien verändert** (Kimi oder eine andere "
                  "Sitzung): " + ", ".join(f"`{p}`" for p in veraendert[:10]) + "\n")
