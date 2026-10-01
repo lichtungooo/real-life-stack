@@ -35,7 +35,7 @@ import { isAuthenticatable, hasMessaging, hasEncounterVerification, hasProfile }
 // nicht aus Antons Demodaten. Beide Connectoren nehmen einen Seed als
 // Parameter, darum bleiben seine Dateien unberuehrt (NAEHTE Abschnitt C).
 import { traegtProfil } from "@trustdonation/core"
-import { NetzwerkeImport, StiftungenImport } from "@trustdonation/ui"
+import { NetzwerkeImport, StiftungenImport, importZiel } from "@trustdonation/ui"
 import { SpaceProfilPanel } from "./views/profil-panel"
 import { ERWEITERUNGEN_ABSCHNITT } from "./views/erweiterungen-abschnitt"
 // Der Kreis bekommt seinen Raum von der App (Spec kreis, "Der Raum-Adapter").
@@ -646,15 +646,30 @@ function SpaceProfilHost() {
 function StiftungenImportHost({ beispielwelt }: { beispielwelt: boolean }) {
   const connector = useConnector()
   const { scope } = useParams()
-  const { data: groups } = useGroups()
+  const { data: groups, isLoading } = useGroups()
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const aktiv = searchParams.get("import") === "stiftungen"
   const space = scope ? (groups ?? []).find((g) => g.id === scope) : undefined
+  // Ein Link fuer alles (Timo, 01.10.2026: "pack alle Stiftungen auf die
+  // trustdonation, auf beide"): Ohne offenen Space sucht der Import das
+  // Netzwerk trustdonation selbst und springt hinein; geschrieben wird erst
+  // nach der Rueckfrage dort.
+  const ziel = importZiel(groups ?? [])
+  useEffect(() => {
+    if (aktiv && !beispielwelt && !space && ziel) navigate(`/${ziel.id}/feed?${searchParams.toString()}`, { replace: true })
+  }, [aktiv, beispielwelt, space, ziel, navigate, searchParams])
+  const ohneZiel = aktiv && !beispielwelt && !space && !ziel && !isLoading
+    ? "Es gibt bei dir noch keinen Space „trustdonation“. Zuerst oben „Netzwerke übernehmen“ wählen, dann diesen Link noch einmal öffnen."
+    : undefined
+  if (aktiv && !beispielwelt && !space && !ohneZiel) return null
   return (
     <StiftungenImport
       connector={connector}
-      aktiv={searchParams.get("import") === "stiftungen"}
+      aktiv={aktiv}
       spaceName={space?.name}
       beispielwelt={beispielwelt}
+      ohneZiel={ohneZiel}
     />
   )
 }

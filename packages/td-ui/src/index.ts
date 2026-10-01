@@ -15,6 +15,8 @@ export { zeileVollstaendig, schreibbareArten } from "@trustdonation/core"
 export {
   StiftungenImport,
   stiftungenSchreiben,
+  importZiel,
+  nachtrag,
   type ImportStand,
 } from "./stiftungen-import.js"
 export {

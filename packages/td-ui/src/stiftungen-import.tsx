@@ -37,6 +37,15 @@ async function stiftungen() {
   return musterItems.filter((i) => String(i.id).startsWith("stiftung-"))
 }
 
+/**
+ * Wohin die Stiftungen gehoeren, wenn kein Space offen ist: das Netzwerk
+ * "trustdonation", sonst ein Space dieses Namens, sonst keiner.
+ */
+export function importZiel<G extends { id: string; name: string; data?: unknown }>(groups: readonly G[]): G | undefined {
+  const heisst = (g: G) => g.name.trim().toLowerCase() === "trustdonation"
+  return groups.find((g) => heisst(g) && (g.data as { isNetwork?: boolean } | undefined)?.isNetwork) ?? groups.find(heisst)
+}
+
 /** Was ein zweiter Lauf an einer schon eingespielten Stiftung nachzieht. */
 const NACHZUG = ["icon", "address", "position", "sitz", "ortGenauigkeit", "website", "anschriftQuelle"] as const
 
@@ -132,6 +141,7 @@ export function StiftungenImport({
   aktiv,
   spaceName,
   beispielwelt,
+  ohneZiel,
 }: {
   connector: DataInterface | null
   aktiv: boolean
@@ -139,6 +149,8 @@ export function StiftungenImport({
   /** Der local-Connector kann schreiben, nur nützt es hier nichts: Die
       Stiftungen liegen dort bereits als Seed. */
   beispielwelt?: boolean
+  /** Kein Ziel-Space: der Grund, den die Flaeche nennt, statt ins Leere zu schreiben. */
+  ohneZiel?: string
 }) {
   const [stand, setStand] = useState<ImportStand>({ art: "ruht" })
 
@@ -152,9 +164,13 @@ export function StiftungenImport({
         })
         return
       }
+      if (ohneZiel) {
+        setStand({ art: "fehler", text: ohneZiel })
+        return
+      }
       void stiftungen().then((liste) => setStand({ art: "fragt", anzahl: liste.length }))
     }
-  }, [aktiv, beispielwelt, stand.art])
+  }, [aktiv, beispielwelt, ohneZiel, stand.art])
 
   if (!aktiv || stand.art === "ruht") return null
 

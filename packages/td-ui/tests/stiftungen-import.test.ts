@@ -142,3 +142,14 @@ describe("Was ein zweiter Lauf nachzieht (01.10.2026)", () => {
     expect(nachtrag({ ...da, icon: "eigenes" }, neu)).toBeNull()
   })
 })
+
+describe("Wohin der Link schreibt (01.10.2026)", () => {
+  it("das Netzwerk trustdonation vor einer gleichnamigen Gruppe, Schreibweise egal, sonst keins", async () => {
+    const { importZiel } = await import("../src/stiftungen-import.js")
+    const gruppe = { id: "g", name: "trustdonation", data: {} }
+    const netz = { id: "n", name: " TrustDonation ", data: { isNetwork: true } }
+    expect(importZiel([gruppe, netz])?.id).toBe("n")
+    expect(importZiel([gruppe])?.id).toBe("g")
+    expect(importZiel([{ id: "x", name: "Lichtung" }])).toBeUndefined()
+  })
+})
