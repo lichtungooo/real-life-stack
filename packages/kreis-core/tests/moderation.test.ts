@@ -29,3 +29,14 @@ describe("Textdokument als Item", () => {
     expect(dokumentSetzen(s, null, "bert").dokument).toBeNull()
   })
 })
+
+describe("Ein Wort zur Zeit", () => {
+  it("ist aus, bis es jemand einschaltet; der Kreis mit Redestab gilt ohnehin", async () => {
+    const { nurEinerSpricht, moderationSetzen } = await import("../src/moderation")
+    const { leereSitzung } = await import("../src/sitzung")
+    const s = leereSitzung(0)
+    expect(nurEinerSpricht(s, null)).toBe(false)
+    expect(nurEinerSpricht(s, { nurStabSpricht: true })).toBe(true)
+    expect(nurEinerSpricht(moderationSetzen(s, { einWort: true }, "a"), null)).toBe(true)
+  })
+})

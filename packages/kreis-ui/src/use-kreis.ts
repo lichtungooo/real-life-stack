@@ -15,6 +15,7 @@ import {
   redezeitAblaufen,
   istSitzung,
   leereSitzung,
+  nurEinerSpricht,
   prozessFinden,
   raumKennung,
   type KreisNachricht,
@@ -180,16 +181,23 @@ export function useKreisVerbindungHalten(fabrik: KreisRaumFabrik, eigeneProzesse
     handle((s, t) => redezeitAblaufen(s, teilnehmer.map((p) => ({ id: p.id, name: p.name })), ich, t))
   }, [jetzt, ich, sitzung.stab.halter, teilnehmer, handle])
 
-  // Nur wer den Stab haelt, spricht. Der Stab regelt, er sperrt nicht.
+  // Nur wer den Stab haelt, spricht: im Kreis-Prozess mit Redestab und mit
+  // "Ein Wort zur Zeit" (Moderation). Der Stab regelt, er sperrt nicht.
+  const nurEiner = nurEinerSpricht(sitzung, prozess)
   const halterRef = useRef<string | null>(null)
   useEffect(() => {
     const halter = sitzung.stab.halter
     const vorher = halterRef.current
     halterRef.current = halter
-    if (!ich || !prozess?.nurStabSpricht || halter === vorher) return
+    if (!ich || !nurEiner || halter === vorher) return
     if (halter === ich) void raum.mikro(true)
     else if (vorher === ich || halter !== null) void raum.mikro(false)
-  }, [sitzung.stab.halter, ich, prozess?.nurStabSpricht, raum])
+  }, [sitzung.stab.halter, ich, nurEiner, raum])
+  // Wird "Ein Wort zur Zeit" eingeschaltet, verstummt sofort, wer das Wort nicht haelt.
+  useEffect(() => {
+    if (ich && nurEiner && sitzung.stab.halter !== ich) void raum.mikro(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nurEiner, ich])
 
   return {
     raum, zustand, fehler, raumName, raumTitel, teilnehmer, ich, sitzung, prozess, jetzt,

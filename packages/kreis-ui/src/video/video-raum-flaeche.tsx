@@ -20,7 +20,7 @@ import {
   Mic, MicOff, MonitorUp, MoreVertical, PanelLeft, Plus, Settings, Smile, UserPlus, Users, Video, VideoOff, X, ListOrdered, ClipboardCheck,
 } from "lucide-react"
 import {
-  PROZESSE, aktuellerSchritt, dokumentSetzen, gruppenraeumeStarten, istUnterraumVon, layoutFuerAlle, moderationSetzen, moderationVon, namensliste, punktRest, tagesordnungVon, losZiehen, mitteSetzen, padOeffnen, prozessWaehlen, redezeitRest, regelnSetzen, regelnVon,
+  PROZESSE, aktuellerSchritt, dokumentSetzen, nurEinerSpricht, gruppenraeumeStarten, istUnterraumVon, layoutFuerAlle, moderationSetzen, moderationVon, namensliste, punktRest, tagesordnungVon, losZiehen, mitteSetzen, padOeffnen, prozessWaehlen, redezeitRest, regelnSetzen, regelnVon,
   schaleSchlagen, sitzungRest, stabNehmen, stabZuruecklegen, stilleLaeuft, stilleSekundenVon, weckerAus, weckerStellen, type KreisTeilnehmer,
 } from "@kreis/core"
 import { hinweisTon, meetingEnde, schaleAnschlagen } from "../klangschale"
@@ -193,6 +193,19 @@ function InDerKonferenz({ kreis, raumName, raumId, module = [], modulZeigen, pro
   const schritt = aktuellerSchritt(sitzung, prozess)
   const stille = stilleLaeuft(sitzung, jetzt)
   const halterDa = sitzung.stab.halter !== null && teilnehmer.some((t) => t.id === sitzung.stab.halter)
+  // Ein Wort zur Zeit (Moderation) oder ein Kreis-Prozess mit Redestab.
+  const wortGilt = nurEinerSpricht(sitzung, prozess)
+  const wortPerTasteRef = useRef(false)
+  /** Das Wort nehmen, wenn es frei ist. Sonst sagen, wer es hat. */
+  const wortNehmen = () => {
+    if (halterDa && sitzung.stab.halter !== ich) {
+      setMeldung(`${sitzung.stab.name ?? "Jemand"} hat gerade das Wort. Heb die Hand, dann kommst du dran.`)
+      setTimeout(() => setMeldung(null), 5000)
+      return false
+    }
+    handle((s, t) => stabNehmen(s, wer, mich?.name ?? "Gast", teilnehmer.map((p) => p.id), t))
+    return true
+  }
   const mitte = sitzung.mitte ?? null
   const toolName = mitte === TOOL_KREIS ? (prozess ? `Kreis · ${prozess.name}` : "Kreis")
     : mitte === TOOL_PAD ? "Zeichenpad" : mitte === TOOL_TEXT ? "Textdokument" : mitte === TOOL_TAFEL ? "Tafel" : mitte === TOOL_UMFRAGE ? "Umfrage" : mitte ? module.find((m) => m.id === mitte)?.label ?? mitte : null
@@ -223,6 +236,14 @@ function InDerKonferenz({ kreis, raumName, raumId, module = [], modulZeigen, pro
     const runter = (e: KeyboardEvent) => {
       if (e.code !== "Space" || e.repeat || schreibt()) return
       e.preventDefault()
+      if (wortGilt) {
+        // Ein Wort zur Zeit: Die Leertaste nimmt das Wort, wenn es frei ist.
+        if (sitzung.stab.halter === ich) return
+        if (!wortNehmen()) return
+        wortPerTasteRef.current = true
+        setLeertaste(true)
+        return
+      }
       warStummRef.current = !mich?.mikroAn
       if (warStummRef.current) void medien("Mikrofon", () => raum.mikro(true))
       setLeertaste(true)
@@ -230,13 +251,17 @@ function InDerKonferenz({ kreis, raumName, raumId, module = [], modulZeigen, pro
     const hoch = (e: KeyboardEvent) => {
       if (e.code !== "Space" || !leertaste) return
       e.preventDefault()
-      if (warStummRef.current) void medien("Mikrofon", () => raum.mikro(false))
+      if (wortPerTasteRef.current) {
+        wortPerTasteRef.current = false
+        handle((s, t) => stabZuruecklegen(s, wer, t))
+      } else if (warStummRef.current) void medien("Mikrofon", () => raum.mikro(false))
       setLeertaste(false)
     }
     window.addEventListener("keydown", runter)
     window.addEventListener("keyup", hoch)
     return () => { window.removeEventListener("keydown", runter); window.removeEventListener("keyup", hoch) }
-  }, [raum, mich?.mikroAn, leertaste, medien, vorlieben.pushToTalk])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [raum, mich?.mikroAn, leertaste, medien, vorlieben.pushToTalk, wortGilt, sitzung.stab.halter, ich])
 
   // "Fuer alle uebernehmen": jede neue Nummer einmal in die eigene Vorliebe.
   const layoutGesehen = useRef(0)
@@ -390,6 +415,9 @@ function InDerKonferenz({ kreis, raumName, raumId, module = [], modulZeigen, pro
             <Menue offen={moderationOffen} onZu={() => setModerationOffen(false)} className="bottom-4 left-3 w-80" fest>
               <Eintrag aktiv={moderation.neueStumm} onClick={() => handle((s) => moderationSetzen(s, { neueStumm: !moderation.neueStumm }, wer))}>
                 <MicOff className="h-4 w-4" /> {moderation.neueStumm ? "Neue Teilnehmer stumm: an" : "Neue Teilnehmer stumm schalten"}
+              </Eintrag>
+              <Eintrag aktiv={moderation.einWort} onClick={() => handle((s) => moderationSetzen(s, { einWort: !moderation.einWort }, wer))}>
+                <CircleDot className="h-4 w-4" /> {moderation.einWort ? "Ein Wort zur Zeit: an" : "Ein Wort zur Zeit: erst sprechen, wenn das Wort frei ist"}
               </Eintrag>
               <Eintrag onClick={() => { neben.alleStumm(sitzung.pad?.praesentiert ?? sitzung.stab.halter ?? wer); setModerationOffen(false) }}>
                 <MicOff className="h-4 w-4" /> Alle stumm schalten bis auf die Person, die präsentiert
@@ -625,7 +653,13 @@ function InDerKonferenz({ kreis, raumName, raumId, module = [], modulZeigen, pro
 
           {raum.traegtMedien && mich && (
             <>
-              <Rund an={mich.mikroAn} warnung={!mich.mikroAn} titel={mich.mikroAn ? "Stummschalten" : "Stummschaltung aufheben"} onClick={() => void medien("Mikrofon", () => raum.mikro(!mich.mikroAn))}>
+              <Rund an={mich.mikroAn} warnung={!mich.mikroAn}
+                titel={mich.mikroAn ? "Stummschalten" : wortGilt ? "Das Wort nehmen, wenn es frei ist" : "Stummschaltung aufheben"}
+                onClick={() => {
+                  // Ein Wort zur Zeit: Das Mikrofon geht nur mit dem Wort auf.
+                  if (wortGilt && !mich.mikroAn && sitzung.stab.halter !== ich) { wortNehmen(); return }
+                  void medien("Mikrofon", () => raum.mikro(!mich.mikroAn))
+                }}>
                 {mich.mikroAn ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
               </Rund>
               <Rund an={mich.kameraAn} titel={mich.kameraAn ? "Kamera aus" : "Kamera an"} onClick={() => void medien("Kamera", () => raum.kamera(!mich.kameraAn))}>
@@ -699,6 +733,11 @@ function InDerKonferenz({ kreis, raumName, raumId, module = [], modulZeigen, pro
                   className="rounded-lg bg-rose-600/80 px-3 py-1.5 text-xs font-medium text-white hover:bg-rose-600">Mich ausnehmen</button>
               )}
             </div>
+          </div>
+        )}
+        {moderation.einWort && (
+          <div className={`pointer-events-none absolute left-3 z-30 flex items-center gap-1.5 rounded-full bg-slate-900/80 px-2.5 py-1 text-[11px] font-medium text-amber-300 shadow ${neben.mitschriftHebel ? "top-11" : "top-3"}`} aria-label="Ein Wort zur Zeit">
+            <CircleDot className="h-3 w-3" /> {halterDa ? `${sitzung.stab.name ?? "Jemand"} hat das Wort` : "Das Wort ist frei"}
           </div>
         )}
         {neben.mitschriftHebel && (

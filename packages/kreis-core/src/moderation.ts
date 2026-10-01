@@ -15,9 +15,20 @@ export interface Moderation {
   bildschirm: boolean
   /** Warteraum: Wer ueber einen Link kommt und nicht zur Gruppe gehoert, wartet, bis ihn jemand hereinholt. */
   warteraum: boolean
+  /**
+   * Ein Wort zur Zeit (Timo, 01.10.2026: "erst sprechen, wenn der andere, der
+   * gerade spricht, es wieder freigegeben hat"). Das Mikrofon hat nur, wer das
+   * Wort haelt (den Redestab); die anderen warten, bis er es freigibt. So
+   * spricht immer nur einer, und die Mitschrift bekommt jeden Beitrag sauber.
+   */
+  einWort: boolean
 }
 
-export const OFFENE_MODERATION: Moderation = { neueStumm: false, chat: true, notizen: true, bildschirm: true, warteraum: false }
+export const OFFENE_MODERATION: Moderation = { neueStumm: false, chat: true, notizen: true, bildschirm: true, warteraum: false, einWort: false }
+
+/** Spricht gerade nur, wer das Wort haelt? Im Kreis-Prozess mit Redestab oder mit "Ein Wort zur Zeit". */
+export const nurEinerSpricht = (s: Sitzung, prozess: { nurStabSpricht: boolean } | null): boolean =>
+  Boolean(prozess?.nurStabSpricht) || moderationVon(s).einWort
 
 export const moderationVon = (s: Sitzung): Moderation => ({ ...OFFENE_MODERATION, ...(s.moderation ?? {}) })
 

@@ -224,3 +224,30 @@ describe("Die Mitschrift in der Konferenz: ein Hebel fuer alle, jeder kann sich 
     }
   })
 })
+
+describe("Ein Wort zur Zeit (Timo, 01.10.2026: erst sprechen, wenn der andere freigegeben hat)", () => {
+  it("Anna schaltet es ein; Bert nimmt das Wort; Anna wartet, bis er es freigibt", async () => {
+    const kanal = kanalNetz()
+    const anna = mensch(kanal, "a-anna", "Anna", flaeche("Anna"))
+    const bert = mensch(kanal, "b-bert", "Bert", flaeche("Bert"))
+    await anna.betreten()
+    await bert.betreten()
+
+    const aria = async (m: typeof anna, label: string) => {
+      const b = m.huelle.querySelector(`button[aria-label="${label}"]`) as HTMLButtonElement
+      await act(async () => { b.click() })
+    }
+    await aria(anna, "Moderation")
+    await anna.klick("Ein Wort zur Zeit: erst sprechen")
+    expect(bert.huelle.querySelector('[aria-label="Ein Wort zur Zeit"]')?.textContent).toContain("Das Wort ist frei")
+
+    await bert.klick("Wort nehmen")
+    expect(anna.huelle.querySelector('[aria-label="Ein Wort zur Zeit"]')?.textContent).toContain("Bert hat das Wort")
+    const annasKnopf = anna.knopf("Wort nehmen") as HTMLButtonElement
+    expect(annasKnopf.disabled).toBe(true)
+
+    await bert.klick("Wort abgeben")
+    expect(anna.huelle.querySelector('[aria-label="Ein Wort zur Zeit"]')?.textContent).toContain("Das Wort ist frei")
+    expect((anna.knopf("Wort nehmen") as HTMLButtonElement).disabled).toBe(false)
+  })
+})
