@@ -73,4 +73,4 @@ Das Image liegt auf dem Server als `trustdonation-app:proto-N`. Zurückgedreht w
 
 ## Was noch nicht ausgeliefert ist
 
-Nichts. Der Stand auf `trustdonation.org/app` ist `c07c2c82` (proto-64). **Kimi-Prüfung von proto-58 bis 64 steht aus.**
+Nichts. Der Stand auf `trustdonation.org/app` ist `c07c2c82` (proto-64). Kimi hat proto-58 bis 64 nachgeprüft: 0 Befunde (`td-tools/berichte/kimi-2026-10-01-230712-runde1.md`).
