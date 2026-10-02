@@ -20,7 +20,7 @@
 // Eigener Einstieg `@trustdonation/ui/projekt-profil`: Die App laedt das
 // erst, wenn jemand ein Projekt oeffnet.
 
-import { useEffect, useState, type ComponentType, type ReactNode } from "react"
+import { useEffect, useMemo, useState, type ComponentType, type ReactNode } from "react"
 import {
   ArrowUpRight,
   CalendarDays,
@@ -31,6 +31,7 @@ import {
   Mail,
   MapPin,
   Maximize2,
+  Pencil,
   Phone,
   Sprout,
   Target,
@@ -39,12 +40,23 @@ import {
   X,
 } from "lucide-react"
 import { Dialog, DialogContent, DialogTitle } from "@real-life-stack/toolkit"
-import { euro, projektProfil, spendenLink, type ProjektProfil, type ProjektSpende } from "@trustdonation/core"
+import { PROJEKT_PROFIL_FELDER, euro, projektProfil, spendenLink, type ProjektProfil, type ProjektSpende } from "@trustdonation/core"
+import {
+  Bearbeitbar,
+  BearbeitenKnopf,
+  BearbeitenRahmen,
+  OffenesFormular,
+  StiftKnopf,
+  useProfilBearbeiten,
+  type ProfilBearbeitung,
+} from "./profil-bearbeiten"
 
 export interface ProjektProfilSeiteProps {
   profil: ProjektProfil
   /** Macht aus einem Pfad der Instanz (`muster/garten.svg`) eine ladbare Adresse. */
   bildUrl?: (pfad: string) => string
+  /** Nur wenn der Mensch bearbeiten darf (Antons Regel); sonst kein Knopf. */
+  bearbeitung?: ProfilBearbeitung
 }
 
 type Symbol = ComponentType<{ className?: string }>
@@ -149,8 +161,9 @@ function Grossbild({ src, onZu }: { src: string; onZu: () => void }) {
 
 // ── Die Karte in der Detail-Leiste ──────────────────────────────────────────
 
-export function ProjektProfilSeite({ profil: p, bildUrl = (x) => x }: ProjektProfilSeiteProps) {
+export function ProjektProfilSeite({ profil: p, bildUrl = (x) => x, bearbeitung }: ProjektProfilSeiteProps) {
   const [voll, setVoll] = useState(false)
+  const [bearbeiten, setBearbeiten] = useState(false)
   const s = p.spende
   return (
     <article className="flex flex-col gap-4" aria-label={`Projektprofil ${p.titel}`}>
@@ -195,8 +208,15 @@ export function ProjektProfilSeite({ profil: p, bildUrl = (x) => x }: ProjektPro
         className="flex items-center justify-center gap-2 rounded-xl bg-foreground px-4 py-3 text-sm font-semibold text-background shadow-sm transition-opacity hover:opacity-90">
         <Maximize2 className="h-4 w-4" /> Ganzes Profil öffnen
       </button>
+      {bearbeitung && (
+        <button type="button" onClick={() => { setBearbeiten(true); setVoll(true) }}
+          className="-mt-2 flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
+          <Pencil className="h-4 w-4" /> Profil bearbeiten
+        </button>
+      )}
 
-      <ProjektProfilVoll profil={p} bildUrl={bildUrl} offen={voll} onOffen={setVoll} />
+      <ProjektProfilVoll profil={p} bildUrl={bildUrl} offen={voll} onOffen={(x) => { setVoll(x); if (!x) setBearbeiten(false) }}
+        bearbeitung={bearbeitung} startBearbeiten={bearbeiten} />
     </article>
   )
 }
@@ -204,11 +224,16 @@ export function ProjektProfilSeite({ profil: p, bildUrl = (x) => x }: ProjektPro
 // ── Die ganze Ansicht über den Bildschirm ───────────────────────────────────
 
 export function ProjektProfilVoll({
-  profil: p,
+  profil,
   bildUrl = (x) => x,
   offen,
   onOffen,
-}: ProjektProfilSeiteProps & { offen: boolean; onOffen: (an: boolean) => void }) {
+  bearbeitung,
+  startBearbeiten = false,
+}: ProjektProfilSeiteProps & { offen: boolean; onOffen: (an: boolean) => void; startBearbeiten?: boolean }) {
+  const b = useProfilBearbeiten(PROJEKT_PROFIL_FELDER, bearbeitung)
+  // Während der Arbeit zeigt die Seite die Arbeitskopie: Sie ist die Vorschau.
+  const p = useMemo(() => (b.vorschau ? projektProfil(b.vorschau, []) : profil), [b.vorschau, profil])
   const s = p.spende
   const k = p.kontakt
   const [gross, setGross] = useState<string | null>(null)
@@ -216,11 +241,15 @@ export function ProjektProfilVoll({
   // kleinste, nicht der groesste.
   const [betrag, setBetrag] = useState<number | null>(s?.stufen[1]?.betrag ?? s?.stufen[0]?.betrag ?? null)
   const [titelbildDaneben, ...galerie] = p.galerie
+  const { setAn } = b
+  useEffect(() => { if (offen && startBearbeiten) setAn(true) }, [offen, startBearbeiten]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <Dialog open={offen} onOpenChange={onOffen}>
+    <Dialog open={offen} onOpenChange={(x) => { if (!x) setAn(false); onOffen(x) }}>
       <DialogContent showCloseButton={false} aria-describedby={undefined}
+        onEscapeKeyDown={(e) => { if (b.offen) e.preventDefault() }}
         className="block h-[100dvh] w-screen max-w-none overflow-y-auto rounded-none border-0 bg-background p-0 sm:max-w-none">
+        <BearbeitenRahmen wert={b.kontext}>
         {/* Kopf */}
         <header className="relative h-[46vh] min-h-[300px] w-full overflow-hidden bg-gradient-to-br from-emerald-800 to-lime-600">
           {p.titelbild && <img src={bildUrl(p.titelbild)} alt="" className="absolute inset-0 h-full w-full object-cover" />}
@@ -237,49 +266,59 @@ export function ProjektProfilVoll({
               </div>
             )}
           </div>
-          <button type="button" onClick={() => onOffen(false)} aria-label="Profil schließen"
-            className="absolute right-4 top-4 rounded-full bg-black/35 p-2.5 text-white backdrop-blur hover:bg-black/55">
-            <X className="h-5 w-5" />
-          </button>
+          <StiftKnopf abschnitt="kopf" name="Kopf" className="absolute bottom-16 right-5 sm:right-8" />
+          <div className="absolute right-4 top-4 flex items-center gap-2">
+            <BearbeitenKnopf an={b.an} onAn={setAn} hell />
+            <button type="button" onClick={() => onOffen(false)} aria-label="Profil schließen"
+              className="rounded-full bg-black/35 p-2.5 text-white backdrop-blur hover:bg-black/55">
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </header>
 
         {/* Kennzahlen, halb über dem Kopf */}
-        {p.kennzahlen.length > 0 && (
-          <ul className={`relative z-10 mx-auto -mt-10 grid max-w-6xl gap-3 px-5 sm:px-8 ${KENNZAHL_SPALTEN[p.kennzahlen.length] ?? KENNZAHL_SPALTEN[4]}`} aria-label="Kennzahlen">
-            {p.kennzahlen.map((z) => (
-              <li key={`${z.wert}-${z.was}`} className="rounded-2xl bg-card p-4 shadow-lg shadow-black/5 dark:shadow-black/30">
-                <p className="text-2xl font-bold tracking-tight text-emerald-700 sm:text-3xl dark:text-emerald-300">{z.wert}</p>
-                <p className="text-sm text-muted-foreground">{z.was}</p>
-              </li>
-            ))}
-          </ul>
+        {(p.kennzahlen.length > 0 || b.an) && (
+          <div className={`relative z-10 mx-auto max-w-6xl px-5 sm:px-8 ${p.kennzahlen.length ? "-mt-10" : "mt-6"}`}>
+            <Bearbeitbar abschnitt="kennzahlen" name="Kennzahlen" da={p.kennzahlen.length > 0}>
+              <ul className={`grid gap-3 ${KENNZAHL_SPALTEN[p.kennzahlen.length] ?? KENNZAHL_SPALTEN[4]}`} aria-label="Kennzahlen">
+                {p.kennzahlen.map((z, i) => (
+                  <li key={`${i}-${z.wert}-${z.was}`} className="rounded-2xl bg-card p-4 shadow-lg shadow-black/5 dark:shadow-black/30">
+                    <p className="text-2xl font-bold tracking-tight text-emerald-700 sm:text-3xl dark:text-emerald-300">{z.wert}</p>
+                    <p className="text-sm text-muted-foreground">{z.was}</p>
+                  </li>
+                ))}
+              </ul>
+            </Bearbeitbar>
+          </div>
         )}
+
+        {b.offen === "kopf" && <div className="mx-auto max-w-6xl px-5 pt-6 sm:px-8"><OffenesFormular abschnitt="kopf" name="Kopf" /></div>}
 
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-8 pb-28 sm:px-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:pb-12">
           {/* Die Geschichte als Bento-Raster */}
           <div className="grid auto-rows-min grid-cols-1 gap-4 sm:grid-cols-6">
-            {p.beduerfnis && (
-              <section className="rounded-3xl bg-amber-50/60 p-6 sm:col-span-6 sm:p-8 dark:bg-amber-950/40" aria-label="Was fehlt">
+            <Bearbeitbar abschnitt="beduerfnis" name="Was fehlt" da={Boolean(p.beduerfnis)} spalten="sm:col-span-6">
+              <section className="rounded-3xl bg-amber-50/60 p-6 sm:p-8 dark:bg-amber-950/40" aria-label="Was fehlt">
                 <Ueberschrift icon={Target}>Was ohne dieses Projekt fehlt</Ueberschrift>
                 <p className="text-xl font-medium leading-relaxed sm:text-2xl">{p.beduerfnis}</p>
               </section>
-            )}
+            </Bearbeitbar>
 
-            {p.beschreibung && (
-              <section className={`rounded-3xl bg-muted/40 p-6 ${titelbildDaneben ? "sm:col-span-4" : "sm:col-span-6"}`} aria-label="Worum es geht">
+            <Bearbeitbar abschnitt="beschreibung" name="Worum es geht" da={Boolean(p.beschreibung)} spalten={titelbildDaneben ? "sm:col-span-4" : "sm:col-span-6"}>
+              <section className="h-full rounded-3xl bg-muted/40 p-6" aria-label="Worum es geht">
                 <Ueberschrift icon={Sprout}>Worum es geht</Ueberschrift>
                 <p className="whitespace-pre-line leading-relaxed">{p.beschreibung}</p>
               </section>
-            )}
+            </Bearbeitbar>
             {titelbildDaneben && (
               <button type="button" onClick={() => setGross(titelbildDaneben)} aria-label="Bild groß zeigen"
-                className={`group overflow-hidden rounded-3xl ${p.beschreibung ? "sm:col-span-2" : "sm:col-span-6"}`}>
+                className={`group overflow-hidden rounded-3xl ${p.beschreibung || b.an ? "sm:col-span-2" : "sm:col-span-6"}`}>
                 <img src={bildUrl(titelbildDaneben)} alt="" className="h-full min-h-[220px] w-full object-cover transition-transform duration-500 group-hover:scale-105" />
               </button>
             )}
 
-            {p.wirkung.length > 0 && (
-              <section className="rounded-3xl bg-green-50/60 p-6 sm:col-span-6 dark:bg-green-950/40" aria-label="Was sich ändert">
+            <Bearbeitbar abschnitt="wirkung" name="Was sich ändert" da={p.wirkung.length > 0} spalten="sm:col-span-6">
+              <section className="rounded-3xl bg-green-50/60 p-6 dark:bg-green-950/40" aria-label="Was sich ändert">
                 <Ueberschrift icon={Check}>Was sich ändert</Ueberschrift>
                 <ul className="grid gap-4 sm:grid-cols-2">
                   {p.wirkung.map((w, i) => (
@@ -290,21 +329,21 @@ export function ProjektProfilVoll({
                   ))}
                 </ul>
               </section>
-            )}
+            </Bearbeitbar>
 
-            {p.bedarfe.length > 0 && (
-              <section className={`rounded-3xl bg-orange-50/60 p-6 dark:bg-orange-950/40 ${p.schritte.length ? "sm:col-span-3" : "sm:col-span-6"}`} aria-label="Wohin das Geld geht">
+            <Bearbeitbar abschnitt="bedarfe" name="Wohin das Geld geht" da={p.bedarfe.length > 0} spalten={p.schritte.length || b.an ? "sm:col-span-3" : "sm:col-span-6"}>
+              <section className="h-full rounded-3xl bg-orange-50/60 p-6 dark:bg-orange-950/40" aria-label="Wohin das Geld geht">
                 <Ueberschrift icon={Wallet}>Wohin das Geld geht</Ueberschrift>
                 <ul className="flex flex-col gap-3">
-                  {p.bedarfe.map((b, i) => (
-                    <li key={`${i}-${b.wofuer}`}>
+                  {p.bedarfe.map((bd, i) => (
+                    <li key={`${i}-${bd.wofuer}`}>
                       <div className="flex justify-between gap-3 text-sm">
-                        <span>{b.wofuer}</span>
-                        {b.betrag !== null && <span className="font-semibold tabular-nums">{euro(b.betrag)}</span>}
+                        <span>{bd.wofuer}</span>
+                        {bd.betrag !== null && <span className="font-semibold tabular-nums">{euro(bd.betrag)}</span>}
                       </div>
-                      {b.anteil !== null && (
+                      {bd.anteil !== null && (
                         <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-orange-100 dark:bg-orange-900/50">
-                          <div className="h-full rounded-full bg-orange-500" style={{ width: `${b.anteil * 100}%` }} />
+                          <div className="h-full rounded-full bg-orange-500" style={{ width: `${bd.anteil * 100}%` }} />
                         </div>
                       )}
                     </li>
@@ -314,10 +353,10 @@ export function ProjektProfilVoll({
                   <p className="mt-4 flex justify-between text-sm font-semibold"><span>Zusammen</span><span className="tabular-nums">{euro(p.bedarfSumme)}</span></p>
                 )}
               </section>
-            )}
+            </Bearbeitbar>
 
-            {p.schritte.length > 0 && (
-              <section className={`rounded-3xl bg-sky-50/60 p-6 dark:bg-sky-950/40 ${p.bedarfe.length ? "sm:col-span-3" : "sm:col-span-6"}`} aria-label="Schritte">
+            <Bearbeitbar abschnitt="schritte" name="Schritte" da={p.schritte.length > 0} spalten={p.bedarfe.length || b.an ? "sm:col-span-3" : "sm:col-span-6"}>
+              <section className="h-full rounded-3xl bg-sky-50/60 p-6 dark:bg-sky-950/40" aria-label="Schritte">
                 <Ueberschrift icon={CalendarDays}>Schritte</Ueberschrift>
                 <ol className="relative ml-2.5 flex flex-col gap-4 before:absolute before:bottom-2 before:left-0 before:top-2 before:w-0.5 before:bg-sky-200 dark:before:bg-sky-900">
                   {p.schritte.map((st, i) => {
@@ -337,10 +376,10 @@ export function ProjektProfilVoll({
                   })}
                 </ol>
               </section>
-            )}
+            </Bearbeitbar>
 
-            {p.team.length > 0 && (
-              <section className="rounded-3xl bg-muted/40 p-6 sm:col-span-6" aria-label="Wer dahinter steht">
+            <Bearbeitbar abschnitt="team" name="Wer dahinter steht" da={p.team.length > 0} spalten="sm:col-span-6">
+              <section className="rounded-3xl bg-muted/40 p-6" aria-label="Wer dahinter steht">
                 <Ueberschrift icon={Users}>Wer dahinter steht</Ueberschrift>
                 <ul className="grid grid-cols-2 gap-3 md:grid-cols-3">
                   {p.team.map((m, i) => (
@@ -354,69 +393,74 @@ export function ProjektProfilVoll({
                   ))}
                 </ul>
               </section>
-            )}
+            </Bearbeitbar>
 
-            {galerie.length > 0 && (
-              <section className="sm:col-span-6" aria-label="Bilder">
+            <Bearbeitbar abschnitt="bilder" name="Bilder" da={galerie.length > 0 || (b.an && p.titelbild !== null)} spalten="sm:col-span-6">
+              <section aria-label="Bilder">
                 <Ueberschrift icon={Images}>Bilder</Ueberschrift>
+                {galerie.length === 0 && <p className="text-sm text-muted-foreground">Das erste Bild ist das Titelbild, das zweite steht neben der Geschichte, alle weiteren hier.</p>}
                 <ul className="grid grid-cols-2 gap-3 md:grid-cols-3">
-                  {galerie.map((b, i) => (
-                    <li key={`${i}-${b}`} className={i === 0 && galerie.length > 2 ? "col-span-2 row-span-2" : ""}>
-                      <button type="button" onClick={() => setGross(b)} className="group block h-full w-full overflow-hidden rounded-2xl" aria-label="Bild groß zeigen">
-                        <img src={bildUrl(b)} alt="" loading="lazy" className="aspect-[4/3] h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                  {galerie.map((bild, i) => (
+                    <li key={`${i}-${bild}`} className={i === 0 && galerie.length > 2 ? "col-span-2 row-span-2" : ""}>
+                      <button type="button" onClick={() => setGross(bild)} className="group block h-full w-full overflow-hidden rounded-2xl" aria-label="Bild groß zeigen">
+                        <img src={bildUrl(bild)} alt="" loading="lazy" className="aspect-[4/3] h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
                       </button>
                     </li>
                   ))}
                 </ul>
               </section>
-            )}
+            </Bearbeitbar>
           </div>
 
           {/* Rechts, mitlaufend: Spenden und Kontakt */}
           <aside className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
-            {s && (
-              <section id="projekt-spenden" className="rounded-3xl bg-card p-6 shadow-xl shadow-black/5 dark:shadow-black/30" aria-label="Unterstützen">
-                <Ueberschrift icon={HandHeart}>Unterstützen</Ueberschrift>
-                <SpendenStand s={s} gross />
-                {s.stufen.length > 0 && (
-                  <div role="radiogroup" aria-label="Betrag wählen" className="mt-5 grid grid-cols-2 gap-2">
-                    {s.stufen.map((st, i) => {
-                      const an = betrag === st.betrag
-                      return (
-                        <button key={`${i}-${st.betrag}`} type="button" role="radio" aria-checked={an} onClick={() => setBetrag(st.betrag)}
-                          className={`flex flex-col items-start gap-0.5 rounded-2xl p-3 text-left transition-colors ${an ? "bg-emerald-700 text-white shadow-md" : "bg-emerald-50/70 hover:bg-emerald-100/80 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50"}`}>
-                          <span className="text-lg font-bold">{euro(st.betrag)}</span>
-                          {st.bewirkt && <span className={`text-xs leading-snug ${an ? "text-white/85" : "text-muted-foreground"}`}>{st.bewirkt}</span>}
-                        </button>
-                      )
-                    })}
-                  </div>
-                )}
-                <div className="mt-4"><SpendenKnopf s={s} betrag={betrag} /></div>
-                <SpendenHinweis s={s} />
-              </section>
-            )}
+            <Bearbeitbar abschnitt="spende" name="Unterstützen" da={s !== null}>
+              {s && (
+                <section id="projekt-spenden" className="rounded-3xl bg-card p-6 shadow-xl shadow-black/5 dark:shadow-black/30" aria-label="Unterstützen">
+                  <Ueberschrift icon={HandHeart}>Unterstützen</Ueberschrift>
+                  <SpendenStand s={s} gross />
+                  {s.stufen.length > 0 && (
+                    <div role="radiogroup" aria-label="Betrag wählen" className="mt-5 grid grid-cols-2 gap-2">
+                      {s.stufen.map((st, i) => {
+                        const an = betrag === st.betrag
+                        return (
+                          <button key={`${i}-${st.betrag}`} type="button" role="radio" aria-checked={an} onClick={() => setBetrag(st.betrag)}
+                            className={`flex flex-col items-start gap-0.5 rounded-2xl p-3 text-left transition-colors ${an ? "bg-emerald-700 text-white shadow-md" : "bg-emerald-50/70 hover:bg-emerald-100/80 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50"}`}>
+                            <span className="text-lg font-bold">{euro(st.betrag)}</span>
+                            {st.bewirkt && <span className={`text-xs leading-snug ${an ? "text-white/85" : "text-muted-foreground"}`}>{st.bewirkt}</span>}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                  <div className="mt-4"><SpendenKnopf s={s} betrag={betrag} /></div>
+                  <SpendenHinweis s={s} />
+                </section>
+              )}
+            </Bearbeitbar>
 
-            {k && (
-              <section className="rounded-3xl bg-violet-50/60 p-6 dark:bg-violet-950/40" aria-label="Kontakt">
-                <Ueberschrift icon={Mail}>Kontakt</Ueberschrift>
-                {k.person && <p className="font-semibold">{k.person}</p>}
-                {k.rolle && <p className="text-sm text-muted-foreground">{k.rolle}</p>}
-                {k.adresse && <p className="mt-3 flex items-start gap-1.5 text-sm text-muted-foreground"><MapPin className="mt-0.5 h-4 w-4 shrink-0" />{k.adresse}</p>}
-                <div className="mt-4 flex flex-col gap-2">
-                  {k.mail && <a href={`mailto:${k.mail}`} className="flex items-center justify-center gap-2 rounded-xl bg-violet-700 px-4 py-2.5 text-sm font-medium text-white hover:bg-violet-800"><Mail className="h-4 w-4" /> Schreiben</a>}
-                  <div className="flex gap-2">
-                    {k.telefon && <a href={`tel:${k.telefon.replace(/[^\d+]/g, "")}`} className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-background/80 px-3 py-2.5 text-sm font-medium hover:bg-background"><Phone className="h-4 w-4" /> Anrufen</a>}
-                    {k.website && <a href={k.website} target="_blank" rel="noopener noreferrer" className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-background/80 px-3 py-2.5 text-sm font-medium hover:bg-background"><Globe className="h-4 w-4" /> Website</a>}
+            <Bearbeitbar abschnitt="kontakt" name="Kontakt" da={k !== null}>
+              {k && (
+                <section className="rounded-3xl bg-violet-50/60 p-6 dark:bg-violet-950/40" aria-label="Kontakt">
+                  <Ueberschrift icon={Mail}>Kontakt</Ueberschrift>
+                  {k.person && <p className="font-semibold">{k.person}</p>}
+                  {k.rolle && <p className="text-sm text-muted-foreground">{k.rolle}</p>}
+                  {k.adresse && <p className="mt-3 flex items-start gap-1.5 text-sm text-muted-foreground"><MapPin className="mt-0.5 h-4 w-4 shrink-0" />{k.adresse}</p>}
+                  <div className="mt-4 flex flex-col gap-2">
+                    {k.mail && <a href={`mailto:${k.mail}`} className="flex items-center justify-center gap-2 rounded-xl bg-violet-700 px-4 py-2.5 text-sm font-medium text-white hover:bg-violet-800"><Mail className="h-4 w-4" /> Schreiben</a>}
+                    <div className="flex gap-2">
+                      {k.telefon && <a href={`tel:${k.telefon.replace(/[^\d+]/g, "")}`} className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-background/80 px-3 py-2.5 text-sm font-medium hover:bg-background"><Phone className="h-4 w-4" /> Anrufen</a>}
+                      {k.website && <a href={k.website} target="_blank" rel="noopener noreferrer" className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-background/80 px-3 py-2.5 text-sm font-medium hover:bg-background"><Globe className="h-4 w-4" /> Website</a>}
+                    </div>
                   </div>
-                </div>
-              </section>
-            )}
+                </section>
+              )}
+            </Bearbeitbar>
           </aside>
         </div>
 
-        {/* Auf dem Handy: die Spendenleiste bleibt unten in Reichweite */}
-        {s && (
+        {/* Auf dem Handy: die Spendenleiste bleibt unten in Reichweite, außer beim Bearbeiten */}
+        {s && !b.an && (
           <div className="fixed inset-x-0 bottom-0 z-20 flex items-center gap-3 bg-background/90 px-4 py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
             <div className="min-w-0 flex-1">
               {s.gesammelt !== null && <p className="text-sm font-bold">{euro(s.gesammelt)}{s.ziel !== null && <span className="font-normal text-muted-foreground"> von {euro(s.ziel)}</span>}</p>}
@@ -430,6 +474,7 @@ export function ProjektProfilVoll({
         )}
 
         {gross && <Grossbild src={bildUrl(gross)} onZu={() => setGross(null)} />}
+        </BearbeitenRahmen>
       </DialogContent>
     </Dialog>
   )
@@ -438,9 +483,16 @@ export function ProjektProfilVoll({
 /**
  * Der Einstieg fuer die App: rohe Daten des Eintrags hinein. Die Aufbereitung
  * liegt damit im nachgeladenen Stueck, nicht im Hauptteil (Budget).
+ * Mit `bearbeitung` (nur wenn Antons Regel es erlaubt) traegt die ganze
+ * Ansicht den Knopf „Profil bearbeiten“.
  */
-export function ProjektProfilAusDaten({ daten, tags, bildUrl }: { daten: Record<string, unknown>; tags?: readonly string[]; bildUrl?: (pfad: string) => string }) {
-  return <ProjektProfilSeite profil={projektProfil(daten, tags ?? [])} bildUrl={bildUrl} />
+export function ProjektProfilAusDaten({ daten, tags, bildUrl, bearbeitung }: {
+  daten: Record<string, unknown>
+  tags?: readonly string[]
+  bildUrl?: (pfad: string) => string
+  bearbeitung?: ProfilBearbeitung
+}) {
+  return <ProjektProfilSeite profil={projektProfil(daten, tags ?? [])} bildUrl={bildUrl} bearbeitung={bearbeitung} />
 }
 
 export default ProjektProfilAusDaten

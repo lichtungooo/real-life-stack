@@ -7,13 +7,15 @@
 //
 // Import this module once, before first render (main.tsx).
 
-import { lazy, Suspense, type ComponentType } from "react"
+import { lazy, Suspense, useMemo, type ComponentType } from "react"
 import { composeTypeManifest, TOOLKIT_TYPE_LAYER } from "@real-life-stack/data-interface"
 import {
   registerTypePresentation,
   resolveTypePresentation,
   setTypeManifest,
   useCurrentGroup,
+  useItemPermissions,
+  useUpdateItem,
   type ItemSlotProps,
 } from "@real-life-stack/toolkit"
 import {
@@ -53,18 +55,38 @@ const ORT_META: ComponentType<ItemSlotProps> = resolveTypePresentation("place").
  * Modul-Host liegt die Detailansicht im Toolkit, und der Slot `detail` einer
  * Typ-Erweiterung ist der Haken dafür (Spec 06, Regel 17).
  */
+/**
+ * Profile bearbeiten (DEFINITION Teil 8): Wer darf, entscheidet Antons Regel
+ * (`useItemPermissions`). Ohne Recht bekommt die Komponente nichts und zeigt
+ * keinen Knopf. Gespeichert wird mit den ganzen Daten (alle Connectoren
+ * ersetzen `data`); die Komponente baut sie über `abschnittSpeichern`.
+ */
+function useBearbeitung(item: ItemSlotProps["item"]) {
+  const { canEdit } = useItemPermissions(item)
+  const updateItem = useUpdateItem()
+  const tags = item.tags
+  return useMemo(() => (canEdit
+    ? {
+        daten: (item.data ?? {}) as Record<string, unknown>,
+        eintrag: { tags: tags ?? [] },
+        speichern: (aenderung: Record<string, unknown>) => updateItem(item.id, aenderung),
+      }
+    : undefined), [canEdit, item.data, item.id, tags, updateItem])
+}
+
 // Das Stiftungsprofil (DEFINITION Teil 8, zweite Komponente), nachgeladen.
 const StiftungsProfilSeite = lazy(() => import("@trustdonation/ui/stiftungs-profil"))
 
 function OrtOderProfil({ item }: ItemSlotProps) {
   const space = useCurrentGroup()
+  const bearbeitung = useBearbeitung(item)
   const daten = (item.data ?? {}) as Record<string, unknown>
   // Hat der Space das Stiftungsprofil gewählt, zeigt eine Stiftung es; sonst
   // bleibt die bisherige Collage (oder Antons Meta-Box für einen echten Ort).
   if (komponenteAktiv(space?.data as Record<string, unknown> | undefined, STIFTUNGS_PROFIL) && traegtStiftungsProfil(daten)) {
     return (
       <Suspense fallback={<div className="h-40 w-full animate-pulse rounded-2xl bg-muted" />}>
-        <StiftungsProfilSeite key={item.id} daten={daten} />
+        <StiftungsProfilSeite key={item.id} daten={daten} bearbeitung={bearbeitung} />
       </Suspense>
     )
   }
@@ -124,6 +146,7 @@ export function bildUrl(pfad: string): string {
 
 function ProjektOderMeta({ item }: ItemSlotProps) {
   const space = useCurrentGroup()
+  const bearbeitung = useBearbeitung(item)
   const daten = (item.data ?? {}) as Record<string, unknown>
   if (!komponenteAktiv(space?.data as Record<string, unknown> | undefined, PROJEKT_PROFIL) || !traegtProjektProfil(daten)) {
     return <PROJEKT_META item={item} />
@@ -131,7 +154,7 @@ function ProjektOderMeta({ item }: ItemSlotProps) {
   return (
     <Suspense fallback={<div className="aspect-[16/9] w-full animate-pulse rounded-2xl bg-muted" />}>
       {/* key: Ein anderes Projekt beginnt frisch (gewaehlter Betrag, offene Ansicht). */}
-      <ProjektProfilSeite key={item.id} daten={daten} tags={item.tags} bildUrl={bildUrl} />
+      <ProjektProfilSeite key={item.id} daten={daten} tags={item.tags} bildUrl={bildUrl} bearbeitung={bearbeitung} />
     </Suspense>
   )
 }

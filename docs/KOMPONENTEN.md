@@ -117,7 +117,7 @@ pnpm --filter reference dev                    # App starten
 node td-tools/komponente-ansehen.mjs 30455be1-a5f9-465d-8d19-a72dd8da2d83/map/<item-id>
 ```
 
-Fotografiert Karte und ganze Ansicht auf Rechner, Handy und dunkel, zählt Seitenfehler. Nach dem Ausliefern dasselbe gegen live: `BASIS=https://trustdonation.org/app`. **Jedes Bild ansehen.** Ohne diesen Schritt wäre der Text über dem Etikett „Musterprojekt“ live gegangen.
+Fotografiert Karte und ganze Ansicht auf Rechner, Handy und dunkel, zählt Seitenfehler. Der zweite Wert nennt den Knopf zur ganzen Ansicht (`"Profil bearbeiten"` öffnet sie im Bearbeiten-Modus); `DANACH="Kontakt bearbeiten"` klickt dort einen zweiten Knopf und zeigt so ein offenes Formular. Nach dem Ausliefern dasselbe gegen live: `BASIS=https://trustdonation.org/app`. **Jedes Bild ansehen.** Ohne diesen Schritt wäre der Text über dem Etikett „Musterprojekt“ live gegangen.
 
 ### Schritt 9: Tore, Ausliefern, Festhalten
 
@@ -196,9 +196,37 @@ Was der zweite Durchgang gelehrt hat:
 - **Hausfarbe und Kartenfarbe trennen** (`hausfarbe` gegen `color`), und Text in Hausfarbe in der dunklen Ansicht auf den Vordergrund legen.
 - **Fotos nach der Einblend-Animation** machen, sonst erscheinen helle Streifen, die es gar nicht gibt.
 
+## 4c. Profile bearbeiten (02.10.2026)
+
+Jede Komponente, die ein Profil zeigt, lässt sich an Ort und Stelle bearbeiten. Definition: `DEFINITION.md` Teil 8, „Profile bearbeiten“.
+
+| Teil | Wo | Was |
+|---|---|---|
+| Feldliste | `td-core`: `PROJEKT_PROFIL_FELDER` (`projekt-entwurf.ts`), `STIFTUNGS_PROFIL_FELDER` (`profil-felder.ts`) | je Feld `abschnitt`, `form`, `name`, `hilfe`, bei Listen von Objekten `teile` mit `pflicht` |
+| Speichern | `abschnittSpeichern(felder, abschnitt, daten, arbeit)` | nur die Felder des Abschnitts, alles andere bleibt; `{ data, ...eintrag }` |
+| Hinweise | `feldHinweise(feld, wert)` | was die Schleuse beim Anzeigen weglassen würde, in Sätzen |
+| Editor | `td-ui/src/profil-bearbeiten.tsx` | `useProfilBearbeiten`, `Bearbeitbar`, `StiftKnopf`, `BearbeitenKnopf`, Formular aus der Liste |
+| Bindung | `type-register.tsx`, `useBearbeitung(item)` | Recht über `useItemPermissions`, Schreiben über `useUpdateItem` |
+
+So bekommt eine neue Komponente das Bearbeiten:
+
+1. Feldliste in td-core mit `abschnitt` je Feld. Ein Test prüft, dass jedes Feld die Seite ändert.
+2. In der ganzen Ansicht `useProfilBearbeiten(FELDER, bearbeitung)`; die Seite rechnet aus `b.vorschau`, solange es sie gibt. Das ist die Vorschau.
+3. Jeden Abschnitt in `<Bearbeitbar abschnitt name da spalten>` legen. Die Rasterklassen wandern vom Abschnitt auf `spalten`, sonst bricht das Bento-Raster.
+4. `<BearbeitenRahmen wert={b.kontext}>` innen im `DialogContent`, `BearbeitenKnopf` neben das Schließen, `StiftKnopf` und `OffenesFormular` für den Kopf.
+5. `onEscapeKeyDown` verhindern, solange ein Abschnitt offen ist: Escape schließt sonst die ganze Ansicht samt Arbeit.
+
+Gelernt:
+
+- **Leere Abschnitte erscheinen im Bearbeiten-Modus** als gestrichelte Fläche „… ergänzen“. Ohne sie ließe sich nie etwas hinzufügen.
+- **Formulare in der Seitenspalte** sind 360 Pixel breit: Spalten über `@container` an der Breite des Formulars ausrichten, nicht am Bildschirm.
+- **Hinweise für Agenten und für Menschen trennen** (`hinweis` gegen `hilfe`): „{ lat, lng }“ hilft einem Modell, einem Menschen nicht.
+- **Schlagworte gehören an den Eintrag** (`Item.tags`); alte `data.tags` ziehen beim Speichern des Kopfs dorthin um.
+- **Stift auf die Ecke** (`-right-2 -top-2`), sonst deckt er in schmalen Abschnitten die Überschrift zu.
+
 ## 5. Was als Nächstes kommt
 
 1. ~~Stiftungsprofil~~ gebaut am 02.10.2026 (Abschnitt 4b) (`fuerTyp: "place"` mit Stiftungsfeldern, oder eigener Typ über die Manifest-Schicht), mit den vier entschiedenen Verbesserungen: „Stiftung“ statt „Ort“, Website und Anschrift mit Quelle, Bild mit Platzhalter, Kontakt und Antrag oben.
 2. **Open Collective live:** Stand über die öffentliche GraphQL-Schnittstelle abrufen, statt ihn im Eintrag zu tragen.
-3. **Bearbeiten:** Die Felder der Komponente im Formular des Typs (Antons `fields`), damit ein Projekt sein Profil selbst füllt.
+3. ~~Bearbeiten~~ gebaut am 02.10.2026 (Abschnitt 4c), eigener Editor aus der Feldliste statt Antons `fields`. Später: Bilder hochladen, sobald Antons Stack Dateien trägt.
 4. **Widgets und HUD** als vierte Art (Gedächtnis `project_gamification_komponenten.md`).

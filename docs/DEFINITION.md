@@ -481,6 +481,41 @@ Regeln wie beim Project Profile: Fehlendes fällt weg, Adressen nur sicher, nich
 **„Stiftung“ statt „Ort“:** Das Etikett „Ort“ setzt Antons Typ `place` im Kopf der Detailansicht. Die Komponente zeigt „Stiftung“ groß im eigenen Kopf. Das Etikett selbst ändert sich erst mit einem eigenen Typ `stiftung` (Manifest-Schicht, Umzug der 193 Einträge über den Import-Link); das ist ein eigener Schritt.
 
 
+#### Profile bearbeiten (freigegeben von Timo am 02.10.2026)
+
+**Frage:** Was folgt daraus, dass ein Projekt oder eine Stiftung ihr Profil selbst in der App füllt?
+
+Timo am 02.10.2026 wählt das als nächsten Schritt. Bisher entsteht ein Profil nur über Daten, den Import oder einen Entwurfs-Link. Für den Pilot mit Stiftungen muss jeder sein Profil selbst pflegen können.
+
+**Wo:** in der ganzen Ansicht beider Profile ein Knopf **„Profil bearbeiten“**. Er erscheint nur, wenn Antons Regel es erlaubt (`useItemPermissions(item).canEdit`: Mitglieder des Space dürfen bearbeiten). Im Bearbeiten-Modus trägt jeder Abschnitt einen Stift; ein Klick öffnet das Formular dieses Abschnitts direkt an seiner Stelle, die Vorschau daneben zeigt sofort, wie es aussieht. **Abschnitt für Abschnitt**, nicht ein langes Formular.
+
+**Die eine Quelle:** die Feldlisten in td-core, `PROJEKT_PROFIL_FELDER` (gibt es schon, mit Frage, Form, Hinweis) und neu `STIFTUNGS_PROFIL_FELDER`. Jede Liste nennt je Feld seine Form; Listen von Objekten (Bedarfe, Schritte, Team, Kennzahlen, Spendenstufen) nennen ihre Teile. Das Formular baut sich aus der Liste, keine Feldliste im Formular selbst.
+
+| Form | Eingabe |
+|---|---|
+| `text`, `longtext` | Zeile, Absatz |
+| `tags` | Schlagworte mit Enter |
+| `list` | Einträge hinzufügen, umsortieren, entfernen; bei Objekten je Eintrag die Teile |
+| `objekt` | die Teile untereinander (Kontakt, Spende) |
+| `ort` | Anschrift, Knopf „Auf der Karte suchen“ (OpenStreetMap) |
+| `zeitraum` | von, bis |
+| `geld` | Betrag in Euro |
+| `zahl` | Anzahl ab null (Menschen, die schon geben) |
+| `janein` | ja, nein, keine Angabe |
+
+**Speichern:** je Abschnitt, mit `updateItem` und **den ganzen Daten** (alle Connectoren ersetzen `data`; Kimi-Befund vom 02.10.2026). Vorher geht die Änderung durch dieselbe Schleuse wie beim Anzeigen; was verworfen würde (unsichere Adresse, falsche Form), steht am Feld, bevor gespeichert wird.
+
+Regeln:
+
+1. **Eine Feldliste je Profil**, aus der Formular, Begleitung (MCP) und Prüfung lesen.
+2. **Nichts geht verloren:** Felder, die das Formular nicht kennt, bleiben beim Speichern stehen.
+3. **Wer darf,** entscheidet Antons Regel, nicht wir. Ohne Recht kein Knopf.
+4. **Herkunft bleibt sichtbar:** Eine recherchierte Stiftung behält `quelle`, bis sie ihr Profil übernimmt (eigener Schritt).
+5. **Was es nicht trägt:** kein Hochladen von Bildern (Bilder als Adressen, bis Antons Stack Dateien trägt), kein Verlauf, keine Freigabe durch Dritte.
+
+Gebaut am 02.10.2026 (proto-69): Feldlisten und `abschnittSpeichern` in `td-core/src/profil-felder.ts`, Editor in `td-ui/src/profil-bearbeiten.tsx`, Bindung in `type-register.tsx`. Werkstattbuch: `KOMPONENTEN.md` Abschnitt 4c.
+
+
 ---
 
 ### Was die Erweiterungen nicht sind

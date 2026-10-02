@@ -109,3 +109,17 @@ export {
   type ProjektEntwurf,
   type EntwurfBericht,
 } from "./projekt-entwurf.js"
+export {
+  STIFTUNGS_PROFIL_FELDER,
+  felderIm,
+  feldHinweise,
+  bereinigt,
+  abschnittSpeichern,
+  arbeitskopie,
+  schlagworte,
+  type EingabeFeld,
+  type EingabeTeil,
+  type EingabeForm,
+  type EingabePruefung,
+  type AbschnittGespeichert,
+} from "./profil-felder.js"

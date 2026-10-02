@@ -11,38 +11,30 @@
 // `projektProfil()`.
 
 import { projektProfil } from "./projekt-profil.js"
+import type { EingabeFeld, EingabeForm } from "./profil-felder.js"
 
-export type EntwurfForm = "text" | "longtext" | "tags" | "list" | "objekt" | "ort" | "zeitraum"
-
-export interface EntwurfFeld {
-  id: string
-  /** Die Frage, die der Agent dem Menschen stellt oder aus dem Text beantwortet. */
-  frage: string
-  form: EntwurfForm
-  /** Ohne dieses Feld ist das Profil nicht fertig (DEFINITION Teil 8 und td-profil). */
-  kern?: boolean
-  /** Wie die Antwort aussieht. */
-  hinweis: string
-}
+/** Die Formen und Felder kommen aus `profil-felder.ts`; die alten Namen bleiben für den MCP-Server. */
+export type EntwurfForm = EingabeForm
+export type EntwurfFeld = EingabeFeld
 
 /** Die Felder eines Projektprofils, in der Reihenfolge, in der man fragt. */
 export const PROJEKT_PROFIL_FELDER: readonly EntwurfFeld[] = /* @__PURE__ */ Object.freeze([
-  { id: "title", frage: "Wie heißt das Projekt?", form: "text", kern: true, hinweis: "Name, kurz" },
-  { id: "kurz", frage: "Was soll entstehen, in einem Satz, den ein Fremder versteht?", form: "text", kern: true, hinweis: "ein Satz, kein Titel" },
-  { id: "beduerfnis", frage: "Was fehlt, wenn es dieses Projekt nicht gibt?", form: "longtext", kern: true, hinweis: "eine Lücke, kein Selbstbild: „Vierzig Bäche bleiben unbetreut“, nicht „wir sind ein Verein“" },
-  { id: "description", frage: "Worum geht es, was passiert da genau?", form: "longtext", hinweis: "zwei bis drei Absätze, Leerzeile zwischen Absätzen" },
-  { id: "address", frage: "Wo findet es statt?", form: "text", kern: true, hinweis: "echte Anschrift: Straße Nummer, PLZ Ort" },
-  { id: "position", frage: "Wo genau auf der Karte?", form: "ort", hinweis: "{ lat, lng }; der Server kann es aus der Anschrift ergänzen" },
-  { id: "zeitraum", frage: "Wann läuft es?", form: "zeitraum", hinweis: "{ von, bis } als Text, etwa „März 2027“" },
-  { id: "tags", frage: "Welche Themen?", form: "tags", hinweis: "drei bis sechs Schlagworte, ohne #" },
-  { id: "bilder", frage: "Welche Bilder gibt es?", form: "list", hinweis: "Adressen (https://…); das erste wird Titelbild. Keine eingebetteten Bilder" },
-  { id: "kennzahlen", frage: "Welche Zahlen zeigen die Größe?", form: "list", hinweis: "höchstens vier { wert, was }, etwa { wert: \"120\", was: \"Kinder jede Woche\" }" },
-  { id: "wirkung", frage: "Was ändert sich, wenn es gelingt?", form: "list", hinweis: "kurze Sätze, je eine Wirkung" },
-  { id: "bedarfe", frage: "Wofür wird Geld gebraucht?", form: "list", hinweis: "{ wofuer, betrag } mit Betrag in Euro als Zahl" },
-  { id: "schritte", frage: "Welche Schritte, was ist schon geschafft?", form: "list", hinweis: "{ titel, wann, erledigt }" },
-  { id: "team", frage: "Wer steht dahinter?", form: "list", hinweis: "{ name, rolle }; nur Menschen, die zugestimmt haben" },
-  { id: "kontakt", frage: "An wen wendet man sich?", form: "objekt", hinweis: "{ person, rolle, mail, telefon, website }" },
-  { id: "spende", frage: "Wie viel wird gesammelt, und wo?", form: "objekt", hinweis: "{ ziel, gesammelt, unterstuetzende, opencollective, beispiel, stufen: [{ betrag, bewirkt }] }" },
+  { id: "title", name: "Name", abschnitt: "kopf", frage: "Wie heißt das Projekt?", form: "text", kern: true, hinweis: "Name, kurz" },
+  { id: "kurz", name: "In einem Satz", abschnitt: "kopf", frage: "Was soll entstehen, in einem Satz, den ein Fremder versteht?", form: "text", kern: true, hinweis: "ein Satz, kein Titel" },
+  { id: "beduerfnis", name: "Was ohne das Projekt fehlt", abschnitt: "beduerfnis", frage: "Was fehlt, wenn es dieses Projekt nicht gibt?", form: "longtext", kern: true, hinweis: "eine Lücke, kein Selbstbild: „Vierzig Bäche bleiben unbetreut“, nicht „wir sind ein Verein“" },
+  { id: "description", name: "Worum es geht", abschnitt: "beschreibung", frage: "Worum geht es, was passiert da genau?", form: "longtext", hinweis: "zwei bis drei Absätze, Leerzeile zwischen Absätzen" },
+  { id: "address", name: "Anschrift", abschnitt: "kopf", frage: "Wo findet es statt?", form: "text", kern: true, hinweis: "echte Anschrift: Straße Nummer, PLZ Ort" },
+  { id: "position", hilfe: "aus der Anschrift gesucht", name: "Punkt auf der Karte", abschnitt: "kopf", anschrift: "address", frage: "Wo genau auf der Karte?", form: "ort", hinweis: "{ lat, lng }; der Server kann es aus der Anschrift ergänzen" },
+  { id: "zeitraum", hilfe: "etwa März 2027 bis Oktober 2028", name: "Zeitraum", abschnitt: "kopf", frage: "Wann läuft es?", form: "zeitraum", hinweis: "{ von, bis } als Text, etwa „März 2027“" },
+  { id: "tags", hilfe: "drei bis sechs Schlagworte", name: "Themen", abschnitt: "kopf", amEintrag: true, frage: "Welche Themen?", form: "tags", hinweis: "drei bis sechs Schlagworte, ohne #" },
+  { id: "bilder", hilfe: "Adressen (https://…), das erste wird Titelbild", name: "Bilder", abschnitt: "bilder", pruefung: "bild", frage: "Welche Bilder gibt es?", form: "list", hinweis: "Adressen (https://…); das erste wird Titelbild. Keine eingebetteten Bilder" },
+  { id: "kennzahlen", hilfe: "höchstens vier, etwa 120 · Kinder jede Woche", name: "Kennzahlen", abschnitt: "kennzahlen", hoechstens: 4, teile: [{ id: "wert", name: "Wert", form: "text", pflicht: true }, { id: "was", name: "Was er zählt", form: "text", pflicht: true }], frage: "Welche Zahlen zeigen die Größe?", form: "list", hinweis: "höchstens vier { wert, was }, etwa { wert: \"120\", was: \"Kinder jede Woche\" }" },
+  { id: "wirkung", name: "Was sich ändert", abschnitt: "wirkung", frage: "Was ändert sich, wenn es gelingt?", form: "list", hinweis: "kurze Sätze, je eine Wirkung" },
+  { id: "bedarfe", hilfe: "je Posten, Betrag in Euro", name: "Wohin das Geld geht", abschnitt: "bedarfe", teile: [{ id: "wofuer", name: "Wofür", form: "text", pflicht: true }, { id: "betrag", name: "Betrag", form: "geld" }], frage: "Wofür wird Geld gebraucht?", form: "list", hinweis: "{ wofuer, betrag } mit Betrag in Euro als Zahl" },
+  { id: "schritte", hilfe: "in der Reihenfolge, Geschafftes markieren", name: "Schritte", abschnitt: "schritte", teile: [{ id: "titel", name: "Schritt", form: "text", pflicht: true }, { id: "wann", name: "Wann", form: "text" }, { id: "erledigt", name: "Geschafft", form: "janein" }], frage: "Welche Schritte, was ist schon geschafft?", form: "list", hinweis: "{ titel, wann, erledigt }" },
+  { id: "team", hilfe: "nur Menschen, die zugestimmt haben; sonst die Rolle", name: "Wer dahinter steht", abschnitt: "team", teile: [{ id: "name", name: "Name", form: "text", pflicht: true }, { id: "rolle", name: "Rolle", form: "text" }], frage: "Wer steht dahinter?", form: "list", hinweis: "{ name, rolle }; nur Menschen, die zugestimmt haben" },
+  { id: "kontakt", hilfe: "", name: "Kontakt", abschnitt: "kontakt", teile: [{ id: "person", name: "Ansprechperson", form: "text" }, { id: "rolle", name: "Rolle", form: "text" }, { id: "mail", name: "Mail", form: "text", pruefung: "mail" }, { id: "telefon", name: "Telefon", form: "text" }, { id: "website", name: "Website", form: "text", pruefung: "url" }], frage: "An wen wendet man sich?", form: "objekt", hinweis: "{ person, rolle, mail, telefon, website }" },
+  { id: "spende", hilfe: "Beträge in Euro; ohne Open-Collective-Seite steht der Knopf still", name: "Unterstützen", abschnitt: "spende", teile: [{ id: "ziel", name: "Ziel", form: "geld" }, { id: "gesammelt", name: "Gesammelt", form: "geld" }, { id: "unterstuetzende", name: "Menschen, die schon geben", form: "zahl" }, { id: "opencollective", name: "Seite bei Open Collective", form: "text", pruefung: "url" }, { id: "beispiel", name: "Beispielzahlen", form: "janein" }, { id: "stufen", name: "Beträge zur Wahl", form: "list", teile: [{ id: "betrag", name: "Betrag", form: "geld", pflicht: true }, { id: "bewirkt", name: "Was er bewirkt", form: "text" }] }], frage: "Wie viel wird gesammelt, und wo?", form: "objekt", hinweis: "{ ziel, gesammelt, unterstuetzende, opencollective, beispiel, stufen: [{ betrag, bewirkt }] }" },
 ] satisfies EntwurfFeld[])
 
 /** Die Regeln, die der Agent beim Entwerfen befolgt. */

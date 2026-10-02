@@ -11,7 +11,9 @@
 //   ausgabe  Ordner fuer die Bilder (Standard: <temp>/td-ansicht; Bilder
 //            gehoeren nicht ins Repo)
 //
-// Umgebung: BASIS (Standard http://localhost:5173), CONNECTOR (Standard local).
+// Umgebung: BASIS (Standard http://localhost:5173), CONNECTOR (Standard local),
+// DANACH (Beschriftung eines zweiten Knopfs in der ganzen Ansicht, etwa
+// "Kontakt bearbeiten"; seit 02.10.2026 für Profile bearbeiten).
 // Vorher die App starten: pnpm --filter reference dev
 //
 // Entstanden am 01.10.2026 beim Project Profile, der ersten Komponente der
@@ -45,6 +47,7 @@ const knopf = knopfArg === "-" ? null : (knopfArg ?? "Ganzes Profil öffnen")
 const ausgabe = ausgabeArg ?? join(tmpdir(), "td-ansicht")
 const BASIS = process.env.BASIS ?? "http://localhost:5173"
 const CONNECTOR = process.env.CONNECTOR ?? "local"
+const DANACH = process.env.DANACH ?? null
 mkdirSync(ausgabe, { recursive: true })
 
 const LAEUFE = [
@@ -70,6 +73,13 @@ for (const lauf of LAEUFE) {
     if (await k.count()) {
       await k.click()
       await p.waitForTimeout(1200)
+      if (DANACH) {
+        const z = p.getByRole("button", { name: DANACH }).first()
+        if (await z.count()) {
+          await z.click()
+          await p.waitForTimeout(800)
+        } else fehler.push(`Knopf "${DANACH}" nicht gefunden`)
+      }
       const d = p.locator('[data-slot="dialog-content"]').last()
       const h = await d.evaluate((el) => el.scrollHeight).catch(() => 0)
       for (let i = 0; i * lauf.hoehe * 0.9 < h && i < 6; i++) {

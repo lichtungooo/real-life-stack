@@ -11,7 +11,7 @@
 //
 // Eigener Einstieg `@trustdonation/ui/stiftungs-profil`, nachgeladen.
 
-import { useState, type ComponentType, type CSSProperties, type ReactNode } from "react"
+import { useEffect, useMemo, useState, type ComponentType, type CSSProperties, type ReactNode } from "react"
 import {
   ArrowUpRight,
   CalendarDays,
@@ -23,13 +23,23 @@ import {
   Mail,
   MapPin,
   Maximize2,
+  Pencil,
   Search,
   Sparkles,
   Target,
   X,
 } from "lucide-react"
 import { Dialog, DialogContent, DialogTitle } from "@real-life-stack/toolkit"
-import { stiftungsProfil, type StiftungsProfil } from "@trustdonation/core"
+import { STIFTUNGS_PROFIL_FELDER, stiftungsProfil, type StiftungsProfil } from "@trustdonation/core"
+import {
+  Bearbeitbar,
+  BearbeitenKnopf,
+  BearbeitenRahmen,
+  OffenesFormular,
+  StiftKnopf,
+  useProfilBearbeiten,
+  type ProfilBearbeitung,
+} from "./profil-bearbeiten"
 
 type Symbol = ComponentType<{ className?: string }>
 
@@ -138,8 +148,9 @@ function Kontakt({ p }: { p: StiftungsProfil }) {
 
 // ── Die Karte in der Detail-Leiste ──────────────────────────────────────────
 
-export function StiftungsProfilSeite({ profil: p }: { profil: StiftungsProfil }) {
+export function StiftungsProfilSeite({ profil: p, bearbeitung }: { profil: StiftungsProfil; bearbeitung?: ProfilBearbeitung }) {
   const [voll, setVoll] = useState(false)
+  const [bearbeiten, setBearbeiten] = useState(false)
   return (
     <article className="flex flex-col gap-4" aria-label={`Stiftungsprofil ${p.titel}`}>
       <header className="flex items-start gap-3">
@@ -186,15 +197,34 @@ export function StiftungsProfilSeite({ profil: p }: { profil: StiftungsProfil })
         className="flex items-center justify-center gap-2 rounded-xl bg-foreground px-4 py-3 text-sm font-semibold text-background shadow-sm transition-opacity hover:opacity-90">
         <Maximize2 className="h-4 w-4" /> Ganzes Profil öffnen
       </button>
+      {bearbeitung && (
+        <button type="button" onClick={() => { setBearbeiten(true); setVoll(true) }}
+          className="-mt-2 flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
+          <Pencil className="h-4 w-4" /> Profil bearbeiten
+        </button>
+      )}
 
-      <StiftungsProfilVoll profil={p} offen={voll} onOffen={setVoll} />
+      <StiftungsProfilVoll profil={p} offen={voll} onOffen={(x) => { setVoll(x); if (!x) setBearbeiten(false) }}
+        bearbeitung={bearbeitung} startBearbeiten={bearbeiten} />
     </article>
   )
 }
 
 // ── Die ganze Ansicht über den Bildschirm ───────────────────────────────────
 
-export function StiftungsProfilVoll({ profil: p, offen, onOffen }: { profil: StiftungsProfil; offen: boolean; onOffen: (an: boolean) => void }) {
+export function StiftungsProfilVoll({ profil, offen, onOffen, bearbeitung, startBearbeiten = false }: {
+  profil: StiftungsProfil
+  offen: boolean
+  onOffen: (an: boolean) => void
+  /** Nur wenn der Mensch bearbeiten darf (Antons Regel); sonst kein Knopf. */
+  bearbeitung?: ProfilBearbeitung
+  startBearbeiten?: boolean
+}) {
+  const b = useProfilBearbeiten(STIFTUNGS_PROFIL_FELDER, bearbeitung)
+  // Während der Arbeit zeigt die Seite die Arbeitskopie: Sie ist die Vorschau.
+  const p = useMemo(() => (b.vorschau ? stiftungsProfil(b.vorschau) : profil), [b.vorschau, profil])
+  const { setAn } = b
+  useEffect(() => { if (offen && startBearbeiten) setAn(true) }, [offen, startBearbeiten]) // eslint-disable-line react-hooks/exhaustive-deps
   const zahlen: { wert: string; was: string }[] = []
   if (p.summe) zahlen.push({ wert: p.summe, was: "je Vorhaben" })
   if (p.volumenJahr) zahlen.push({ wert: p.volumenJahr, was: "Fördervolumen" })
@@ -204,9 +234,11 @@ export function StiftungsProfilVoll({ profil: p, offen, onOffen }: { profil: Sti
   const g = p.geben
 
   return (
-    <Dialog open={offen} onOpenChange={onOffen}>
+    <Dialog open={offen} onOpenChange={(x) => { if (!x) setAn(false); onOffen(x) }}>
       <DialogContent showCloseButton={false} aria-describedby={undefined}
+        onEscapeKeyDown={(e) => { if (b.offen) e.preventDefault() }}
         className="block h-[100dvh] w-screen max-w-none overflow-y-auto rounded-none border-0 bg-background p-0 sm:max-w-none">
+        <BearbeitenRahmen wert={b.kontext}>
         <header className="relative w-full overflow-hidden pb-16 pt-14" style={{ background: `linear-gradient(135deg, ${p.farbe}, ${p.farbe}cc 60%, ${p.farbe}99)` }}>
           <div className="pointer-events-none absolute -right-16 -top-16 h-72 w-72 rounded-full bg-white/10" />
           <div className="pointer-events-none absolute -bottom-24 right-40 h-56 w-56 rounded-full bg-white/5" />
@@ -220,10 +252,14 @@ export function StiftungsProfilVoll({ profil: p, offen, onOffen }: { profil: Sti
               {p.sitz && <p className="mt-2 flex items-center gap-1.5 text-white/90"><MapPin className="h-4 w-4" />{p.sitz}</p>}
             </div>
           </div>
-          <button type="button" onClick={() => onOffen(false)} aria-label="Profil schließen"
-            className="absolute right-4 top-4 rounded-full bg-black/25 p-2.5 text-white backdrop-blur hover:bg-black/45">
-            <X className="h-5 w-5" />
-          </button>
+          <StiftKnopf abschnitt="kopf" name="Kopf" className="absolute bottom-16 right-5 sm:right-8" />
+          <div className="absolute right-4 top-4 flex items-center gap-2">
+            <BearbeitenKnopf an={b.an} onAn={setAn} />
+            <button type="button" onClick={() => onOffen(false)} aria-label="Profil schließen"
+              className="rounded-full bg-black/25 p-2.5 text-white backdrop-blur hover:bg-black/45">
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </header>
 
         {zahlen.length > 0 && (
@@ -237,10 +273,13 @@ export function StiftungsProfilVoll({ profil: p, offen, onOffen }: { profil: Sti
           </ul>
         )}
 
+        {b.offen === "kopf" && <div className="mx-auto max-w-6xl px-5 pt-6 sm:px-8"><OffenesFormular abschnitt="kopf" name="Kopf" /></div>}
+
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-8 pb-28 sm:px-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:pb-12">
           <div className="grid auto-rows-min grid-cols-1 gap-4 sm:grid-cols-6">
-            {p.antrag && (
-              <section className="rounded-3xl bg-sky-50/60 p-6 sm:col-span-6 sm:p-8 dark:bg-sky-950/40" aria-label="So kommst du zur Förderung">
+            <Bearbeitbar abschnitt="antrag" name="So kommst du zur Förderung" da={p.antrag !== null || (b.an && (p.summe !== null || p.volumenJahr !== null))} spalten="sm:col-span-6">
+              {p.antrag ? (
+              <section className="rounded-3xl bg-sky-50/60 p-6 sm:p-8 dark:bg-sky-950/40" aria-label="So kommst du zur Förderung">
                 <Ueberschrift icon={ClipboardList}>So kommst du zur Förderung</Ueberschrift>
                 {p.antrag.weg && <p className="text-lg font-medium leading-relaxed sm:text-xl">{p.antrag.weg}</p>}
                 {(p.antrag.fristen.length > 0 || p.antrag.unterlagen.length > 0) && (
@@ -262,10 +301,17 @@ export function StiftungsProfilVoll({ profil: p, offen, onOffen }: { profil: Sti
                   </div>
                 )}
               </section>
-            )}
+              ) : (
+                <section className="rounded-3xl bg-sky-50/60 p-6 dark:bg-sky-950/40" aria-label="So kommst du zur Förderung">
+                  <Ueberschrift icon={ClipboardList}>So kommst du zur Förderung</Ueberschrift>
+                  <p className="text-sm text-muted-foreground">Summen stehen im Profil; wie beantragt wird, noch nicht.</p>
+                </section>
+              )}
+            </Bearbeitbar>
 
-            {(p.zweck || p.foerderbereiche.length > 0 || p.zielgruppen.length > 0) && (
-              <section className={`rounded-3xl bg-green-50/60 p-6 dark:bg-green-950/40 ${p.hinweis ? "sm:col-span-4" : "sm:col-span-6"}`} aria-label="Wofür sie fördert">
+            <Bearbeitbar abschnitt="foerderung" name="Wofür sie fördert" da={Boolean(p.zweck || p.foerderbereiche.length > 0 || p.zielgruppen.length > 0)}
+              spalten={p.hinweis || b.an ? "sm:col-span-4" : "sm:col-span-6"}>
+              <section className="h-full rounded-3xl bg-green-50/60 p-6 dark:bg-green-950/40" aria-label="Wofür sie fördert">
                 <Ueberschrift icon={Target}>Wofür sie fördert</Ueberschrift>
                 {p.zweck && <p className="mb-4 leading-relaxed">{p.zweck}</p>}
                 {p.foerderbereiche.length > 0 && <Chips werte={p.foerderbereiche} ton="green" />}
@@ -273,22 +319,23 @@ export function StiftungsProfilVoll({ profil: p, offen, onOffen }: { profil: Sti
                   <div className="mt-4"><p className="mb-2 text-xs font-semibold text-muted-foreground">Für wen</p><Chips werte={p.zielgruppen} ton="sky" /></div>
                 )}
               </section>
-            )}
-            {p.hinweis && (
-              <section className="rounded-3xl bg-amber-50/60 p-6 dark:bg-amber-950/40 sm:col-span-2" aria-label="Woran du erkennst, dass du passt">
+            </Bearbeitbar>
+            <Bearbeitbar abschnitt="hinweis" name="Woran du erkennst, dass du passt" da={Boolean(p.hinweis)} spalten="sm:col-span-2">
+              <section className="h-full rounded-3xl bg-amber-50/60 p-6 dark:bg-amber-950/40" aria-label="Woran du erkennst, dass du passt">
                 <Ueberschrift icon={Sparkles}>Woran du erkennst, dass du passt</Ueberschrift>
                 <p className="leading-relaxed">{p.hinweis}</p>
               </section>
-            )}
+            </Bearbeitbar>
 
-            {p.bisherGefoerdert.length > 0 && (
-              <section className="rounded-3xl bg-muted/40 p-6 sm:col-span-3" aria-label="Schon gefördert">
+            <Bearbeitbar abschnitt="bisher" name="Schon gefördert" da={p.bisherGefoerdert.length > 0} spalten="sm:col-span-3">
+              <section className="h-full rounded-3xl bg-muted/40 p-6" aria-label="Schon gefördert">
                 <Ueberschrift icon={Check}>Schon gefördert</Ueberschrift>
-                <ul className="flex flex-col gap-2 text-sm">{p.bisherGefoerdert.map((b, i) => <li key={`${i}-${b}`} className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />{b}</li>)}</ul>
+                <ul className="flex flex-col gap-2 text-sm">{p.bisherGefoerdert.map((x, i) => <li key={`${i}-${x}`} className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />{x}</li>)}</ul>
               </section>
-            )}
-            {g && (
-              <section className={`rounded-3xl bg-emerald-50/60 p-6 dark:bg-emerald-950/40 ${p.bisherGefoerdert.length ? "sm:col-span-3" : "sm:col-span-6"}`} aria-label="Geben">
+            </Bearbeitbar>
+            <Bearbeitbar abschnitt="geben" name="Du willst selbst beitragen?" da={g !== null} spalten={p.bisherGefoerdert.length || b.an ? "sm:col-span-3" : "sm:col-span-6"}>
+              {g && (
+              <section className="h-full rounded-3xl bg-emerald-50/60 p-6 dark:bg-emerald-950/40" aria-label="Geben">
                 <Ueberschrift icon={HandHeart}>Du willst selbst beitragen?</Ueberschrift>
                 <ul className="flex flex-col gap-2 text-sm">
                   {g.zustiftung !== null && <li className="flex items-center justify-between gap-3">Zustiftung möglich <JaNein wert={g.zustiftung} /></li>}
@@ -296,7 +343,8 @@ export function StiftungsProfilVoll({ profil: p, offen, onOffen }: { profil: Sti
                   {g.treuhand !== null && <li className="flex items-center justify-between gap-3">Treuhandstiftung unter ihrem Dach <JaNein wert={g.treuhand} /></li>}
                 </ul>
               </section>
-            )}
+              )}
+            </Bearbeitbar>
           </div>
 
           <aside className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
@@ -307,29 +355,34 @@ export function StiftungsProfilVoll({ profil: p, offen, onOffen }: { profil: Sti
               <AntragKnopf p={p} />
               {!p.antrag && <p className="mt-2 text-xs text-muted-foreground">Wie beantragt wird, steht noch nicht im Profil. Die Website hilft weiter.</p>}
             </section>
-            {p.kontakt && (
+            <Bearbeitbar abschnitt="kontakt" name="Kontakt" da={p.kontakt !== null}>
               <section className="rounded-3xl bg-violet-50/60 p-6 dark:bg-violet-950/40" aria-label="Kontakt">
                 <Ueberschrift icon={Mail}>Kontakt</Ueberschrift>
                 <Kontakt p={p} />
               </section>
-            )}
+            </Bearbeitbar>
             <div className="rounded-3xl bg-muted/40 p-5"><Herkunft p={p} /></div>
           </aside>
         </div>
 
-        {(p.antrag?.ziel ?? p.kontakt?.website) && (
+        {(p.antrag?.ziel ?? p.kontakt?.website) && !b.an && (
           <div className="fixed inset-x-0 bottom-0 z-20 bg-background/90 px-4 py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
             <AntragKnopf p={p} schmal />
           </div>
         )}
+        </BearbeitenRahmen>
       </DialogContent>
     </Dialog>
   )
 }
 
-/** Der Einstieg für die App: rohe Daten hinein, die Aufbereitung im nachgeladenen Stück. */
-export function StiftungsProfilAusDaten({ daten }: { daten: Record<string, unknown> }) {
-  return <StiftungsProfilSeite profil={stiftungsProfil(daten)} />
+/**
+ * Der Einstieg für die App: rohe Daten hinein, die Aufbereitung im
+ * nachgeladenen Stück. Mit `bearbeitung` (nur wenn Antons Regel es erlaubt)
+ * trägt die ganze Ansicht den Knopf „Profil bearbeiten“.
+ */
+export function StiftungsProfilAusDaten({ daten, bearbeitung }: { daten: Record<string, unknown>; bearbeitung?: ProfilBearbeitung }) {
+  return <StiftungsProfilSeite profil={stiftungsProfil(daten)} bearbeitung={bearbeitung} />
 }
 
 export default StiftungsProfilAusDaten
