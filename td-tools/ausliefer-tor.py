@@ -38,6 +38,7 @@ for strom in (sys.stdout, sys.stderr):
 
 REPO = Path(__file__).resolve().parent.parent
 BERICHTE = REPO / "td-tools" / "berichte"
+FREIGABE = BERICHTE / ".kimi-freigabe"  # .kimi-* ist ignoriert
 FORK = "lichtungooo/real-life-stack"
 ABLAUF = "trustdonation Tore"
 
@@ -67,14 +68,42 @@ def ci(sha):
     return neu["conclusion"] == "success", f"{neu['conclusion']}: {neu['html_url']}"
 
 
+def letzte_auslieferung():
+    """Der oberste Commit in docs/AUSLIEFERUNGEN.md, der schon einen Hash trägt (wie kimi-pruefen.py)."""
+    text = (REPO / "docs" / "AUSLIEFERUNGEN.md").read_text(encoding="utf-8")
+    for zeile in text.splitlines():
+        m = re.match(r"\|\s*\*\*(proto-\d+)\*\*\s*\|\s*`([0-9a-f]{7,40})`", zeile)
+        if m:
+            return lauf("git", "rev-parse", m.group(2) + "^{commit}").strip(), m.group(1)
+    sys.exit("Keine Auslieferung mit Commit in docs/AUSLIEFERUNGEN.md gefunden.")
+
+
+def ergebnis(text):
+    """Die letzte ERGEBNIS-Zeile zählt; widersprechen sich mehrere, gilt keine (wie kimi-pruefen.py)."""
+    treffer = re.findall(r"ERGEBNIS:\s*(\d+)\s*Befunde?,\s*davon\s*(\d+)\s*kritisch", text)
+    if not treffer or len(set(treffer)) > 1:
+        return None
+    return int(treffer[-1][0]), int(treffer[-1][1])
+
+
 def kimi(sha):
-    """Der jüngste gültige Bericht über denselben Code, oder der Grund, warum keiner gilt."""
+    """Der jüngste gültige Bericht über denselben Code, oder der Grund, warum keiner gilt.
+
+    Gültig ist nur ein Bericht, der ab der letzten Auslieferung prüfte. Sonst
+    reichte ein Bericht über den letzten Commit allein (--basis HEAD~1), und
+    der Rest ginge ungesehen live (Kimi, 02.10.2026, Befund 1).
+    """
+    basis, basis_name = letzte_auslieferung()
     gruende = []
     for bericht in sorted(BERICHTE.glob("kimi-*-runde*.md"), reverse=True):
         text = bericht.read_text(encoding="utf-8")
         stand = re.search(r"^- Stand: `([0-9a-f]{40})`", text, re.M)
         if not stand:
             continue  # Bericht von vor dem Tor
+        geprueft_ab = re.search(r"^- Basis-Commit: `([0-9a-f]{40})`", text, re.M)
+        if not geprueft_ab or geprueft_ab.group(1) != basis:
+            gruende.append(f"{bericht.name}: prüfte nicht ab der letzten Auslieferung {basis_name}")
+            continue
         if not re.search(r"^- Sauber: ja", text, re.M):
             gruende.append(f"{bericht.name}: mit nicht eingechecktem Code geprüft")
             continue
@@ -83,15 +112,17 @@ def kimi(sha):
         if r.returncode != 0:
             gruende.append(f"{bericht.name}: prüfte einen Stand, der nicht im Commit steckt")
             continue
-        danach = [p for p in lauf("git", "diff", "--name-only", stand.group(1), sha).splitlines() if not nur_doku(p)]
+        # --no-renames: eine Verschiebung von Code nach docs/ zeigt so beide Pfade (Befund 7).
+        danach = [p for p in lauf("git", "diff", "--name-only", "--no-renames", stand.group(1), sha).splitlines()
+                  if not nur_doku(p)]
         if danach:
             gruende.append(f"{bericht.name}: danach änderte sich Code ({', '.join(danach[:4])})")
             continue
-        m = re.search(r"ERGEBNIS:\s*(\d+)\s*Befunde?,\s*davon\s*(\d+)\s*kritisch", text)
-        if not m:
-            gruende.append(f"{bericht.name}: ohne ERGEBNIS-Zeile")
+        zahlen = ergebnis(text)
+        if zahlen is None:
+            gruende.append(f"{bericht.name}: ohne eindeutige ERGEBNIS-Zeile")
             continue
-        befunde, kritisch = int(m.group(1)), int(m.group(2))
+        befunde, kritisch = zahlen
         runde = 2 if "runde2" in bericht.name else 1
         if kritisch:
             return False, f"{bericht.name}: {kritisch} kritisch"
@@ -130,8 +161,13 @@ def main():
         print("\nDie CI läuft noch. Warten, dann noch einmal.")
         return 2
     if ok_ci is not True or not ok_kimi:
+        FREIGABE.unlink(missing_ok=True)
         print("\nGesperrt. Nicht bauen.")
         return 1
+    # Der Server baut genau diesen Commit, nicht das, was bis dahin im Fork
+    # liegt (Kimi, 02.10.2026, Befund 6). Skill td-ausliefern, Schritt 4.
+    FREIGABE.write_text(sha + "\n", encoding="utf-8")
+    print(f"Freigegebener Commit steht in {FREIGABE.relative_to(REPO).as_posix()}: {sha}")
     if ohne_kimi:
         stempel = datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S")
         with (BERICHTE / "PRUEFKREIS.md").open("a", encoding="utf-8") as f:

@@ -22,6 +22,7 @@ import argparse
 import datetime
 import hashlib
 import json
+import os
 import re
 import subprocess
 import sys
@@ -147,8 +148,49 @@ def stand_und_sauber():
     Das Ausliefer-Tor (td-tools/ausliefer-tor.py) gibt einen Commit nur frei,
     wenn ein Bericht genau diesen Code geprüft hat.
     """
-    offen = [z[3:].strip().strip('"') for z in git("status", "--porcelain").splitlines()]
+    # Ohne Umbenennungen: sonst stünde "src/a.ts -> docs/b.md" als ein Pfad da
+    # und gälte als Doku (Kimi, 02.10.2026, Befund 7).
+    offen = [z[3:].strip().strip('"') for z in git("status", "--porcelain", "--no-renames").splitlines()]
     return git("rev-parse", "HEAD").strip(), not [p for p in offen if not nur_doku(p)]
+
+
+def stempel_jetzt():
+    """Zeit plus Prozess: zwei parallele Läufe in derselben Sekunde überschreiben sich nicht."""
+    return datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S") + f"-{os.getpid() % 10000:04d}"
+
+
+def ergebnis(text):
+    """Die letzte ERGEBNIS-Zeile zählt; widersprechen sich mehrere, gilt keine.
+
+    Eine frühe Zeile kann aus einem Zitat stammen oder aus dem geprüften
+    Code selbst eingeschleust sein (Kimi, 02.10.2026, Befund 4).
+    """
+    treffer = re.findall(r"ERGEBNIS:\s*(\d+)\s*Befunde?,\s*davon\s*(\d+)\s*kritisch", text)
+    if not treffer or len(set(treffer)) > 1:
+        return None, None
+    return int(treffer[-1][0]), int(treffer[-1][1])
+
+
+def lock_zusammenfassung(basis):
+    """Welche Pakete die Lock-Datei hinzufügt oder entfernt, kompakt statt 900 Zeilen.
+
+    Am 02.10.2026 hob eine Lock-Änderung @types/node im ganzen Monorepo von
+    24 auf 26 und brach Antons toolkit; Kimi sah sie nicht (Befund 3).
+    """
+    roh = git("diff", basis, "--", "pnpm-lock.yaml")
+    if not roh:
+        return ""
+    muster = re.compile(r"^([+-])  '?(@?[^@\s']+)@([^'(:\s]+)")
+    dazu, weg = set(), set()
+    for z in roh.splitlines():
+        m = muster.match(z)
+        if m:
+            (dazu if m.group(1) == "+" else weg).add(f"{m.group(2)}@{m.group(3)}")
+    neu, alt = sorted(dazu - weg), sorted(weg - dazu)
+    if not neu and not alt:
+        return ""
+    return ("\n--- a/pnpm-lock.yaml\n+++ b/pnpm-lock.yaml (Zusammenfassung: Pakete, nicht die ganze Datei)\n"
+            + "".join(f"+ {p}\n" for p in neu[:200]) + "".join(f"- {p}\n" for p in alt[:200]))
 
 
 def kimi(auftrag, sitzung=None):
@@ -156,13 +198,19 @@ def kimi(auftrag, sitzung=None):
     if sitzung:
         befehl[1:1] = ["-S", sitzung]
     beginn = time.time()
-    r = subprocess.run(befehl, cwd=str(REPO), capture_output=True, text=True,
-                       encoding="utf-8", errors="replace", timeout=3600)
+    stempel = stempel_jetzt()
+    roh = BERICHTE / f".kimi-roh-{stempel}.jsonl"
+    try:
+        r = subprocess.run(befehl, cwd=str(REPO), capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", timeout=3600)
+    except subprocess.TimeoutExpired as e:
+        aus = e.stdout.decode("utf-8", "replace") if isinstance(e.stdout, bytes) else (e.stdout or "")
+        roh.write_text(aus + "\n--- Zeitüberschreitung nach 3600 s ---\n", encoding="utf-8")
+        sys.exit(f"Kimi lief über eine Stunde und wurde abgebrochen. Rohausgabe: {roh.relative_to(REPO).as_posix()}")
     # Die Rohausgabe bleibt liegen (berichte/.kimi-roh-*, nicht im Repo):
     # Am 01.10.2026 endete ein Lauf nach dem ersten Satz, und ohne sie war
     # nicht mehr zu sehen, warum.
-    stempel = datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S")
-    (BERICHTE / f".kimi-roh-{stempel}.jsonl").write_text(r.stdout + "\n--- stderr ---\n" + r.stderr, encoding="utf-8")
+    roh.write_text(r.stdout + "\n--- stderr ---\n" + r.stderr, encoding="utf-8")
     antworten, neue_sitzung, fehler = [], sitzung, []
     sitzung_gemeldet = False
     for zeile in r.stdout.splitlines():
@@ -215,9 +263,10 @@ def main():
         basis, name = a.basis, a.basis
     else:
         basis, name = letzte_auslieferung()
+    basis_commit = git("rev-parse", basis + "^{commit}").strip()
 
     # Gegen den Arbeitsbaum, damit auch noch nicht Eingechecktes geprüft wird.
-    patch_text = git("diff", basis, "--", ".", *AUSSEN_VOR)
+    patch_text = git("diff", basis, "--", ".", *AUSSEN_VOR) + lock_zusammenfassung(basis)
     neu = [p for p in git("ls-files", "--others", "--exclude-standard").splitlines()
            if p.endswith((".ts", ".tsx", ".js", ".mjs", ".py", ".json", ".css"))
            and "berichte/" not in p]
@@ -242,7 +291,7 @@ def main():
         sys.exit(f"Kimi fehlt unter {KIMI}.")
 
     BERICHTE.mkdir(exist_ok=True)
-    stempel = datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S")
+    stempel = stempel_jetzt()
     patch = BERICHTE / f".kimi-{stempel}.patch"
     patch.write_text(patch_text, encoding="utf-8")
 
@@ -267,13 +316,13 @@ def main():
     veraendert = sorted(p for p in set(vorher) | set(nachher) if vorher.get(p) != nachher.get(p))
     patch.unlink(missing_ok=True)
 
-    m = re.search(r"ERGEBNIS:\s*(\d+)\s*Befunde?,\s*davon\s*(\d+)\s*kritisch", antwort)
-    befunde, kritisch = (int(m.group(1)), int(m.group(2))) if m else (None, None)
+    befunde, kritisch = ergebnis(antwort)
 
     runde = 2 if a.runde2 else 1
     bericht = BERICHTE / f"kimi-{stempel}-runde{runde}.md"
     kopf = (f"# Prüfkreis: Kimi, Runde {runde}\n\n"
             f"- Datum: {stempel}\n- Modell: {MODELL}\n- Basis: {name} (`{basis}`)\n"
+            f"- Basis-Commit: `{basis_commit}`\n"
             f"- Dateien: {len(dateien)}\n- Dauer: {sekunden} s\n- Sitzung: `{sitzung}`\n"
             f"- Stand: `{stand}`\n- Sauber: {'ja' if sauber else 'nein (Code nicht eingecheckt, zählt nicht fürs Ausliefer-Tor)'}\n")
     if veraendert:
@@ -300,11 +349,15 @@ def main():
             print("    " + p)
         print("  Nicht ausliefern, bevor klar ist, wer das war.")
         return 1
-    if m is None:
-        print("⚠ Keine ERGEBNIS-Zeile. Bericht von Hand lesen.")
+    if befunde is None:
+        print("⚠ Keine eindeutige ERGEBNIS-Zeile. Bericht von Hand lesen.")
         return 1
     if kritisch:
         print(f"{kritisch} kritisch. Beheben, dann --runde2.")
+        return 1
+    if not sauber:
+        print("⚠ Geprüft wurde mit nicht eingechecktem Code. Der Bericht zählt nicht fürs "
+              "Ausliefer-Tor: einchecken, pushen, Runde wiederholen.")
         return 1
     print("Kein kritischer Befund." + ("" if a.runde2 else " Mittlere beheben oder begründen, dann --runde2."))
     return 0
