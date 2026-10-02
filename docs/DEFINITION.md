@@ -246,8 +246,10 @@ Timo: *"Für Stiftungen ein schönes Icon im Pin. Die Projekte hätte ich gern r
 | Art | Form | Symbol | Farbe | Quelle |
 |---|---|---|---|---|
 | Stiftung (`place` mit Profil) | Stecknadel | `hands` | ihr eigenes Blau `data.color` | Felder der Musterdaten, `data.icon` |
-| Projekt (`project`) | `round` | `sprout` | `#2E7D5B` | Vorgabe der Art (`marker`) in `type-register.tsx` |
-| Mensch | eckig (`square`) | `person` | offen | kommt |
+| Projekt (`project`) | `round` | `sprout` | `#EA580C` (Orange aus dem Logo, seit 02.10.2026) | Vorgabe der Art (`marker`) in `type-register.tsx` |
+| Mensch | eckig (`square`) | `person` | `#1B5E40` (Tannengrün aus dem Logo, Vorschlag) | kommt |
+
+**Bündeln** (02.10.2026, Timo: *"man sieht die Projekte gar nicht, wenn die unter diesen blauen Punkten verschwinden"*): Eine Art mit `marker.cluster: false` wird nie gebündelt und liegt über den Sammelpunkten. Heute die Projekte; Stiftungen werden weiter gebündelt. Einträge auf demselben Punkt fächern im Kreis auf, sobald sie nicht mehr gebündelt sind (Naht A-Cluster).
 
 Regeln: Die eine Quelle ist das Feld `marker` der Typ-Darstellung (Naht A-Marker, Wunsch an Anton). Was ein Eintrag selbst trägt (`data.color`, `data.icon`), gewinnt. Eine Art ohne Vorgabe fällt auf Antons Regel zurück (Farbe aus Schlagwort oder Space, Symbol aus dem ersten Schlagwort). Der Marker trägt keine Bewertung und keine Rechte.
 

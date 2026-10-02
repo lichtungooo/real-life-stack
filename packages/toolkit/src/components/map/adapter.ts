@@ -69,6 +69,8 @@ export interface MapMarkerSpec {
   selected?: boolean
   /** Colour of the selected glow (usually the item's origin-group colour). */
   glowColor?: string
+  /** NAHT trustdonation (A-Cluster): `false` = never clustered, drawn above the cluster bubbles. */
+  cluster?: false
 }
 
 export interface MapViewState {

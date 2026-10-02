@@ -24,7 +24,9 @@ import {
   traegtProjektProfil,
   PROJEKT_PROFIL,
 } from "@trustdonation/core"
-import { ProfilFlaeche } from "@trustdonation/ui"
+// Nachgeladen: die Collage braucht erst, wer eine Stiftung öffnet (Budget,
+// 02.10.2026, Platz für die Naht A-Cluster im Kartenadapter).
+const ProfilFlaeche = lazy(() => import("@trustdonation/ui/profil-flaeche").then((m) => ({ default: m.ProfilFlaeche })))
 
 /** The app's composed manifest — today the toolkit's, unchanged. */
 export const TYPE_MANIFEST = composeTypeManifest([TOOLKIT_TYPE_LAYER])
@@ -55,12 +57,14 @@ function OrtOderProfil({ item }: ItemSlotProps) {
   const profil = bauplan ? profilAufbauen(daten, bauplan) : null
   if (!profil) return <ORT_META item={item} />
   return (
-    <ProfilFlaeche
-      profil={profil}
-      farbe={typeof daten.color === "string" ? daten.color : undefined}
-      quelle={typeof daten.quelle === "string" ? daten.quelle : undefined}
-      ordnungsId={item.id}
-    />
+    <Suspense fallback={<div className="h-40 w-full animate-pulse rounded-2xl bg-muted" />}>
+      <ProfilFlaeche
+        profil={profil}
+        farbe={typeof daten.color === "string" ? daten.color : undefined}
+        quelle={typeof daten.quelle === "string" ? daten.quelle : undefined}
+        ordnungsId={item.id}
+      />
+    </Suspense>
   )
 }
 
@@ -81,7 +85,10 @@ registerTypePresentation("trustdonation", {
         { key: "address", widget: "location", pos: "meta" },
         { key: "tags", widget: "tags", pos: "tags" },
       ],
-      marker: { icon: "sprout", color: "#2E7D5B", shape: "round" },
+      // Orange aus dem trustdonation-Logo (Timo, 02.10.2026: "Stiftungen blau,
+      // Projekte orange, passt genau zum Logo"). Nie gebündelt: Ein Projekt
+      // bleibt über den blauen Sammelpunkten sichtbar (Naht A-Cluster).
+      marker: { icon: "sprout", color: "#EA580C", shape: "round", cluster: false },
     },
   ],
 })

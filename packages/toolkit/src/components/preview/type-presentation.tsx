@@ -223,6 +223,8 @@ export interface TypeMarker {
   icon?: string
   color?: string
   shape?: import("../map/markers/marker-shapes").MarkerShape
+  /** NAHT trustdonation (A-Cluster): `false` = diese Art wird nie gebündelt, sie bleibt über den Sammelpunkten sichtbar. */
+  cluster?: false
 }
 
 export interface ResolvedTypePresentation extends RegisterLists {

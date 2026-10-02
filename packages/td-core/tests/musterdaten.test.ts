@@ -118,7 +118,7 @@ describe("Musterdaten", () => {
     // fehlt. Unsere Items tragen dort ihr Thema, und jede Stiftung bekam eine
     // andere Farbe. Eine Stiftung soll als Stiftung erkennbar sein.
     const stiftungen = items.filter((i) => String(i.id).startsWith("stiftung-"))
-    // 194 seit dem Aufraeumen am 01.10.2026: Dubletten zusammengelegt,
+    // 193 seit 02.10.2026 (Bürgerstiftung Kassel doppelt: Umlaut und ue); 194 nach dem Aufraeumen am 01.10.2026: Dubletten zusammengelegt,
     // Nicht-Stiftungen entfernt (td-tools/stiftungen/bereinigen.json).
     expect(stiftungen.length).toBeGreaterThan(180)
     const farben = new Set(stiftungen.map((i) => (i.data as { color?: string }).color))

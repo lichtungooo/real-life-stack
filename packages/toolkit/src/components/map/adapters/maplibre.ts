@@ -93,6 +93,20 @@ const MARKER_SYMBOL_LAYER = "rls-marker-symbols"
 const MARKER_GLOW_LAYER = "rls-marker-glow"
 /** NAHT trustdonation (A-Marker): the glow of a `round` marker, centred, not lifted onto a pin body. */
 const MARKER_GLOW_ROUND_LAYER = "rls-marker-glow-round"
+/** NAHT trustdonation (A-Cluster): markers that never cluster, in their own source above the bubbles. */
+const MARKER_FREE_SOURCE = "rls-markers-free"
+const MARKER_FREE_LAYER = "rls-marker-symbols-free"
+const MARKER_FREE_GLOW_LAYER = "rls-marker-glow-free"
+/** NAHT trustdonation (A-Cluster): markers on one spot fan out on a ring of this radius (screen px). */
+const FAN_RADIUS_PX = 32
+/** NAHT trustdonation (A-Cluster): markers closer than this count as one spot. */
+const FAN_METERS = 40
+/** NAHT trustdonation (A-Cluster): rough distance in metres, good enough for "same building". */
+function metersApart(a: LngLat, b: LngLat): number {
+  const dLat = (a[1] - b[1]) * 111_320
+  const dLng = (a[0] - b[0]) * 111_320 * Math.cos(((a[1] + b[1]) / 2) * (Math.PI / 180))
+  return Math.hypot(dLat, dLng)
+}
 const CLUSTER_CIRCLE_LAYER = "rls-marker-clusters"
 const CLUSTER_COUNT_LAYER = "rls-marker-cluster-count"
 /** Neutral cluster-bubble colour (spec allows a neutral default; dominant
@@ -262,6 +276,10 @@ export class MapLibreMapAdapter implements MapAdapter, GlobeCapable, ClusterCapa
   // WebGL markers: a GeoJSON source + symbol layer, plus an image atlas keyed by
   // appearance. `markersVersion` ignores stale setData after async image loads.
   private markerLayersReady = false
+  /** NAHT trustdonation (A-Cluster): what the free source shows, to skip unchanged writes. */
+  private freeHash = ""
+  /** NAHT trustdonation (A-Cluster): a fan is shown, so a zoom must redraw it at the new scale. */
+  private fanActive = false
   private gestureListeners = new Set<() => void>()
   /**
    * Was der Adapter GERADE ZEIGT, nicht was zuletzt hereinkam.
@@ -609,7 +627,35 @@ export class MapLibreMapAdapter implements MapAdapter, GlobeCapable, ClusterCapa
     const add: GeoJSON.Feature[] = []
     const update: GeoJSONFeatureDiff[] = []
     const nextRendered = new Map<string, string>()
+    // NAHT trustdonation (A-Cluster): markers closer than FAN_METERS fan out on a
+    // ring, so none hides another (Timo, 02.10.2026: "nicht sauber gefächert";
+    // in Kassel sitzen sechs Stiftungen im selben Haus).
+    const sameSpot: MapMarkerSpec[][] = []
     for (const m of markers) {
+      const near = sameSpot.find((g) => metersApart(g[0].position, m.position) < FAN_METERS)
+      if (near) near.push(m)
+      else sameSpot.push([m])
+    }
+    // The spot itself moves, not the image: glow and pin stay together, and
+    // MapLibre keeps no arrays in feature properties.
+    const fan = new Map<string, LngLat>()
+    for (const group of sameSpot) {
+      if (group.length < 2) continue
+      const [lng0, lat0] = group[0].position
+      // Ring of fixed screen size: metres per pixel at this zoom and latitude.
+      const mProPx = (40_075_016.686 * Math.cos(lat0 * (Math.PI / 180))) / (512 * 2 ** map.getZoom())
+      const rM = (FAN_RADIUS_PX + Math.max(0, group.length - 6) * 3) * mProPx
+      group.forEach((m, i) => {
+        const a = (2 * Math.PI * i) / group.length - Math.PI / 2
+        const dLat = (Math.sin(a) * rM) / 111_320
+        const dLng = (Math.cos(a) * rM) / (111_320 * Math.cos(lat0 * (Math.PI / 180)))
+        fan.set(m.id, [lng0 + dLng, lat0 + dLat])
+      })
+    }
+    this.fanActive = fan.size > 0
+    const free: GeoJSON.Feature[] = []
+    for (const m of markers) {
+      const position = fan.get(m.id) ?? m.position
       const properties = {
         id: m.id,
         iconImage: imageKey(m, this.currentScheme),
@@ -619,9 +665,13 @@ export class MapLibreMapAdapter implements MapAdapter, GlobeCapable, ClusterCapa
         round: m.shape === "round" ? 1 : 0,
         color: m.color ?? DEFAULT_MARKER_COLOR,
       }
-      const geometry: GeoJSON.Point = { type: "Point", coordinates: m.position }
+      const geometry: GeoJSON.Point = { type: "Point", coordinates: position }
+      if (m.cluster === false) {
+        free.push({ type: "Feature", id: m.id, geometry, properties })
+        continue
+      }
       // Appearance hash — any change re-pushes just this feature.
-      const hash = `${m.position[0]},${m.position[1]}|${properties.iconImage}|${properties.selected}|${properties.glowColor}|${properties.color}|${properties.label}`
+      const hash = `${position[0]},${position[1]}|${properties.iconImage}|${properties.selected}|${properties.glowColor}|${properties.color}|${properties.label}`
       nextRendered.set(m.id, hash)
       const prev = this.renderedMarkers.get(m.id)
       if (prev === undefined) {
@@ -639,6 +689,17 @@ export class MapLibreMapAdapter implements MapAdapter, GlobeCapable, ClusterCapa
       if (!nextRendered.has(id)) remove.push(id)
     }
     this.renderedMarkers = nextRendered
+    // NAHT trustdonation (A-Cluster): the free source is small and unclustered;
+    // a full write when it changed costs no re-cluster.
+    const freeHash = JSON.stringify(free)
+    // Created only once a free marker exists: a map without one stays exactly
+    // as Anton built it (one source, his tests unchanged).
+    if (free.length > 0) this.ensureFreeLayers(map)
+    const freeSource = map.getSource(MARKER_FREE_SOURCE) as GeoJSONSource | undefined
+    if (freeSource && freeHash !== this.freeHash) {
+      this.freeHash = freeHash
+      freeSource.setData({ type: "FeatureCollection", features: free })
+    }
     if (add.length === 0 && update.length === 0 && remove.length === 0) return
     source.updateData({ add, update, remove })
     // Re-cluster runs in the worker; the `data` listener (wireMarkerEvents)
@@ -758,6 +819,43 @@ export class MapLibreMapAdapter implements MapAdapter, GlobeCapable, ClusterCapa
   }
 
   /**
+   * NAHT trustdonation (A-Cluster): a second, unclustered source above the
+   * bubbles for markers that must stay visible (Timo, 02.10.2026: "man sieht
+   * die Projekte gar nicht, wenn die unter diesen blauen Punkten verschwinden").
+   * Added after the cluster layers, so it draws on top.
+   */
+  private ensureFreeLayers(map: MlMap): void {
+    if (!map.getSource(MARKER_FREE_SOURCE)) {
+      map.addSource(MARKER_FREE_SOURCE, { type: "geojson", data: { type: "FeatureCollection", features: [] } })
+      this.freeHash = ""
+    }
+    if (!map.getLayer(MARKER_FREE_GLOW_LAYER)) {
+      map.addLayer({
+        id: MARKER_FREE_GLOW_LAYER,
+        type: "circle",
+        source: MARKER_FREE_SOURCE,
+        filter: ["==", ["get", "selected"], 1],
+        paint: { "circle-color": ["get", "glowColor"], "circle-radius": 24, "circle-blur": 0.7, "circle-opacity": 0.65 },
+      })
+    }
+    if (!map.getLayer(MARKER_FREE_LAYER)) {
+      map.addLayer({
+        id: MARKER_FREE_LAYER,
+        type: "symbol",
+        source: MARKER_FREE_SOURCE,
+        layout: {
+          "icon-image": ["get", "iconImage"],
+          "icon-anchor": ["case", ["==", ["get", "round"], 1], "center", "bottom"] as never,
+          "icon-offset": ["case", ["==", ["get", "round"], 1], ["literal", [0, 0]], ["literal", [0, PIN_SHADOW_PAD]]] as never,
+          "icon-size": 1,
+          "icon-allow-overlap": true,
+          "icon-ignore-placement": true,
+        },
+      })
+    }
+  }
+
+  /**
    * Click/hover handlers. Wired once: MapLibre keys layer-scoped listeners by
    * layer id, so they survive a layer remove/re-add (cluster rebuild) and must
    * not be added again.
@@ -775,6 +873,17 @@ export class MapLibreMapAdapter implements MapAdapter, GlobeCapable, ClusterCapa
     map.on("mouseleave", MARKER_SYMBOL_LAYER, () => {
       map.getCanvas().style.cursor = ""
     })
+    // NAHT trustdonation (A-Cluster): the free layer clicks like any pin.
+    map.on("click", MARKER_FREE_LAYER, (e: MapLayerMouseEvent) => {
+      const id = e.features?.[0]?.properties?.id
+      if (id != null) this.markerClickListeners.forEach((cb) => cb(String(id)))
+    })
+    map.on("mouseenter", MARKER_FREE_LAYER, () => { map.getCanvas().style.cursor = "pointer" })
+    // NAHT trustdonation (A-Cluster): the fan keeps its screen size across zoom levels.
+    map.on("zoomend", () => {
+      if (this.fanActive && this.lastMarkers) void this.setMarkersAsync(this.lastMarkers)
+    })
+    map.on("mouseleave", MARKER_FREE_LAYER, () => { map.getCanvas().style.cursor = "" })
     // Cluster click → notify listeners + zoom in until the cluster breaks apart.
     map.on("click", CLUSTER_CIRCLE_LAYER, (e: MapLayerMouseEvent) => {
       const f = e.features?.[0]
@@ -851,10 +960,12 @@ export class MapLibreMapAdapter implements MapAdapter, GlobeCapable, ClusterCapa
    *  settings (clustering on/off, or a changed cluster radius). Wired event
    *  handlers persist (keyed by layer id) and are not re-added. */
   private teardownMarkerLayers(map: MlMap): void {
-    for (const id of [CLUSTER_COUNT_LAYER, CLUSTER_CIRCLE_LAYER, MARKER_SYMBOL_LAYER, MARKER_GLOW_LAYER, MARKER_GLOW_ROUND_LAYER]) {
+    for (const id of [CLUSTER_COUNT_LAYER, CLUSTER_CIRCLE_LAYER, MARKER_SYMBOL_LAYER, MARKER_GLOW_LAYER, MARKER_GLOW_ROUND_LAYER, MARKER_FREE_LAYER, MARKER_FREE_GLOW_LAYER]) {
       if (map.getLayer(id)) map.removeLayer(id)
     }
     if (map.getSource(MARKER_SOURCE)) map.removeSource(MARKER_SOURCE)
+    // NAHT trustdonation (A-Cluster)
+    if (map.getSource(MARKER_FREE_SOURCE)) map.removeSource(MARKER_FREE_SOURCE)
     this.markerLayersReady = false
     // The new source starts empty → forget what was rendered so the next
     // setMarkers re-adds every feature.

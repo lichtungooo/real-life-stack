@@ -75,6 +75,8 @@ export function mapLensMarkers(
       color: typeof item.data.color === "string" || !vorgabe?.color ? getItemColor(item, { groupColor: resolveGroupColor?.(item) ?? getSpacePrimaryColor("map") }) : vorgabe.color,
       icon: typeof item.data.icon === "string" ? item.data.icon : vorgabe?.icon ?? item.tags?.[0],
       ...(vorgabe?.shape ? { shape: vorgabe.shape } : {}),
+      // NAHT trustdonation (A-Cluster): die Art sagt, ob sie gebündelt wird.
+      ...(vorgabe?.cluster === false ? { cluster: false as const } : {}),
       selected: item.id === activeItemId || highlightedItemIds.includes(item.id),
       glowColor: resolveGroupColor?.(item),
     })

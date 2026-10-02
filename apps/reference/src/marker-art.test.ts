@@ -1,6 +1,7 @@
 /**
  * Die Marker je Art (Timo, 01.10.2026): Stiftungen in der Stecknadel mit der
- * gebenden Hand, Projekte rund ohne Spitze in Waldgruen mit Spross. Geprueft
+ * gebenden Hand, Projekte rund ohne Spitze in Orange mit Spross (seit
+ * 02.10.2026, vorher Waldgruen), nie gebündelt. Geprueft
  * mit dem echten Register dieser App; die Naht A-Marker steht in NAEHTE.md.
  */
 import { describe, expect, it } from "vitest"
@@ -14,10 +15,15 @@ const item = (type: string, data: Record<string, unknown>, tags?: string[]) =>
   ({ id: `${type}-1`, type, data: { title: "Probe", position: ort, ...data }, tags } as unknown as Item)
 
 describe("Projekte", () => {
-  it("tragen ihre Vorgabe: rund, Waldgruen, Spross", () => {
-    expect(resolveTypePresentation("project").marker).toEqual({ icon: "sprout", color: "#2E7D5B", shape: "round" })
+  it("tragen ihre Vorgabe: rund, Orange aus dem Logo, Spross, nie gebündelt", () => {
+    expect(resolveTypePresentation("project").marker).toEqual({ icon: "sprout", color: "#EA580C", shape: "round", cluster: false })
     const [m] = mapLensMarkers([item("project", {})])
-    expect(m).toMatchObject({ shape: "round", color: "#2E7D5B", icon: "sprout" })
+    expect(m).toMatchObject({ shape: "round", color: "#EA580C", icon: "sprout", cluster: false })
+  })
+
+  it("Stiftungen werden weiter gebündelt (Timo, 02.10.2026: nur die Projekte sollen obenauf)", () => {
+    const [m] = mapLensMarkers([item("place", { foerdererart: "Stiftung", color: "#194294", icon: "hands" })])
+    expect(m.cluster).toBeUndefined()
   })
 
   it("lassen sich mit Ort anlegen: der Composer bekommt das Location-Widget", () => {

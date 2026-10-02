@@ -147,7 +147,7 @@
           }
         ]
       },
-      "color": "#2E7D5B",
+      "color": "#EA580C",
       "icon": "sprout",
       "kennzahlen": [
         {
@@ -1205,8 +1205,8 @@
     "createdAt": "2026-09-15T12:00:00.000Z",
     "createdBy": "timo",
     "data": {
-      "title": "Buergerstiftung für die Stadt und den Landkreis Kassel",
-      "address": "Koelnische Strasse 8, 34117 Kassel",
+      "title": "Bürgerstiftung für die Stadt und den Landkreis Kassel",
+      "address": "Kölnische Straße 8, 34117 Kassel",
       "position": {
         "type": "Point",
         "coordinates": [
@@ -1542,51 +1542,6 @@
       "bildung",
       "kultur",
       "inklusion",
-      "stiftung"
-    ]
-  },
-  {
-    "@context": [
-      "https://real-life-stack.org/vocab/base/v1",
-      "https://real-life-stack.org/vocab/place/v1"
-    ],
-    "id": "stiftung-bürgerstiftung-für-die-stadt-und-den-landkreis-k-40",
-    "type": "place",
-    "createdAt": "2026-09-15T12:00:00.000Z",
-    "createdBy": "timo",
-    "data": {
-      "title": "Bürgerstiftung für die Stadt und den Landkreis Kassel",
-      "address": "Kölnische Straße 8, 34117 Kassel",
-      "position": {
-        "type": "Point",
-        "coordinates": [
-          9.495378,
-          51.316638
-        ]
-      },
-      "color": "#194294",
-      "foerderbereiche": [
-        "jugend",
-        "kultur",
-        "sport",
-        "natur",
-        "gemeinwesen"
-      ],
-      "quelle": "Recherche Foerder-Landschaft, 04-regional-öffentlich.md",
-      "sitz": "Kassel",
-      "foerdererart": "Stiftung",
-      "art": "fördernd",
-      "icon": "hands",
-      "website": "https://www.buergerstiftung-kassel.de",
-      "anschriftQuelle": "https://www.buergerstiftung-kassel.de/impressum",
-      "ortGenauigkeit": "anschrift"
-    },
-    "tags": [
-      "jugend",
-      "kultur",
-      "sport",
-      "natur",
-      "gemeinwesen",
       "stiftung"
     ]
   },

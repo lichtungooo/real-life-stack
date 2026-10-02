@@ -16,7 +16,7 @@
 //
 // **Die Schichten:** Welcher Bauplan gilt und was er ergibt, rechnet
 // `@trustdonation/core` aus; die Darstellung liegt in `@trustdonation/ui`.
-import { useCallback, useMemo, useRef } from "react"
+import { lazy, Suspense, useCallback, useMemo, useRef } from "react"
 import {
   AdaptivePanel,
   useConnector,
@@ -26,7 +26,8 @@ import {
 } from "@real-life-stack/toolkit"
 import { isWritable } from "@real-life-stack/data-interface"
 import { profilAufbauen, bauplanFuer } from "@trustdonation/core"
-import { ProfilFlaeche, bildVerkleinern } from "@trustdonation/ui"
+// Nachgeladen, erst wenn ein Profil offen ist (Budget, 02.10.2026).
+const ProfilFlaeche = lazy(() => import("@trustdonation/ui/profil-flaeche").then((m) => ({ default: m.ProfilFlaeche })))
 
 export function SpaceProfilPanel({
   groupId,
@@ -80,6 +81,7 @@ export function SpaceProfilPanel({
     async (datei: File | undefined) => {
       if (!datei || !traeger || groupId === null) return
       try {
+        const { bildVerkleinern } = await import("@trustdonation/ui/profil-flaeche")
         const image = await bildVerkleinern(datei)
         const data = { ...traeger.daten, image }
         if (traeger.art === "space") {
@@ -128,6 +130,7 @@ export function SpaceProfilPanel({
             aria-label="Bild für das Profil wählen"
             onChange={(e) => void bildGewaehlt(e.target.files?.[0])}
           />
+          <Suspense fallback={<div className="h-40 w-full animate-pulse rounded-2xl bg-muted" />}>
           <ProfilFlaeche
             key={groupId ?? ""}
             name={traeger.name}
@@ -140,6 +143,7 @@ export function SpaceProfilPanel({
             ordnungsId={groupId ?? undefined}
             onBildAendern={kannSchreiben ? () => dateifeld.current?.click() : undefined}
           />
+          </Suspense>
         </>
       )}
     </AdaptivePanel>

@@ -1,6 +1,6 @@
 # Nähte
 
-**Stand:** 01.10.2026 (dazu Nähte A-Marker und A-PanelKopf), zusammengeführt mit Antons `31d13fc3` (8 Commits, App-Abschnitte im Space-Dialog rls#551). Davor 29.09.2026 mit `bb8487b1`
+**Stand:** 02.10.2026 (dazu Nähte A-Marker, A-PanelKopf und A-Cluster), zusammengeführt mit Antons `31d13fc3` (8 Commits, App-Abschnitte im Space-Dialog rls#551). Davor 29.09.2026 mit `bb8487b1`
 **Regeln:** [ARCHITEKTUR.md, Teil 4](ARCHITEKTUR.md)
 
 Eine **Naht** ist eine Stelle, an der wir Antons Code ändern, weil kein Haken dafür da ist. Nähte sind erlaubt. Unbenannte Nähte sind es nicht.
@@ -130,6 +130,17 @@ Stellen, an denen ein Haken fehlt und wir ihn uns wünschen.
 | **Risiko bei Update** | mittel: sechs Dateien, je unter zwanzig Zeilen, alle mit `NAHT trustdonation (A-Marker)` markiert. Antons 56 Tests für Karte, Marker und Darstellung grün |
 | **Wunsch an Anton** | Ein Feld `marker` je Typ in der Darstellung (Spec 06) und Formen mit eigenem Anker. Anwendungsfall: Auf einer Karte mit Stiftungen, Projekten und Menschen soll man die Art auf einen Blick erkennen, ohne jeden Eintrag einzeln einzufärben |
 | **Zwischenschritt** | Unser Test `apps/reference/src/marker-art.test.ts` hält fest, was gelten muss |
+
+### A-Cluster. Arten, die nie gebündelt werden, und Auffächern am selben Punkt (02.10.2026)
+
+| | |
+|---|---|
+| **Dateien** | `packages/toolkit/src/components/map/adapters/maplibre.ts` (+114/-3: zweite, ungebündelte Quelle `rls-markers-free` mit Symbol- und Leuchtebene über den Sammelpunkten, erst angelegt, wenn es solche Marker gibt; Klick wie jeder Pin; Einträge näher als 40 m rücken auf einen Kreis von 32 px, neu gerechnet bei jedem Zoom), `packages/toolkit/src/components/preview/type-presentation.tsx` (+2: `TypeMarker.cluster`), `packages/toolkit/src/components/map/adapter.ts` (+2: `MapMarkerSpec.cluster`), `packages/toolkit/src/components/lens/map-lens.tsx` (+2: Vorgabe der Art durchreichen). Alle Stellen markiert `NAHT trustdonation (A-Cluster)` |
+| **Was wir tun** | Eine Art mit `marker.cluster: false` landet in einer eigenen Quelle ohne Bündelung, gezeichnet über den Sammelpunkten. Einträge, die näher als 40 m beieinander liegen (in Kassel sechs Stiftungen im selben Haus), rücken auf einen Kreis von 32 px; der Ort selbst rückt, nicht das Bild, damit Leuchtring und Pin zusammenbleiben. Unsere App setzt Projekte so: Orange `#EA580C`, nie gebündelt |
+| **Warum kein Haken** | Die Karte bündelt alles in einer Quelle und färbt den Sammelpunkt nach der häufigsten Farbe. Timo, 02.10.2026: *"Durch das Clustering sieht man nur blaue Punkte … man sieht die Projekte ja gar nicht, wenn die unter diesen blauen Punkten verschwinden … mehrere Stiftungen aufeinander, nicht sauber gefächert"* |
+| **Risiko bei Update** | mittel: ein großer Block im Adapter, eng an `setMarkersAsync` und `ensureMarkerLayers`. Antons Kartentests laufen grün |
+| **Wunsch an Anton** | Eine Vorgabe je Art, ob sie gebündelt wird, und Auffächern gleicher Punkte als Fähigkeit des Adapters. Anwendungsfall: Auf einer Karte mit vielen Stiftungen und wenigen Projekten sollen die Projekte immer sichtbar sein; Stiftungen am selben Sitz sollen nebeneinander liegen statt übereinander |
+| **Zwischenschritt** | Die Berechnung des Fächers in eine eigene, reine Funktion ziehen (`map/markers/fan.ts`), dann bleiben im Adapter rund 40 Zeilen |
 
 ### A-PanelKopf. Die Knöpfe des Panels stehen in einer festen Kopfzeile (01.10.2026)
 

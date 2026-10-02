@@ -1,208 +1,216 @@
 {
- "_hinweis": "Entscheidungen von Timo am 01.10.2026: Dubletten zusammenlegen, Aufgelöste durch Nachfolger ersetzen, Nicht-Stiftungen entfernen. Umgesetzt von bereinigen.py.",
- "zusammenlegen": [
-  {
-   "titel": "Auridis Stiftung",
-   "ids": [
-    "stiftung-auridis-stiftung-11",
-    "stiftung-auridis-stiftung-aldi-sued-12"
-   ]
-  },
-  {
-   "titel": "Aventis Foundation",
-   "ids": [
-    "stiftung-aventis-foundation-13",
-    "stiftung-aventis-foundation-hoechst-vermoegen-vertieft-14"
-   ]
-  },
-  {
-   "titel": "Baden-Württemberg Stiftung",
-   "ids": [
-    "stiftung-baden-wuerttemberg-stiftung-18",
-    "stiftung-baden-wuerttemberg-stiftung-landesstiftung-kein-19",
-    "stiftung-baden-württemberg-stiftung-20",
-    "stiftung-baden-württemberg-stiftung-ggmbh-21"
-   ]
-  },
-  {
-   "titel": "Diakonie Deutschland",
-   "ids": [
-    "stiftung-diakonie-deutschland-68",
-    "stiftung-diakonie-deutschland-bundesverband-69"
-   ]
-  },
-  {
-   "titel": "Deutsche Bundesstiftung Umwelt",
-   "ids": [
-    "stiftung-deutsche-bundesstiftung-umwelt-55",
-    "stiftung-deutsche-bundesstiftung-umwelt-dbu-56"
-   ]
-  },
-  {
-   "titel": "Stiftung Deutsches Hilfswerk / Deutsche Fernsehlotterie",
-   "ids": [
-    "stiftung-deutsche-fernsehlotterie-stiftung-deutsches-hilf-57",
-    "stiftung-stiftung-deutsches-hilfswerk-deutsche-fernsehlot-190"
-   ]
-  },
-  {
-   "titel": "Zentralverband des Deutschen Handwerks",
-   "ids": [
-    "stiftung-zdh-dhkt-227",
-    "stiftung-zentralverband-des-deutschen-handwerks-230",
-    "stiftung-zentralverband-des-deutschen-handwerks-zdh-231"
-   ]
-  },
-  {
-   "titel": "Stiftung Bildung",
-   "ids": [
-    "stiftung-foerderfonds-handwerk-stiftung-bildung-wolfgang-82",
-    "stiftung-stiftung-bildung-181",
-    "stiftung-stiftung-bildung-foerderfonds-handwerk-mit-wolfg-185"
-   ]
-  },
-  {
-   "titel": "Initiative Bürgerstiftungen",
-   "ids": [
-    "stiftung-initiative-buergerstiftungen-aktive-buergerschaf-105",
-    "stiftung-initiative-bürgerstiftungen-dachverband-aktive-b-106"
-   ]
-  },
-  {
-   "titel": "Schöpflin Stiftung",
-   "ids": [
-    "stiftung-schoepflin-stiftung-156",
-    "stiftung-schöpflin-stiftung-157"
-   ]
-  },
-  {
-   "titel": "Software AG-Stiftung",
-   "ids": [
-    "stiftung-software-ag-stiftung-164",
-    "stiftung-software-ag-stiftung-sagst-165",
-    "stiftung-software-ag-stiftung-sagst-runde-2-detail-166"
-   ]
-  },
-  {
-   "titel": "Sparkassen-Kulturstiftung Hessen-Thüringen",
-   "ids": [
-    "stiftung-sparkassen-kulturstiftung-hessen-thueringen-169",
-    "stiftung-sparkassen-kulturstiftung-hessen-thüringen-170"
-   ]
-  },
-  {
-   "titel": "Stiftung Bildung und Handwerk",
-   "ids": [
-    "stiftung-stiftung-bildung-handwerk-kreishandwerker-stiftu-182",
-    "stiftung-stiftung-bildung-und-handwerk-183",
-    "stiftung-stiftung-bildung-und-handwerk-sbh-184"
-   ]
-  },
-  {
-   "titel": "Stiftung Bürgerengagement Saar",
-   "ids": [
-    "stiftung-stiftung-buergerengagement-saar-186",
-    "stiftung-stiftung-bürgerengagement-saar-188"
-   ]
-  },
-  {
-   "titel": "Umweltstiftung Michael Otto",
-   "ids": [
-    "stiftung-umweltstiftung-michael-otto-208",
-    "stiftung-umweltstiftung-michael-otto-otto-group-209",
-    "stiftung-umweltstiftung-michael-otto-frueher-michael-otto-210"
-   ]
-  },
-  {
-   "titel": "VINCI Stiftung",
-   "ids": [
-    "stiftung-vinci-stiftung-211",
-    "stiftung-vinci-stiftung-deutschland-212",
-    "stiftung-vinci-stiftung-fuer-gesellschaftliche-verantwort-213"
-   ]
-  },
-  {
-   "titel": "Wübben Stiftung Bildung",
-   "ids": [
-    "stiftung-wuebben-stiftung-bildung-224",
-    "stiftung-wübben-stiftung-bildung-226"
-   ]
-  },
-  {
-   "titel": "Deutsche Kinder- und Jugendstiftung",
-   "ids": [
-    "stiftung-deutsche-kinder-und-jugendstiftung-58",
-    "stiftung-deutsche-kinder-und-jugendstiftung-dkjs-59"
-   ]
-  }
- ],
- "nachfolger": [
-  {
-   "ids": [
-    "stiftung-allianz-kulturstiftung-8",
-    "stiftung-allianz-umweltstiftung-9"
-   ],
-   "titel": "Allianz Foundation",
-   "strasse": "Pariser Platz 6",
-   "plz": "10117",
-   "ort": "Berlin",
-   "website": "https://allianzfoundation.org",
-   "quelle": "https://allianzfoundation.org/de/legal-notice/",
-   "grund": "Allianz Kulturstiftung und Allianz Umweltstiftung gingen 2022 in der Allianz Foundation auf."
-  }
- ],
- "entfernen": [
-  {
-   "id": "stiftung-beiersdorf-csr-keine-formale-stiftung-24",
-   "grund": "Kein eigenstaendiges Stiftungsvehikel gefunden, sondern CSR-Programm der Beiersdorf AG. Sitz der Beiersdorf AG laut Impressum: Unnastrasse 48, 20245 Hamburg, diese Anschrift gehoert nicht zu einer Stiftung und wurde daher nicht als Stiftung"
-  },
-  {
-   "id": "stiftung-christophorus-stiftung-43",
-   "grund": "Keine eigenstaendige Christophorus-Stiftung mit Sitz Filderstadt auffindbar. Mehrere gleichnamige Stiftungen existieren (u.a. Stuttgart, Duisburg), keine davon in Filderstadt."
-  },
-  {
-   "id": "stiftung-deichmann-förderpreis-berufsbildung-47",
-   "grund": "Kein eigenstaendiges Programm oder Rechtstraeger unter diesem Namen auf der Website der DEICHMANN-Stiftung auffindbar."
-  },
-  {
-   "id": "stiftung-damus-donata-stiftung-50",
-   "grund": "Keine Stiftung dieses Namens mit Sitz Karlsruhe verifizierbar. Auffindbar ist nur der Verein DAMUS-DONATA e.V. (mitgegruendet von Goetz Werner), Lameystraße 34, 68165 Mannheim - andere Rechtsform und anderer Ort als angegeben."
-  },
-  {
-   "id": "stiftung-damus-donata-stiftung-götz-werner-51",
-   "grund": "Siehe stiftung-damus-donata-stiftung-50: nur DAMUS-DONATA e.V., Mannheim, verifizierbar."
-  },
-  {
-   "id": "stiftung-damus-donata-stiftung-werner-familie-dm-runde-2-52",
-   "grund": "Siehe stiftung-damus-donata-stiftung-50: nur DAMUS-DONATA e.V., Mannheim, verifizierbar."
-  },
-  {
-   "id": "stiftung-diakonie-stiftung-frankfurt-am-main-71",
-   "grund": "Keine eigenstaendige 'Diakonie-Stiftung Frankfurt am Main' von der Diakonie Hessen (Sitz Frankfurt) unterscheidbar verifizierbar."
-  },
-  {
-   "id": "stiftung-ekkw-innovations-kanal-75",
-   "grund": "Kein eigenstaendiger Rechtstraeger/Stiftung; im Impressum der Evangelischen Kirche von Kurhessen-Waldeck (Wilhelmshoeher Allee 330, 34131 Kassel) nicht erwaehnt. Vermutlich ein internes Projekt/Format der EKKW, keine Stiftung."
-  },
-  {
-   "id": "stiftung-glücksspirale-denkmal-sport-wohlfahrt-93",
-   "grund": "Keine eigenstaendige Stiftung. Die GluecksSpirale ist ein Lotterieprodukt des Deutschen Lotto- und Totoblocks, das Mittel an BAGFW, DOSB und Deutsche Stiftung Denkmalschutz ausschuettet. Kein einheitlicher Sitz mit eigener Anschrift auffind"
-  },
-  {
-   "id": "stiftung-michaela-gloeckler-stiftung-139",
-   "grund": "Keine eigenstaendige 'Michaela Gloeckler Stiftung' mit Sitz Berlin auffindbar. Michaela Gloeckler ist u.a. mit der Stiftung ELIANT (Sternbergstrasse 27/2, 72532 Gomadingen) und der Foerderstiftung Anthroposophische Medizin (Dornach, Schweiz"
-  },
-  {
-   "id": "stiftung-rossmann-engagement-kein-reine-stiftung-153",
-   "grund": "Laut Quelldaten keine eigenstaendige Stiftung. Eine Website mit Impressum fuer ein dediziertes Rossmann-Stiftungsvehikel liess sich nicht aufrufen/verifizieren."
-  },
-  {
-   "id": "stiftung-rudolf-steiner-fonds-für-wiss-forschung-154",
-   "grund": "Keine verifizierbare eigene Webseite oder Impressum-Eintrag gefunden; vermuteter Sitz Nürnberg konnte nicht bestaetigt werden."
-  },
-  {
-   "id": "stiftung-aldi-nord-stiftungs-gmbh-1",
-   "grund": "ALDI Nord Stiftungs GmbH (HRB 26912, Amtsgericht Essen) ist am 21.11.2023 geloescht worden, verschmolzen auf ALDI Nord Holding Stiftung & Co. KG. Letzte bekannte Anschrift der Unternehmensgruppe laut mehreren Handelsregisterportalen (firmen"
-  }
- ]
+  "_hinweis": "Entscheidungen von Timo am 01.10.2026: Dubletten zusammenlegen, Aufgelöste durch Nachfolger ersetzen, Nicht-Stiftungen entfernen. Umgesetzt von bereinigen.py.",
+  "zusammenlegen": [
+    {
+      "titel": "Auridis Stiftung",
+      "ids": [
+        "stiftung-auridis-stiftung-11",
+        "stiftung-auridis-stiftung-aldi-sued-12"
+      ]
+    },
+    {
+      "titel": "Aventis Foundation",
+      "ids": [
+        "stiftung-aventis-foundation-13",
+        "stiftung-aventis-foundation-hoechst-vermoegen-vertieft-14"
+      ]
+    },
+    {
+      "titel": "Baden-Württemberg Stiftung",
+      "ids": [
+        "stiftung-baden-wuerttemberg-stiftung-18",
+        "stiftung-baden-wuerttemberg-stiftung-landesstiftung-kein-19",
+        "stiftung-baden-württemberg-stiftung-20",
+        "stiftung-baden-württemberg-stiftung-ggmbh-21"
+      ]
+    },
+    {
+      "titel": "Diakonie Deutschland",
+      "ids": [
+        "stiftung-diakonie-deutschland-68",
+        "stiftung-diakonie-deutschland-bundesverband-69"
+      ]
+    },
+    {
+      "titel": "Deutsche Bundesstiftung Umwelt",
+      "ids": [
+        "stiftung-deutsche-bundesstiftung-umwelt-55",
+        "stiftung-deutsche-bundesstiftung-umwelt-dbu-56"
+      ]
+    },
+    {
+      "titel": "Stiftung Deutsches Hilfswerk / Deutsche Fernsehlotterie",
+      "ids": [
+        "stiftung-deutsche-fernsehlotterie-stiftung-deutsches-hilf-57",
+        "stiftung-stiftung-deutsches-hilfswerk-deutsche-fernsehlot-190"
+      ]
+    },
+    {
+      "titel": "Zentralverband des Deutschen Handwerks",
+      "ids": [
+        "stiftung-zdh-dhkt-227",
+        "stiftung-zentralverband-des-deutschen-handwerks-230",
+        "stiftung-zentralverband-des-deutschen-handwerks-zdh-231"
+      ]
+    },
+    {
+      "titel": "Stiftung Bildung",
+      "ids": [
+        "stiftung-foerderfonds-handwerk-stiftung-bildung-wolfgang-82",
+        "stiftung-stiftung-bildung-181",
+        "stiftung-stiftung-bildung-foerderfonds-handwerk-mit-wolfg-185"
+      ]
+    },
+    {
+      "titel": "Initiative Bürgerstiftungen",
+      "ids": [
+        "stiftung-initiative-buergerstiftungen-aktive-buergerschaf-105",
+        "stiftung-initiative-bürgerstiftungen-dachverband-aktive-b-106"
+      ]
+    },
+    {
+      "titel": "Schöpflin Stiftung",
+      "ids": [
+        "stiftung-schoepflin-stiftung-156",
+        "stiftung-schöpflin-stiftung-157"
+      ]
+    },
+    {
+      "titel": "Software AG-Stiftung",
+      "ids": [
+        "stiftung-software-ag-stiftung-164",
+        "stiftung-software-ag-stiftung-sagst-165",
+        "stiftung-software-ag-stiftung-sagst-runde-2-detail-166"
+      ]
+    },
+    {
+      "titel": "Sparkassen-Kulturstiftung Hessen-Thüringen",
+      "ids": [
+        "stiftung-sparkassen-kulturstiftung-hessen-thueringen-169",
+        "stiftung-sparkassen-kulturstiftung-hessen-thüringen-170"
+      ]
+    },
+    {
+      "titel": "Stiftung Bildung und Handwerk",
+      "ids": [
+        "stiftung-stiftung-bildung-handwerk-kreishandwerker-stiftu-182",
+        "stiftung-stiftung-bildung-und-handwerk-183",
+        "stiftung-stiftung-bildung-und-handwerk-sbh-184"
+      ]
+    },
+    {
+      "titel": "Stiftung Bürgerengagement Saar",
+      "ids": [
+        "stiftung-stiftung-buergerengagement-saar-186",
+        "stiftung-stiftung-bürgerengagement-saar-188"
+      ]
+    },
+    {
+      "titel": "Umweltstiftung Michael Otto",
+      "ids": [
+        "stiftung-umweltstiftung-michael-otto-208",
+        "stiftung-umweltstiftung-michael-otto-otto-group-209",
+        "stiftung-umweltstiftung-michael-otto-frueher-michael-otto-210"
+      ]
+    },
+    {
+      "titel": "VINCI Stiftung",
+      "ids": [
+        "stiftung-vinci-stiftung-211",
+        "stiftung-vinci-stiftung-deutschland-212",
+        "stiftung-vinci-stiftung-fuer-gesellschaftliche-verantwort-213"
+      ]
+    },
+    {
+      "titel": "Wübben Stiftung Bildung",
+      "ids": [
+        "stiftung-wuebben-stiftung-bildung-224",
+        "stiftung-wübben-stiftung-bildung-226"
+      ]
+    },
+    {
+      "titel": "Deutsche Kinder- und Jugendstiftung",
+      "ids": [
+        "stiftung-deutsche-kinder-und-jugendstiftung-58",
+        "stiftung-deutsche-kinder-und-jugendstiftung-dkjs-59"
+      ]
+    },
+    {
+      "titel": "Bürgerstiftung für die Stadt und den Landkreis Kassel",
+      "ids": [
+        "stiftung-buergerstiftung-fuer-die-stadt-und-den-landkreis-32",
+        "stiftung-bürgerstiftung-für-die-stadt-und-den-landkreis-k-40"
+      ],
+      "anlass": "02.10.2026: beim Auffächern der Karte gefunden, Umlaut und ue als zwei Einträge"
+    }
+  ],
+  "nachfolger": [
+    {
+      "ids": [
+        "stiftung-allianz-kulturstiftung-8",
+        "stiftung-allianz-umweltstiftung-9"
+      ],
+      "titel": "Allianz Foundation",
+      "strasse": "Pariser Platz 6",
+      "plz": "10117",
+      "ort": "Berlin",
+      "website": "https://allianzfoundation.org",
+      "quelle": "https://allianzfoundation.org/de/legal-notice/",
+      "grund": "Allianz Kulturstiftung und Allianz Umweltstiftung gingen 2022 in der Allianz Foundation auf."
+    }
+  ],
+  "entfernen": [
+    {
+      "id": "stiftung-beiersdorf-csr-keine-formale-stiftung-24",
+      "grund": "Kein eigenstaendiges Stiftungsvehikel gefunden, sondern CSR-Programm der Beiersdorf AG. Sitz der Beiersdorf AG laut Impressum: Unnastrasse 48, 20245 Hamburg, diese Anschrift gehoert nicht zu einer Stiftung und wurde daher nicht als Stiftung"
+    },
+    {
+      "id": "stiftung-christophorus-stiftung-43",
+      "grund": "Keine eigenstaendige Christophorus-Stiftung mit Sitz Filderstadt auffindbar. Mehrere gleichnamige Stiftungen existieren (u.a. Stuttgart, Duisburg), keine davon in Filderstadt."
+    },
+    {
+      "id": "stiftung-deichmann-förderpreis-berufsbildung-47",
+      "grund": "Kein eigenstaendiges Programm oder Rechtstraeger unter diesem Namen auf der Website der DEICHMANN-Stiftung auffindbar."
+    },
+    {
+      "id": "stiftung-damus-donata-stiftung-50",
+      "grund": "Keine Stiftung dieses Namens mit Sitz Karlsruhe verifizierbar. Auffindbar ist nur der Verein DAMUS-DONATA e.V. (mitgegruendet von Goetz Werner), Lameystraße 34, 68165 Mannheim - andere Rechtsform und anderer Ort als angegeben."
+    },
+    {
+      "id": "stiftung-damus-donata-stiftung-götz-werner-51",
+      "grund": "Siehe stiftung-damus-donata-stiftung-50: nur DAMUS-DONATA e.V., Mannheim, verifizierbar."
+    },
+    {
+      "id": "stiftung-damus-donata-stiftung-werner-familie-dm-runde-2-52",
+      "grund": "Siehe stiftung-damus-donata-stiftung-50: nur DAMUS-DONATA e.V., Mannheim, verifizierbar."
+    },
+    {
+      "id": "stiftung-diakonie-stiftung-frankfurt-am-main-71",
+      "grund": "Keine eigenstaendige 'Diakonie-Stiftung Frankfurt am Main' von der Diakonie Hessen (Sitz Frankfurt) unterscheidbar verifizierbar."
+    },
+    {
+      "id": "stiftung-ekkw-innovations-kanal-75",
+      "grund": "Kein eigenstaendiger Rechtstraeger/Stiftung; im Impressum der Evangelischen Kirche von Kurhessen-Waldeck (Wilhelmshoeher Allee 330, 34131 Kassel) nicht erwaehnt. Vermutlich ein internes Projekt/Format der EKKW, keine Stiftung."
+    },
+    {
+      "id": "stiftung-glücksspirale-denkmal-sport-wohlfahrt-93",
+      "grund": "Keine eigenstaendige Stiftung. Die GluecksSpirale ist ein Lotterieprodukt des Deutschen Lotto- und Totoblocks, das Mittel an BAGFW, DOSB und Deutsche Stiftung Denkmalschutz ausschuettet. Kein einheitlicher Sitz mit eigener Anschrift auffind"
+    },
+    {
+      "id": "stiftung-michaela-gloeckler-stiftung-139",
+      "grund": "Keine eigenstaendige 'Michaela Gloeckler Stiftung' mit Sitz Berlin auffindbar. Michaela Gloeckler ist u.a. mit der Stiftung ELIANT (Sternbergstrasse 27/2, 72532 Gomadingen) und der Foerderstiftung Anthroposophische Medizin (Dornach, Schweiz"
+    },
+    {
+      "id": "stiftung-rossmann-engagement-kein-reine-stiftung-153",
+      "grund": "Laut Quelldaten keine eigenstaendige Stiftung. Eine Website mit Impressum fuer ein dediziertes Rossmann-Stiftungsvehikel liess sich nicht aufrufen/verifizieren."
+    },
+    {
+      "id": "stiftung-rudolf-steiner-fonds-für-wiss-forschung-154",
+      "grund": "Keine verifizierbare eigene Webseite oder Impressum-Eintrag gefunden; vermuteter Sitz Nürnberg konnte nicht bestaetigt werden."
+    },
+    {
+      "id": "stiftung-aldi-nord-stiftungs-gmbh-1",
+      "grund": "ALDI Nord Stiftungs GmbH (HRB 26912, Amtsgericht Essen) ist am 21.11.2023 geloescht worden, verschmolzen auf ALDI Nord Holding Stiftung & Co. KG. Letzte bekannte Anschrift der Unternehmensgruppe laut mehreren Handelsregisterportalen (firmen"
+    }
+  ]
 }
