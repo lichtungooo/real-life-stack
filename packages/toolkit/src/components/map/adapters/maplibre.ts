@@ -881,7 +881,7 @@ export class MapLibreMapAdapter implements MapAdapter, GlobeCapable, ClusterCapa
     map.on("mouseenter", MARKER_FREE_LAYER, () => { map.getCanvas().style.cursor = "pointer" })
     // NAHT trustdonation (A-Cluster): the fan keeps its screen size across zoom levels.
     map.on("zoomend", () => {
-      if (this.fanActive && this.lastMarkers) void this.setMarkersAsync(this.lastMarkers)
+      if (this.fanActive && this.lastMarkers) this.reapplyMarkersSafely(this.lastMarkers)
     })
     map.on("mouseleave", MARKER_FREE_LAYER, () => { map.getCanvas().style.cursor = "" })
     // Cluster click → notify listeners + zoom in until the cluster breaks apart.
