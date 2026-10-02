@@ -168,3 +168,40 @@ describe("Der Import laesst dem Browser Luft (01.10.2026: Seite reagierte nicht)
     expect(optionen.every((o) => (o as { group?: string })?.group === "space-td")).toBe(true)
   })
 })
+
+describe("Namenlose Reste aus einem früheren Lauf (Kimi, 02.10.2026, kritisch)", () => {
+  it("erkennt nur Orte ohne Namen, deren Felder alle aus dem Nachtrag stammen", async () => {
+    const { stiftungsReste } = await import("../src/stiftungen-import.js")
+    const reste = stiftungsReste([
+      { id: "rest-1", type: "place", data: { icon: "hands" } },
+      { id: "rest-2", type: "place", data: { address: "Kölnische Straße 8, Kassel", position: { type: "Point", coordinates: [9.49, 51.31] }, ortGenauigkeit: "anschrift", icon: "hands" } },
+      { id: "heil", type: "place", data: { title: "Bürgerstiftung", icon: "hands" } },
+      { id: "fremder-ort", type: "place", data: { beschreibung: "Ein Garten ohne Titel" } },
+      { id: "leer", type: "place", data: {} },
+      { id: "aufgabe", type: "task", data: { icon: "hands" } },
+    ])
+    expect(reste.map((r) => r.id)).toEqual(["rest-1", "rest-2"])
+  })
+
+  it("ein Lauf räumt die Reste fort und schreibt die Stiftung vollständig", async () => {
+    const { stiftungenSchreiben } = await import("../src/stiftungen-import.js")
+    const { musterItems } = await import("@trustdonation/core/musterdaten")
+    const erste = musterItems.find((i) => String(i.id).startsWith("stiftung-"))!
+    const titel = (erste.data as { title: string }).title
+    // Der Zustand nach dem alten Fehler: die Stiftung nur noch als Rest.
+    const gespeichert = new Map<string, { type: string; data: Record<string, unknown> }>([
+      ["rest", { type: "place", data: { icon: "hands", address: (erste.data as { address?: string }).address ?? "x" } }],
+    ])
+    const connector = {
+      getItems: async () => [...gespeichert].map(([id, i]) => ({ id, ...i })),
+      createItem: async (i: { type: string; data: Record<string, unknown> }) => { gespeichert.set(`neu-${gespeichert.size}`, { type: i.type, data: { ...i.data } }) },
+      updateItem: async (id: string, u: { data?: Record<string, unknown> }) => { gespeichert.set(id, { ...gespeichert.get(id)!, data: { ...(u.data ?? {}) } }) },
+      deleteItem: async (id: string) => { gespeichert.delete(id) },
+    }
+    let ende: { entfernt?: number } | null = null
+    await stiftungenSchreiben(connector as never, (s) => { if (s.art === "fertig") ende = s }, undefined, async () => {})
+    expect(gespeichert.has("rest")).toBe(false)
+    expect([...gespeichert.values()].some((i) => i.data.title === titel)).toBe(true)
+    expect(ende).toMatchObject({ entfernt: 1 })
+  })
+})

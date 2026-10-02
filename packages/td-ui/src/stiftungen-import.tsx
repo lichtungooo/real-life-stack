@@ -21,9 +21,9 @@ import type { DataInterface, CreateItemInput, Item } from "@real-life-stack/data
 
 export type ImportStand =
   | { art: "ruht" }
-  | { art: "fragt"; anzahl: number }
+  | { art: "fragt"; anzahl: number; vorhanden: number; reste: number }
   | { art: "laeuft"; fertig: number; gesamt: number }
-  | { art: "fertig"; geschrieben: number; uebersprungen: number }
+  | { art: "fertig"; geschrieben: number; uebersprungen: number; entfernt: number }
   | { art: "fehler"; text: string }
 
 /** Nur die Stiftungen, nicht die übrigen Musterdaten.
@@ -48,6 +48,31 @@ export function importZiel<G extends { id: string; name: string; data?: unknown 
 
 /** Was ein zweiter Lauf an einer schon eingespielten Stiftung nachzieht. */
 const NACHZUG = ["icon", "address", "position", "sitz", "ortGenauigkeit", "website", "anschriftQuelle"] as const
+
+/**
+ * Namenlose Reste aus einem früheren Lauf (Kimi, 02.10.2026, kritisch).
+ *
+ * Bis proto-66 schickte der Nachtrag nur die geänderten Felder, und jeder
+ * Connector ersetzt `data` ganz. Eine Stiftung, die schon vor dem 1. Oktober
+ * im Space lag, schrumpfte so auf Symbol, Ort und Anschrift, ohne Namen. Der
+ * nächste Lauf fand sie am Namen nicht mehr und schrieb sie neu. Übrig bleibt
+ * ein Ort ohne Namen, dessen Felder alle aus dem Nachtrag stammen.
+ */
+export function stiftungsReste<I extends { id: string; type?: string; data?: unknown }>(items: readonly I[]): I[] {
+  const erlaubt = new Set<string>([...NACHZUG, "color"])
+  return items.filter((i) => {
+    if (i.type !== undefined && i.type !== "place") return false
+    const d = (i.data ?? {}) as Record<string, unknown>
+    const titel = typeof d.title === "string" ? d.title.trim() : ""
+    const felder = Object.keys(d)
+    return titel === "" && felder.length > 0 && felder.every((k) => erlaubt.has(k))
+  })
+}
+
+/** Die Orte im Ziel-Space, nicht in allen Spaces des Menschen. */
+async function orteImSpace(connector: DataInterface, ziel?: string): Promise<Item[]> {
+  return connector.getItems({ type: "place", ...(ziel ? { group: ziel } : {}) })
+}
 
 /**
  * Was an einer schon eingespielten Stiftung nachgezogen wird, oder `null`.
@@ -80,6 +105,7 @@ export async function stiftungenSchreiben(
   connector: DataInterface & {
     createItem?: (i: CreateItemInput, options?: { group?: string }) => Promise<unknown>
     updateItem?: (id: string, updates: Partial<Item>) => Promise<unknown>
+    deleteItem?: (id: string) => Promise<unknown>
   },
   melden: (stand: ImportStand) => void,
   /** Der Space, in den geschrieben wird; ohne Angabe der gerade offene. */
@@ -96,12 +122,28 @@ export async function stiftungenSchreiben(
   // Titel -> was schon da ist, damit ein zweiter Lauf nachtraegt, was neu
   // dazukam, statt nur nichts zu verdoppeln.
   let vorhanden = new Map<string, { id: string; data: Record<string, unknown> }>()
+  let reste: Item[] = []
   try {
-    const da = await connector.getItems({ type: "place" })
-    vorhanden = new Map(da.map((i) => [String((i.data as { title?: string })?.title ?? ""), { id: i.id, data: (i.data ?? {}) as Record<string, unknown> }]))
+    const da = await orteImSpace(connector, ziel)
+    reste = stiftungsReste(da)
+    vorhanden = new Map(
+      da
+        .filter((i) => String((i.data as { title?: string })?.title ?? "").trim() !== "")
+        .map((i) => [String((i.data as { title?: string }).title), { id: i.id, data: (i.data ?? {}) as Record<string, unknown> }]),
+    )
   } catch {
     // Wenn die Liste nicht kommt, wird eben alles versucht. Doppelte sind
     // ärgerlich, ein Abbruch wäre schlimmer.
+  }
+
+  // Zuerst die namenlosen Reste fort: Sie tragen nichts, was die Stiftungen
+  // unten nicht vollständig mitbringen.
+  let entfernt = 0
+  if (typeof connector.deleteItem === "function") {
+    for (const rest of reste) {
+      await pause()
+      try { await connector.deleteItem(rest.id); entfernt++ } catch { /* bleibt, wird gemeldet */ }
+    }
   }
 
   let geschrieben = 0
@@ -140,7 +182,7 @@ export async function stiftungenSchreiben(
       uebersprungen++
     }
   }
-  melden({ art: "fertig", geschrieben, uebersprungen })
+  melden({ art: "fertig", geschrieben, uebersprungen, entfernt })
 }
 
 /**
@@ -190,8 +232,14 @@ export function StiftungenImport({
         return
       }
       const meins = ++lauf.current
-      stiftungen()
-        .then((liste) => { if (lauf.current === meins) setStand({ art: "fragt", anzahl: liste.length }) })
+      Promise.all([stiftungen(), connector ? orteImSpace(connector, zielId).catch(() => [] as Item[]) : Promise.resolve([] as Item[])])
+        .then(([liste, orte]) => {
+          if (lauf.current !== meins) return
+          const reste = stiftungsReste(orte).length
+          const titel = new Set(liste.map((i) => String((i.data as { title?: string })?.title ?? "")))
+          const vorhanden = orte.filter((o) => titel.has(String((o.data as { title?: string })?.title ?? ""))).length
+          setStand({ art: "fragt", anzahl: liste.length, vorhanden, reste })
+        })
         .catch(() => { if (lauf.current === meins) setStand({ art: "fehler", text: "Die Daten ließen sich nicht laden. Seite neu laden und noch einmal versuchen." }) })
     }
   }, [aktiv, weg, beispielwelt, ohneZiel, stand.art])
@@ -212,8 +260,17 @@ export function StiftungenImport({
               sie, und sie synchronisieren über das Relay.
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
-              Was schon da ist, bleibt unberührt.
+              {stand.vorhanden > 0
+                ? `${stand.vorhanden} davon liegen schon im Space; bei ihnen wird nur ergänzt, was fehlt.`
+                : "Was schon da ist, bleibt unberührt."}
             </p>
+            {stand.reste > 0 && (
+              <p className="mt-2 rounded-md bg-amber-50/70 p-2 text-sm dark:bg-amber-950/40">
+                {stand.reste} namenlose Reste aus einem früheren Lauf gefunden: Orte nur mit Symbol und
+                Anschrift, ohne Namen. Sie werden entfernt; die Stiftungen selbst werden vollständig
+                geschrieben.
+              </p>
+            )}
             <div className="mt-5 flex justify-end gap-2">
               <button
                 type="button"
@@ -262,7 +319,8 @@ export function StiftungenImport({
             <h2 className="text-lg font-semibold">Fertig</h2>
             <p className="mt-2 text-sm text-muted-foreground">
               {stand.geschrieben} Stiftungen geschrieben
-              {stand.uebersprungen > 0 ? `, ${stand.uebersprungen} übersprungen (waren schon da)` : ""}.
+              {stand.uebersprungen > 0 ? `, ${stand.uebersprungen} übersprungen (waren schon da)` : ""}
+              {stand.entfernt > 0 ? `, ${stand.entfernt} namenlose Reste entfernt` : ""}.
             </p>
             <div className="mt-5 flex justify-end">
               <button
