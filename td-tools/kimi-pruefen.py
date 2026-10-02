@@ -9,6 +9,8 @@ hatten. Darum läuft dieses Werkzeug vor jeder Auslieferung, in zwei Runden.
     python td-tools/kimi-pruefen.py --runde2     # Runde 2: prüft die Korrekturen, gleiche Sitzung
     python td-tools/kimi-pruefen.py --basis <ref>
     python td-tools/kimi-pruefen.py --zeigen     # nur, was geprüft würde, ohne Kimi
+    python td-tools/kimi-pruefen.py --basis 31d13fc3 --nur packages/td-core
+                                                 # Nachprüfung eines Bereichs, nie eine Freigabe
 
 Rückgabe 1, wenn Kimi einen kritischen Befund meldet oder Dateien verändert
 hat. Der Bericht liegt in td-tools/berichte/kimi-*.md, die Liste aller
@@ -257,7 +259,12 @@ def main():
     ap.add_argument("--basis")
     ap.add_argument("--runde2", action="store_true")
     ap.add_argument("--zeigen", action="store_true")
+    # Nachprüfung nach Bereichen (Timo, 02.10.2026: die nie geprüften Stände
+    # nachholen). Der Unterschied zu Antons Stand ist zu groß für einen Lauf.
+    ap.add_argument("--nur", nargs="+", metavar="PFAD",
+                    help="nur diese Pfade prüfen; der Bericht zählt nie als Freigabe")
     a = ap.parse_args()
+    nur = [p.replace("\\", "/").rstrip("/") for p in (a.nur or [])]
 
     if a.basis:
         basis, name = a.basis, a.basis
@@ -266,10 +273,12 @@ def main():
     basis_commit = git("rev-parse", basis + "^{commit}").strip()
 
     # Gegen den Arbeitsbaum, damit auch noch nicht Eingechecktes geprüft wird.
-    patch_text = git("diff", basis, "--", ".", *AUSSEN_VOR) + lock_zusammenfassung(basis)
+    patch_text = (git("diff", basis, "--", *(nur or ["."]), *AUSSEN_VOR)
+                  + ("" if nur else lock_zusammenfassung(basis)))
     neu = [p for p in git("ls-files", "--others", "--exclude-standard").splitlines()
            if p.endswith((".ts", ".tsx", ".js", ".mjs", ".py", ".json", ".css"))
-           and "berichte/" not in p]
+           and "berichte/" not in p
+           and (not nur or any(p == n or p.startswith(n + "/") for n in nur))]
     for pfad in neu:
         inhalt = (REPO / pfad).read_text(encoding="utf-8", errors="replace")
         patch_text += f"\n--- /dev/null\n+++ b/{pfad} (neu, noch nicht eingecheckt)\n" \
@@ -343,11 +352,17 @@ def main():
             f"- Basis-Commit: `{basis_commit}`\n"
             f"- Dateien: {len(dateien)}\n- Dauer: {sekunden} s\n- Sitzung: `{sitzung}`\n"
             f"- Stand: `{stand}`\n- Sauber: {'ja' if sauber else 'nein (Code nicht eingecheckt, zählt nicht fürs Ausliefer-Tor)'}\n")
+    if nur:
+        # Darauf prüft das Ausliefer-Tor: Ein Bericht mit Bereich ist nie eine Freigabe.
+        kopf += f"- Bereich: {', '.join(nur)}\n"
     if veraendert:
         kopf += ("\n**⚠ Während der Prüfung haben sich Dateien verändert** (Kimi oder eine andere "
                  "Sitzung): " + ", ".join(f"`{p}`" for p in veraendert[:10]) + "\n")
     bericht.write_text(kopf + "\n" + antwort.strip() + "\n", encoding="utf-8")
-    MERKER.write_text(json.dumps({"sitzung": sitzung, "basis": basis}), encoding="utf-8")
+    # Eine Nachprüfung überschreibt die gemerkte Sitzung nicht: Runde 2 einer
+    # Auslieferung soll an deren Runde 1 anschließen, nicht an einen Bereich.
+    if not nur:
+        MERKER.write_text(json.dumps({"sitzung": sitzung, "basis": basis}), encoding="utf-8")
 
     if not LISTE.exists():
         LISTE.write_text("# Prüfkreis: alle Läufe\n\n"
