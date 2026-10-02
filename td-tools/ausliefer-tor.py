@@ -141,6 +141,9 @@ def main():
         if not ohne_kimi:
             sys.exit('--ohne-kimi braucht einen Grund, etwa --ohne-kimi "nur Musterdaten"')
 
+    # Jede Freigabe gilt nur für den Lauf, der sie schreibt. Eine alte Datei
+    # bewiese sonst eine Freigabe, die es nicht mehr gibt (Kimi, Runde 2, Befund 3).
+    FREIGABE.unlink(missing_ok=True)
     lauf("git", "fetch", "-q", "fork", "trustdonation")
     sha = lauf("git", "rev-parse", "fork/trustdonation").strip()
     kopf = lauf("git", "rev-parse", "HEAD").strip()

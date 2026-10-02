@@ -49,7 +49,7 @@ AUSSEN_VOR = [
     ":(exclude)**/*.svg", ":(exclude)docs/**", ":(exclude)td-tools/berichte/**",
     ":(exclude)**/*.md",
 ]
-GROESSTER_UNTERSCHIED = 400_000  # Zeichen; darüber wird es teuer und unscharf
+GROESSTER_UNTERSCHIED = 150_000  # Zeichen je Teil, das Kimi am Stück liest
 
 AUFTRAG_1 = """Du bist der Prüfer im Prüfkreis. Claude hat gebaut, du prüfst.
 Repo: Fork des Real Life Stack (TypeScript, React, pnpm). Eigene Pakete:
@@ -284,16 +284,33 @@ def main():
         return 0
     if a.zeigen:
         return 0
-    if len(patch_text) > GROESSTER_UNTERSCHIED:
-        sys.exit(f"Unterschied zu groß ({len(patch_text):,} Zeichen). "
-                 "Mit --basis näher heranrücken oder in Teilen prüfen.")
     if not KIMI.exists():
         sys.exit(f"Kimi fehlt unter {KIMI}.")
 
     BERICHTE.mkdir(exist_ok=True)
     stempel = stempel_jetzt()
-    patch = BERICHTE / f".kimi-{stempel}.patch"
-    patch.write_text(patch_text, encoding="utf-8")
+    # Ein großer Unterschied geht in Teilen an Kimi, in EINEM Lauf mit EINER
+    # Basis. Früher brach das Werkzeug ab und riet zu --basis; solche Berichte
+    # sperrt das Tor aber zu Recht (Kimi, 02.10.2026, Runde 2, Befund 1).
+    abschnitte = re.split(r"(?m)^(?=diff --git |--- /dev/null\n|--- a/pnpm-lock\.yaml\n)", patch_text)
+    teile, jetzt = [], ""
+    for ab in abschnitte:
+        if jetzt and len(jetzt) + len(ab) > GROESSTER_UNTERSCHIED:
+            teile.append(jetzt)
+            jetzt = ""
+        jetzt += ab
+    if jetzt:
+        teile.append(jetzt)
+    patches = []
+    for i, teil in enumerate(teile, 1):
+        p = BERICHTE / (f".kimi-{stempel}.patch" if len(teile) == 1 else f".kimi-{stempel}-teil{i}.patch")
+        p.write_text(teil, encoding="utf-8")
+        patches.append(p)
+    if len(teile) > 1:
+        print(f"Großer Unterschied: {len(teile)} Teile, Kimi liest alle in einem Lauf. Das dauert.")
+    patch_liste = "\n  ".join(p.relative_to(REPO).as_posix() for p in patches)
+    if len(patches) > 1:
+        patch_liste += f"\n(ein Unterschied in {len(patches)} Teilen: lies alle, bevor du urteilst)"
 
     sitzung = None
     if a.runde2:
@@ -304,9 +321,9 @@ def main():
             sys.exit(f"Die Basis hat sich bewegt: Runde 1 lief gegen {gemerkt.get('basis')}, "
                      f"jetzt {basis}. Erst eine neue Runde 1.")
         sitzung = gemerkt["sitzung"]
-        auftrag = AUFTRAG_2.format(basis=name, patch=patch.relative_to(REPO).as_posix())
+        auftrag = AUFTRAG_2.format(basis=name, patch=patch_liste)
     else:
-        auftrag = AUFTRAG_1.format(basis=name, patch=patch.relative_to(REPO).as_posix())
+        auftrag = AUFTRAG_1.format(basis=name, patch=patch_liste)
 
     stand, sauber = stand_und_sauber()
     vorher = zustand_der_dateien()
@@ -314,7 +331,8 @@ def main():
     antwort, sitzung, sekunden = kimi(auftrag, sitzung)
     nachher = zustand_der_dateien()
     veraendert = sorted(p for p in set(vorher) | set(nachher) if vorher.get(p) != nachher.get(p))
-    patch.unlink(missing_ok=True)
+    for p in patches:
+        p.unlink(missing_ok=True)
 
     befunde, kritisch = ergebnis(antwort)
 
