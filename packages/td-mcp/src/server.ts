@@ -26,6 +26,8 @@ export interface ServerOptionen {
   appUrl?: string
   /** Anschrift zu Koordinaten. Standard: Nominatim (OpenStreetMap). */
   geocode?: (anschrift: string) => Promise<{ lat: number; lng: number } | null>
+  /** Für welches Netzwerk der Server spricht (DEFINITION 13.7). Standard: trustdonation. */
+  netzwerk?: string
 }
 
 export const APP_URL = "https://trustdonation.org/app"
@@ -109,14 +111,15 @@ export async function link(entwurf: Record<string, unknown>, optionen: ServerOpt
 }
 
 export function createServer(optionen: ServerOptionen = {}): McpServer {
-  const server = new McpServer({ name: "trustdonation-profil", version: "0.1.0" })
+  const netzwerk = optionen.netzwerk ?? "trustdonation"
+  const server = new McpServer({ name: `${netzwerk.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-profil`, version: "0.2.0" })
 
   server.registerTool(
     "projekt_profil_vorgabe",
     {
       title: "Vorgabe für ein Projektprofil",
       description:
-        "Gibt den Ablauf, die Felder eines Projektprofils für trustdonation (mit Frage, Form und ob es ein Kernfeld ist), die Regeln und ein vollständiges Beispiel. Zuerst aufrufen.",
+        `Gibt den Ablauf, die Felder eines Projektprofils für das Netzwerk ${netzwerk} (mit Frage, Form und ob es ein Kernfeld ist), die Regeln und ein vollständiges Beispiel. Zuerst aufrufen.`,
       inputSchema: {},
     },
     async () => {

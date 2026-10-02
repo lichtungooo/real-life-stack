@@ -14,6 +14,23 @@ Definition: `docs/DEFINITION.md`, Abschnitt 13.6.
 | `projekt_profil_pruefen` | was erscheint, was fehlt, was verworfen wird |
 | `projekt_profil_link` | prüft, ergänzt die Koordinaten zur Anschrift (OpenStreetMap) und gibt den Link |
 
+## Für alle: der Server des Netzwerks
+
+trustdonation bietet den Server selbst an (DEFINITION 13.7). Nichts zu installieren, nur die Adresse eintragen:
+
+**`https://trustdonation.org/mcp`**
+
+| Agent | So |
+|---|---|
+| claude.ai | Einstellungen → Connectors → eigenen Connector hinzufügen, Adresse oben |
+| Claude Desktop | wie claude.ai (eigener Connector) |
+| Claude Code | `claude mcp add --transport http trustdonation-profil https://trustdonation.org/mcp` |
+| Kimi Code | in `~/.kimi-code/mcp.json`: `"trustdonation-profil": { "url": "https://trustdonation.org/mcp" }` |
+
+Der Server hält nichts: kein Konto, kein Speicher, jede Anfrage steht für sich. Die Ortssuche fragt OpenStreetMap höchstens einmal je Sekunde für alle und merkt sich jede Anschrift.
+
+Ein anderes Netzwerk betreibt denselben Server mit eigener Einstellung: `TD_NETZWERK` (Name) und `TD_APP_URL` (wohin der Link führt). Bauplan: `deploy/mcp/`.
+
 ## Bauen
 
 ```bash
@@ -21,7 +38,7 @@ pnpm --filter @trustdonation/core build
 pnpm --filter @trustdonation/mcp build
 ```
 
-## Einrichten
+## Einrichten (stdio, bei sich)
 
 Der Server läuft über stdio. Pfad anpassen.
 

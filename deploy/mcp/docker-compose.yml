@@ -1,0 +1,29 @@
+# Die Begleitung von trustdonation unter https://trustdonation.org/mcp
+# (DEFINITION 13.7). Eigenes Compose-Projekt neben der App-Instanz, im
+# selben Docker-Netz `bridge` wie Traefik und die App.
+#
+#   cd ~/build/td-app && docker build -f deploy/mcp/Dockerfile -t trustdonation-mcp:<n> .
+#   cd ~/apps/td-mcp && TD_MCP_TAG=<n> docker compose up -d
+services:
+  mcp:
+    image: trustdonation-mcp:${TD_MCP_TAG:?TD_MCP_TAG fehlt}
+    container_name: td-mcp
+    restart: unless-stopped
+    network_mode: bridge
+    environment:
+      TD_APP_URL: https://trustdonation.org/app
+      TD_NETZWERK: trustdonation
+    mem_limit: 256m
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.td-mcp.rule=Host(`trustdonation.org`) && PathPrefix(`/mcp`)"
+      - "traefik.http.routers.td-mcp.entrypoints=websecure"
+      - "traefik.http.routers.td-mcp.tls.certresolver=letsencrypt"
+      # Vor der App: /mcp gehört diesem Dienst.
+      - "traefik.http.routers.td-mcp.priority=100"
+      # Je Absender höchstens 60 Anfragen je Minute (Schutz, kein Konto nötig).
+      - "traefik.http.middlewares.td-mcp-takt.ratelimit.average=60"
+      - "traefik.http.middlewares.td-mcp-takt.ratelimit.period=1m"
+      - "traefik.http.middlewares.td-mcp-takt.ratelimit.burst=20"
+      - "traefik.http.routers.td-mcp.middlewares=td-mcp-takt"
+      - "traefik.http.services.td-mcp.loadbalancer.server.port=8787"

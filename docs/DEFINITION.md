@@ -708,6 +708,30 @@ Das ist der erste Schritt des dritten Wegs aus 13.4. Der Mensch bringt seinen Ag
 5. **Größe:** Ein Entwurf über 48 KB wird abgelehnt (Bilder als Adressen, nicht eingebettet).
 6. **Was die Werkzeuge nicht tragen:** kein Schreiben in einen Space, keine Schlüssel, keine Bewertung des Projekts, kein Hochladen von Bildern.
 
+### 13.7 Ein MCP-Server je Netzwerk (02.10.2026, von Timo freigegeben)
+
+**Frage:** Was folgt daraus, dass ein Netzwerk einen eigenen MCP-Server für alle seine Mitglieder anbietet?
+
+Timo am 02.10.2026: *"Die Idee ist, dass wir den Begleitungs-MCP-Server pro Netzwerk bauen. trustdonation gibt zum Beispiel ein MCP raus, den dürfen alle benutzen, und die dürfen alle damit ihre Profile bauen."*
+
+Heute (13.6) installiert jeder `td-mcp` bei sich. Künftig bietet ein Netzwerk denselben Server unter seiner eigenen Adresse an, etwa **`https://trustdonation.org/mcp`**. Wer ihn nutzen will, trägt nur diese Adresse in seinen Agenten ein: als eigener Connector in claude.ai oder Claude Desktop, mit `claude mcp add --transport http` in Claude Code, als `url` in Kimis `mcp.json`. Nichts zu installieren.
+
+| | |
+|---|---|
+| **Adresse** | `https://<domain des netzwerks>/mcp`, Transport Streamable HTTP, über Traefik am vorhandenen Zertifikat |
+| **Werkzeuge** | dieselben drei wie in 13.6, keins schreibt |
+| **Je Netzwerk** | App-Adresse für den Link (`TD_APP_URL`), Name des Netzwerks in Ablauf und Beschreibungen; später die Vorgabe aus den Daten des Netzwerks |
+| **Zustand** | keiner: jede Anfrage steht für sich (zustandslos), kein Speicher, keine Konten |
+| **Ortssuche** | über OpenStreetMap, höchstens eine Anfrage je Sekunde für alle (deren Regel), mit Zwischenspeicher je Anschrift |
+| **Schutz** | Begrenzung je Absender (Traefik), Entwürfe bis 48 KB, kein Mitschreiben der Inhalte, nur Zählung der Aufrufe |
+
+Regeln:
+
+1. **Ein Server, viele Netzwerke.** Der Code bleibt `packages/td-mcp`; ein Netzwerk unterscheidet sich nur in seiner Einstellung. Keine zweite Feldliste.
+2. **Der Server hält nichts.** Er speichert keinen Entwurf und keine Anfrage. Der Entwurf lebt weiter nur im Link.
+3. **Der Mensch speichert,** wie in 13.6, mit seiner eigenen Identität.
+4. **Was er nicht trägt:** Anmeldung, Schlüssel, Bezahlung, Schreibrechte in einen Space.
+
 ### 13.5 Regeln
 
 1. Der Companion ist **eine** Fläche und trägt **eine** Werkzeug-Liste. Eine zweite Aufzählung von Werkzeugen ist ein Fehler (Muster 1).
