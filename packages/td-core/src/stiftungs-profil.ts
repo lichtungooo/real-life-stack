@@ -6,8 +6,50 @@
 // Übernimmt eine Stiftung ihr Profil, erscheinen weitere Abschnitte von
 // selbst. Was fehlt, fällt weg; keine Bewertung, keine Passungszahl.
 
-import { text, zahl, texte, janein, sichereUrl, sichererBildPfad, sichereMail, type Roh } from "./schleuse.js"
+import { text, zahl, objekt, liste, texte, janein, sichereUrl, sichererBildPfad, sichereMail, type Roh } from "./schleuse.js"
 import { euro } from "./projekt-profil.js"
+
+/** Die gezeichneten Bildmotive (td-ui `stiftungs-motive`), eins je Förderbereich. */
+export const STIFTUNGS_MOTIVE = /* @__PURE__ */ Object.freeze([
+  "bildung", "umwelt", "kinder", "kultur", "musik", "gesundheit", "soziales", "wissenschaft",
+  "international", "demokratie", "sport", "inklusion", "kirche", "handwerk", "denkmal", "klima", "allgemein",
+] as const)
+export type StiftungsMotiv = (typeof STIFTUNGS_MOTIVE)[number]
+
+export interface StiftungsSchwerpunkt {
+  titel: string
+  text: string | null
+  motiv: StiftungsMotiv
+}
+
+// Welches Motiv zu einem Wort passt; das erste passende gewinnt.
+const MOTIV_WOERTER: [StiftungsMotiv, RegExp][] = [
+  ["musik", /musik|orchester|chor|konzert/i],
+  ["denkmal", /denkmal|baukultur|heimatpflege|kirchenbau|baudenkm/i],
+  ["kirche", /kirche|glaube|religi|seelsorge|diakon|caritas|pastoral/i],
+  ["klima", /klima|energie|erneuerbar/i],
+  ["umwelt", /umwelt|natur|arten|tier|landwirt|ernährung|wasser|wald|garten|nachhaltig/i],
+  ["kinder", /kind|kita|familie/i],
+  ["bildung", /bildung|schul|lern|lese|ausbildung|stipend|begab|studi|pädagog|medien/i],
+  ["wissenschaft", /wissenschaft|forschung|technik|mint|innovation|digital/i],
+  ["kultur", /kultur|kunst|theater|literatur|film|museum/i],
+  ["gesundheit", /gesundheit|medizin|pflege|krank|hospiz/i],
+  ["inklusion", /inklusion|behinder|teilhabe|barriere/i],
+  ["international", /international|entwicklung|europa|global|lateinamerika|afrika|frieden|migration|flucht|integration/i],
+  ["demokratie", /demokratie|gesellschaft|politi|bürger|engagement|ehrenamt|gemeinwesen|zivil|menschenrecht/i],
+  ["sport", /sport|bewegung/i],
+  ["handwerk", /handwerk|beruf|arbeit|wirtschaft|meister|gründ/i],
+  ["soziales", /sozial|armut|wohn|alter|senior|jugend|hilfe/i],
+]
+
+/** Das Bildmotiv zu einem Förderbereich oder Schwerpunkt. */
+export function motivFuer(wort: string): StiftungsMotiv {
+  for (const [motiv, muster] of MOTIV_WOERTER) if (muster.test(wort)) return motiv
+  return "allgemein"
+}
+
+const motivAus = (v: unknown, titel: string): StiftungsMotiv =>
+  typeof v === "string" && (STIFTUNGS_MOTIVE as readonly string[]).includes(v) ? (v as StiftungsMotiv) : motivFuer(titel)
 
 export interface StiftungsProfil {
   titel: string
@@ -48,6 +90,14 @@ export interface StiftungsProfil {
   zweck: string | null
   hinweis: string | null
   bisherGefoerdert: string[]
+  /** Was sie in einem Bereich konkret fördert, höchstens sechs, jeweils mit Bildmotiv. */
+  schwerpunkte: StiftungsSchwerpunkt[]
+  /** Geförderte Projekte mit Namen, höchstens sechs (dazu `bisherGefoerdert` als Titel). */
+  beispiele: { titel: string; text: string | null; ort: string | null; jahr: string | null }[]
+  /** Zahlen für den Kopf: eigene Zahlen, dann Summe, Volumen, Reichweite; höchstens vier. */
+  kennzahlen: { wert: string; was: string }[]
+  /** Wie sie entstanden ist und wer dahinter steht. */
+  herkunft: string | null
   kontakt: {
     website: string | null
     anschrift: string | null
@@ -138,10 +188,25 @@ function summeAus(d: Roh): string | null {
   return null
 }
 
-/** Trägt dieser Eintrag ein Stiftungsprofil? Er sagt, dass er ein Förderer ist. */
-export function traegtStiftungsProfil(daten: Roh | null | undefined): boolean {
-  return Boolean(daten && text(daten.title) && text(daten.foerdererart))
+/** Eigene Zahlen zuerst, dann Summe, Volumen und Reichweite; höchstens vier. */
+function kennzahlenAus(d: Roh): { wert: string; was: string }[] {
+  const aus: { wert: string; was: string }[] = []
+  for (const x of liste(d.zahlen)) {
+    const o = objekt(x)
+    const wert = o ? (typeof o.wert === "number" ? String(o.wert) : text(o.wert)) : null
+    const was = o ? text(o.was) : null
+    if (wert && was) aus.push({ wert, was })
+  }
+  const summe = summeAus(d)
+  if (summe) aus.push({ wert: summe, was: "je Vorhaben" })
+  const volumen = zahl(d.volumenJahr)
+  if (volumen !== null) aus.push({ wert: euro(volumen), was: "Fördervolumen im Jahr" })
+  const reichweite = texte(d.reichweite).map(gross)
+  if (reichweite.length) aus.push({ wert: reichweite.join(", "), was: "Reichweite" })
+  return aus.slice(0, 4)
 }
+
+export { traegtStiftungsProfil } from "./stiftungs-erkennung.js"
 
 export function stiftungsProfil(daten: Roh | null | undefined): StiftungsProfil {
   const d = daten ?? {}
@@ -189,6 +254,25 @@ export function stiftungsProfil(daten: Roh | null | undefined): StiftungsProfil 
     zweck: text(d.zweck),
     hinweis: text(d.hinweis),
     bisherGefoerdert: texte(d.bisherGefoerdert),
+    schwerpunkte: liste(d.schwerpunkte)
+      .map((x) => {
+        const o = objekt(x)
+        const titel = o ? text(o.titel) : text(x)
+        return titel ? { titel, text: o ? text(o.text) : null, motiv: motivAus(o?.motiv, titel) } : null
+      })
+      .filter((x): x is StiftungsSchwerpunkt => x !== null)
+      .slice(0, 6),
+    beispiele: [
+      ...liste(d.beispiele).map((x) => {
+        const o = objekt(x)
+        const titel = o ? text(o.titel) : text(x)
+        const jahr = o ? (typeof o.jahr === "number" ? String(o.jahr) : text(o.jahr)) : null
+        return titel ? { titel, text: o ? text(o.text) : null, ort: o ? text(o.ort) : null, jahr } : null
+      }),
+      ...texte(d.bisherGefoerdert).map((titel) => ({ titel, text: null, ort: null, jahr: null })),
+    ].filter((x): x is { titel: string; text: string | null; ort: string | null; jahr: string | null } => x !== null).slice(0, 6),
+    kennzahlen: kennzahlenAus(d),
+    herkunft: text(d.herkunft),
     kontakt: Object.values(kontakt).some((v) => v !== null) ? kontakt : null,
     geben: Object.values(geben).some((v) => v !== null) ? geben : null,
     quelle: text(d.quelle),

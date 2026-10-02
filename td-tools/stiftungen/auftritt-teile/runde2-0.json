@@ -1,0 +1,560 @@
+{
+  "stiftung-adveniat-2": {
+    "schwerpunkte": [
+      {
+        "titel": "Kinder und Jugendliche",
+        "text": "Adveniat unterstützt Bildungsangebote und sichere Orte für junge Menschen, etwa Anlaufstellen für Kinder auf der Straße in Brasilien.",
+        "motiv": "kinder"
+      },
+      {
+        "titel": "Frauen und Mädchen",
+        "text": "Partnerinnen vor Ort begleiten Frauen nach Gewalt und Armut, bieten Berufskurse an und helfen beim Aufbau eines eigenen Einkommens.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Bildung und Arbeit",
+        "text": "Gefördert werden Schulen, Ausbildung und faire Arbeit, damit Menschen dauerhaft aus der Armut finden.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Indigene Gemeinschaften",
+        "text": "Projekte stärken indigene Völker, schützen ihre Kultur und ihren Lebensraum, etwa im Amazonasgebiet.",
+        "motiv": "international"
+      },
+      {
+        "titel": "Frieden und Menschenrechte",
+        "text": "Adveniat fördert Versöhnungsarbeit und den Einsatz für Menschenrechte, besonders in Kolumbien.",
+        "motiv": "demokratie"
+      },
+      {
+        "titel": "Umwelt und Klima",
+        "text": "Partner vor Ort schützen Mensch und Umwelt vor Schäden und setzen sich für den Erhalt des Amazonas ein.",
+        "motiv": "klima"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Im Einsatz für starke Frauen",
+        "text": "Schwester Marta Iris López begleitet am Stadtrand von Tegucigalpa Frauen in neue Berufe und eine eigene Existenz; 250 Frauen haben diesen Schritt gewagt.",
+        "ort": "Honduras"
+      },
+      {
+        "titel": "Hilfe zur Selbsthilfe mit Gemüsegärten",
+        "text": "Familien legen Gemüsegärten an und sichern so ihre Ernährung.",
+        "ort": "Peru"
+      },
+      {
+        "titel": "Ein sicherer Ort für die Jugend in Tumaco",
+        "text": "Jugendliche finden in Tumaco einen geschützten Ort zum Lernen und Leben.",
+        "ort": "Kolumbien"
+      },
+      {
+        "titel": "Jugendliche werden Botschafter für den Frieden",
+        "text": "Junge Menschen engagieren sich als Friedensbotschafter in ihrem Umfeld.",
+        "ort": "Kolumbien"
+      },
+      {
+        "titel": "Eine Textilschule bringt Hoffnung",
+        "text": "Eine Textilschule eröffnet Frauen berufliche Perspektiven.",
+        "ort": "Mexiko"
+      },
+      {
+        "titel": "Amazonas als Lebensraum der Indigenen retten",
+        "text": "Das Projekt schützt den Amazonas als Lebensraum indigener Gemeinschaften.",
+        "ort": "Brasilien"
+      }
+    ],
+    "zahlen": [
+      { "wert": "rund 800", "was": "Projekte im Jahr" },
+      { "wert": "21", "was": "Länder in Lateinamerika und der Karibik" },
+      { "wert": "30,6 Mio. €", "was": "Förderung im Geschäftsjahr 2025" },
+      { "wert": "95 %", "was": "aus Spenden finanziert" }
+    ],
+    "herkunft": "Adveniat ist das Lateinamerika-Hilfswerk der katholischen Kirche in Deutschland mit Sitz in Essen. 1961 schlug Bischof Franz Hengsbach den deutschen Bischöfen eine Weihnachtskollekte für Lateinamerika vor; 1969 machten die Bischöfe daraus ein festes Hilfswerk. Die Arbeit finanziert sich zu 95 Prozent aus Spenden, besonders aus der Weihnachtskollekte in den katholischen Kirchen."
+  },
+  "stiftung-aktion-mensch-3": {
+    "schwerpunkte": [
+      {
+        "titel": "Inklusiver Sozialraum",
+        "text": "Aktion Mensch fördert Projekte, die Menschen mit und ohne Behinderung in der Freizeit zusammenbringen, etwa über das Angebot „Sport und Kultur vor Ort“.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Inklusiver Arbeitsmarkt",
+        "text": "Gefördert werden Arbeitsplätze in Inklusionsunternehmen und Zuverdienstbetrieben, die sichere Arbeit mit fairer Bezahlung bieten.",
+        "motiv": "inklusion"
+      },
+      {
+        "titel": "Inklusives Wohnen und Bauen",
+        "text": "Aktion Mensch fördert inklusive Wohnprojekte, etwa in Wunstorf-Luthe.",
+        "motiv": "inklusion"
+      },
+      {
+        "titel": "Junge Menschen stärken",
+        "text": "Projekte sollen Kindern und Jugendlichen Selbstwirksamkeit und Selbstvertrauen geben und sie aktiv beteiligen.",
+        "motiv": "kinder"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "PoPUpKiez-Werkstätten",
+        "text": "Der Spirit of Football e. V. öffnet inklusive Werkstätten, in denen Kinder und Jugendliche eigene Projekte für ihren Stadtteil entwickeln."
+      },
+      {
+        "titel": "Inklusives Kunstatelier",
+        "text": "Menschen mit und ohne Behinderung malen, töpfern und werken gemeinsam in einer offenen Tonwerkstatt.",
+        "ort": "Nürnberg"
+      },
+      {
+        "titel": "Catering der Hand.Fest gGmbH",
+        "text": "Ein gemischtes Team kocht für Kitas, Schulen und Feste; rund die Hälfte der Beschäftigten lebt mit einer Behinderung.",
+        "ort": "Berlin"
+      },
+      {
+        "titel": "Abenteuer Politik: Demokratie erleben",
+        "text": "Die Lebenshilfe Gießen stärkt die politische Bildung und Teilhabe von Menschen mit Behinderung.",
+        "ort": "Gießen"
+      },
+      {
+        "titel": "Die Retro-Schrauber",
+        "text": "Ein Werkstattprojekt vermittelt Jugendlichen handwerkliches Können und Teamgeist."
+      },
+      {
+        "titel": "Inklusives Wohnprojekt",
+        "text": "In Wunstorf-Luthe entsteht ein inklusives Wohnprojekt mit 21 Appartements.",
+        "ort": "Wunstorf-Luthe"
+      }
+    ],
+    "zahlen": [
+      { "wert": "1964", "was": "gegründet als Aktion Sorgenkind" },
+      { "wert": "über 5 Mrd. €", "was": "seit Gründung an soziale Projekte" },
+      { "wert": "bis zu 1.000", "was": "geförderte Projekte im Monat" },
+      { "wert": "3", "was": "Antragsphasen im Jahr" }
+    ],
+    "herkunft": "Aktion Mensch entstand 1964 als Aktion Sorgenkind. Sie finanziert ihre Förderung aus den Einnahmen ihrer Soziallotterie und arbeitet mit den Verbänden der Freien Wohlfahrtspflege und dem ZDF zusammen."
+  },
+  "stiftung-auridis-stiftung-11": {
+    "schwerpunkte": [
+      {
+        "titel": "Frühe Bildung",
+        "text": "Die Stiftung hilft, dass Kinder in schwierigen Lebenslagen früher in die Kita kommen, und unterstützt Länder und Kommunen beim Abbau von Hürden in der Platzvergabe.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Kommunale Präventionsketten",
+        "text": "Gemeinsam mit Landesinstitutionen fördert und berät sie Kommunen beim Aufbau vernetzter Hilfen für Familien, zeitlich begrenzt auch mit Personal- und Sachkosten.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Kinder psychisch oder suchtkranker Eltern",
+        "text": "Sie stärkt Fachkräfte und Netzwerke, damit betroffene Kinder früh erkannt werden und passende Hilfe bekommen.",
+        "motiv": "gesundheit"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Zugang frei: Alle Kinder in die Kita! NRW",
+        "text": "Das Projekt öffnet Kindern in Nordrhein-Westfalen den Weg in die Kita.",
+        "ort": "Nordrhein-Westfalen"
+      },
+      {
+        "titel": "WillkommensKITAs",
+        "text": "Kindertageseinrichtungen werden in ihrer Integrationsarbeit gestärkt."
+      },
+      {
+        "titel": "Kinderstuben",
+        "text": "Ein ergänzendes Bildungsangebot baut Kindern eine Brücke zur Kita."
+      },
+      {
+        "titel": "MitWirkung: Präventionsketten in Berlin",
+        "text": "Das Vorhaben baut in Berlin kommunale Präventionsketten auf.",
+        "ort": "Berlin"
+      },
+      {
+        "titel": "Chance for Kids",
+        "text": "Das Projekt bietet Hilfen für Kinder aus sucht- und psychisch belasteten Familien."
+      },
+      {
+        "titel": "IKPE: Kommunale Präventionsketten Thüringen",
+        "text": "Das Vorhaben baut kommunale Präventionsketten in Thüringen auf.",
+        "ort": "Thüringen"
+      }
+    ],
+    "zahlen": [
+      { "wert": "2006", "was": "gegründet" },
+      { "wert": "8", "was": "Themenfelder" },
+      { "wert": "bis 10 Jahre", "was": "Alter der Kinder im Fokus" }
+    ],
+    "herkunft": "Die Auridis Stiftung gGmbH wurde 2006 gegründet und wird von ALDI SÜD finanziert. Sie sitzt in Mülheim an der Ruhr, sucht ihre Partner selbst aus und begleitet sie über lange Zeit."
+  },
+  "stiftung-buergerstiftung-fuer-die-stadt-und-den-landkreis-32": {
+    "schwerpunkte": [
+      {
+        "titel": "Bildung und Erziehung",
+        "text": "Die Stiftung fördert Schulbibliotheken, Nachhilfe, Stipendien und Programme an Schulen in Stadt und Landkreis Kassel.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Jugend- und Altenhilfe",
+        "text": "Sie unterstützt Ferienspiele, Freizeiten, inklusive Zirkuscamps und Angebote für ältere Menschen.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Sport und Gesundheit",
+        "text": "Gefördert werden Spielgeräte, Klettergerüste und Bewegungsangebote für Kinder.",
+        "motiv": "sport"
+      },
+      {
+        "titel": "Natur und Umwelt",
+        "text": "Die Stiftung hilft beim Vogelschutz, bei grünen Klassenzimmern und bei Ausstellungen zum Naturschutz.",
+        "motiv": "umwelt"
+      },
+      {
+        "titel": "Kunst, Kultur und Denkmalschutz",
+        "text": "Sie fördert Konzerte, Gesangspreise und die Restaurierung historischer Kunstwerke in der Region.",
+        "motiv": "kultur"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Werkstattausbildungskonzept für die internationale Beschulung",
+        "text": "Die Erika Krauskopf-Stiftung, eine Zustiftung, fördert ein Werkstattkonzept für die internationalen Klassen in Kassel.",
+        "ort": "Kassel"
+      },
+      {
+        "titel": "Eine Rikscha für alle",
+        "text": "Die Georg Friedrich Dux-Stiftung, eine Zustiftung, gab Geld für eine Rikscha, die allen offensteht."
+      },
+      {
+        "titel": "Neues Schwalbenhaus",
+        "text": "Ein neues Schwalbenhaus bietet heimischen Vögeln Nistplätze.",
+        "ort": "Wolfhagen-Gasterfeld"
+      },
+      {
+        "titel": "Deckengemälde von J. H. Tischbein restauriert",
+        "text": "Die Stiftung half bei der Restaurierung eines Deckengemäldes von Tischbein."
+      },
+      {
+        "titel": "Irma Jansa Gesangspreis",
+        "text": "Der Preis ehrt junge Opernsängerinnen und Opernsänger.",
+        "jahr": "2019"
+      },
+      {
+        "titel": "Gewaltpräventionsprogramm an der Brüder-Grimm-Schule",
+        "text": "Die Schule in Baunatal erhielt Mittel für ein Programm zur Gewaltprävention.",
+        "ort": "Baunatal"
+      }
+    ],
+    "zahlen": [
+      { "wert": "1999", "was": "gegründet" },
+      { "wert": "25.565 €", "was": "Gründungskapital" }
+    ],
+    "herkunft": "Die Kasseler Sparkasse gründete die Bürgerstiftung 1999. Seitdem wächst sie durch Zustiftungen von Privatleuten und Organisationen, die unter eigenem Namen eigene Zwecke verfolgen."
+  },
+  "stiftung-deutsche-bundesstiftung-umwelt-55": {
+    "schwerpunkte": [
+      {
+        "titel": "Energie",
+        "text": "Die DBU fördert erneuerbare Energien, Energieeffizienz und neue Speicher, aktuell etwa über die Förderinitiative „Speicher und Netze“.",
+        "motiv": "klima"
+      },
+      {
+        "titel": "Naturschutz",
+        "text": "Sie unterstützt Vorhaben, die biologische Vielfalt in Natur- und Kulturlandschaften bewahren, auch mit digitalen Werkzeugen.",
+        "motiv": "umwelt"
+      },
+      {
+        "titel": "Bauen und Quartier",
+        "text": "Gefördert werden klima- und ressourcenschonendes Bauen, alternative Baustoffe und nachhaltige Quartiere.",
+        "motiv": "klima"
+      },
+      {
+        "titel": "Landwirtschaft und Ernährung",
+        "text": "Die DBU fördert nachhaltige Lebensmittelproduktion, weniger Stickstoffeinträge und den Verzicht auf Pestizide.",
+        "motiv": "umwelt"
+      },
+      {
+        "titel": "Bildung und Kommunikation",
+        "text": "Sie fördert Bildung für nachhaltige Entwicklung und neue Formen, Wissen über Nachhaltigkeit zu vermitteln.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Kulturgüter",
+        "text": "Die DBU unterstützt den Schutz wertvoller Kulturgüter vor Umwelteinflüssen und Folgen der Klimakrise.",
+        "motiv": "denkmal"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Wander-App mit aktuellen Naturschutzinfos",
+        "text": "Der Verein „Digitize the Planet“ stellt offene Daten zu Sperrungen und Naturschutz für Wandernde bereit.",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Netzdienliche Flexibilität von Großbatterien",
+        "text": "Das Center for Applied Energy Research erprobt, wie große Batterien das Stromnetz stützen.",
+        "ort": "Landkreis Haßberge"
+      },
+      {
+        "titel": "Industrielle Energieflexibilisierung für Kühllager",
+        "text": "Die fleXality GmbH passt den Stromverbrauch von Kühllagern an das Angebot im Netz an."
+      },
+      {
+        "titel": "BIDI-EL",
+        "text": "Die Hochschule Osnabrück lädt Elektroautos auf einem Parkplatz mit Solardach in beide Richtungen, um eine elektrische Inselfähre zu versorgen."
+      },
+      {
+        "titel": "Netzdienlichkeit landwirtschaftlicher Betriebe",
+        "text": "Die Technische Universität Braunschweig untersucht, wie Höfe das Stromnetz entlasten."
+      }
+    ],
+    "zahlen": [
+      { "wert": "1990", "was": "gegründet" },
+      { "wert": "über 11.500", "was": "geförderte Projekte" },
+      { "wert": "2,18 Mrd. €", "was": "Fördervolumen seit 1991" },
+      { "wert": "500.000 €", "was": "Deutscher Umweltpreis" }
+    ],
+    "herkunft": "Die Deutsche Bundesstiftung Umwelt wurde 1990 gegründet und begann 1991 mit der Förderung. Sie fördert modellhafte Vorhaben zum Schutz der Umwelt und achtet dabei besonders auf die mittelständische Wirtschaft."
+  },
+  "stiftung-handwerkskammer-kassel-96": {
+    "schwerpunkte": [
+      {
+        "titel": "Berufsausbildung im Handwerk",
+        "text": "Die Kammer führt die Lehrlingsrolle, berät zur Ausbildung und nimmt Gesellen- und Meisterprüfungen ab.",
+        "motiv": "handwerk"
+      },
+      {
+        "titel": "Beratung für Betriebe",
+        "text": "Sie berät Handwerksbetriebe zu Betriebsführung, Existenzgründung, Nachfolge, Digitalisierung und Recht.",
+        "motiv": "handwerk"
+      },
+      {
+        "titel": "Nachwuchs gewinnen",
+        "text": "Mit Aktionstagen, VR-Brillen und dem Lehrstellenradar weckt sie bei Jugendlichen Lust auf Handwerk.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Fachkräfte aus dem Ausland",
+        "text": "Ein Pilotprojekt bringt erfahrene Fachkräfte aus Kolumbien und Usbekistan mit Handwerksbetrieben zusammen.",
+        "motiv": "international"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Future International Talents for German Climate Businesses",
+        "text": "Das Pilotprojekt vermittelt berufserfahrene Fachkräfte aus Kolumbien und Usbekistan an Handwerksbetriebe."
+      },
+      {
+        "titel": "Tag des Ausprobierens",
+        "text": "1.400 Jugendliche lernten an diesem Tag Handwerksberufe praktisch kennen.",
+        "ort": "Kassel"
+      }
+    ],
+    "zahlen": [
+      { "wert": "6.912", "was": "Auszubildende im Kammerbezirk (Dez. 2025)" },
+      { "wert": "11,7 Mrd. €", "was": "Umsatz des Handwerks im Kammerbezirk" },
+      { "wert": "14,7 Mio. €", "was": "Kammerhaushalt 2026" },
+      { "wert": "48", "was": "Mitglieder der Vollversammlung" }
+    ],
+    "herkunft": "Die Handwerkskammer Kassel ist keine Stiftung, sondern eine Körperschaft des öffentlichen Rechts mit Aufgaben nach der Handwerksordnung. Jeder Handwerksbetrieb im Bezirk ist Mitglied; eine gewählte Vollversammlung aus Selbständigen und Beschäftigten bestimmt ihren Kurs."
+  },
+  "stiftung-landeswohlfahrtsverband-hessen-lwv-132": {
+    "schwerpunkte": [
+      {
+        "titel": "Eingliederungshilfe",
+        "text": "Als überörtlicher Träger finanziert der LWV Leistungen für Menschen mit Behinderung, etwa in Tagesförderstätten und beim Wohnen.",
+        "motiv": "inklusion"
+      },
+      {
+        "titel": "Arbeit und Beschäftigung",
+        "text": "Er unterstützt Menschen mit Behinderung im Beruf, fördert Inklusionsbetriebe und berät Arbeitgeber.",
+        "motiv": "inklusion"
+      },
+      {
+        "titel": "Frühförderung und Förderschulen",
+        "text": "Der LWV trägt Frühberatungsstellen und Förderschulen für hör- und sehbehinderte sowie kranke Kinder und Jugendliche.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Hilfe bei psychischer Erkrankung",
+        "text": "Er finanziert Psychosoziale Kontakt- und Beratungsstellen in ganz Hessen.",
+        "motiv": "gesundheit"
+      },
+      {
+        "titel": "Erinnern und Gedenken",
+        "text": "Der LWV betreibt Gedenkstätten wie Hadamar und Breitenau und erinnert an die Opfer der NS-Verbrechen.",
+        "motiv": "demokratie"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Johannes-Vatter-Schule",
+        "text": "Die Schule bildet hörgeschädigte Jugendliche für ganz Hessen beruflich aus, etwa in Metall- und Drucktechnik.",
+        "ort": "Friedberg"
+      },
+      {
+        "titel": "Häftlingsakten aus Breitenau digitalisiert",
+        "text": "Das Archiv des LWV hat die Akten des früheren Arbeitserziehungslagers vollständig digitalisiert.",
+        "ort": "Guxhagen",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Renaturierung der Wohrateiche",
+        "text": "Der LWV baut die Dämme zweier Stauteiche nördlich von Haina Kloster zurück und renaturiert die Fläche.",
+        "ort": "Haina"
+      },
+      {
+        "titel": "Aktion Schichtwechsel",
+        "text": "Menschen mit und ohne Behinderung tauschen für einen Tag ihren Arbeitsplatz.",
+        "jahr": "2026"
+      }
+    ],
+    "zahlen": [
+      { "wert": "1953", "was": "gegründet" },
+      { "wert": "15", "was": "Förderschulen in eigener Trägerschaft" },
+      { "wert": "7", "was": "Frühberatungsstellen" },
+      { "wert": "7,7 Mio. €", "was": "für Psychosoziale Kontakt- und Beratungsstellen 2026" }
+    ],
+    "herkunft": "Der Landeswohlfahrtsverband Hessen ist keine Stiftung, sondern ein höherer Kommunalverband. Der Hessische Landtag beschloss am 7. Mai 1953 das Gesetz zu seiner Gründung; Träger sind die Landkreise und kreisfreien Städte. Sein Hauptsitz ist das Ständehaus in Kassel."
+  },
+  "stiftung-robert-bosch-stiftung-152": {
+    "schwerpunkte": [
+      {
+        "titel": "Gesundheit",
+        "text": "Am Bosch Health Campus in Stuttgart verbindet die Stiftung Behandlung, Forschung, Bildung und Förderung, mit Blick auf Primärversorgung und Community Health Nursing.",
+        "motiv": "gesundheit"
+      },
+      {
+        "titel": "Bildung",
+        "text": "Sie stärkt Kitas und Schulen in Deutschland, zeichnet gute Praxis mit dem Deutschen Schulpreis aus und arbeitet mit Kultusministerien zusammen.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Demokratie",
+        "text": "Die Stiftung unterstützt Communities und Netzwerke, die Zusammenhalt und Teilhabe stärken.",
+        "motiv": "demokratie"
+      },
+      {
+        "titel": "Frieden",
+        "text": "Sie fördert lokale Friedensarbeit und Menschen, die Konflikte vor Ort gemeinsam lösen.",
+        "motiv": "international"
+      },
+      {
+        "titel": "Klimawandel",
+        "text": "Sie fördert lokale Akteure, die auf nachhaltige Landnutzung und gesunde Ernährung setzen.",
+        "motiv": "klima"
+      },
+      {
+        "titel": "Migration",
+        "text": "Die Stiftung stärkt faire und sichere Migration und unterstützt Kommunen als Orte des Ankommens.",
+        "motiv": "soziales"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Deutscher Schulpreis",
+        "text": "Der Preis zeichnet Schulen mit guter Praxis aus; 2026 gewann die Bertha-von-Suttner-Schule aus Hessen.",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Sundi",
+        "text": "Ein Chatbot gibt Menschen ab 55 alltagsnahe Tipps zu Ernährung, Bewegung und Stress."
+      },
+      {
+        "titel": "M.E.T.A.",
+        "text": "Lehrkräfte lernen, Künstliche Intelligenz sinnvoll im Unterricht einzusetzen."
+      },
+      {
+        "titel": "Allzeitorte",
+        "text": "Das Projekt bringt Demokratie an die Orte, an denen Menschen ihren Alltag leben."
+      },
+      {
+        "titel": "R(h)einverbindlich",
+        "text": "Bürgerinnen und Bürger aus Deutschland und Frankreich gestalten gemeinsam die Zukunft ihrer Grenzregion."
+      },
+      {
+        "titel": "Restart",
+        "text": "Ukrainische Kommunen planen mit ihren Bürgerinnen und Bürgern schon heute den Wiederaufbau.",
+        "ort": "Ukraine"
+      }
+    ],
+    "zahlen": [
+      { "wert": "1964", "was": "gegründet" },
+      { "wert": "2,7 Mrd. €", "was": "Förderung seit Gründung" },
+      { "wert": "rund 195 Mio. €", "was": "Förderung im Jahr 2025" },
+      { "wert": "rund 170", "was": "Mitarbeitende in Stuttgart und Berlin" }
+    ],
+    "herkunft": "Die Stiftung geht auf den Unternehmer Robert Bosch zurück, der 1886 in Stuttgart seine Werkstätte für Feinmechanik und Elektrotechnik eröffnete. Sie wurde 1964 gegründet; in ihrem Kuratorium sitzen nach seinem Willen Mitglieder der Familie Bosch, Unternehmer und Persönlichkeiten des öffentlichen Lebens."
+  },
+  "stiftung-software-ag-stiftung-164": {
+    "schwerpunkte": [
+      {
+        "titel": "Integrative Medizin",
+        "text": "Die Stiftung fördert seit 2008 Forschung und Lehre der Anthroposophischen Medizin, etwa Lehrstühle in Witten/Herdecke, Berlin, Freiburg, Basel und Bern.",
+        "motiv": "gesundheit"
+      },
+      {
+        "titel": "Schulen und Bildung",
+        "text": "Sie unterstützt Schulen, besonders Waldorfschulen, etwa mit Fortbildungen zur Medienpädagogik.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Kindheit und Jugend",
+        "text": "Gefördert werden Kindergärten und Krippen in freier Trägerschaft sowie Angebote der Kinder- und Jugendhilfe, die ein gesundes Aufwachsen stärken.",
+        "motiv": "kinder"
+      },
+      {
+        "titel": "Alten- und Behindertenhilfe",
+        "text": "Sie fördert Wohn- und Pflegeprojekte für ältere Menschen und Menschen mit Assistenzbedarf.",
+        "motiv": "inklusion"
+      },
+      {
+        "titel": "Landwirtschaft und Naturhilfe",
+        "text": "Die Stiftung unterstützt biologisch-dynamische Forschung und Projekte, die Natur als Lebensgrundlage erhalten.",
+        "motiv": "umwelt"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Fonds „Auf Augenhöhe“",
+        "text": "Seit 2016 hat der Fonds mehr als 550 kleine Projekte von und für Menschen mit Flucht- oder Migrationsgeschichte unterstützt.",
+        "ort": "Köln",
+        "jahr": "2016"
+      },
+      {
+        "titel": "Lehrstuhl für Gesundheitsforschung im Kindes- und Jugendalter",
+        "text": "Der neue Lehrstuhl an der Freien Hochschule Stuttgart bringt Medizin und Pädagogik zusammen.",
+        "ort": "Stuttgart",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Biodynamik trifft syntropische Landwirtschaft",
+        "text": "Das FiBL erprobt auf der Fattoria La Vialla, wie Wein- und Olivenbau dem Klimawandel besser standhalten.",
+        "ort": "Toskana",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Medienpädagogik vor Ort",
+        "text": "Die Freie Hochschule Stuttgart bringt Fortbildungen zum Umgang mit digitalen Medien direkt in die Kollegien der Waldorfschulen."
+      },
+      {
+        "titel": "Inklusives Wohnen im Alter",
+        "text": "Die Stiftung Lebensräume Ovelgönner Mühle baut ein Seniorenwohnprojekt für Menschen mit Assistenzbedarf und die Nachbarschaft.",
+        "ort": "Wesermarsch"
+      },
+      {
+        "titel": "Schulbienen",
+        "text": "Grundschulkinder kommen in direkten Kontakt mit Honigbienen und erleben ökologische Zusammenhänge."
+      }
+    ],
+    "zahlen": [
+      { "wert": "1,3 Mrd. €", "was": "Stiftungsvermögen" },
+      { "wert": "25 bis 30 Mio. €", "was": "Förderung im Jahr" },
+      { "wert": "rund 250", "was": "Förderungen im Jahr" }
+    ],
+    "herkunft": "Peter Schnell, Gründer der Darmstädter Software AG, rief die Stiftung ins Leben und übertrug ihr 1992 alle seine Anteile am Unternehmen. Die Software AG Stiftung ist eine eigenständige Förderstiftung bürgerlichen Rechts mit Sitz in Darmstadt."
+  },
+  "stiftung-volksbank-kassel-goettingen-stiftung-217": {
+    "_grund": "Die Website führt zur Volksbank Kassel Göttingen eG; die erfassten Seiten zeigen nur Bankprodukte und nennen keine Stiftung."
+  }
+}

@@ -523,6 +523,39 @@ Regeln:
 Der Import in echte Spaces zieht die neuen Felder über den Nachtrag nach (wie Anschrift und Förderbereiche).
 
 
+#### Stiftungsprofil: das große Ganze statt des Antrags (freigegeben von Timo am 02.10.2026, eigene Bildmotive)
+
+**Frage:** Was folgt daraus, dass ein Projekt zuerst verstehen soll, was eine Stiftung wirklich fördert, und nicht gleich zum Antrag geschickt wird?
+
+Timo am 02.10.2026, nach proto-70: *"Das fördernd bringt gar nichts … es wäre blöd, wenn wir direkt auf die Förderung drauf gehen … wirklich in die Förderbereiche näher reingehen … Zahlen hinstellen oder Beispiele für Projekte … auf der kleinen Seite stichpunktartig, was gefördert wird, Förderschwerpunkte, wo die Stiftung herkommt … locker, nicht überladen … auf der großen Seite das große Ganze schön gegliedert, mit Bildern dazwischen."*
+
+**Was wegfällt (Anzeige, die Daten bleiben):** das Etikett „fördernd“, der Abschnitt „So kommst du zur Förderung“, die Antragskarte, der Knopf „Zur Stiftung und zum Antrag“. Website und Kontakt bleiben.
+
+**Neue Felder in `data`** (optional, aus der Website, nichts erfunden):
+
+| Feld | Was |
+|---|---|
+| `schwerpunkte` | höchstens sechs `{ titel, text }`: was sie in diesem Bereich konkret fördert, ein bis zwei Sätze |
+| `beispiele` | höchstens sechs geförderte Projekte `{ titel, text, ort?, jahr? }`, nur mit Namen belegt |
+| `zahlen` | höchstens vier `{ wert, was }`, etwa „1964 · gegründet“, „120 · Projekte im Jahr“ |
+| `herkunft` | ein bis drei Sätze, wie sie entstanden ist und wer dahinter steht |
+
+**Kleine Karte (Leiste), locker und knapp:** Logo, Name, Sitz; der Satz `kurz`; die Schwerpunkte als Stichpunkte (nur Titel); eine Zeile Herkunft („seit 1964, gegründet von …“); Website und Kontakt; „Ganzes Profil“.
+
+**Ganze Ansicht, das große Ganze:**
+
+1. Kopf: Logo, Name, Satz, Schlagworte (wie proto-70, ohne „fördernd“).
+2. Zahlen halb über dem Kopf.
+3. **Was sie fördert:** je Schwerpunkt eine Karte mit Bild, Titel und ein, zwei Sätzen.
+4. **Beispiele:** geförderte Projekte als Karten.
+5. **Woher sie kommt:** Herkunft, daneben Für wen und Woran du erkennst, dass du passt.
+6. Rechts mitlaufend: Website, Kontakt, Herkunft der Angaben; unten der Hinweis.
+
+**Bilder:** keine Fotos von fremden Websites. Stattdessen eigene, gezeichnete Bildmotive je Förderbereich (Bildung, Umwelt, Kinder, Kultur, Gesundheit …), eingefärbt in der Hausfarbe der Stiftung. Eigene Fotos kommen, wenn eine Stiftung ihr Profil übernimmt.
+
+**Erfassen:** dieselben Zwischenspeicher, dieselben Regeln, eine zweite Agentenrunde für `schwerpunkte`, `beispiele`, `zahlen`, `herkunft`. Wo der Speicher zu dünn ist, holt das Werkzeug gezielt die Seiten „Über uns“, „Geschichte“, „Projekte“ nach.
+
+
 #### Profile bearbeiten (freigegeben von Timo am 02.10.2026)
 
 **Frage:** Was folgt daraus, dass ein Projekt oder eine Stiftung ihr Profil selbst in der App füllt?

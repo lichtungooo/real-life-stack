@@ -461,7 +461,7 @@ export function ProjektProfilVoll({
 
         {/* Auf dem Handy: die Spendenleiste bleibt unten in Reichweite, außer beim Bearbeiten */}
         {s && !b.an && (
-          <div className="fixed inset-x-0 bottom-0 z-20 flex items-center gap-3 bg-background/90 px-4 py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
+          <div className="sticky bottom-0 z-20 flex items-center gap-3 bg-background/90 px-4 py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
             <div className="min-w-0 flex-1">
               {s.gesammelt !== null && <p className="text-sm font-bold">{euro(s.gesammelt)}{s.ziel !== null && <span className="font-normal text-muted-foreground"> von {euro(s.ziel)}</span>}</p>}
               {s.anteil !== null && <div className="mt-1"><Fortschritt anteil={s.anteil} /></div>}

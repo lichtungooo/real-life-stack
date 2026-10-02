@@ -93,13 +93,17 @@ export {
 } from "./projekt-profil.js"
 export {
   stiftungsProfil,
-  traegtStiftungsProfil,
   kontrast,
   lesbarAuf,
   lesbarAufHell,
+  motivFuer,
+  STIFTUNGS_MOTIVE,
+  type StiftungsMotiv,
+  type StiftungsSchwerpunkt,
   dunkler,
   type StiftungsProfil,
 } from "./stiftungs-profil.js"
+export { traegtStiftungsProfil } from "./stiftungs-erkennung.js"
 export {
   PROJEKT_PROFIL_FELDER,
   PROJEKT_ENTWURF_REGELN,

@@ -3,7 +3,7 @@
  * fehlt, fällt weg; `false` ist eine Antwort; Adressen nur sicher.
  */
 import { describe, expect, it } from "vitest"
-import { stiftungsProfil, traegtStiftungsProfil, kontrast, lesbarAuf, lesbarAufHell, dunkler } from "../src/stiftungs-profil"
+import { stiftungsProfil, traegtStiftungsProfil, kontrast, lesbarAuf, lesbarAufHell, dunkler, motivFuer } from "../src/stiftungs-profil"
 import { ERWEITERUNGEN, STIFTUNGS_PROFIL, PROJEKT_PROFIL } from "../src/erweiterungen"
 import { musterItems } from "../src/musterdaten"
 
@@ -129,5 +129,28 @@ describe("Im Auftritt der Stiftung", () => {
     expect(kontrast(gelb.farbeText, "#f8f8f8")).toBeGreaterThanOrEqual(4.5)
     expect(stiftungsProfil({ title: "A", hausfarbe: "#00245c" }).farbeText).toBe("#00245c")
     expect(lesbarAufHell("#ffffff")).not.toBe("#ffffff")
+  })
+})
+
+describe("Das große Ganze (02.10.2026)", () => {
+  it("Schwerpunkte mit Motiv, Beispiele, Zahlen, Herkunft", () => {
+    const p = stiftungsProfil({
+      title: "A", foerdererart: "Stiftung", herkunft: " Gegründet 1964 von einer Familie. ",
+      schwerpunkte: [{ titel: "Leseförderung", text: "Lesepaten an Grundschulen." }, { titel: "Natur erleben", motiv: "umwelt" }, { titel: "X", motiv: "erfunden" }, { text: "ohne Titel" }],
+      beispiele: [{ titel: "Lesesommer Kassel", ort: "Kassel", jahr: 2025 }], bisherGefoerdert: ["Werkstatt am Fluss"],
+      zahlen: [{ wert: "1964", was: "gegründet" }, { wert: "", was: "leer" }], summeBis: 5000,
+    })
+    expect(p.schwerpunkte.map((s) => [s.titel, s.motiv])).toEqual([["Leseförderung", "bildung"], ["Natur erleben", "umwelt"], ["X", "allgemein"]])
+    expect(p.beispiele.map((b) => b.titel)).toEqual(["Lesesommer Kassel", "Werkstatt am Fluss"])
+    expect(p.beispiele[0]).toMatchObject({ ort: "Kassel", jahr: "2025" })
+    expect(p.kennzahlen).toEqual([{ wert: "1964", was: "gegründet" }, { wert: expect.stringMatching(/^bis 5\.000\s€$/), was: "je Vorhaben" }])
+    expect(p.herkunft).toBe("Gegründet 1964 von einer Familie.")
+  })
+
+  it("jeder Förderbereich findet ein Motiv, Unbekanntes das allgemeine", () => {
+    expect(motivFuer("kinder")).toBe("kinder")
+    expect(motivFuer("Denkmalschutz")).toBe("denkmal")
+    expect(motivFuer("klimaschutz")).toBe("klima")
+    expect(motivFuer("xyz")).toBe("allgemein")
   })
 })

@@ -5,6 +5,8 @@
     python td-tools/stiftungen/auftritt.py blatt   [--ids a,b]
     python td-tools/stiftungen/auftritt.py anwenden
 
+nachholen holt je Stiftung bis zu fünf weitere Seiten (Geschichte, Schwerpunkte,
+          Projekte) und hängt sie an texte.md an.
 holen     liest je Stiftung die Website (Startseite und bis zu vier Seiten zu
           Stiftung, Förderung, Antrag) und legt Logo-Kandidaten, Farben und
           Texte im Zwischenspeicher ab (%TEMP%/td-auftritt/<id>/). Fremde
@@ -360,6 +362,64 @@ def stiftungen(ids: list[str] | None) -> list[dict]:
     return [i for i in st if i["id"] in ids] if ids else st
 
 
+# Für das große Ganze (DEFINITION Teil 8, zweite Runde): Herkunft, Schwerpunkte, Beispiele.
+TIEFER = re.compile(r"(geschichte|historie|history|chronik|über-uns|ueber-uns|about|wer-wir-sind|portrait|porträt|stifter|gründ|gruend|schwerpunkt|themen|programm|projekt|förderbeispiel|beispiel|referenz|jahresbericht|zahlen|fakten)", re.I)
+
+
+def stiftung_nachholen(item: dict, neu: bool) -> str:
+    """Bis zu fünf weitere Seiten zu Geschichte, Schwerpunkten und Projekten an texte.md anhängen."""
+    sid = item["id"]
+    ordner = SPEICHER / sid
+    meta_datei = ordner / "meta.json"
+    if not meta_datei.exists():
+        return f"{sid}: kein Zwischenspeicher"
+    meta = json.loads(meta_datei.read_text(encoding="utf-8"))
+    if not meta.get("endUrl"):
+        return f"{sid}: ohne Startseite"
+    if meta.get("nachgeholt") and not neu:
+        return f"{sid}: schon nachgeholt"
+    try:
+        end, roh, _ = holen_roh(meta["endUrl"])
+    except Exception as e:
+        return f"{sid}: FEHLER {e}"
+    h = roh.decode("utf-8", "replace")
+    schon = set(meta.get("seiten", [])) | {end}
+    links: list[str] = []
+    for href, inhalt in re.findall(r'(?is)<a\b[^>]*href=["\']([^"\'#]+)["\'][^>]*>(.*?)</a>', h):
+        u = urllib.parse.urljoin(end, html.unescape(href))
+        if urllib.parse.urlsplit(u).netloc != urllib.parse.urlsplit(end).netloc or u in schon or u in links:
+            continue
+        if re.search(r"\.(pdf|jpe?g|png|zip|docx?)$", u, re.I):
+            continue
+        if TIEFER.search(urllib.parse.unquote(u)) or TIEFER.search(re.sub(r"<[^>]+>", "", inhalt)):
+            links.append(u)
+    texte = []
+    neu_seiten = []
+    for u in links[:5]:
+        try:
+            e2, r2, typ = holen_roh(u)
+            if "html" not in typ:
+                continue
+            texte.append(f"# {e2}\n\n{_text_aus(r2.decode('utf-8', 'replace'))[:6000]}")
+            neu_seiten.append(e2)
+        except Exception as e:
+            meta.setdefault("fehler", []).append(f"{u}: {e}")
+    if texte:
+        with open(ordner / "texte.md", "a", encoding="utf-8") as f:
+            f.write("\n\n---\n\n" + "\n\n---\n\n".join(texte))
+    meta["seiten"] = meta.get("seiten", []) + neu_seiten
+    meta["nachgeholt"] = True
+    meta_datei.write_text(json.dumps(meta, ensure_ascii=False, indent=1), encoding="utf-8")
+    return f"{sid}: {len(neu_seiten)} Seiten nachgeholt"
+
+
+def befehl_nachholen(a) -> None:
+    liste = stiftungen(a.ids.split(",") if a.ids else None)
+    with ThreadPoolExecutor(6) as pool:
+        for zeile in pool.map(lambda i: stiftung_nachholen(i, a.neu), liste):
+            print(zeile, flush=True)
+
+
 def befehl_holen(a) -> None:
     liste = stiftungen(a.ids.split(",") if a.ids else None)
     if not a.ids and not a.alle:
@@ -377,7 +437,9 @@ def auswahl_lesen() -> dict:
     """Die Auswahl aus allen Teilen (td-tools/stiftungen/auftritt-teile/*.json), spätere gehen vor."""
     aus: dict = {}
     for datei in sorted(TEILE.glob("*.json")):
-        aus.update(json.loads(datei.read_text(encoding="utf-8")))
+        # Je Stiftung zusammenführen: die zweite Runde ergänzt die erste, ersetzt sie nicht.
+        for sid, felder in json.loads(datei.read_text(encoding="utf-8")).items():
+            aus.setdefault(sid, {}).update(felder)
     return aus
 
 
@@ -518,7 +580,8 @@ def befehl_anwenden(a) -> None:
     auswahl = auswahl_lesen()
     items = json.loads(ITEMS.read_text(encoding="utf-8"))
     nach_id = {i["id"]: i for i in items}
-    felder = ("hausfarbe", "akzent", "kurz", "zweck", "zielgruppen", "hinweis", "foerderbereiche", "auftrittQuelle")
+    felder = ("hausfarbe", "akzent", "kurz", "zweck", "zielgruppen", "hinweis", "foerderbereiche", "auftrittQuelle",
+              "schwerpunkte", "beispiele", "zahlen", "herkunft")
     geaendert = 0
     for sid, w in auswahl.items():
         if sid.startswith("_"):
@@ -560,11 +623,14 @@ def main() -> None:
     h.add_argument("--ids")
     h.add_argument("--alle", action="store_true")
     h.add_argument("--neu", action="store_true")
+    n = s.add_parser("nachholen")
+    n.add_argument("--ids")
+    n.add_argument("--neu", action="store_true")
     b = s.add_parser("blatt")
     b.add_argument("--ids")
     s.add_parser("anwenden")
     a = p.parse_args()
-    {"holen": befehl_holen, "blatt": befehl_blatt, "anwenden": befehl_anwenden}[a.befehl](a)
+    {"holen": befehl_holen, "nachholen": befehl_nachholen, "blatt": befehl_blatt, "anwenden": befehl_anwenden}[a.befehl](a)
 
 
 if __name__ == "__main__":

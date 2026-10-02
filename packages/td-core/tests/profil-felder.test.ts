@@ -123,7 +123,7 @@ describe("Speichern je Abschnitt", () => {
     const arbeit = { bedarfe: [{ wofuer: "Saatgut", betrag: 300 }, { wofuer: " Werkzeug ", betrag: 1200 }] }
     const { data } = abschnittSpeichern(PROJEKT_PROFIL_FELDER, "bedarfe", { title: "Garten" }, arbeit)
     expect(projektProfil(data).bedarfe).toEqual(projektProfil({ title: "Garten", ...arbeit }).bedarfe)
-    const st = abschnittSpeichern(STIFTUNGS_PROFIL_FELDER, "antrag", { title: "S", foerdererart: "Stiftung" }, { summeVon: 2000, summeBis: 25000, fristen: ["31. März"] })
+    const st = abschnittSpeichern(STIFTUNGS_PROFIL_FELDER, "zahlen", { title: "S", foerdererart: "Stiftung" }, { summeVon: 2000, summeBis: 25000 })
     expect(stiftungsProfil(st.data).summe).toMatch(/^2\.000\s€ bis 25\.000\s€$/)
   })
 })

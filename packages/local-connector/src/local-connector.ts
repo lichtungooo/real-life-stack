@@ -39,7 +39,7 @@ import { get, set, del, createStore, update as updateStoredValue } from "idb-key
  * — a re-seed throws away anything created locally, which is fine for
  * the local-only dev/test connector.
  */
-export const SEED_VERSION = 27
+export const SEED_VERSION = 28
 
 interface StoredState {
   items: Item[]
