@@ -245,6 +245,17 @@ Gelernt:
 - **Die Musterstiftung gehört nicht in echte Spaces:** Der Import filtert `muster: true`.
 - **Der Import zieht den Auftritt nur nach, wo er fehlt** und solange der Eintrag unsere Recherche ist; Bearbeitetes bleibt.
 
+## 4e. Das große Ganze statt des Antrags (02.10.2026)
+
+Timo nach proto-70: *"Das fördernd bringt gar nichts … wirklich in die Förderbereiche reingehen … Zahlen oder Beispiele … klein stichpunktartig, groß das große Ganze, mit Bildern dazwischen."* Ergebnis: Schwerpunkte als Karten mit **eigenem Bildmotiv** (`td-ui/src/stiftungs-motive.tsx`, 17 Zeichnungen in `--td-haus` und `--td-akzent`), Beispiele, Zahlen, Herkunft; Antrag nur noch in den Daten.
+
+Gelernt:
+
+- **Was die App im Hauptteil fragt, gehört in ein eigenes kleines Modul.** `traegtStiftungsProfil` lag im Modul des ganzen Kerns; Rollup legte dadurch den Kern in den Hauptteil (Budget 1999 KB). Ausgelagert nach `stiftungs-erkennung.ts`: 1994 KB.
+- **`fixed` im Dialog klebt nicht.** Der Dialog verschiebt sich per `transform`, `fixed` hängt dann am Container und scrollt mit. `sticky bottom-0` am Ende des Inhalts hält die Leiste unten.
+- **Ohne eigene Schwerpunkte** zeigt die Seite die Förderbereiche als Karten mit Motiv (`motivFuer`): Jede Stiftung sieht fertig aus, auch vor der zweiten Runde.
+- **Zweite Runde mit tieferen Seiten:** `auftritt.py nachholen` holt Geschichte, Schwerpunkte, Projekte nach; mehrere Auswahl-Dateien je Stiftung werden zusammengeführt.
+
 ## 5. Was als Nächstes kommt
 
 1. ~~Stiftungsprofil~~ gebaut am 02.10.2026 (Abschnitt 4b) (`fuerTyp: "place"` mit Stiftungsfeldern, oder eigener Typ über die Manifest-Schicht), mit den vier entschiedenen Verbesserungen: „Stiftung“ statt „Ort“, Website und Anschrift mit Quelle, Bild mit Platzhalter, Kontakt und Antrag oben.
