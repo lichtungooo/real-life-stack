@@ -20,3 +20,4 @@ steht in der Spalte Lehre (von Claude nachgetragen).
 | 2026-10-02-140720-5764 | 1 | 31d13fc3 | 31 | 3 | 0 | 738 s | [kimi-2026-10-02-140720-5764-runde1.md](kimi-2026-10-02-140720-5764-runde1.md) | |
 | 2026-10-02-141939-5292 | 1 | 31d13fc3 | 27 | 2 | 0 | 1132 s | [kimi-2026-10-02-141939-5292-runde1.md](kimi-2026-10-02-141939-5292-runde1.md) | |
 | 2026-10-02-152224 | – | 38b09583 | – | – | – | – | ohne Kimi ausgeliefert | Timo, 02.10.2026: weiterarbeiten ohne Kimi; Stiftungsprofil von Timo freigegeben, Kontingent erschöpft, Kimi prüft nach |
+| 2026-10-02-172847 | – | ee88a955 | – | – | – | – | ohne Kimi ausgeliefert | Kimi-Kontingent leer seit dem Nachmittag (5-Stunden-Grenze); Timo: weiterarbeiten ohne Kimi. Nachprüfung folgt, sobald das Kontingent zurück ist. |
