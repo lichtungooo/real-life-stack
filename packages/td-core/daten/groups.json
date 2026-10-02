@@ -35,7 +35,8 @@
         }
       ],
       "komponenten": [
-        "projekt-profil"
+        "projekt-profil",
+        "stiftungs-profil"
       ]
     }
   },

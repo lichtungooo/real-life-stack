@@ -5,6 +5,8 @@
 // (Teil 9: kein Strich, kein „unbekannt“). Die Darstellung in td-ui rechnet
 // nichts mehr aus.
 
+import { text, zahl, objekt, liste, texte, sichereUrl, sichererBildPfad, type Roh } from "./schleuse.js"
+
 export interface ProjektSpende {
   /** Zielbetrag in Euro. */
   ziel: number | null
@@ -80,33 +82,6 @@ export interface ProjektProfil {
   team: ProjektMensch[]
   kontakt: ProjektKontakt | null
   spende: ProjektSpende | null
-}
-
-type Roh = Record<string, unknown>
-
-const text = (v: unknown): string | null => (typeof v === "string" && v.trim() ? v.trim() : null)
-const zahl = (v: unknown): number | null => (typeof v === "number" && Number.isFinite(v) && v >= 0 ? v : null)
-const objekt = (v: unknown): Roh | null => (v && typeof v === "object" && !Array.isArray(v) ? (v as Roh) : null)
-const liste = (v: unknown): unknown[] => (Array.isArray(v) ? v : [])
-const texte = (v: unknown): string[] => liste(v).map(text).filter((t): t is string => t !== null)
-
-/** Nur Adressen, die ein Browser gefahrlos oeffnet. */
-function sichereUrl(v: unknown): string | null {
-  const t = text(v)
-  if (!t) return null
-  if (/^https?:\/\//i.test(t)) return t
-  // Ohne Schema: als Webadresse lesen, solange es nach einer aussieht.
-  if (/^[\w-]+(\.[\w-]+)+(\/.*)?$/.test(t)) return `https://${t}`
-  return null
-}
-
-/** Bildquellen: Webadressen, Pfade der eigenen Instanz und eingebettete Bilder. */
-function sichererBildPfad(v: unknown): string | null {
-  const t = text(v)
-  if (!t) return null
-  if (/^https?:\/\//i.test(t) || /^data:image\//i.test(t)) return t
-  if (/^[\w./-]+\.(svg|png|jpe?g|webp|gif|avif)$/i.test(t) && !t.includes("..")) return t
-  return null
 }
 
 function kuerzel(name: string): string {

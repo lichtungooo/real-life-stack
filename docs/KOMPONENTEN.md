@@ -186,9 +186,19 @@ Kampagnenseiten, die 2026 gut funktionieren: Fortschritt sichtbar, **Beträge mi
 
 ---
 
+## 4b. Die zweite Komponente: das Stiftungsprofil (02.10.2026)
+
+Was der zweite Durchgang gelehrt hat:
+
+- **Erst die Daten zählen, dann gestalten.** Von 193 Stiftungen tragen fast alle nur sechs Felder. Die Vorlage muss damit fertig aussehen und wachsen, wenn eine Stiftung übernimmt. Eine erfundene Musterstiftung mit allen Feldern (`muster: true`) zeigt die volle Fassung.
+- **Eigener Aufbau je Leser.** Das Projekt erzählt (großes Foto, Geschichte); die Stiftung beantwortet Fragen (Band in der Hausfarbe mit Logo oder Monogramm, der Antragsweg ganz oben).
+- **Die Schleuse teilen.** Prüfhelfer liegen in `td-core/src/schleuse.ts`, beide Profile nutzen sie.
+- **Hausfarbe und Kartenfarbe trennen** (`hausfarbe` gegen `color`), und Text in Hausfarbe in der dunklen Ansicht auf den Vordergrund legen.
+- **Fotos nach der Einblend-Animation** machen, sonst erscheinen helle Streifen, die es gar nicht gibt.
+
 ## 5. Was als Nächstes kommt
 
-1. **Stiftungsprofil** als zweite Komponente (`fuerTyp: "place"` mit Stiftungsfeldern, oder eigener Typ über die Manifest-Schicht), mit den vier entschiedenen Verbesserungen: „Stiftung“ statt „Ort“, Website und Anschrift mit Quelle, Bild mit Platzhalter, Kontakt und Antrag oben.
+1. ~~Stiftungsprofil~~ gebaut am 02.10.2026 (Abschnitt 4b) (`fuerTyp: "place"` mit Stiftungsfeldern, oder eigener Typ über die Manifest-Schicht), mit den vier entschiedenen Verbesserungen: „Stiftung“ statt „Ort“, Website und Anschrift mit Quelle, Bild mit Platzhalter, Kontakt und Antrag oben.
 2. **Open Collective live:** Stand über die öffentliche GraphQL-Schnittstelle abrufen, statt ihn im Eintrag zu tragen.
 3. **Bearbeiten:** Die Felder der Komponente im Formular des Typs (Antons `fields`), damit ein Projekt sein Profil selbst füllt.
 4. **Widgets und HUD** als vierte Art (Gedächtnis `project_gamification_komponenten.md`).

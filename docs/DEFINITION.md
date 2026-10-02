@@ -455,6 +455,32 @@ Die Seite, mit der sich ein Projekt einer Stiftung und Spendenden zeigt. Reihenf
 
 **Musterprojekt.** `muster: true` zeigt den Hinweis „Musterprojekt“. Das Musterprojekt in den Demodaten trägt Platzhalterbilder (gezeichnet, keine Fotos fremder Menschen) und erfundene Namen, sichtbar als Muster.
 
+#### Stiftungsprofil (`stiftungs-profil`, für `place` mit Förderfeldern) (02.10.2026, von Timo freigegeben)
+
+Timo am 02.10.2026: *"Dann lass uns erstmal die Vorlage für die Stiftungsprofile bauen."* Entschieden am 01.10.2026: „Stiftung“ statt „Ort“, Website und Anschrift mit Quelle, Bild mit Platzhalter, Kontakt und Antrag oben.
+
+**Wer liest es:** ein Projekt, das Geld sucht. Seine Fragen in dieser Reihenfolge: *Passt mein Vorhaben? Wie beantrage ich? Wie viel? Wen spreche ich an?* Darum ein anderer Aufbau als beim Project Profile: kein großes Foto, sondern der Weg zum Antrag ganz oben.
+
+**Die Vorlage wächst mit.** Von 193 recherchierten Stiftungen tragen fast alle nur Name, Anschrift mit Quelle, Website, Förderbereiche und einen Antragsweg als Satz. Das Profil sieht damit schon fertig aus. Übernimmt eine Stiftung ihr Profil und füllt Zweck, Zielgruppen, Fristen, Unterlagen, Summen, Bild, dann erscheinen diese Abschnitte, ohne neue Komponente.
+
+| Abschnitt | Frage | Felder in `data` |
+|---|---|---|
+| **Kopf** | Wer ist das? | `title`, `bild` (sonst Monogramm in der Hausfarbe), `foerdererart`, `art`, `sitz`, `reichweite` |
+| **So kommst du zur Förderung** (oben) | Wie beantrage ich? | `antragsweg`, `fristen`, `unterlagen`, `antragsportal`; Knopf zur Antragsseite, sonst zur Website |
+| **Kennzahlen** | Wie viel? | `summeVon`/`summeBis`, `volumenJahr`, `zustiftung` |
+| **Wofür sie fördert** | Passt mein Vorhaben? | `foerderbereiche`, `zielgruppen`, `zweck`, `hinweis` („Woran du erkennst, dass du passt“) |
+| **Schon gefördert** | Wen hat sie unterstützt? | `bisherGefoerdert` |
+| **Kontakt** (oben in der Karte) | Wen spreche ich an? | `website`, `address` mit `anschriftQuelle` („Quelle: Impressum“), `mail`, `ansprache` |
+| **Geben** | Kann ich beitragen? | `zustiftung`, `spende`, `treuhand` |
+| **Herkunft** | Woher stammen die Angaben? | `quelle`; Hinweis „aus öffentlicher Recherche“ und „Ist das Ihre Stiftung? Profil übernehmen“ |
+
+Regeln wie beim Project Profile: Fehlendes fällt weg, Adressen nur sicher, nichts erfunden, keine Bewertung und keine Passungszahl (Teil 3). `false` ist eine Antwort („Zustiftung: nein“ wird gezeigt).
+
+**Hausfarbe und Kartenfarbe getrennt:** `color` bleibt das Blau der Stiftungen auf der Karte (Timo: Stiftungen blau, Projekte orange). Das Profil nimmt `hausfarbe`, sonst `color`. In der dunklen Ansicht stehen Zahlen in der Vordergrundfarbe.
+
+**„Stiftung“ statt „Ort“:** Das Etikett „Ort“ setzt Antons Typ `place` im Kopf der Detailansicht. Die Komponente zeigt „Stiftung“ groß im eigenen Kopf. Das Etikett selbst ändert sich erst mit einem eigenen Typ `stiftung` (Manifest-Schicht, Umzug der 193 Einträge über den Import-Link); das ist ein eigener Schritt.
+
+
 ---
 
 ### Was die Erweiterungen nicht sind

@@ -18,6 +18,11 @@
       "development": "./src/erweiterungen.tsx",
       "import": "./dist/src/erweiterungen.js"
     },
+    "./stiftungs-profil": {
+      "types": "./dist/src/stiftungs-profil.d.ts",
+      "development": "./src/stiftungs-profil.tsx",
+      "import": "./dist/src/stiftungs-profil.js"
+    },
     "./profil-flaeche": {
       "types": "./dist/src/profil-flaeche.d.ts",
       "development": "./src/profil-flaeche.tsx",

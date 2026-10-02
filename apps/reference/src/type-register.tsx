@@ -22,7 +22,9 @@ import {
   profilAufbauen,
   komponenteAktiv,
   traegtProjektProfil,
+  traegtStiftungsProfil,
   PROJEKT_PROFIL,
+  STIFTUNGS_PROFIL,
 } from "@trustdonation/core"
 // Nachgeladen: die Collage braucht erst, wer eine Stiftung öffnet (Budget,
 // 02.10.2026, Platz für die Naht A-Cluster im Kartenadapter).
@@ -51,8 +53,21 @@ const ORT_META: ComponentType<ItemSlotProps> = resolveTypePresentation("place").
  * Modul-Host liegt die Detailansicht im Toolkit, und der Slot `detail` einer
  * Typ-Erweiterung ist der Haken dafür (Spec 06, Regel 17).
  */
+// Das Stiftungsprofil (DEFINITION Teil 8, zweite Komponente), nachgeladen.
+const StiftungsProfilSeite = lazy(() => import("@trustdonation/ui/stiftungs-profil"))
+
 function OrtOderProfil({ item }: ItemSlotProps) {
+  const space = useCurrentGroup()
   const daten = (item.data ?? {}) as Record<string, unknown>
+  // Hat der Space das Stiftungsprofil gewählt, zeigt eine Stiftung es; sonst
+  // bleibt die bisherige Collage (oder Antons Meta-Box für einen echten Ort).
+  if (komponenteAktiv(space?.data as Record<string, unknown> | undefined, STIFTUNGS_PROFIL) && traegtStiftungsProfil(daten)) {
+    return (
+      <Suspense fallback={<div className="h-40 w-full animate-pulse rounded-2xl bg-muted" />}>
+        <StiftungsProfilSeite key={item.id} daten={daten} />
+      </Suspense>
+    )
+  }
   const bauplan = traegtProfil(daten) ? bauplanFuer(daten) : null
   const profil = bauplan ? profilAufbauen(daten, bauplan) : null
   if (!profil) return <ORT_META item={item} />

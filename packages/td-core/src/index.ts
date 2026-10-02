@@ -72,6 +72,7 @@ export {
   komponenteAktiv,
   modulSchalten,
   PROJEKT_PROFIL,
+  STIFTUNGS_PROFIL,
   type Erweiterung,
   type ErweiterungsArt,
   type ErweiterungsEintrag,
@@ -90,6 +91,11 @@ export {
   type ProjektMensch,
   type ProjektKontakt,
 } from "./projekt-profil.js"
+export {
+  stiftungsProfil,
+  traegtStiftungsProfil,
+  type StiftungsProfil,
+} from "./stiftungs-profil.js"
 export {
   PROJEKT_PROFIL_FELDER,
   PROJEKT_ENTWURF_REGELN,

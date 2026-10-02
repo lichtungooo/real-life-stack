@@ -28,6 +28,8 @@ const ANTON = "Anton Tranelis · Real Life Stack"
 
 /** Die Id der ersten Komponente. */
 export const PROJEKT_PROFIL = "projekt-profil"
+/** Die Id der zweiten Komponente (DEFINITION Teil 8, 02.10.2026). */
+export const STIFTUNGS_PROFIL = "stiftungs-profil"
 
 /** Das Verzeichnis. Eintraege ohne Modul im Register erscheinen nicht (Regel 3). */
 export const ERWEITERUNGEN: readonly ErweiterungsEintrag[] = [
@@ -40,6 +42,7 @@ export const ERWEITERUNGEN: readonly ErweiterungsEintrag[] = [
   { id: "graph", art: "modul", erbauer: ANTON, reife: "geprueft", beschreibung: "Wie Einträge miteinander verbunden sind, als Netz." },
   { id: "video", art: "modul", erbauer: "Timo Martin und Eli · Real Life Network", reife: "beta", beschreibung: "Treffen mit Bild und Ton, Kreis mit Redestab, Zeichenpad, Gruppenräume und Mitschrift auf dem eigenen Server." },
   { id: PROJEKT_PROFIL, art: "komponente", name: "Project Profile", fuerTyp: "project", erbauer: "Timo Martin und Eli · trustdonation", reife: "beta", beschreibung: "Die Seite, mit der sich ein Projekt zeigt: Titelbild, was fehlt, was sich ändert, wohin das Geld geht, Schritte, Team, Kontakt und Spenden über Open Collective." },
+  { id: STIFTUNGS_PROFIL, art: "komponente", name: "Stiftungsprofil", fuerTyp: "place", erbauer: "Timo Martin und Eli · trustdonation", reife: "beta", beschreibung: "Die Seite einer Stiftung für Projekte, die Förderung suchen: wie man beantragt, wofür sie fördert, wie viel, wen man anspricht. Wächst mit, wenn die Stiftung ihr Profil übernimmt." },
   { id: "companion", art: "modul", erbauer: "Eli · trustdonation", reife: "beta", beschreibung: "Eine Begleitung, die die Einträge des Space liest und beim nächsten Schritt hilft." },
 ]
 
