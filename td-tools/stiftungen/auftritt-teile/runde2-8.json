@@ -1,0 +1,1120 @@
+{
+  "stiftung-b-braun-stiftung-15": {
+    "schwerpunkte": [
+      {
+        "titel": "Stipendien für Weiterbildung",
+        "text": "Ärztinnen, Ärzte, Pflegende und andere Gesundheitsberufe erhalten Zuschüsse für Fort- und Weiterbildung und für Veranstaltungen.",
+        "motiv": "gesundheit"
+      },
+      {
+        "titel": "Klinische Forschung",
+        "text": "Die Stiftung fördert klinische Forschungsprojekte, Anträge gehen in festen Einreichungszeiträumen ein.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "Führung im Gesundheitswesen",
+        "text": "Leadership-Programme bereiten Fachkräfte aus Klinik und Gesundheitswirtschaft auf Führungsaufgaben vor und verbinden sie über Berufsgrenzen hinweg.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Hygiene",
+        "text": "Mit einem eigenen Preis würdigt die Stiftung die Arbeit von Hygienefachkräften.",
+        "motiv": "gesundheit"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Mentoringprogramm",
+        "text": "Nachwuchsführungskräfte aus der Gesundheitswirtschaft lernen an acht Seminarwochenenden und bekommen eine erfahrene Mentorin oder einen Mentor, gemeinsam mit der Schweizer Careum Stiftung."
+      },
+      {
+        "titel": "Expertise in Leadership",
+        "text": "Eine Seminarreihe mit sieben Workshops für Klinikpersonal, entwickelt mit der Medizinischen Fakultät und dem Universitätsklinikum Münster."
+      },
+      {
+        "titel": "German Harkness Fellowship",
+        "text": "Gesundheitsfachleute aus Deutschland forschen ein Jahr in den USA zu Fragen der Gesundheitspolitik."
+      },
+      {
+        "titel": "Projekt AMINAS",
+        "text": "Ein interprofessionelles Projekt zur Arzneimittelanamnese in der Notaufnahme.",
+        "jahr": "2023"
+      },
+      {
+        "titel": "InDia Projekt",
+        "text": "Ein Curriculum stärkt das Selbstmanagement von Menschen unter Hämodialyse, um Infektionen vorzubeugen.",
+        "jahr": "2025"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "27",
+        "was": "Plätze je Durchgang Expertise in Leadership"
+      }
+    ]
+  },
+  "stiftung-boehringer-ingelheim-stiftung-29": {
+    "schwerpunkte": [
+      {
+        "titel": "Grundlagenforschung Lebenswissenschaften",
+        "text": "Die Stiftung fördert Grundlagenforschung in Medizin, Biologie, Chemie und Pharmazie und gibt Forschenden Raum für ungewöhnliche Ideen.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "Forschende in Karrierephasen",
+        "text": "Eigene Programme stützen Nachwuchsgruppen, Erstberufene, Forschende in Dual-Career-Paaren und erfahrene Fachleute über das Rentenalter hinaus.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "Wissenschaftliche Tagungen",
+        "text": "Sie bezuschusst internationale Konferenzen und Reisestipendien, damit junge Forschende ihre Ergebnisse vorstellen.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "Initiativen und Preise",
+        "text": "Mit großen Initiativen an Forschungsinstituten und mit Wissenschaftspreisen setzt sie Impulse für die Spitzenforschung.",
+        "motiv": "wissenschaft"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "EMBL Imaging Centre",
+        "text": "Ein Zentrum für bildgebende Verfahren, das molekulare Einblicke in das Leben ermöglicht."
+      },
+      {
+        "titel": "AITHYRA-Institut",
+        "text": "Ein Institut, das künstliche Intelligenz für die biomedizinische Forschung nutzt."
+      },
+      {
+        "titel": "BioAI Dresden",
+        "text": "Eine Initiative, die biochemisches und physikalisches Wissen mit KI verbindet.",
+        "ort": "Dresden"
+      },
+      {
+        "titel": "Exploration Grants",
+        "text": "Nachwuchsgruppenleitungen erkunden mit dieser Förderung eine neue Forschungsrichtung in ihrem Labor."
+      },
+      {
+        "titel": "Rise up!",
+        "text": "Eine Anschubförderung für Forschende, die zum ersten Mal eine W2-Professur antreten."
+      },
+      {
+        "titel": "Cheiron Fellows",
+        "text": "Herausragende Forschende führen ihr Labor nach dem Rentenalter weiter und begleiten den Nachwuchs."
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1977",
+        "was": "gegründet"
+      },
+      {
+        "wert": "29,6 Mio. €",
+        "was": "Fördermittel im Jahr 2025"
+      },
+      {
+        "wert": "rund 90 %",
+        "was": "der Plus-3-Geförderten heute auf Professur oder fester Stelle"
+      }
+    ],
+    "herkunft": "Hubertus Liebrecht (1931 bis 1991), Mitglied der Gesellschafterfamilie von Boehringer Ingelheim, errichtete die Stiftung 1977. Nach seinem Tod ging ein Teil seines Nachlasses an sie. Die Stiftung ist rechtlich vom Unternehmen getrennt und hat ihre Geschäftsstelle in Mainz."
+  },
+  "stiftung-bürgerstiftung-stuttgart-39": {
+    "schwerpunkte": [
+      {
+        "titel": "Engagierte Stadt",
+        "text": "Die Stiftung gewinnt Menschen fürs Ehrenamt und schafft Begegnung, etwa durch Mentoring für Geflüchtete und Treffpunkte gegen Einsamkeit.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Nachhaltige Stadt",
+        "text": "Sie kocht mit Ehrenamtlichen aus geretteten Lebensmitteln und fördert Gemeinschaftsgärten in Stuttgart.",
+        "motiv": "umwelt"
+      },
+      {
+        "titel": "Demokratische Stadt",
+        "text": "Sie bringt Bürgerinnen und Bürger mit der Kommunalpolitik ins Gespräch, bildet Moderatorinnen und Moderatoren aus und fördert Nachbarschaftsinitiativen.",
+        "motiv": "demokratie"
+      },
+      {
+        "titel": "Älter werden in Stuttgart",
+        "text": "Der treffpunkt 50plus bietet Gruppen und Vorträge, Projekte für Menschen mit Demenz stärken die Teilhabe im Alter.",
+        "motiv": "soziales"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Supp_optimal",
+        "text": "Warme Mahlzeiten im Glas, heute vegetarisch und aus geretteten Lebensmitteln, gehen an Menschen in prekären Lebenslagen.",
+        "ort": "Stuttgart",
+        "jahr": "2020"
+      },
+      {
+        "titel": "Plaudertelefon",
+        "text": "Das Projekt vermittelt feste Telefonpaare, die regelmäßig miteinander sprechen, und ist 2026 für den Social Design Award nominiert.",
+        "ort": "Stuttgart"
+      },
+      {
+        "titel": "Café Kränzchen",
+        "text": "Ehrenamtliche laden einmal pro Woche auf dem Prag- und dem Hauptfriedhof zu Kaffee und Kuchen ein.",
+        "ort": "Stuttgart"
+      },
+      {
+        "titel": "Im Dialog für meine Stadt",
+        "text": "In moderierten Kleingruppen sprechen Bürgerinnen und Bürger mit Lokalpolitik über Themen aus ihrem Stadtbezirk.",
+        "ort": "Stuttgart"
+      },
+      {
+        "titel": "Unvergessen",
+        "text": "Mit VfBfairplay bietet die Stiftung Erinnerungsnachmittage und eine Arena-Tour für Menschen mit Demenz an.",
+        "ort": "Bad Cannstatt"
+      },
+      {
+        "titel": "Mittendrin",
+        "text": "Eine Förderinitiative mit Mercedes-Benz begleitet Projekte zu Integration, Teilhabe junger Menschen und Wegen aus der Armut.",
+        "ort": "Stuttgart",
+        "jahr": "2024"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "2001",
+        "was": "gegründet"
+      },
+      {
+        "wert": "175",
+        "was": "Bürgerinnen und Bürger als Gründungsinitiative"
+      },
+      {
+        "wert": "über 200.000",
+        "was": "Essen bei Supp_optimal seit 2020"
+      },
+      {
+        "wert": "23",
+        "was": "Projekte in der Förderinitiative Mittendrin"
+      }
+    ],
+    "herkunft": "Im Januar 2001 gründeten 175 Bürgerinnen und Bürger die Bürgerstiftung Stuttgart. Der damalige Oberbürgermeister Wolfgang Schuster brachte die Idee der Community Foundation aus Amerika mit und übernahm die Schirmherrschaft."
+  },
+  "stiftung-deutsche-kinder-und-jugendstiftung-58": {
+    "schwerpunkte": [
+      {
+        "titel": "Kita und frühe Bildung",
+        "text": "Die Stiftung entwickelt mit Kitas und Partnern die Qualität früher Bildung weiter, etwa in der Zusammenarbeit mit Kultureinrichtungen.",
+        "motiv": "kinder"
+      },
+      {
+        "titel": "Schule und Ganztag",
+        "text": "Sie unterstützt Kommunen, Träger und Schulen dabei, den Ganztag gut umzusetzen und Schulen weiterzuentwickeln.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Demokratiebildung und Beteiligung",
+        "text": "Kinder und Jugendliche reden mit und gestalten mit, von der Kita bis zur Kommune.",
+        "motiv": "demokratie"
+      },
+      {
+        "titel": "Übergang in den Beruf",
+        "text": "Programme begleiten junge Menschen von der Schule in Ausbildung und Beruf und stärken Mädchen bei der Berufswahl.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Digitale Bildung",
+        "text": "Sie begleitet Schulen beim Aufbau von Konzepten für digitale Bildung im Schulalltag.",
+        "motiv": "bildung"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "bildung.digital",
+        "text": "Das Programm begleitet Schulen, digitale Bildung nach ihrem Bedarf zu entwickeln und im Alltag zu verankern."
+      },
+      {
+        "titel": "Skills & Go!",
+        "text": "Praxiswochen und persönliche Begleitung helfen jungen Menschen beim Übergang von der Schule in die Ausbildung.",
+        "ort": "Hessen"
+      },
+      {
+        "titel": "Startup Zukunft!",
+        "text": "Junge Menschen probieren sich in Schülerinnen- und Schülerfirmen aus."
+      },
+      {
+        "titel": "Wir stärken Mädchen",
+        "text": "Mädchen setzen sich mit Berufsbildern jenseits der Rollenklischees auseinander und gewinnen Selbstvertrauen."
+      },
+      {
+        "titel": "Mehr Sprachen, mehr WIR",
+        "text": "Ein bundesweiter mehrsprachiger Redewettbewerb für Schülerinnen und Schüler."
+      },
+      {
+        "titel": "Demokratisches Sachsen",
+        "text": "Das erste Programm der Stiftung in Sachsen, Demokratiebildung blieb dort ein Schwerpunkt.",
+        "ort": "Sachsen",
+        "jahr": "2001"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "11",
+        "was": "Standorte"
+      },
+      {
+        "wert": "rund 350",
+        "was": "Mitarbeitende"
+      },
+      {
+        "wert": "mindestens 85 %",
+        "was": "der Mittel fließen in die Programme"
+      },
+      {
+        "wert": "über 30",
+        "was": "Jahre zwischen Staat und Stiftungen"
+      }
+    ]
+  },
+  "stiftung-diakonie-hessen-kurhessen-waldeck-70": {
+    "schwerpunkte": [
+      {
+        "titel": "Armut und Wohnungsnot",
+        "text": "Der Verband und seine Mitglieder helfen bei Armut, Wohnungslosigkeit und Überschuldung.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Gesundheit und Pflege",
+        "text": "Mitglieder aus Altenhilfe, Pflege, Hospiz und Suchthilfe arbeiten in eigenen Arbeitsgemeinschaften zusammen.",
+        "motiv": "gesundheit"
+      },
+      {
+        "titel": "Teilhabe und Inklusion",
+        "text": "Der Verband vertritt die Arbeit mit Menschen mit Behinderung und in der Sozialpsychiatrie.",
+        "motiv": "inklusion"
+      },
+      {
+        "titel": "Bildung und Arbeit",
+        "text": "Er trägt das Evangelische Fröbelseminar und die Evangelischen Freiwilligendienste und stärkt Jugendberufshilfe.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Demokratie stärken",
+        "text": "Er stellt sich gegen Menschenfeindlichkeit und unterstützt Projekte, die Dialog und Mitbestimmung fördern.",
+        "motiv": "demokratie"
+      },
+      {
+        "titel": "Fördermittelservice",
+        "text": "Mitglieder erhalten Beratung von der ersten Projektidee bis zum fertigen Förderantrag.",
+        "motiv": "allgemein"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Evangelisches Fröbelseminar",
+        "text": "Eine Ausbildungsstätte in Trägerschaft des Landesverbands.",
+        "ort": "Kassel und Korbach"
+      },
+      {
+        "titel": "Evangelische Freiwilligendienste",
+        "text": "Der Landesverband trägt die Freiwilligendienste an drei Standorten.",
+        "ort": "Kassel, Frankfurt und Marburg"
+      },
+      {
+        "titel": "Wissen macht stark 2.0",
+        "text": "Ein Projekt zu Flucht, Integration und Demokratie für Menschen im Odenwaldkreis.",
+        "ort": "Odenwaldkreis"
+      },
+      {
+        "titel": "7 Bierdeckel für die Demokratie",
+        "text": "Ein Angebot, das Menschen ins offene Gespräch bringt und den Zusammenhalt stärkt."
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "2013",
+        "was": "aus der Fusion zweier Diakonischer Werke entstanden"
+      },
+      {
+        "wert": "2472",
+        "was": "Angebote"
+      }
+    ],
+    "herkunft": "Die Diakonie Hessen ist ein Wohlfahrtsverband und keine Förderstiftung. Sie entstand 2013 aus der Fusion der Diakonischen Werke der Evangelischen Kirche in Hessen und Nassau und der Evangelischen Kirche von Kurhessen-Waldeck. Als Werk der Kirche ist sie Mitglieder- und Spitzenverband mit Sitz in Frankfurt am Main und Kassel."
+  },
+  "stiftung-ferry-porsche-stiftung-81": {
+    "schwerpunkte": [
+      {
+        "titel": "Soziales",
+        "text": "Die Stiftung fördert Ideen, die soziale Barrieren abbauen und Chancengleichheit stärken.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Umwelt",
+        "text": "Sie unterstützt Projekte mit nachhaltigen Impulsen für die Umwelt.",
+        "motiv": "umwelt"
+      },
+      {
+        "titel": "Bildung und Wissenschaft",
+        "text": "Sie will junge Menschen für Bildung und Wissenschaft begeistern.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Kultur",
+        "text": "Sie fördert kulturelle und gesellschaftliche Teilhabe für alle.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Breitensport",
+        "text": "Im Sport fördert sie vor allem Projekte im Breitensport, die den Teamgeist stärken.",
+        "motiv": "sport"
+      },
+      {
+        "titel": "Ferry Porsche Challenge",
+        "text": "Einmal im Jahr ruft sie Organisationen aus Baden-Württemberg und Sachsen zu einem Wettbewerb mit wechselndem Thema auf.",
+        "motiv": "allgemein"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Ferry Porsche Challenge 2026",
+        "text": "Unter dem Motto Gemeinsam älter, gemeinsam stärker zeichnete die Stiftung 30 Organisationen für die Teilhabe älterer Menschen aus.",
+        "ort": "Baden-Württemberg und Sachsen",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Nutz- und Sinnesgarten im Hospiz ADVENA",
+        "text": "Auf der barrierefreien Dachterrasse entsteht ein gartentherapeutisches Angebot für schwerkranke Menschen.",
+        "ort": "Leipzig",
+        "jahr": "2026"
+      },
+      {
+        "titel": "TischGemeinschaft",
+        "text": "Ältere Menschen kochen gemeinsam, fahren andere und lernen digitale Fähigkeiten, getragen von den Johannitern.",
+        "ort": "Leutkirch",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Senior*innen Kreativ- & Digitalwerkstatt",
+        "text": "Ältere Menschen probieren im Werk 2 Lasercutting und 3D-Druck aus.",
+        "ort": "Leipzig",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Demenzchor Leipzig",
+        "text": "Menschen mit Demenz singen gemeinsam mit ihren Angehörigen, gegründet vom Verein SelbstBestimmt Leben.",
+        "ort": "Leipzig",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Sturzklinik 2.0",
+        "text": "Ein Aufstehprogramm gibt älteren Menschen mit Sturzrisiko mehr Vertrauen in die eigenen Kräfte.",
+        "jahr": "2026"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "2018",
+        "was": "gegründet"
+      },
+      {
+        "wert": "786",
+        "was": "Projekte gefördert"
+      },
+      {
+        "wert": "22,7 Mio. €",
+        "was": "Fördergelder investiert"
+      },
+      {
+        "wert": "361",
+        "was": "Bewerbungen zur Ferry Porsche Challenge 2025"
+      }
+    ],
+    "herkunft": "Die Stiftung entstand im Mai 2018 zum 70-jährigen Jubiläum der Marke Porsche. Namensgeber ist Ferry Porsche (1909 bis 1998), Begründer der Marke. Im Kuratorium sitzen Vorstand, Aufsichtsrat und Betriebsrat der Porsche AG, gefördert wird rund um deren Standorte Stuttgart und Leipzig."
+  },
+  "stiftung-gemeinschaftsstiftung-kolpingwerk-deutschland-91": {
+    "schwerpunkte": [
+      {
+        "titel": "Junge Menschen",
+        "text": "Die Stiftung ermöglicht Jugendlichen Ausbildung, Perspektiven und Gemeinschaft, etwa durch Jugendfreizeiten und Wohnheime für Auszubildende.",
+        "motiv": "kinder"
+      },
+      {
+        "titel": "Familie",
+        "text": "Sie stärkt Familien mit Familienseminaren und Bildungsangeboten für Eltern.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Eine Welt",
+        "text": "Sie unterstützt internationale Projekte und Begegnungen auf Augenhöhe.",
+        "motiv": "international"
+      },
+      {
+        "titel": "Bildung und Arbeitswelt",
+        "text": "Sie fördert Aus- und Weiterbildung, berufliche Qualifikation und Inklusion.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Schöpfung bewahren",
+        "text": "Mit dem KOLPING-Wald schützt sie alten Buchenbestand und fördert Klimaschutzmaßnahmen.",
+        "motiv": "umwelt"
+      },
+      {
+        "titel": "Treuhandstiftungen",
+        "text": "Sie gründet und verwaltet treuhänderische Stiftungen für Kolpingsfamilien, Diözesanverbände und Einrichtungen.",
+        "motiv": "allgemein"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "ZukunftsFEST",
+        "text": "Spenden fließen in Projekte der Kolpingjugend für Kinder und Jugendliche, die von Armut betroffen sind."
+      },
+      {
+        "titel": "KOLPING-Wald",
+        "text": "Auf 30.000 Quadratmetern schützt die Stiftung alten Buchenbestand.",
+        "ort": "Lohmar"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "2002",
+        "was": "gegründet"
+      },
+      {
+        "wert": "19",
+        "was": "treuhänderische Stiftungen in Verwaltung"
+      },
+      {
+        "wert": "30.000 m²",
+        "was": "geschützter Wald"
+      }
+    ],
+    "herkunft": "Die Gemeinschaftsstiftung wurde am 26. Januar 2002 gegründet und als selbstständige Stiftung privaten Rechts anerkannt. Sie gehört zu Kolping Deutschland und fördert mit Spenden und Zustiftungen die Kolpingarbeit auf allen Ebenen des Verbandes."
+  },
+  "stiftung-hilti-foundation-102": {
+    "schwerpunkte": [
+      {
+        "titel": "Musik für sozialen Wandel",
+        "text": "Musikprogramme stärken Selbstvertrauen und Gemeinschaft von Kindern und Jugendlichen.",
+        "motiv": "musik"
+      },
+      {
+        "titel": "Berufsbildung",
+        "text": "Praxisnahe Ausbildungsprogramme helfen jungen Menschen, wirtschaftlich unabhängig zu werden.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Bezahlbares Wohnen und Technik",
+        "text": "In Entwicklungs- und Schwellenländern unterstützt die Stiftung bezahlbares Wohnen mit technischen Lösungen.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Nothilfe",
+        "text": "Sie hilft Menschen in Notlagen weltweit.",
+        "motiv": "international"
+      },
+      {
+        "titel": "Biodiversität in Liechtenstein",
+        "text": "In Liechtenstein fördert sie Artenvielfalt, Technikwelten sowie Wettbewerbsfähigkeit und Lebensqualität.",
+        "motiv": "umwelt"
+      },
+      {
+        "titel": "Unterwasserarchäologie",
+        "text": "Sie unterstützt die Arbeit von Franck Goddio und dem Europäischen Institut für Unterwasserarchäologie.",
+        "motiv": "wissenschaft"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "PropelA",
+        "text": "Junge Menschen lernen drei Wochen im Monat im Betrieb und eine Woche in der Werkstatt, mit Stipendium und Mentoring.",
+        "ort": "Nairobi",
+        "jahr": "2022"
+      },
+      {
+        "titel": "Tatort Biodiversität 2026",
+        "text": "Eine Veranstaltung zeigte, wie Konsum mit dem Verlust und dem Schutz der Artenvielfalt zusammenhängt.",
+        "ort": "Schaan",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Unterwasserarchäologie mit Franck Goddio",
+        "text": "Das Team fand im Osthafen von Alexandria ein gut erhaltenes antikes Vergnügungsboot.",
+        "ort": "Alexandria",
+        "jahr": "2025"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "fast 30",
+        "was": "Jahre Hilfe für Menschen in Not"
+      }
+    ],
+    "herkunft": "Die Hilti Foundation gehört zum Umfeld der Familie Hilti und der Hilti-Gruppe, die aus Liechtenstein stammt. Präsidentin des Stiftungsrats ist Michèle Frey-Hilti, Mitglied im Verwaltungsrat der Hilti-Gruppe."
+  },
+  "stiftung-karg-stiftung-112": {
+    "schwerpunkte": [
+      {
+        "titel": "Frühe Bildung",
+        "text": "Die Stiftung qualifiziert Fachkräfte in Kitas, damit sie hohe Begabung früh erkennen und begleiten.",
+        "motiv": "kinder"
+      },
+      {
+        "titel": "Schule",
+        "text": "Sie baut mit Ländern und Schulen Kompetenzzentren und Netzwerke für Begabtenförderung auf.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Beratung",
+        "text": "Sie stärkt Beratungsstellen, die hochbegabte Kinder, Jugendliche und ihre Familien begleiten.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Begabungsforschung",
+        "text": "Sie fördert Nachwuchsforschende und lässt Wissen für die Praxis aufbereiten.",
+        "motiv": "wissenschaft"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Karg Impulskreise",
+        "text": "Eine Fortbildung für Fachkräfte in Kita und Schule zum Erkennen und Fördern von Begabungen."
+      },
+      {
+        "titel": "Karg Campus",
+        "text": "Schulen, Beratungsstellen und Kitas entwickeln sich zu Kompetenzzentren für Begabtenförderung."
+      },
+      {
+        "titel": "Karg Campus Kita Niedersachsen",
+        "text": "Das Programm stärkte Kitas in Niedersachsen in der Begabungsförderung und schloss 2026 ab.",
+        "ort": "Niedersachsen",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Konsultationszentren in Sachsen",
+        "text": "15 neue Konsultationszentren stärken die Begabtenförderung an sächsischen Schulen.",
+        "ort": "Sachsen",
+        "jahr": "2026"
+      },
+      {
+        "titel": "William Stern Programm",
+        "text": "Ein Förderprogramm für Nachwuchsforschende in der angewandten Begabungsforschung."
+      },
+      {
+        "titel": "Karg Perspektiven",
+        "text": "Ein Podcast über Bildung, Begabung und Potenziale.",
+        "jahr": "2026"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1989",
+        "was": "gegründet"
+      },
+      {
+        "wert": "4,9 Mio. €",
+        "was": "Fördervolumen 2024"
+      },
+      {
+        "wert": "149 Mio. €",
+        "was": "Vermögen (Bilanz 2024)"
+      },
+      {
+        "wert": "12 von 16",
+        "was": "Bundesländern mit Aktivitäten"
+      }
+    ],
+    "herkunft": "Der Warenhausunternehmer Hans-Georg Karg, langjähriger Leiter des Hertie-Konzerns, und seine Frau Adelheid errichteten die Stiftung 1989. Sie ist Alleinerbin des Ehepaars und hat ihren Sitz in Frankfurt am Main. Die Stiftung ließ die Geschichte des Hertie-Konzerns unabhängig erforschen."
+  },
+  "stiftung-kolping-stiftung-mainfranken-wuerzburg-121": {
+    "schwerpunkte": [
+      {
+        "titel": "Völkerverständigung und Entwicklungshilfe",
+        "text": "Die Stiftung fördert Projekte und Partnerschaften, vor allem in Kenia und Rumänien.",
+        "motiv": "international"
+      },
+      {
+        "titel": "Kirchliche Bildung",
+        "text": "Sie unterstützt kirchliche Jugend- und Erwachsenenbildung im Sinne Adolph Kolpings.",
+        "motiv": "kirche"
+      },
+      {
+        "titel": "Berufliche und soziale Bildung",
+        "text": "Sie fördert religiöse, berufliche und soziale Bildung mit Zuschüssen und Darlehen.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Familien in der Region",
+        "text": "Sie hilft bedürftigen Familien in Mainfranken.",
+        "motiv": "soziales"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Straßenkinderprojekt Nairobi",
+        "text": "Gemeinsam mit der Kinder-Initiative Kenia unterstützt die Stiftung Straßenkinder.",
+        "ort": "Nairobi"
+      },
+      {
+        "titel": "Jugendpartnerschaft mit Rumänien",
+        "text": "Die Stiftung fördert die Partnerschaft zwischen Jugendlichen in Rumänien und der Kolpingjugend im Bistum Würzburg."
+      },
+      {
+        "titel": "Ferienzentrum Ivo",
+        "text": "Die Stiftung hilft bei der Renovierung der Holzhäuser in einem Ferienzentrum für Jugendliche und Familien.",
+        "ort": "Ivo, Rumänien"
+      },
+      {
+        "titel": "Kolpinghaus Toplita",
+        "text": "Die Kolpingsfamilie erhielt einen Zuschuss für den Ausbau ihres Hauses.",
+        "ort": "Toplita, Rumänien"
+      },
+      {
+        "titel": "Kolpingheim Mittelstreu",
+        "text": "Ein zinsgünstiges Darlehen half bei Renovierung und Erhalt des Hauses.",
+        "ort": "Mittelstreu"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "rund 790.000 €",
+        "was": "Stiftungskapital"
+      },
+      {
+        "wert": "rund 70.000 €",
+        "was": "in zweckgebundenen Fonds"
+      }
+    ],
+    "herkunft": "Die Kolping-Stiftung-Würzburg ist eine kirchliche Stiftung öffentlichen Rechts nach bayerischem Stiftungsrecht. Sie gehört zum Kolpingwerk in der Diözese Würzburg und arbeitet auf Grundlage der Botschaft Adolph Kolpings. Sie führt selbst keine Projekte durch und fördert andere mit Zuschüssen oder Darlehen."
+  },
+  "stiftung-lotto-hessen-lottomittel-land-hessen-128": {
+    "_grund": "Von lotto-hessen.de liegen keine Texte vor, die Abfrage blieb leer."
+  },
+  "stiftung-missio-aachen-muenchen-141": {
+    "schwerpunkte": [
+      {
+        "titel": "Religionsfreiheit",
+        "text": "missio setzt sich für verfolgte Christinnen und Christen ein und veröffentlicht Länderberichte zur Religionsfreiheit.",
+        "motiv": "kirche"
+      },
+      {
+        "titel": "Frauen und Mädchen stärken",
+        "text": "Ordensfrauen und Partner bieten Bildung, Ausbildung, Traumabegleitung und Schutz vor Gewalt.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Bildung und Ausbildung",
+        "text": "Das Hilfswerk fördert Schulen, Berufsbildung und die Ausbildung von Menschen im kirchlichen Dienst.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Nothilfe und Frieden",
+        "text": "Partner vor Ort helfen in Krisen, Kriegen und auf der Flucht und fördern das Miteinander der Religionen.",
+        "motiv": "international"
+      },
+      {
+        "titel": "Gegen Ausbeutung",
+        "text": "missio tritt für würdige Arbeit und faire Lieferketten ein, gegen moderne Sklaverei und Hexenverfolgung.",
+        "motiv": "international"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Grüne Schule",
+        "text": "Kinder aus Mica-Minen gehen zur Schule, ihre Familien bauen neue Lebensgrundlagen auf.",
+        "ort": "Madagaskar"
+      },
+      {
+        "titel": "Von der Schrotthalde in die Schule",
+        "text": "Schwester Mercy öffnet Familien von einer Elektroschrotthalde einen Weg in ein anderes Leben.",
+        "ort": "Ghana"
+      },
+      {
+        "titel": "Kinder vor Cybersex schützen",
+        "text": "Die kirchliche Organisation ANCE schützt Kinder aus armen Familien vor sexuellem Missbrauch im Internet.",
+        "ort": "Cebu, Philippinen"
+      },
+      {
+        "titel": "Hilfe für sudanesische Flüchtlinge",
+        "text": "Der Jesuit Refugee Service stärkt Geflüchtete und Aufnahmegemeinden mit Seelsorge, Bildung und Friedensarbeit.",
+        "ort": "Maban, Südsudan"
+      },
+      {
+        "titel": "Mangroven für das Tulun-Atoll",
+        "text": "Bewohnerinnen und Bewohner der Carteret-Inseln forsten Mangroven auf, um das Meer aufzuhalten.",
+        "ort": "Papua-Neuguinea"
+      },
+      {
+        "titel": "HOPE-Programm",
+        "text": "Ein Berufsbildungsprogramm für 180 junge Menschen aus 16 Diözesen.",
+        "ort": "Myanmar"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "120",
+        "was": "missio-Organisationen weltweit"
+      },
+      {
+        "wert": "9",
+        "was": "Themenfonds der Stiftung pro missio"
+      }
+    ],
+    "herkunft": "missio ist das Internationale Katholische Missionswerk mit Sitz in Aachen. Es fördert Projekte, die einheimische kirchliche Partner in Afrika, Asien und Ozeanien organisieren. Die Stiftung pro missio stützt die Arbeit langfristig über Zustiftungen und Themenfonds."
+  },
+  "stiftung-renovabis-150": {
+    "schwerpunkte": [
+      {
+        "titel": "Seelsorge und Kirche",
+        "text": "Renovabis fördert Kinder-, Jugend- und Familienpastoral, die Ausbildung von Priestern und Katecheten sowie Bau und Renovierung von Kirchen.",
+        "motiv": "kirche"
+      },
+      {
+        "titel": "Soziale Aufgaben",
+        "text": "Es unterstützt Kinderheime, Straßenkinderarbeit, Einrichtungen für Menschen mit Behinderung, Altenheime, Hospize und Hilfe für Opfer von Frauenhandel.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Schulische und berufliche Bildung",
+        "text": "Es fördert kirchliche Schulen, Berufsschulzentren und Ausbildungswerkstätten und vergibt Stipendien.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Nothilfe",
+        "text": "Es hilft Geflüchteten und Menschen nach Katastrophen, auch in der Ukraine.",
+        "motiv": "international"
+      },
+      {
+        "titel": "Dialog und Versöhnung",
+        "text": "Mit Kongressen, Zeitschriften und einem Dialogpreis fördert es den Austausch zwischen Ost und West.",
+        "motiv": "demokratie"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Warme Klassenräume",
+        "text": "Die Don-Bosco-Schule erhält eine neue Heizungsanlage für den Winter.",
+        "ort": "Saporischschja, Ukraine"
+      },
+      {
+        "titel": "Zweite Chance für Jugendliche",
+        "text": "Straffällig gewordene Jugendliche erhalten Hilfe für einen Neuanfang.",
+        "ort": "Albanien"
+      },
+      {
+        "titel": "Psychosoziale Hilfe für Familien",
+        "text": "Traumatisierte Kinder und Erwachsene finden Halt in psychosozialer Begleitung.",
+        "ort": "Kyjiw"
+      },
+      {
+        "titel": "Suppenküche in Tbilisi",
+        "text": "Eine soziale Einrichtung bietet warme Mahlzeiten, Beratung und Begleitung.",
+        "ort": "Tbilisi"
+      },
+      {
+        "titel": "Pastoralzentrum für Katholiken",
+        "text": "Renovabis unterstützt ein Zentrum für die katholische Gemeinde.",
+        "ort": "Almaty"
+      },
+      {
+        "titel": "Freisinger Dialogpreis",
+        "text": "Renovabis verlieh mit dem Erzbistum München und Freising und der Stadt Freising den ersten Preis an die Stiftung Kreisau.",
+        "ort": "Freising",
+        "jahr": "2026"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1993",
+        "was": "gegründet"
+      },
+      {
+        "wert": "29",
+        "was": "Partnerländer"
+      },
+      {
+        "wert": "rund 27.400",
+        "was": "Projekte seit 1993"
+      },
+      {
+        "wert": "506",
+        "was": "Projekte im Jahr 2025"
+      }
+    ],
+    "herkunft": "Die Deutsche Bischofskonferenz gründete Renovabis am 3. März 1993 als Solidaritätsaktion der deutschen Katholiken mit den Menschen in Mittel- und Osteuropa. Die Geschäftsstelle sitzt in Freising. Renovabis arbeitet nach dem Partnerprinzip und fördert Anträge, die direkt aus den Partnerländern kommen."
+  },
+  "stiftung-sozial-und-sportstiftung-der-kasseler-sparkasse-168": {
+    "schwerpunkte": [
+      {
+        "titel": "Jugend- und Altenhilfe",
+        "text": "Die Stiftungen fördern soziale Projekte für junge und alte Menschen in Stadt und Landkreis Kassel.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Menschen mit Behinderung",
+        "text": "Sie unterstützen Behindertenorganisationen und Vorhaben, die das Leben benachteiligter Menschen erleichtern.",
+        "motiv": "inklusion"
+      },
+      {
+        "titel": "Jugend- und Breitensport",
+        "text": "Bei Sportvereinen liegt der Schwerpunkt auf Jugend- und Breitensport.",
+        "motiv": "sport"
+      },
+      {
+        "titel": "Kunst und Kultur",
+        "text": "Sie fördern bildende Kunst, Musik, Literatur und kulturelle Veranstaltungen mit Bezug zur Region.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Denkmalschutz",
+        "text": "Sie unterstützen Denkmalpflege und Denkmalschutz in der Region.",
+        "motiv": "denkmal"
+      },
+      {
+        "titel": "Bildung und Wissenschaft",
+        "text": "Sie fördern Erziehung, Volks- und Berufsbildung, Studentenhilfe und Forschung.",
+        "motiv": "wissenschaft"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1992",
+        "was": "Gründung der Sozial- und Sportstiftung"
+      },
+      {
+        "wert": "10 Mio. €",
+        "was": "Stiftungskapital"
+      },
+      {
+        "wert": "2020",
+        "was": "Zusammenlegung zu den Kasseler Sparkassenstiftungen"
+      }
+    ],
+    "herkunft": "Die Kasseler Sparkasse gründete 1992 die Sozial- und Sportstiftung und die Kulturstiftung, 1993 und 1997 folgten zwei Stiftungen für den Landkreis. Seit 2020 wirken sie zusammengelegt als Kasseler Sparkassenstiftungen für Stadt und Landkreis Kassel. Den Vorstand stellt der Sparkassenvorstand, die Kuratorien leiten der Oberbürgermeister und der Landrat."
+  },
+  "stiftung-stiftung-bewahrung-kirchl-baudenkmaeler-ekd-180": {
+    "_grund": "Die Texte stammen von ekd.de. Dort stehen zur Stiftung KiBa nur Anschrift und Kontaktdaten, alles Weitere betrifft die EKD."
+  },
+  "stiftung-stiftung-kinder-und-familienfreundliches-melsung-206": {
+    "schwerpunkte": [
+      {
+        "titel": "Bildung",
+        "text": "Bildung steht im Mittelpunkt, die Stiftung finanziert langfristige Projekte mit Einrichtungen, die täglich mit Kindern und Jugendlichen arbeiten.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Familie und Beruf",
+        "text": "Sie erleichtert Eltern die Vereinbarkeit von Familie und Beruf, unter anderem mit einem Familienzentrum.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Integration und Inklusion",
+        "text": "Sie fördert die Integration von Kindern, Jugendlichen und Familien und das Miteinander der Generationen und Kulturen.",
+        "motiv": "inklusion"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Integrationsbüro",
+        "text": "Geflüchtete, die nach Melsungen kommen, finden hier Beratung, Begleitung und Orientierung.",
+        "ort": "Melsungen",
+        "jahr": "2014"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "2005",
+        "was": "gegründet"
+      },
+      {
+        "wert": "266.000 €",
+        "was": "Gründungskapital"
+      },
+      {
+        "wert": "5,72 Mio. €",
+        "was": "Stiftungskapital (Ende 2024)"
+      }
+    ],
+    "herkunft": "Stiftung und Förderverein für ein zukunftsfähiges Melsungen wurden am 16. Februar 2005 gegründet. Die Stiftung versteht sich als Netzwerk engagierter Bürgerinnen und Bürger, ihr Kapital wächst durch Spendenaktionen mit örtlichen Unternehmen, Handel und Vereinen. Die Wirtschaft verdoppelt die jährlichen Spenden über einen Matching Fund."
+  },
+  "stiftung-stiftung-rheinland-pfalz-für-kultur-200": {
+    "schwerpunkte": [
+      {
+        "titel": "Kulturprojekte im Land",
+        "text": "Die Stiftung fördert Kulturprojekte mit starkem Bezug zu Rheinland-Pfalz, Anträge sind zum 15. Februar und 15. August möglich.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Kultursommer",
+        "text": "Jedes Jahr von Mai bis Oktober bündelt der Kultursommer über 200 Projekte aller Sparten unter einem Motto.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Ehrenamtliche Kleinprojekte",
+        "text": "Ein eigenes Programm fördert kleine kulturelle Projekte, die Ehrenamtliche tragen.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Kultur in den Regionen",
+        "text": "Sie stärkt kulturelle Strukturen und Vernetzung, besonders fern der großen Städte.",
+        "motiv": "kultur"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Kultursommer Rheinland-Pfalz",
+        "text": "Ein jährliches Kulturfest im ganzen Land mit wechselndem Motto und Eröffnung an wechselnden Orten.",
+        "jahr": "1992"
+      },
+      {
+        "titel": "Regionalbüro Nassau",
+        "text": "Mit Unterstützung der Leifheit-Stiftung vernetzt das Büro die Kultur im rechtsrheinischen Rheinland-Pfalz.",
+        "ort": "Nassau",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Künstlerhaus Edenkoben",
+        "text": "Das Haus der Stiftung lädt zu Vorträgen und Gesprächen ein.",
+        "ort": "Edenkoben"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "über 200",
+        "was": "Projekte im Kultursommer pro Jahr"
+      },
+      {
+        "wert": "1992",
+        "was": "erster Kultursommer"
+      }
+    ],
+    "herkunft": "Die Landesregierung Rheinland-Pfalz rief 1992 den Kultursommer aus, Zinserträge der Stiftung sicherten ihn finanziell. Seit 2013 gehört der Kultursommer zur Stiftung. Ihre Geschäftsstelle liegt in Mainz, dazu kommen das Künstlerhaus Edenkoben und seit 2026 ein Regionalbüro in Nassau."
+  },
+  "stiftung-werner-bonhoff-stiftung-219": {
+    "schwerpunkte": [
+      {
+        "titel": "Bürokratie-Therapie",
+        "text": "Die Stiftung sammelt geprüfte Erfahrungen von Unternehmerinnen und Unternehmern mit Bürokratie und macht sie öffentlich, damit Verwaltung und Gesetzgeber daraus lernen.",
+        "motiv": "allgemein"
+      },
+      {
+        "titel": "Werner-Bonhoff-Preis",
+        "text": "Sie zeichnet Menschen aus, die mit einem Praxisfall auf Hürden in Verwaltung oder Gesetzgebung hinweisen.",
+        "motiv": "allgemein"
+      },
+      {
+        "titel": "Gegen Mobbing und Gewalt",
+        "text": "Mit dem Projekt Nach der Tat ermutigt sie Betroffene und Beobachtende, an ihrer Schule Verbesserungen anzustoßen.",
+        "motiv": "bildung"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Online-Fallsammlung",
+        "text": "Rund 130 geprüfte Fälle zeigen, wo Bürokratie Unternehmen ausbremst."
+      },
+      {
+        "titel": "Wanderausstellung Der Kaiser hat ja gar nichts an!",
+        "text": "Die Ausstellung zeigt Menschen, die Bürokratismus sichtbar machten, und war unter anderem in Potsdam, Augsburg und Nürnberg zu sehen."
+      },
+      {
+        "titel": "Werner-Bonhoff-Preis 2025",
+        "text": "Der Stuttgarter Gastronom Bernd Kreis erhielt den Preis für seinen Fall rund um die Anwerbung eines Kochs.",
+        "ort": "Stuttgart",
+        "jahr": "2025"
+      },
+      {
+        "titel": "Wachsame Schule",
+        "text": "Die Stiftung begleitet Schulen kostenlos dabei, ihren Umgang mit Mobbing und Gewalt zu verbessern."
+      },
+      {
+        "titel": "Bonhoff-Unternehmer-Zentrum",
+        "text": "Ein offener Ort für den Austausch von Unternehmerinnen und Unternehmern untereinander.",
+        "ort": "Dresden"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "2005",
+        "was": "Start der Bürokratie-Therapie"
+      },
+      {
+        "wert": "2006",
+        "was": "erster Werner-Bonhoff-Preis"
+      },
+      {
+        "wert": "2010",
+        "was": "Start von Nach der Tat"
+      },
+      {
+        "wert": "rund 130",
+        "was": "Fälle in der Fallsammlung"
+      }
+    ],
+    "herkunft": "Die Werner Bonhoff Stiftung ist gemeinnützig und unabhängig und hat ihren Sitz in Berlin. Sie arbeitet operativ mit zwei bundesweiten Projekten."
+  },
+  "stiftung-zf-kunststiftung-229": {
+    "schwerpunkte": [
+      {
+        "titel": "Bildende Kunst",
+        "text": "Die Stiftung vergibt Stipendien an bildende Künstlerinnen und Künstler aus Deutschland, Österreich, Liechtenstein und der Schweiz, seit 2025 als Forschungsstipendium.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Junge Pianistinnen und Pianisten",
+        "text": "Alle zwei Jahre zeichnet der ZF-Musikpreis junge Talente beim Klavierfestival junger Meister aus.",
+        "motiv": "musik"
+      },
+      {
+        "titel": "Kurzfilm",
+        "text": "Der ZF-Kurzfilmpreis bei den Filmtagen Friedrichshafen soll die Produktion eines neuen Kurzfilms ermöglichen.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Kunstvermittlung",
+        "text": "Ausstellungen, Konzerte, Meisterkurse und Atelierbesuche bringen Publikum und Kunstschaffende zusammen.",
+        "motiv": "kultur"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "ZF-Musikpreis 2026",
+        "text": "Die Pianistin Jooyeon Ka gewann den zwölften ZF-Musikpreis im Finalkonzert im Graf-Zeppelin-Haus.",
+        "ort": "Friedrichshafen",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Filmtage Friedrichshafen",
+        "text": "Die Stiftung stiftet den ZF-Kurzfilmpreis und den Publikumspreis des Festivals.",
+        "ort": "Friedrichshafen"
+      },
+      {
+        "titel": "RE-SEARCH",
+        "text": "Ein Forschungsstipendium für bildende Künstlerinnen und Künstler.",
+        "jahr": "2025"
+      },
+      {
+        "titel": "Jubiläumsausstellung 25 Jahre ZF Kunststiftung",
+        "text": "Die Ausstellung im Zeppelin Museum zeigte Werke der Stipendiatinnen und Stipendiaten aus 25 Jahren.",
+        "ort": "Friedrichshafen",
+        "jahr": "2015"
+      },
+      {
+        "titel": "Internationales Bodenseefestival",
+        "text": "Ein Kulturfestival im Dreiländereck, das die Stiftung in ihrer regionalen Kulturförderung bis 2019 unterstützte."
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1990",
+        "was": "gegründet"
+      },
+      {
+        "wert": "2001",
+        "was": "erster ZF-Musikpreis"
+      },
+      {
+        "wert": "34",
+        "was": "Stipendiatinnen und Stipendiaten bis 2015"
+      }
+    ],
+    "herkunft": "Die ZF Friedrichshafen AG gründete die Stiftung 1990 zu ihrem 75-jährigen Bestehen, auf Initiative von Bernd Wiedmann, Max Mugler und Klaus Bleyer. Sie ist eine Stiftung bürgerlichen Rechts mit Sitz in Friedrichshafen und fördert allein aus den Erträgen ihres Kapitals. Seit 2020 arbeitet sie nur noch operativ mit eigenen Projekten."
+  }
+}

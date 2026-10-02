@@ -1,0 +1,373 @@
+{
+  "stiftung-alexander-von-humboldt-stiftung-4": {
+    "schwerpunkte": [
+      { "titel": "Forschungsstipendien", "text": "Postdocs und erfahrene Forschende aus dem Ausland forschen sechs bis 24 Monate an einer Einrichtung in Deutschland. Die Stiftung fördert Personen aller Fächer, keine Projekte.", "motiv": "wissenschaft" },
+      { "titel": "Forschungspreise und Professuren", "text": "Mit Forschungspreisen und den Alexander von Humboldt-Professuren holt sie international anerkannte Forschende an deutsche Hochschulen.", "motiv": "wissenschaft" },
+      { "titel": "Forschen im Ausland", "text": "Forschende aus Deutschland gehen mit Feodor Lynen-, JSPS- oder NSTC-Stipendien für eine Zeit an Einrichtungen im Ausland.", "motiv": "international" },
+      { "titel": "Gefährdete Forschende", "text": "Die Philipp Schwartz-Initiative bietet bedrohten Wissenschaftlerinnen und Wissenschaftlern ein Fellowship in Deutschland.", "motiv": "demokratie" },
+      { "titel": "Klimaschutz-Stipendien", "text": "Nachwuchsführungskräfte mit Klimaexpertise aus Schwellen- und Entwicklungsländern setzen ein eigenes Vorhaben in Deutschland um.", "motiv": "klima" },
+      { "titel": "Begleitung ein Leben lang", "text": "Alumni bleiben Teil des Netzwerks und erhalten weitere Förderung, Tagungen und Studienreisen.", "motiv": "international" }
+    ],
+    "beispiele": [
+      { "titel": "Philipp Schwartz-Initiative", "text": "Die Stiftung startete das Programm für gefährdete Forschende gemeinsam mit dem Auswärtigen Amt.", "jahr": "2015" },
+      { "titel": "Henriette Herz-Scouting-Programm", "text": "Professorinnen, Professoren und Gruppenleitungen in Deutschland schlagen als Scouts bis zu drei Talente aus dem Ausland für ein Stipendium vor." },
+      { "titel": "Frontiers of Research Symposien", "text": "Junge Forschende aus Deutschland und Partnerländern treffen sich drei bis vier Tage zum fachübergreifenden Austausch." },
+      { "titel": "Humboldt Residency-Programm", "text": "Ein Netzwerk im Netzwerk bringt Forschende mit Menschen aus Gesellschaft und Politik zusammen, zuletzt zum Thema politische Beteiligung." }
+    ],
+    "zahlen": [
+      { "wert": "30.000", "was": "Forschende im Humboldt-Netzwerk" },
+      { "wert": "über 140", "was": "Länder im Netzwerk" },
+      { "wert": "63", "was": "Nobelpreisträgerinnen und -träger im Netzwerk" },
+      { "wert": "800", "was": "Preise und Stipendien im Jahr" }
+    ]
+  },
+  "stiftung-basf-stiftung-16": {
+    "_grund": "Die Texte landen auf Konzernseiten der BASF (Startseite, Podcast, China-Engagement, Quartalszahlen). Zur BASF Stiftung steht dort nichts."
+  },
+  "stiftung-brot-fuer-die-welt-inland-31": {
+    "schwerpunkte": [
+      { "titel": "Projekte im Globalen Süden", "text": "Brot für die Welt ist ein Hilfswerk und keine Stiftung. Es fördert Projekte lokaler, oft kirchlicher Partnerorganisationen in fast 80 Ländern.", "motiv": "international" },
+      { "titel": "Ernährung und Klima", "text": "Partner helfen Kleinbauernfamilien, trotz Dürre und Klimakrise genug zu ernten. Klimagerechtigkeit und Ernährungssicherheit tragen die 68. Spendenaktion.", "motiv": "klima" },
+      { "titel": "Menschenrechte und Frieden", "text": "Projekte stärken die Rechte von Frauen, Geflüchteten und Arbeiterinnen und helfen, Gewalt und Trauma zu verarbeiten.", "motiv": "demokratie" },
+      { "titel": "Bildungsarbeit", "text": "Das Werk fördert Bildungs- und Ausbildungsprojekte und bietet in Deutschland entwicklungspolitische Bildung, Material für Schule und Jugend sowie Fortbildungen.", "motiv": "bildung" },
+      { "titel": "Gemeindearbeit", "text": "Gemeinden erhalten Material für Gottesdienste, Kollekten und Fürbitten. Spenden und Kollekten bilden das Fundament der Arbeit.", "motiv": "kirche" }
+    ],
+    "beispiele": [
+      { "titel": "Sauberes Wasser vor der Haustür", "text": "Frauen im Südwesten Ugandas haben nun einen Regenwassertank am Haus und sparen sich stundenlanges Wasserholen.", "ort": "Uganda" },
+      { "titel": "Mit neuen Ideen der Klimakrise trotzen", "text": "In einem Modellprojekt auf Java lernen junge Bäuerinnen und Bauern Landwirtschaft unter den Bedingungen der Klimakrise.", "ort": "Indonesien" },
+      { "titel": "Traditionelles Saatgut schützt vor Hunger", "text": "Ein Projekt im Bereich Klima und Umwelt setzt auf traditionelles Saatgut gegen Hunger.", "ort": "Burkina Faso" },
+      { "titel": "Sichere Geburten", "text": "Ein Gesundheitsprojekt sorgt für mehr Sicherheit rund um die Geburt.", "ort": "Guinea" },
+      { "titel": "Fußball als Schule für das Leben", "text": "Ein Projekt für Kinder und Jugendliche nutzt den Fußball als Lernort.", "ort": "Brasilien" }
+    ],
+    "zahlen": [
+      { "wert": "3.001", "was": "geförderte Projekte 2025" },
+      { "wert": "77", "was": "Länder mit Projekten 2025" },
+      { "wert": "89,8 %", "was": "der Ausgaben für Projektarbeit" },
+      { "wert": "72,6 Mio. €", "was": "Spenden und Kollekten 2025" }
+    ],
+    "herkunft": "Brot für die Welt ist das Hilfswerk der evangelischen Kirchen. Gemeinsam mit der Diakonie Deutschland bildet es das Evangelische Werk für Diakonie und Entwicklung e. V."
+  },
+  "stiftung-caritas-stiftung-im-bistum-fulda-42": {
+    "schwerpunkte": [
+      { "titel": "Caritas-Projekte im Bistum", "text": "Die Stiftung sammelt Spenden und Zustiftungen und unterstützt damit gezielt einzelne Projekte der Caritas in der Diözese Fulda.", "motiv": "soziales" }
+    ]
+  },
+  "stiftung-deutsche-sporthilfe-stiftung-61": {
+    "schwerpunkte": [
+      { "titel": "Grundförderung für Kader", "text": "Alle Bundeskaderathletinnen und -athleten erhalten eine Grundförderung, ein Versicherungspaket sowie Seminar- und Serviceangebote.", "motiv": "sport" },
+      { "titel": "Förderung nach Leistung", "text": "Wer international vorne mitkämpft, erhält im Potenzial- und Top-Team eine höhere monatliche Förderung und zusätzliche Elite-Förderungen.", "motiv": "sport" },
+      { "titel": "Duale Karriere", "text": "Studierende, Auszubildende und Schülerinnen und Schüler erhalten Stipendien, Nachhilfe und Hilfe bei der Berufsvorbereitung.", "motiv": "bildung" },
+      { "titel": "Nach der Karriere", "text": "Ein Alumni-Stipendium hilft ehemaligen Spitzensportlerinnen und -sportlern, eine berufliche oder wissenschaftliche Qualifikation nachzuholen. Mentorinnen und Mentoren begleiten den Berufseinstieg.", "motiv": "bildung" },
+      { "titel": "Para Sport und Deaflympics", "text": "Die Sporthilfe fördert Athletinnen und Athleten paralympischer Sportarten und aus dem Gehörlosensport.", "motiv": "inklusion" },
+      { "titel": "Persönlichkeit und Vorbilder", "text": "Formate wie das Elite-Forum bringen Geförderte mit Persönlichkeiten aus Politik, Wirtschaft und Kultur ins Gespräch.", "motiv": "sport" }
+    ],
+    "beispiele": [
+      { "titel": "Sporthilfe Elite-Forum", "text": "Mehrtägiges Treffen, bei dem Gäste aus Politik, Wirtschaft und Kultur mit Athletinnen und Athleten über Lebenswege sprechen.", "ort": "Berlin", "jahr": "2026" },
+      { "titel": "Deutsche Bank Sport-Stipendium", "text": "Studierende Spitzenathletinnen und -athleten erhalten zusätzlich zur Förderung ein monatliches Stipendium.", "jahr": "2012" },
+      { "titel": "Goldene Sportpyramide", "text": "Die Sporthilfe ehrt eine Sportlerpersönlichkeit für ihr Lebenswerk, 2025 den Biathleten Fritz Fischer.", "jahr": "2025" },
+      { "titel": "Sporthilfe Club der Besten", "text": "Rund 80 der erfolgreichsten deutschen Athletinnen und Athleten trafen sich zu Austausch, Workshops und Erholung.", "ort": "Ägypten", "jahr": "2026" },
+      { "titel": "Nachwuchselite-Förderung", "text": "Ausgewählte Talente erhalten eine zusätzliche Förderung, die die DFL Stiftung finanziert." }
+    ],
+    "zahlen": [
+      { "wert": "1967", "was": "gegründet" },
+      { "wert": "rund 4.000", "was": "geförderte Athletinnen und Athleten im Jahr" },
+      { "wert": "2.000", "was": "davon Nachwuchstalente" },
+      { "wert": "rund 300", "was": "Mitglieder im Kuratorium" }
+    ],
+    "herkunft": "Die Stiftung Deutsche Sporthilfe wurde am 26. Mai 1967 gegründet; seither übernehmen die höchsten Repräsentanten der Bundesrepublik die Schirmherrschaft. Ein Kuratorium aus Wirtschaft, Politik, Sport, Medien und Kultur trägt die Förderung mit. Den Großteil der Mittel wirbt die Sporthilfe jedes Jahr selbst ein, seit 2018 kommt direkte staatliche Unterstützung hinzu."
+  },
+  "stiftung-dsj-dfl-stiftung-48": {
+    "schwerpunkte": [
+      { "titel": "Gesundes und aktives Aufwachsen", "text": "Mit Clubs und Partnern bringt die Stiftung Kinder und Jugendliche in Bewegung und baut dafür Netzwerke in ihrem Lebensumfeld auf.", "motiv": "gesundheit" },
+      { "titel": "Gesellschaftliches Miteinander", "text": "Sie nutzt den Fußball, um Respekt, Toleranz und Fairplay zu vermitteln, und stärkt junge Menschen darin, ihr Umfeld mitzugestalten.", "motiv": "demokratie" },
+      { "titel": "Spitzensport", "text": "Sie fördert Sporttalente sportlich und in ihrer Persönlichkeit, damit sie Vorbilder werden.", "motiv": "sport" },
+      { "titel": "Projekte Dritter", "text": "Neben eigenen Programmen unterstützt sie meist lokale gemeinnützige Projekte für ein bis drei Jahre. Derzeit nimmt sie keine Anträge an.", "motiv": "kinder" }
+    ],
+    "beispiele": [
+      { "titel": "Bundesliga bewegt", "text": "Stiftung und Clubs vernetzen Akteurinnen und Akteure im Sozialraum und bringen Kinder dauerhaft in Bewegung." },
+      { "titel": "Fußball trifft Kultur", "text": "Eine Halbzeit Fußball, eine Halbzeit Kompetenztraining und kulturelle Aktivitäten stärken Sprache und Selbstvertrauen von Kindern." },
+      { "titel": "Lernort Stadion", "text": "Junge Menschen beschäftigen sich im Stadion mit gesellschaftspolitischen Themen und stärken demokratische Kompetenzen." },
+      { "titel": "Nachwuchselite-Förderung", "text": "Über die Sporthilfe unterstützt der Profifußball die aussichtsreichsten olympischen, paralympischen und deaflympischen Talente." },
+      { "titel": "Willkommen im Fußball", "text": "Junge Geflüchtete erhielten Sport-, Bildungs- und Beratungsangebote und fanden leichter in den Vereinsfußball." }
+    ],
+    "zahlen": [
+      { "wert": "2008", "was": "gegründet" },
+      { "wert": "66", "was": "unterstützte Programme und Projekte im Jahr" },
+      { "wert": "50,8 Mio. €", "was": "in Programme und Projekte investiert" },
+      { "wert": "20", "was": "Mitarbeiterinnen und Mitarbeiter" }
+    ],
+    "herkunft": "Der Bundesliga e.V. und die Bundesliga-Gruppe GmbH gründeten die Stiftung im November 2008, um die gesellschaftliche Verantwortung des Profifußballs stärker wahrzunehmen. Die Stifter stellen regelmäßig Mittel bereit. Heute tritt sie als Bundesliga Stiftung auf."
+  },
+  "stiftung-frankfurter-bürgerstiftung-im-holzhausenschlössc-83": {
+    "schwerpunkte": [
+      { "titel": "Konzerte und Lesungen", "text": "Im Holzhausenschlösschen veranstaltet die Stiftung Konzerte, Lesereihen und Vorträge, darunter Jazz- und Kammermusikreihen.", "motiv": "kultur" },
+      { "titel": "Kinder und Jugend", "text": "Sie bietet einen Kinderchor, eine Kinderbibliothek, Kinderfeste und Lernangebote für Grundschulkinder mit Förderbedarf.", "motiv": "kinder" },
+      { "titel": "Frankfurter Geschichte", "text": "Sie vergibt Forschungsaufträge und Stipendien zur Stadtgeschichte und veröffentlicht die Ergebnisse im eigenen Verlag.", "motiv": "wissenschaft" },
+      { "titel": "Naturschutz", "text": "Ehrenamtliche reinigen regelmäßig Teiche, Nistkästen und Parks.", "motiv": "umwelt" },
+      { "titel": "Soziales und Flüchtlingshilfe", "text": "Die Stiftung unterstützt hilfsbedürftige Menschen und engagiert sich in der Flüchtlingshilfe.", "motiv": "soziales" },
+      { "titel": "Holzhausenschlösschen", "text": "Die Sanierung des barocken Wasserschlösschens war ihr erstes Projekt; sie pflegt es als Ort für Kultur.", "motiv": "denkmal" }
+    ],
+    "beispiele": [
+      { "titel": "Frankfurter Personenlexikon", "text": "Ein digitales Nachschlagewerk sammelt Biografien aus über 1200 Jahren Stadtgeschichte.", "ort": "Frankfurt am Main", "jahr": "2014" },
+      { "titel": "Lese- und Schreibwerkstatt", "text": "Grundschulkinder mit besonderem Förderbedarf lesen und schreiben regelmäßig im Holzhausenschlösschen.", "ort": "Frankfurt am Main", "jahr": "2022" },
+      { "titel": "Musikmobil", "text": "Ein umgebauter Lastwagen fährt mit Instrumenten durch Frankfurter Schulen; die Idee stammt von der Stiftung.", "ort": "Frankfurt am Main", "jahr": "2010" },
+      { "titel": "Musikstadt Frankfurt", "text": "Eine Musikwissenschaftlerin schreibt im Auftrag der Stiftung eine neue Darstellung der Frankfurter Musikgeschichte." },
+      { "titel": "Woche gegen das Vergessen", "text": "Eine Veranstaltungsreihe der Stiftung, 2026 mit einer Aufführung in der Paulskirche.", "ort": "Frankfurt am Main", "jahr": "2026" }
+    ],
+    "zahlen": [
+      { "wert": "1989", "was": "gegründet" },
+      { "wert": "über 300", "was": "Veranstaltungen im Jahr" },
+      { "wert": "über 500", "was": "Ehrenamtliche" },
+      { "wert": "über 2000", "was": "Freunde und Förderer" }
+    ],
+    "herkunft": "Sieben Frankfurter Bürgerinnen, Bürger und Institutionen gründeten die Stiftung 1989, darunter die Cronstett- und Hynspergische evangelische Stiftung, Barbara von Metzler und die Degussa AG. Die Stadt Frankfurt stellte das Holzhausenschlösschen als Sitz zur Verfügung. Die Stiftung arbeitet ohne städtische Zuschüsse und lebt von Spenden, Zustiftungen und Ehrenamt."
+  },
+  "stiftung-gls-zukunftsstiftung-bildung-89": {
+    "schwerpunkte": [
+      { "titel": "Peer-Learning", "text": "Ältere und Jüngere lernen miteinander, etwa beim Wechsel von der Kita in die Grundschule oder von der Schule in den Beruf.", "motiv": "bildung" },
+      { "titel": "Persönlichkeit und Demokratie", "text": "Die Stiftung stärkt Selbstverantwortung, soziales Lernen und Demokratiefähigkeit junger Menschen.", "motiv": "demokratie" },
+      { "titel": "Chancengerechtigkeit", "text": "Sie arbeitet vor allem mit Schulen in herausfordernder Lage und setzt sich für faire Bildungschancen unabhängig von der Herkunft ein.", "motiv": "soziales" },
+      { "titel": "Schulentwicklung", "text": "Im Startchancenprogramm begleitet sie Schulen mit Konzeptentwicklung, Prozessbegleitung und Fortbildungen für Lehrkräfte.", "motiv": "bildung" }
+    ],
+    "beispiele": [
+      { "titel": "BildungsBande", "text": "Grundschulkinder unterstützen Kindergartenkinder auf Augenhöhe beim Wechsel in die Schule." },
+      { "titel": "BildungsTandems", "text": "Schülerinnen und Schüler weiterführender Schulen coachen Viertklässler beim Wechsel an die neue Schule." },
+      { "titel": "ZukunftsBande", "text": "Berufsanfänger und Studierende begleiten Neunt- und Zehntklässler bei der Planung ihrer beruflichen Zukunft." },
+      { "titel": "Starke Mädchen Academy", "text": "Ein Projekttag der Academy fand mit Sarah Engels statt.", "jahr": "2026" }
+    ],
+    "zahlen": [
+      { "wert": "2000", "was": "gegründet" },
+      { "wert": "rund 100", "was": "Schulen in den Peer-Learning-Programmen" }
+    ],
+    "herkunft": "Die Stiftung entstand im Jahr 2000 im GLS Treuhand e. V."
+  },
+  "stiftung-initiative-buergerstiftungen-aktive-buergerschaf-105": {
+    "schwerpunkte": [
+      { "titel": "Weiterbildung", "text": "Der Eintrag führt zum Bündnis der Bürgerstiftungen Deutschlands, einem Netzwerk und keiner fördernden Stiftung. Es bietet kostenlose Webseminare und digitale Stammtische für Bürgerstiftungen.", "motiv": "bildung" },
+      { "titel": "Austausch und Kongress", "text": "Ein jährlicher Bürgerstiftungskongress bringt die Engagierten zusammen, 2026 zum Thema Orte der Begegnung.", "motiv": "allgemein" },
+      { "titel": "Gütesiegel", "text": "Bürgerstiftungen, die den zehn Merkmalen einer Bürgerstiftung entsprechen, können sich um das Gütesiegel bewerben.", "motiv": "allgemein" },
+      { "titel": "Patenschaften", "text": "Das Programm Chancenpatenschaften stärkt ehrenamtliche Patenschaften von Bürgerstiftungen für Menschen mit Unterstützungsbedarf.", "motiv": "soziales" },
+      { "titel": "Fakten statt Desinformation", "text": "Über den CORRECTIV.Faktenfonds können Bürgerstiftungen kleine Zuschüsse für Formate gegen Falschmeldungen beantragen.", "motiv": "demokratie" },
+      { "titel": "Fonds auf Augenhöhe", "text": "Der Fonds stärkt das Ehrenamt von Bürgerstiftungen für Geflüchtete und Angekommene.", "motiv": "soziales" }
+    ],
+    "beispiele": [
+      { "titel": "Bürgerstiftungskongress", "text": "Zwei Tage Austausch über Dritte Orte, also Orte der Begegnung jenseits von Zuhause und Arbeitsplatz.", "ort": "Köln", "jahr": "2026" },
+      { "titel": "Fakten vom Fass × Bürgerstiftungen", "text": "Bürgerstiftungen richten mit Material von CORRECTIV einen Quizabend zum Faktenchecken in Kneipe, Café oder Vereinsheim aus.", "jahr": "2026" },
+      { "titel": "Würfelwiesen-Quiz", "text": "Die Bürgerstiftung Halle zeigt vor allem älteren Menschen, wie sie Fake News und Online-Betrug erkennen; gefördert über den CORRECTIV.Faktenfonds.", "ort": "Halle (Saale)" },
+      { "titel": "Chancenpatenschaften", "text": "Das Programm gehört zum Bundesprogramm Menschen stärken Menschen des Bundesfamilienministeriums." }
+    ]
+  },
+  "stiftung-karl-schlecht-stiftung-putzmeister-113": {
+    "schwerpunkte": [
+      { "titel": "Ethik", "text": "Die Stiftung fördert Werte- und Demokratiebildung an Schulen und Hochschulen, etwa mit der Stiftung Weltethos.", "motiv": "demokratie" },
+      { "titel": "Leadership", "text": "Programme und Professuren bereiten Studierende und Promovierende auf verantwortungsvolle Führung vor.", "motiv": "wissenschaft" },
+      { "titel": "Entrepreneurship", "text": "Gründungsprogramme lassen Schülerinnen, Schüler und Studierende unternehmerisches Denken früh einüben.", "motiv": "bildung" },
+      { "titel": "Kulturelle Bildung", "text": "Orchester, Musikschulen, Oper, Theater und Kunstprojekte öffnen jungen Menschen den Zugang zur Kultur.", "motiv": "kultur" },
+      { "titel": "Technik", "text": "Sie fördert technische Bildung und Forschung, etwa zu Windenergie und Energieeffizienz.", "motiv": "wissenschaft" }
+    ],
+    "beispiele": [
+      { "titel": "ImpACT", "text": "Schülerinnen und Schüler an beruflichen Schulen entwickeln mit der Stiftung Weltethos eigene Engagementprojekte und stärken so demokratische Kompetenzen.", "ort": "Baden-Württemberg", "jahr": "2026" },
+      { "titel": "BEAM Entrepreneurship & Mathematik", "text": "Schülerinnen und Schüler der Oberstufe entwickeln ein Schuljahr lang im Team eine eigene Startup-Idee bis zum Pitch.", "jahr": "2026" },
+      { "titel": "Landesjugendorchester Baden-Württemberg", "text": "105 junge Musikerinnen und Musiker proben ein Orchesterprogramm und gehen auf Tournee durch sechs Städte.", "ort": "Baden-Württemberg", "jahr": "2026" },
+      { "titel": "Stiftungsprofessur Responsible Leadership", "text": "Das KIT bildet Studierende und Promovierende für verantwortungsvolle Führung aus und forscht dazu.", "ort": "Karlsruhe" },
+      { "titel": "FILUM Musikschule Filderstadt", "text": "Die Stiftung finanzierte den Neubau der Musikschule mit rund 4.000 Schülerinnen und Schülern.", "ort": "Filderstadt", "jahr": "2016" },
+      { "titel": "Ethik im Dialog Ludwigsburg", "text": "Podiumsdiskussionen zu ethischen Fragen der Zeit erreichen nun auch Schülerinnen, Schüler und Lehramtsstudierende.", "ort": "Ludwigsburg", "jahr": "2024" }
+    ],
+    "zahlen": [
+      { "wert": "1998", "was": "gegründet" },
+      { "wert": "rund 100", "was": "geförderte Projekte im Jahr" },
+      { "wert": "114", "was": "Projekte Dritter 2025" },
+      { "wert": "8,3 Mio. €", "was": "ausgezahlte Fördermittel 2025" }
+    ],
+    "herkunft": "Karl Schlecht entwickelte 1958 eine Verputzmaschine und gründete darauf das Unternehmen Putzmeister in Aichtal bei Stuttgart. 1998 brachte er das Unternehmen größtenteils in seine Stiftung ein; nach dem Verkauf von Putzmeister 2012 widmete sie sich verstärkt Bildung und Wissenschaft. Der Stifter starb 2024, den Vorstand führt Dr. Katrin Schlecht."
+  },
+  "stiftung-kulturstiftung-des-bundes-123": {
+    "schwerpunkte": [
+      { "titel": "Allgemeine Projektförderung", "text": "Zweimal im Jahr können Kultureinrichtungen aller Sparten Mittel für große, internationale Vorhaben beantragen. Einzelkünstlerinnen und Einzelkünstler fördert sie nicht.", "motiv": "kultur" },
+      { "titel": "Eigene Förderprogramme", "text": "Mehrjährige Programme zu aktuellen Themen helfen Einrichtungen, Neues zu erproben und neues Publikum zu erreichen.", "motiv": "kultur" },
+      { "titel": "Klima und Nachhaltigkeit", "text": "Im Fonds Zero entstehen klimaneutrale Kunstprojekte; eine Broschüre hilft Einrichtungen, sich an den Klimawandel anzupassen.", "motiv": "klima" },
+      { "titel": "Kunst und KI", "text": "Ein Fonds fördert neue künstlerische Perspektiven auf Künstliche Intelligenz und Gesellschaft.", "motiv": "kultur" },
+      { "titel": "Kulturelle Leuchttürme", "text": "Prägende Einrichtungen und Veranstaltungsreihen erhalten eine mehrjährige Förderung und damit Planungssicherheit.", "motiv": "kultur" },
+      { "titel": "Internationale Partnerschaften", "text": "Programme wie Ways fördern faire und nachhaltige Partnerschaften mit Kulturschaffenden in anderen Ländern.", "motiv": "international" }
+    ],
+    "beispiele": [
+      { "titel": "Stellar Frequencies", "text": "Ein Musik- und Ausstellungsprojekt verbindet Weltraumforschung, Politik und kosmologische Mythen.", "ort": "Jerewan und Berlin" },
+      { "titel": "Das Urteil", "text": "Ein deutsch-rumänisches Theaterprojekt fragt, wie eine gespaltene Gesellschaft zu einem gemeinsamen Urteil findet.", "ort": "Cottbus und Sibiu" },
+      { "titel": "Unterleuten", "text": "Die Landesbühnen Sachsen bringen den Roman von Juli Zeh als erstmals klimaneutrale Aufführung auf die Bühne.", "ort": "Radebeul" },
+      { "titel": "digi MusicLab", "text": "Die Stadtbücherei richtete ein offenes digitales Musiklabor für die Stadtgesellschaft ein.", "ort": "Münster" },
+      { "titel": "Hitze", "text": "Kampnagel zeigt ein Themenfestival, das die Klimakrise sinnlich und gedanklich zugänglich macht.", "ort": "Hamburg", "jahr": "2026" },
+      { "titel": "Metropolis. Dystopia & Rebellion", "text": "Die Deutsche Kinemathek holt den Stummfilm von Fritz Lang zum hundertsten Jubiläum in die Gegenwart.", "ort": "Berlin" }
+    ],
+    "zahlen": [
+      { "wert": "2002", "was": "gegründet" },
+      { "wert": "2", "was": "Antragsrunden im Jahr" }
+    ],
+    "herkunft": "Die Kulturstiftung des Bundes wurde 2002 in Halle (Saale) gegründet und hat dort ihren Sitz. Sie ist eine Stiftung des bürgerlichen Rechts und wird vom Beauftragten der Bundesregierung für Kultur und Medien gefördert."
+  },
+  "stiftung-lotto-stiftung-berlin-130": {
+    "schwerpunkte": [
+      { "titel": "Soziales und Karitatives", "text": "Die Stiftung hilft Menschen in besonderen Lebenslagen zu gesellschaftlicher Teilhabe, etwa mit Beratung, Integration und barrierefreien Treffpunkten.", "motiv": "soziales" },
+      { "titel": "Umweltschutz", "text": "Sie fördert Projekte zum Schutz der natürlichen Lebensgrundlagen und für nachhaltige Ideen in Berlin.", "motiv": "umwelt" },
+      { "titel": "Staatsbürgerliche Belange", "text": "Sie stärkt Demokratie, bürgerschaftliches Engagement und den Dialog in der Stadt.", "motiv": "demokratie" },
+      { "titel": "Kultur", "text": "Sie unterstützt Kunst- und Kulturprojekte von Ausstellungen und Festivals bis zur Restaurierung von Denkmalen.", "motiv": "kultur" },
+      { "titel": "Sport und Jugend", "text": "Diese Mittel fließen automatisch an Landessportbund und Senatsverwaltungen; Anträge gehen direkt dorthin.", "motiv": "sport" }
+    ],
+    "beispiele": [
+      { "titel": "Totentanz-Fresko in der Marienkirche", "text": "Die Marienkapelle und das um 1490 entstandene Wandfresko wurden denkmalgerecht restauriert.", "ort": "Berlin" },
+      { "titel": "Infotelefon von Silbernetz", "text": "Ein dreijähriges Projekt hilft älteren Menschen bei digitalen, finanziellen und sozialen Fragen.", "ort": "Berlin", "jahr": "2026" },
+      { "titel": "Berliner Gewässer nachhaltig sichern", "text": "Die Berliner Landesarbeitsgemeinschaft Naturschutz macht mit Partnern 20 Gewässer lebendiger und widerstandsfähiger gegen den Klimawandel.", "ort": "Berlin" },
+      { "titel": "Zweiter Berliner Weltacker", "text": "In Treptow-Köpenick entsteht ein ganzjährig offener Weltacker.", "ort": "Berlin", "jahr": "2026" },
+      { "titel": "Jüdische Traditionsschule", "text": "Die Stiftung beteiligte sich am Neubau einer Schule.", "ort": "Berlin" }
+    ],
+    "zahlen": [
+      { "wert": "1975", "was": "gegründet" },
+      { "wert": "rund 6.300", "was": "geförderte Vorhaben seit Gründung" },
+      { "wert": "über 3 Mrd. €", "was": "Fördervolumen seit Gründung" },
+      { "wert": "20 %", "was": "der Lotto-Einnahmen für gemeinnützige Zwecke" }
+    ],
+    "herkunft": "Die Stiftung entstand 1975 als Stiftung Deutsche Klassenlotterie Berlin und ist eine Stiftung des öffentlichen Rechts. Sie gehört zur Deutschen Klassenlotterie Berlin und erhält per Gesetz einen Teil der Lotto-Einnahmen. Über die Verwendung berichtet sie dem Abgeordnetenhaus jedes Quartal."
+  },
+  "stiftung-naturstiftung-david-143": {
+    "schwerpunkte": [
+      { "titel": "Schutz von Naturräumen", "text": "Die Stiftung finanziert und koordiniert den Schutz naturnaher Lebensräume, vor allem in Ostdeutschland.", "motiv": "umwelt" },
+      { "titel": "Artenschutz", "text": "Sie fördert Projekte für bedrohte Arten, für die Deutschland besondere Verantwortung trägt, etwa Feuersalamander, Mopsfledermaus und Wildkatze.", "motiv": "umwelt" },
+      { "titel": "Naturverträgliche Energiewende", "text": "Sie unterstützt Klimaschutz und erneuerbare Energien auf Wegen, die der Natur möglichst wenig schaden.", "motiv": "klima" },
+      { "titel": "Flächenkauf für die Natur", "text": "Sie hilft beim Kauf von Naturschutzflächen und besitzt selbst Flächen in der Hohen Schrecke und am Rödel.", "motiv": "umwelt" },
+      { "titel": "Gegen Naturzerstörung", "text": "Sie unterstützt Initiativen und Klagen gegen naturzerstörerische Vorhaben und legt dabei oft für jeden vor Ort gesammelten Spenden-Euro einen Euro dazu.", "motiv": "umwelt" },
+      { "titel": "Vernetzung", "text": "Seit 2002 koordiniert sie die Naturschutzorganisationen zum Nationalen Naturerbe und vernetzt dessen Flächeneigentümer.", "motiv": "umwelt" }
+    ],
+    "beispiele": [
+      { "titel": "Naturschutzgroßprojekt Thüringer Wald", "text": "Bis 2035 werden Bachläufe, Bergwiesen und Moore ökologisch aufgewertet.", "ort": "Thüringer Wald" },
+      { "titel": "Wälder der Hohen Schrecke", "text": "Im Waldgebiet entsteht ein Urwald von morgen mit einer großen Wildnisfläche.", "ort": "Nordthüringen", "jahr": "2008" },
+      { "titel": "Naturerbefläche Rödel", "text": "Gemeinsam mit der Stiftung Grüne Tatze sichert die Stiftung alte Wälder und ein orchideenreiches Hochplateau.", "ort": "Naumburg (Saale)" },
+      { "titel": "sonnenklar! Sport", "text": "Mit Sportvereinen wurden knapp 100 Sportstätten energetisch modernisiert.", "ort": "Thüringen, Sachsen und Sachsen-Anhalt", "jahr": "2001" },
+      { "titel": "Bärenhofinsel Goitzsche", "text": "Die Stiftung half dem BUND beim Kauf einer Insel im ehemaligen Tagebau, auf der heute der Seeadler brütet.", "ort": "Bitterfeld" },
+      { "titel": "Weidewonne", "text": "Das Projekt verbessert die Bedingungen für Schäfereien, die Landschaft pflegen.", "ort": "Thüringen" }
+    ],
+    "zahlen": [
+      { "wert": "über 530", "was": "geförderte Projekte" },
+      { "wert": "rund 1,5 Mio. €", "was": "Fördermittel für diese Projekte" },
+      { "wert": "rund 190.000 Hektar", "was": "Nationales Naturerbe, von ihr mit koordiniert" },
+      { "wert": "rund 240 Hektar", "was": "eigene Flächen in der Hohen Schrecke" }
+    ],
+    "herkunft": "Die Naturstiftung David ist die Stiftung des BUND Thüringen. Sie ging aus der Vergleichssumme im Rechtsstreit um das Pumpspeicherwerk Goldisthal hervor, den der BUND 1998 außergerichtlich beilegte."
+  },
+  "stiftung-sap-stiftungsfonds-155": {
+    "schwerpunkte": [
+      { "titel": "Aufbauhilfe in Schwellenländern", "text": "Mit Partnern fördert die Stiftung Social Businesses, die wirtschaftlich tragfähig arbeiten und soziale Probleme lösen.", "motiv": "international" },
+      { "titel": "Technik für Kinder", "text": "Sie unterstützt die FIRST LEGO League, einen Roboterwettbewerb, der Kindern und Jugendlichen spielerisch Wissenschaft und Technik näherbringt.", "motiv": "bildung" },
+      { "titel": "Stipendien", "text": "Absolventinnen und Absolventen Deutscher Auslandsschulen erhalten über den DAAD Stipendien für ein Studium in Deutschland.", "motiv": "bildung" }
+    ],
+    "beispiele": [
+      { "titel": "FIRST LEGO LEAGUE", "text": "Kinder und Jugendliche von 10 bis 16 Jahren bauen und programmieren Roboter im Wettbewerb." },
+      { "titel": "DAAD-Stipendien für Absolventen Deutscher Auslandsschulen", "text": "Die Stipendien ermöglichen den Weg an eine deutsche Hochschule." }
+    ],
+    "zahlen": [
+      { "wert": "1998", "was": "gegründet" },
+      { "wert": "ca. 1 Mio. €", "was": "Stiftungsvermögen" },
+      { "wert": "ca. 1,5 Mio. €", "was": "Fördervolumen" }
+    ],
+    "herkunft": "Die SAP Aktiengesellschaft gründete die Stiftung am 14. Dezember 1998 als Stiftung Soziale Marktwirtschaft Deutschland; 2007 erweiterte sie den Zweck und erhielt den heutigen Namen. Das Deutsche Stiftungszentrum betreut sie. Als operative Stiftung nimmt sie derzeit keine Anträge an."
+  },
+  "stiftung-sparkassen-kulturstiftung-rheinland-171": {
+    "schwerpunkte": [
+      { "titel": "Bildende Kunst", "text": "Die Stiftung fördert Ausstellungen in Museen und Kunstvereinen des Rheinlands, von der Moderne bis zur Gegenwart.", "motiv": "kultur" },
+      { "titel": "Musik", "text": "Sie unterstützt Festivals und Konzertreihen, etwa für Alte Musik, Jazz und neue Musik.", "motiv": "musik" },
+      { "titel": "Darstellende Kunst und Literatur", "text": "Theater, Tanz und Literaturprojekte mit Bedeutung für die Kulturregion erhalten Förderung.", "motiv": "kultur" },
+      { "titel": "Kulturgeschichte und Denkmalpflege", "text": "Sie fördert Vorhaben, die das kulturelle Erbe des Rheinlands erforschen und bewahren.", "motiv": "denkmal" },
+      { "titel": "Kulturpreise", "text": "Die Stiftung vergibt eigene Kulturpreise, darunter einen Jugend-Kulturpreis.", "motiv": "kultur" },
+      { "titel": "Beratung und Netzwerk", "text": "Sie begleitet geförderte Projekte, berät die Partner und arbeitet eng mit den Sparkassen vor Ort.", "motiv": "allgemein" }
+    ],
+    "beispiele": [
+      { "titel": "Anish Kapoor", "text": "Ausstellung des Künstlers im Lehmbruck Museum.", "ort": "Duisburg", "jahr": "2026" },
+      { "titel": "Fonte Vivace", "text": "Festival für Alte Musik.", "ort": "Aachen", "jahr": "2026" },
+      { "titel": "Community. Fotografie und Gemeinschaft", "text": "Fotoausstellung im Kunstpalast.", "ort": "Düsseldorf", "jahr": "2026" },
+      { "titel": "Between Books Art Book Fair", "text": "Kunstbuchmesse der Kunsthalle Düsseldorf, die überregional Austausch und Vernetzung anregt.", "ort": "Düsseldorf", "jahr": "2025" },
+      { "titel": "VIDEONALE.20", "text": "Festival für Videokunst im Kunstmuseum Bonn.", "ort": "Bonn", "jahr": "2025" },
+      { "titel": "William Kentridge. Listen to the echo", "text": "Ausstellung im Museum Folkwang.", "ort": "Essen", "jahr": "2025" }
+    ],
+    "zahlen": [
+      { "wert": "1987", "was": "gegründet" },
+      { "wert": "2", "was": "Antragsfristen im Jahr" }
+    ],
+    "herkunft": "Die rheinischen Sparkassen gründeten die Stiftung 1987. Sie ist beim Rheinischen Sparkassen- und Giroverband in Düsseldorf angesiedelt; eine Förderung setzt unter anderem die Unterstützung der örtlichen Sparkasse voraus."
+  },
+  "stiftung-stiftung-buergerengagement-saar-186": {
+    "schwerpunkte": [
+      { "titel": "Lernpaten Saar", "text": "Ehrenamtliche Lernpatinnen und Lernpaten begleiten benachteiligte Kinder und Jugendliche eins zu eins, in der Schule und darüber hinaus.", "motiv": "kinder" },
+      { "titel": "Ehrenamt stärken", "text": "Die Stiftung setzt sich für bessere Rahmenbedingungen für bürgerschaftliches Engagement im Saarland ein.", "motiv": "soziales" },
+      { "titel": "Stiftungen vernetzen", "text": "Im Stiftungsforum Saar bringt sie saarländische Stiftungen zusammen, etwa beim Saarländischen Stiftungstag.", "motiv": "allgemein" }
+    ],
+    "beispiele": [
+      { "titel": "Lernpaten Saar", "text": "Das Mentoring-Projekt startete mit dem Bildungsministerium; seit Mai 2023 trägt die Stiftung es allein.", "ort": "Saarland", "jahr": "2015" },
+      { "titel": "Saarländischer Stiftungstag", "text": "Stiftungen aus dem Saarland treffen sich zu Austausch und Fortbildung.", "ort": "Saarland" },
+      { "titel": "Spendenspiegel Saarland", "text": "Ein Verzeichnis stellt gemeinnützige Organisationen, Stiftungen und Vereine des Saarlands vor.", "ort": "Saarland", "jahr": "2019" },
+      { "titel": "Aktionsbündnis für Flüchtlinge und Integration", "text": "Eine Initiative der Stiftung gemeinsam mit dem Stiftungsforum Saar.", "ort": "Saarland" }
+    ],
+    "zahlen": [
+      { "wert": "2010", "was": "gegründet" },
+      { "wert": "ca. 170", "was": "Lernpatinnen und Lernpaten" }
+    ],
+    "herkunft": "Die Stiftung wurde 2010 gegründet, um Gemeinsinn und Ehrenamt im Saarland zu fördern. Saarländerinnen und Saarländer aus Politik, Wirtschaft, Wissenschaft und Gesellschaft tragen sie; Vorstand und Stiftungsrat arbeiten ehrenamtlich."
+  },
+  "stiftung-stiftung-lesen-193": {
+    "schwerpunkte": [
+      { "titel": "Vorlesen", "text": "Die Stiftung ruft zum Vorlesen auf, gewinnt Vorlese-Vorbilder und vermittelt Ehrenamtliche an Einrichtungen.", "motiv": "kinder" },
+      { "titel": "Lesetipps und Aktionsideen", "text": "Eine Datenbank mit geprüften Buch-, App- und Aktionstipps hilft Familien, Kitas und Schulen bei der Auswahl.", "motiv": "bildung" },
+      { "titel": "Leseförderung in Kita und Schule", "text": "Fach- und Lehrkräfte erhalten Angebote, Fortbildungen und Material, um Kinder fürs Lesen zu gewinnen.", "motiv": "bildung" },
+      { "titel": "MINT und Lesen", "text": "Projekte verbinden naturwissenschaftliche Neugier mit Sprach- und Leseförderung.", "motiv": "wissenschaft" }
+    ],
+    "beispiele": [
+      { "titel": "Bundesweiter Vorlesetag", "text": "Deutschlandweit lesen Menschen an einem Tag Kindern vor.", "jahr": "2026" },
+      { "titel": "einfach vorlesen!", "text": "Gemeinsam mit der Deutsche Bahn Stiftung gibt es jeden Freitag drei neue Geschichten kostenlos digital zum Vorlesen." },
+      { "titel": "(Vor-)Lese-Box", "text": "Spenderinnen und Spender verschenken Boxen mit geprüften Büchern an Kinder." },
+      { "titel": "MINT und Leseförderung: echt jetzt?", "text": "Ein Magazin für die 3. und 4. Klasse verbindet MINT-Themen mit Lesen, Rätseln und Erfinden." },
+      { "titel": "Das Abenteuer-Forscher-Camp", "text": "Mit dem Carlsen Verlag und der Forscherstation entstand ein MINT-Erstlesebuch für erste Klassen." },
+      { "titel": "LeseMobil", "text": "Spender schenken Schulen eine flexible Medienausstattung mit Inhalten und digitalem Begleitmaterial." }
+    ]
+  },
+  "stiftung-umweltstiftung-michael-otto-otto-group-209": {
+    "schwerpunkte": [
+      { "titel": "Wasserbildung", "text": "Mit den AQUA-AGENTEN entdecken Grundschulkinder spielerisch, wie wertvoll Wasser für Mensch, Natur und Wirtschaft ist.", "motiv": "bildung" },
+      { "titel": "Moorschutz", "text": "Die Initiative toMOORow treibt die Wiedervernässung von Mooren und ihre nasse Nutzung voran.", "motiv": "klima" },
+      { "titel": "Vielfalt in der Agrarlandschaft", "text": "Landwirtschaftliche Betriebe erproben Naturschutzmaßnahmen, die praxistauglich und wirtschaftlich tragfähig sind.", "motiv": "umwelt" },
+      { "titel": "Dialog für den Naturschutz", "text": "Die Stiftung bringt Naturschutz, Politik, Wissenschaft und Wirtschaft an einen Tisch, etwa zur Zukunft des Waldes.", "motiv": "umwelt" },
+      { "titel": "Stiftungen für das Klima", "text": "Über die Foundations Platform F20 arbeitet sie mit Stiftungen weltweit an Lösungen für den Klimaschutz.", "motiv": "international" }
+    ],
+    "beispiele": [
+      { "titel": "AQUA-AGENTEN", "text": "Kinder der 3. und 4. Klasse lösen mit einem Themenkoffer Aufträge rund ums Wasser, im Unterricht und draußen.", "jahr": "2009" },
+      { "titel": "F.R.A.N.Z.", "text": "Mit dem Deutschen Bauernverband erprobt die Stiftung auf zehn Betrieben von Mecklenburg-Vorpommern bis Bayern mehr Artenvielfalt." },
+      { "titel": "toMOORow", "text": "Gemeinsam mit der Michael Succow Stiftung werden Moore beispielhaft wiedervernässt und nass bewirtschaftet.", "ort": "Sernitzniederung, Brandenburg" },
+      { "titel": "Hamburger Gespräche für Naturschutz", "text": "Ein jährliches Symposium versammelt Fachleute aus Wissenschaft, Wirtschaft, Zivilgesellschaft und Politik.", "ort": "Hamburg", "jahr": "2004" },
+      { "titel": "Climate Solutions Forum", "text": "Die Plattform F20 lud zu zwei Foren über Lösungen für den Klimaschutz ein.", "ort": "Hamburg und Washington, D.C.", "jahr": "2026" },
+      { "titel": "Nachhaltigkeitsforum Hamburg", "text": "Das Forum begleitet die Stadt bei der Umsetzung der UN-Nachhaltigkeitsziele.", "ort": "Hamburg" }
+    ],
+    "zahlen": [
+      { "wert": "2004", "was": "erste Hamburger Gespräche für Naturschutz" },
+      { "wert": "2009", "was": "Start der AQUA-AGENTEN" },
+      { "wert": "10", "was": "Demonstrationsbetriebe bei F.R.A.N.Z." }
+    ]
+  },
+  "stiftung-wilo-foundation-221": {
+    "schwerpunkte": [
+      { "titel": "Wasser und Lebensgrundlagen", "text": "Die Stiftung fördert Trinkwasser, sauberes Wasser und Ernährungssicherheit, etwa mit Brunnen in Ghana, Trinkwasserzisternen und Wasserprojekten in Äthiopien und Indien.", "motiv": "international" },
+      { "titel": "Future Skills und MINT", "text": "Junge Menschen lernen Robotik, Programmieren und Technik, etwa beim weltweiten Jugend-Roboterwettbewerb.", "motiv": "bildung" },
+      { "titel": "Social Entrepreneurship", "text": "Sie unterstützt studentische Wettbewerbe und Gründerinitiativen, die Innovation mit gesellschaftlicher Verantwortung verbinden.", "motiv": "wissenschaft" },
+      { "titel": "Stipendien und Hochschulen", "text": "Sie vergibt Stipendien und fördert Projekte an der TU Dortmund und weiteren Hochschulen.", "motiv": "wissenschaft" },
+      { "titel": "Musik und Kultur", "text": "Sie fördert Konzerte und Talentförderung, vor allem am Konzerthaus Dortmund.", "motiv": "musik" },
+      { "titel": "Sport", "text": "Sie begleitet das Team Deutschland-Achter und fördert den Nachwuchs im Rudersport.", "motiv": "sport" }
+    ],
+    "beispiele": [
+      { "titel": "Future Innovatorin", "text": "Der Verein TECHNIK BEGEISTERT begleitet Schülerinnen ein Schuljahr lang bis zur World Robot Olympiad 2027.", "jahr": "2026" },
+      { "titel": "Enactus", "text": "Die Stiftung unterstützt seit 2020 den Social-Entrepreneurship-Wettbewerb von Studierenden in Deutschland.", "jahr": "2020" },
+      { "titel": "Dortmunder Stiftungstag", "text": "Der Tag vernetzt rund 150 Stiftungen aus Dortmund und Umgebung; die Stiftung finanziert ihn mit.", "ort": "Dortmund" },
+      { "titel": "Masterplan Wissenschaft Dortmund", "text": "Das Projekt verbindet Wissenschaft und Stadtgesellschaft, unter anderem mit einer jährlichen Wissenschaftskonferenz.", "ort": "Dortmund", "jahr": "2011" },
+      { "titel": "Brunnenregenerierungen in Ghana", "text": "Ein Förderprojekt setzt Brunnen in Ghana wieder instand.", "ort": "Ghana" },
+      { "titel": "Residenz des London Symphony Orchestra", "text": "Das Orchester gastiert als Residenzorchester am Konzerthaus Dortmund.", "ort": "Dortmund" }
+    ],
+    "zahlen": [
+      { "wert": "2011", "was": "gegründet" }
+    ],
+    "herkunft": "Der Dortmunder Unternehmer Jochen Opländer errichtete die Stiftung im Januar 2011 mit seinen Kindern; bis 2016 hieß sie Caspar Ludwig Opländer Stiftung. Sie hält die Mehrheit der Aktien der WILO SE und sichert so die Unabhängigkeit des Pumpenherstellers. Seit 2019 leitet Oliver Hermes das Kuratorium."
+  }
+}

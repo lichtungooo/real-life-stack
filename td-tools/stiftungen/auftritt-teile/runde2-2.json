@@ -1,0 +1,959 @@
+{
+  "stiftung-alfred-kaercher-foerderstiftung-5": {
+    "schwerpunkte": [
+      {
+        "titel": "Forschung zur Reinigungstechnik",
+        "text": "Sie unterstützt gemeinnützige Forschung, die den Stand der Reinigungstechnik erweitert und Grundlage für weitere Neuerungen bildet.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "Hygiene und Werterhaltung",
+        "text": "Gefördert wird Forschung zu Hygiene, Werterhaltung und zur Mechanisierung und Automation manueller Arbeit.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "Reinhaltung der Umwelt",
+        "text": "Ein Feld sind Systeme zur Pflege, Erhaltung und Reinhaltung der Umwelt.",
+        "motiv": "umwelt"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Alfred Kärcher Forschungsvorhaben",
+        "text": "Jedes Jahr schreibt die Stiftung ein Forschungsvorhaben aus, ein Gutachterausschuss bereitet die Auswahl für Kuratorium und Vorstand vor."
+      },
+      {
+        "titel": "Alfred Kärcher-Förderpreis",
+        "text": "Der Preis würdigte wissenschaftliche Arbeiten mit praxisnahen Lösungen für Reinigung, Hygiene und Umweltpflege.",
+        "jahr": "bis 2017"
+      }
+    ],
+    "zahlen": [
+      { "wert": "1", "was": "ausgeschriebenes Forschungsvorhaben im Jahr" }
+    ],
+    "herkunft": "Die Stiftung trägt den Namen von Alfred Kärcher und fördert Wissenschaft und Forschung in seinem Sinne. Ein Kuratorium vergibt die Forschungsvorhaben."
+  },
+  "stiftung-bayerische-landesstiftung-23": {
+    "schwerpunkte": [
+      {
+        "titel": "Baudenkmäler instand setzen",
+        "text": "Den Schwerpunkt bilden Zuschüsse für die Instandsetzung bedeutender Bau- und Kunstdenkmäler in Bayern, etwa Kirchen, Klöster, Schlösser, Burgen und historische Rathäuser.",
+        "motiv": "denkmal"
+      },
+      {
+        "titel": "Nichtstaatliche Museen",
+        "text": "Sie fördert überregional bedeutsame nichtstaatliche Museen.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Bauten für Alte und Behinderte",
+        "text": "Im Sozialen unterstützt sie bedeutende Bauprojekte der Alten- und Behindertenhilfe, von Pflegeeinrichtungen bis zu heilpädagogischen Tagesstätten und Werkstätten.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Kinder- und Jugendhilfe",
+        "text": "Herausragende Bauprojekte der Kinder- und Jugendhilfe erhalten Investitionskostenzuschüsse.",
+        "motiv": "kinder"
+      },
+      {
+        "titel": "Kultur-, Sozial- und Umweltpreis",
+        "text": "Jedes Jahr zeichnet sie bis zu drei Preisträger mit engem Bezug zu Bayern in den Bereichen Kultur, Soziales und Umweltschutz aus.",
+        "motiv": "allgemein"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Dachsanierung am Kloster St. Maria",
+        "text": "Die Stiftung förderte die Dachsanierung am Ostbau des Klosters der Dominikanerinnen.",
+        "ort": "Niederviehbach, Landkreis Dingolfing-Landau"
+      },
+      {
+        "titel": "Wohnheim am Michaelshof",
+        "text": "Gefördert wurde der Neu- und Umbau eines Wohnheims für Menschen mit Behinderung.",
+        "ort": "Untermerzbach, Landkreis Haßberge"
+      },
+      {
+        "titel": "Kepler-Gedächtnishaus",
+        "text": "Die Stiftung unterstützte die Generalsanierung und Umgestaltung des Hauses.",
+        "ort": "Regensburg"
+      },
+      {
+        "titel": "Hohes Schloss",
+        "text": "Gefördert wurde die Sanierung des Schlosses in der Pappenheimerstraße 1.",
+        "ort": "Bad Grönenbach, Landkreis Unterallgäu"
+      },
+      {
+        "titel": "Pfarrhaus im Kirchenweg 2",
+        "text": "Die Stiftung förderte die Sanierung des Pfarrhauses.",
+        "ort": "Gutenstetten, Landkreis Neustadt a.d. Aisch"
+      },
+      {
+        "titel": "Anwesen Seeshaupter Straße 45",
+        "text": "Die Fassaden- und Fenstersanierung eines um 1910 erbauten Putzbaus erhielt einen Zuschuss.",
+        "ort": "Iffeldorf, Landkreis Weilheim-Schongau"
+      }
+    ],
+    "zahlen": [
+      { "wert": "1972", "was": "gegründet" },
+      { "wert": "über 13.488", "was": "geförderte Projekte seit der Gründung" },
+      { "wert": "rund 718 Mio. €", "was": "bewilligte Zuschüsse seit der Gründung" }
+    ],
+    "herkunft": "Die Bayerische Landesstiftung besteht seit 1972 und verdankt ihre Gründung der Vereinigung der Bayerischen Staatsbank mit der Vereinsbank. Den Verkaufserlös legte der Freistaat in eine rechtsfähige Stiftung des öffentlichen Rechts. Der Stiftungsrat unter Vorsitz des Ministerpräsidenten entscheidet über die Mittel, Sitz ist der Alte Hof in München."
+  },
+  "stiftung-bürgerstiftung-berlin-33": {
+    "schwerpunkte": [
+      {
+        "titel": "Lesen und Sprache",
+        "text": "Ehrenamtliche Patinnen und Paten gehen einmal in der Woche in Schulen und Kitas und wecken dort die Freude am Lesen.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Naturwissenschaft und Umwelt",
+        "text": "Projekte in Schulen und Kitas führen Kinder an Naturwissenschaften und Umweltbildung heran.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Integration und Teilhabe",
+        "text": "Projekte zu Integration, Handwerk und Kultur bringen Menschen zusammen und öffnen soziale Teilhabe.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Stiften in Berlin",
+        "text": "Sie berät Menschen, die in Berlin eine Stiftung, einen Stiftungsfonds oder eine Zustiftung einrichten wollen, und verwaltet diese.",
+        "motiv": "allgemein"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "LeseBesuch",
+        "text": "Ehrenamtliche lesen Seniorinnen und Senioren in Berliner Einrichtungen vor.",
+        "ort": "Berlin"
+      },
+      {
+        "titel": "Sichtbar mobil zur Schule",
+        "text": "Der Aktionstag wirbt für mehr Verkehrssicherheit auf dem Schulweg und fand 2026 erstmals in der STATION Berlin statt.",
+        "ort": "Berlin",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Stiftung auf Probe",
+        "text": "Mit einem zinslosen Stifterdarlehen entsteht ein persönlicher Stiftungsfonds, dessen Erträge sofort Projekte fördern.",
+        "jahr": "2026"
+      }
+    ],
+    "zahlen": [
+      { "wert": "über 500", "was": "Ehrenamtliche" },
+      { "wert": "über 30.000", "was": "verteilte Warnwesten für Schulanfänger" }
+    ],
+    "herkunft": "Die Bürgerstiftung Berlin lebt von Spenden, Zustiftungen und der Arbeit von über 500 Ehrenamtlichen. Schirmherr ist Wolfgang Thierse."
+  },
+  "stiftung-commerzbank-stiftung-44": {
+    "schwerpunkte": [
+      {
+        "titel": "Kulturvermittlung",
+        "text": "Sie fördert Museen, Theater und Opernhäuser, die Vermittlung zur zentralen Aufgabe machen und sich für neue Zielgruppen öffnen.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Teilhabe Benachteiligter",
+        "text": "Mit etablierten Organisationen unterstützt sie Projekte, die Menschen mit Krankheit, Behinderung oder sozialer Benachteiligung zu mehr Selbstbestimmung verhelfen.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Übergang Schule und Beruf",
+        "text": "Sie fördert Einrichtungen, die benachteiligte Jugendliche in Ausbildung und Beruf begleiten.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Wissenschaftlicher Nachwuchs",
+        "text": "Sie setzt Anreize für junge Forschende und stärkt Forschung und Lehre.",
+        "motiv": "wissenschaft"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Junges HELLERAU",
+        "text": "Das Europäische Zentrum der Künste stärkt mit diesem Vorhaben die kulturelle Teilhabe von Jugendlichen.",
+        "ort": "Dresden"
+      },
+      {
+        "titel": "Frankfurt History.de",
+        "text": "Das Historische Museum Frankfurt macht Frankfurter Geschichte digital zugänglich.",
+        "ort": "Frankfurt am Main"
+      },
+      {
+        "titel": "Inklusive Berufsausbildung",
+        "text": "Die Stiftung fördert dieses Vorhaben der Freien Werkstatt Hildesheim.",
+        "ort": "Hildesheim"
+      },
+      {
+        "titel": "ZukunftsGut",
+        "text": "Der Preis zeichnet Kulturhäuser aus, die Vermittlung in ihrer ganzen Arbeit verankert haben.",
+        "jahr": "seit 2018"
+      },
+      {
+        "titel": "ZukunftsWege",
+        "text": "Der Preis würdigt gemeinnützige Einrichtungen, die Jugendlichen den Weg in Ausbildung und Beruf ebnen.",
+        "jahr": "seit 2023"
+      },
+      {
+        "titel": "Kommunal.Digital.Genial.",
+        "text": "Mit dem DigitalPakt Alter vergibt die Stiftung einen bundesweiten Preis an Kommunen für digitale Teilhabe älterer Menschen.",
+        "jahr": "2025"
+      }
+    ],
+    "zahlen": [
+      { "wert": "1970", "was": "gegründet" }
+    ],
+    "herkunft": "Die Commerzbank-Stiftung wurde am 26. Februar 1970 gegründet, Stifterin ist die Commerzbank AG. Den Stiftungsrat leitet Klaus-Peter Müller, Ehrenvorsitzender des Aufsichtsrats der Bank."
+  },
+  "stiftung-deutsche-stiftung-denkmalschutz-62": {
+    "schwerpunkte": [
+      {
+        "titel": "Denkmale erhalten",
+        "text": "Sie fördert bundesweit Handwerker- und Restauratorenleistungen an Denkmalen aller Gattungen, bevorzugt im Besitz von Privatleuten, Fördervereinen, Kirchengemeinden und Kommunen.",
+        "motiv": "denkmal"
+      },
+      {
+        "titel": "Katastrophenhilfe für Denkmale",
+        "text": "Nach Hochwasser, Brand oder Unwetter hilft sie geschädigten Denkmalen, Anträge sind ganzjährig möglich.",
+        "motiv": "denkmal"
+      },
+      {
+        "titel": "Jugend und Schule",
+        "text": "In Jugendbauhütten und im Schulprogramm denkmal aktiv lernen junge Menschen Denkmalpflege und Handwerk kennen.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Handwerk in der Denkmalpflege",
+        "text": "Stipendien ermöglichen Meisterinnen und Meistern die Weiterbildung zur Restauratorin oder zum Restaurator im Handwerk.",
+        "motiv": "handwerk"
+      },
+      {
+        "titel": "Tag des offenen Denkmals",
+        "text": "Sie richtet den Aktionstag bundesweit aus und wählt jedes Jahr sein Motto.",
+        "motiv": "kultur"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Jugendbauhütten",
+        "text": "Jugendliche zwischen 16 und 26 Jahren leisten ein Freiwilliges Jahr in der Denkmalpflege und lernen Handwerksbetriebe, Museen und Denkmalbehörden kennen."
+      },
+      {
+        "titel": "denkmal aktiv",
+        "text": "Das Schulprogramm unter Schirmherrschaft der Deutschen UNESCO-Kommission führt Kinder und Jugendliche an den Denkmalschutz heran."
+      },
+      {
+        "titel": "Stipendienprogramm Restaurator im Handwerk",
+        "text": "Eine Fachjury mit dem Zentralverband des Deutschen Handwerks vergibt Stipendien für die berufsbegleitende Weiterbildung.",
+        "jahr": "2025"
+      },
+      {
+        "titel": "Schwarzbuch der Denkmalpflege",
+        "text": "Die Stiftung dokumentiert verlorene und bedrohte Denkmale der Jahre 2024 und 2025 auf über 320 Seiten.",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Dorfkirche Papendorf",
+        "text": "Die Stiftung sammelt Spenden für die Instandsetzung der beschädigten Fachwerkkonstruktion.",
+        "ort": "Papendorf"
+      },
+      {
+        "titel": "Mühle in Thulendorf",
+        "text": "Die vom Unwetter stark beschädigte Mühle erhält Katastrophenhilfe.",
+        "ort": "Thulendorf"
+      }
+    ],
+    "zahlen": [
+      { "wert": "über 7.500", "was": "geförderte Denkmale" },
+      { "wert": "rund 20 Mio. €", "was": "Förderung im Jahr" },
+      { "wert": "16", "was": "Jugendbauhütten" },
+      { "wert": "über 1.600", "was": "Schulprojekte mit denkmal aktiv" }
+    ],
+    "herkunft": "Die Deutsche Stiftung Denkmalschutz ist eine Stiftung privaten Rechts und setzt sich seit mehr als 35 Jahren bundesweit und unabhängig für bedrohte Baudenkmale ein. Sie finanziert ihre Arbeit vor allem aus Spenden und Zustiftungen eines wachsenden Förderkreises."
+  },
+  "stiftung-edeka-stiftung-74": {
+    "schwerpunkte": [
+      {
+        "titel": "Ernährung lernen",
+        "text": "Sie zeigt Kindern, woher Lebensmittel kommen, und stärkt früh ihr Wissen über ausgewogene Ernährung.",
+        "motiv": "kinder"
+      },
+      {
+        "titel": "Mehr Bewegung",
+        "text": "Altersgerechte Bewegungsangebote motivieren Kinder, aktiv zu sein.",
+        "motiv": "sport"
+      },
+      {
+        "titel": "Umweltbewusstsein",
+        "text": "Gemeinsam mit Partnern wie dem WWF lernen Kinder einen achtsamen Umgang mit natürlichen Ressourcen.",
+        "motiv": "umwelt"
+      },
+      {
+        "titel": "Hilfe für Bedürftige",
+        "text": "Neben der Bildungsinitiative unterstützt die Stiftung bedürftige Menschen und karitative Einrichtungen.",
+        "motiv": "soziales"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Gemüsebeete für Kids",
+        "text": "Vorschulkinder legen mit einem geschulten Team und EDEKA-Kaufleuten als Paten ein Hochbeet in ihrer Kita an und pflegen es selbst.",
+        "jahr": "2008"
+      },
+      {
+        "titel": "Mehr bewegen, besser essen",
+        "text": "Projekttage an Grundschulen machen Kinder der dritten und vierten Klasse neugierig auf Ernährung, Bewegung und Verantwortung.",
+        "jahr": "2013"
+      },
+      {
+        "titel": "Studie zum Ernährungsverhalten in der Pandemie",
+        "text": "Mit YouGov untersuchte die Stiftung, wie Kita-Kinder während der Lockdowns aßen und sich bewegten.",
+        "jahr": "2021"
+      }
+    ],
+    "zahlen": [
+      { "wert": "2,5 Mio.", "was": "erreichte Kita-Kinder" },
+      { "wert": "rund 32.500", "was": "Anpflanz-Aktionen" },
+      { "wert": "über 1.400", "was": "Patinnen und Paten" },
+      { "wert": "rund 4.700", "was": "Projekttage an Grundschulen" }
+    ],
+    "herkunft": "Die EDEKA Stiftung widmet sich seit vielen Jahrzehnten gemeinnützigen Zwecken und bündelt ihre Bildungsprojekte in der Initiative „Aus Liebe zum Nachwuchs“. Selbstständige EDEKA-Kaufleute begleiten die Projekte als Patinnen und Paten, die Stiftung trägt die Kosten."
+  },
+  "stiftung-freudenberg-stiftung-84": {
+    "schwerpunkte": [
+      {
+        "titel": "Demokratische Kultur",
+        "text": "Sie fördert in Schule und Gesellschaft eine Alltagskultur, die demokratische Werte stärkt und menschenfeindlichen Haltungen entgegentritt.",
+        "motiv": "demokratie"
+      },
+      {
+        "titel": "Bildungschancen für alle",
+        "text": "Bildungsnetzwerke vor Ort sollen allen Kindern gute Chancen geben, gleich aus welcher Region und welchen Verhältnissen sie kommen.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Inklusion in Arbeit",
+        "text": "Sie unterstützt Ausbildungsverbünde und Inklusionsfirmen, die Menschen mit schwierigen Startbedingungen oder Behinderung den Weg in Arbeit öffnen.",
+        "motiv": "inklusion"
+      },
+      {
+        "titel": "Community Art",
+        "text": "Professionelle Kunst bringt Menschen in Austausch und stärkt den Zusammenhalt, heute an fünf Community Art Centern.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Engagement in Südosteuropa",
+        "text": "In Tuzla in Bosnien und Herzegowina fördert sie inklusive Schulen und Zivilgesellschaft.",
+        "motiv": "international"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "#netzrevolte",
+        "text": "Schülerinnen und Schüler setzen sich mit Fake News und Hate Speech auseinander und starten eigene Engagement-Projekte."
+      },
+      {
+        "titel": "Ein Quadratkilometer Bildung Meerane",
+        "text": "Ein Netzwerk öffentlicher und privater Bildungseinrichtungen begleitet Kinder mit der Pädagogischen Werkstatt als Knotenpunkt.",
+        "ort": "Meerane"
+      },
+      {
+        "titel": "Community Art Center Mannheim",
+        "text": "Das Zentrum feierte unter neuer künstlerischer Leitung seine Wiedereröffnung.",
+        "ort": "Mannheim",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Schule für Inklusion, MIOS",
+        "text": "Das Schulnetzwerk hilft Schulen, eine inklusive Förderkultur für benachteiligte Kinder aufzubauen.",
+        "ort": "Tuzla, Bosnien und Herzegowina"
+      },
+      {
+        "titel": "ikubiz Ausbildungsverbund",
+        "text": "Der Verbund vermittelt junge Menschen mit ungünstigen Startbedingungen in Ausbildung bei kleinen und mittleren Unternehmen."
+      },
+      {
+        "titel": "Sächsischer Förderpreis für Demokratie",
+        "text": "Der Preis zeichnet Initiativen aus, die sich in Sachsen gegen rechte Gewalt und für Menschenrechte einsetzen.",
+        "ort": "Sachsen"
+      }
+    ],
+    "zahlen": [
+      { "wert": "1984", "was": "gegründet" },
+      { "wert": "5", "was": "Community Art Center in Deutschland" }
+    ],
+    "herkunft": "Gesellschafterinnen und Gesellschafter der Firma Freudenberg & Co. KG gründeten die Stiftung 1984 als unabhängige zivilgesellschaftliche Organisation für Bildung und ein friedliches Zusammenleben. Sie wirkt in Deutschland, in Südosteuropa und neu auch in den USA."
+  },
+  "stiftung-handwerkskammer-frankfurt-rhein-main-95": {
+    "schwerpunkte": [
+      {
+        "titel": "Begabte Gesellinnen und Gesellen",
+        "text": "Mit der Samstagsschule für begabte Handwerker begleitet die Kammer die besten Gesellinnen und Gesellen aller Gewerke auf dem Weg zu Führung, Meisterschaft und Selbstständigkeit.",
+        "motiv": "handwerk"
+      },
+      {
+        "titel": "Stipendien für Aus- und Weiterbildung",
+        "text": "Sie wirkt am Ausbildungsstipendium Main-Potenzial mit und nimmt Bewerbungen für das Weiterbildungsstipendium des Bundes an.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Beratung für Betriebe",
+        "text": "Kostenfreie Beratung hilft Betrieben bei Finanzierung, Digitalisierung, Gründung und Nachfolge.",
+        "motiv": "handwerk"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Samstagsschule für begabte Handwerker",
+        "text": "Seminare und Veranstaltungen stärken berufsbegleitend Führungskompetenz und den Weg in die Selbstständigkeit."
+      },
+      {
+        "titel": "Main-Potenzial",
+        "text": "Das Ausbildungsstipendium der Stiftung Polytechnische Gesellschaft fördert engagierte Auszubildende zehn Monate lang mit Seminaren, Mentoring und monatlicher Unterstützung.",
+        "ort": "Frankfurt am Main",
+        "jahr": "2025"
+      },
+      {
+        "titel": "Internationale Meister",
+        "text": "Das Programm vermittelt Wissen über Berufsbildung in Entwicklungsländern und internationales Projektmanagement."
+      },
+      {
+        "titel": "Campus für berufliche Bildung",
+        "text": "In Frankfurt entsteht ein Ort für neue Konzepte der beruflichen Bildung.",
+        "ort": "Frankfurt am Main"
+      }
+    ],
+    "zahlen": [
+      { "wert": "8", "was": "Standorte der Betriebsberatung" }
+    ],
+    "herkunft": "Die Handwerkskammer Frankfurt-Rhein-Main ist die Kammer des Handwerks in der Region. Sie berät Betriebe, betreut die Berufsausbildung und vergibt Stipendien selbst oder gemeinsam mit Partnern."
+  },
+  "stiftung-inter-versicherung-ausbildungs-ass-104": {
+    "_grund": "Die Texte stammen von der Website der INTER Versicherungsgruppe. Zum Ausbildungs-Ass stehen dort nur zwei Überschriften von Pressemitteilungen (Ausschreibung 2026, Preisverleihung 2023), ohne Angaben zu Zweck, Trägerschaft oder Förderung."
+  },
+  "stiftung-katholische-foerderstiftung-hamburg-115": {
+    "schwerpunkte": [
+      {
+        "titel": "Stipendien für Fachkräfte",
+        "text": "Sie übernimmt für Auszubildende zur sozialpädagogischen Fachkraft und für berufsbegleitend Studierende Schulgeld oder Studiengebühren ganz oder anteilig und zahlt ein Büchergeld.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Glaube und Religionspädagogik",
+        "text": "Seminare und Treffen zu Glauben, Biografie und zeitgemäßer Religionspädagogik gehören fest zum Stipendium.",
+        "motiv": "kirche"
+      },
+      {
+        "titel": "Nachwuchs für katholische Kitas",
+        "text": "Die Stiftung wirbt Nachwuchs für sozialpädagogische Berufe und stärkt so die Personallage in katholischen Kitas im Erzbistum.",
+        "motiv": "kinder"
+      }
+    ],
+    "zahlen": [
+      { "wert": "2010", "was": "gegründet" },
+      { "wert": "mehr als 100", "was": "geförderte Auszubildende und Studierende" }
+    ],
+    "herkunft": "Die Katholische Förderstiftung für sozialpädagogische Fachkräfte im Erzbistum Hamburg wurde 2010 gegründet. Der Stiftungsrat mit Mitgliedern aus Erzbistum, Caritas und Pfarrei entscheidet auch über neue Stipendiatinnen und Stipendiaten."
+  },
+  "stiftung-kulturstiftung-des-freistaates-sachsen-124": {
+    "schwerpunkte": [
+      {
+        "titel": "Projektförderung in allen Sparten",
+        "text": "Zweimal im Jahr fördert sie überregional bedeutsame Projekte in Bildender und Darstellender Kunst, Musik, Film, Literatur, Soziokultur und Industriekultur.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Kultur im ländlichen Raum",
+        "text": "Der Kleinprojektefonds stärkt kulturelle Eigeninitiative in ländlichen Regionen Sachsens mit kleinen Zuschüssen.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Jüdisches Leben in Kunst und Kultur",
+        "text": "Ein eigenes Programm macht jüdisches Leben in Sachsen öffentlich sichtbar und erlebbar.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Stipendien und Kunstankäufe",
+        "text": "Sie vergibt Stipendien an Künstlerinnen und Künstler und kauft zeitgenössische Kunst für den Freistaat an.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Musikinstrumentenfonds",
+        "text": "Leihinstrumente ebnen begabten jungen Musikerinnen und Musikern den Weg in eine professionelle Laufbahn.",
+        "motiv": "musik"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Kleinprojektefonds 2026",
+        "text": "Die Stiftung förderte 299 kleine Kunst- und Kulturvorhaben in ländlichen Regionen.",
+        "ort": "Sachsen",
+        "jahr": "2026"
+      },
+      {
+        "titel": "TACHELES 2026",
+        "text": "Im Jahr der Jüdischen Kultur in Sachsen förderte sie Ausstellungen, Konzerte, Theater und Lesungen.",
+        "ort": "Sachsen",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Moritzburg Festival Akademie",
+        "text": "Die Akademie des Kammermusik Festivals Schloss Moritzburg gehört zu den geförderten Projekten.",
+        "ort": "Moritzburg",
+        "jahr": "2024"
+      },
+      {
+        "titel": "Leipziger Hörspielsommer",
+        "text": "Der 22. Hörspielsommer des Hörspielsommer e.V. gehört zu den geförderten Projekten.",
+        "ort": "Leipzig"
+      },
+      {
+        "titel": "Künstleraustausch China/Chemnitz",
+        "text": "Im Austauschprogramm stellte die Stipendiatin Xiaoyue Pu ihre Arbeit in einem Artist Talk vor.",
+        "ort": "Chemnitz"
+      },
+      {
+        "titel": "Jahr der Industriekultur",
+        "text": "Die Stiftung initiierte und koordinierte das sächsische Jahr der Industriekultur als eigenes Vorhaben.",
+        "ort": "Sachsen",
+        "jahr": "2020"
+      }
+    ],
+    "zahlen": [
+      { "wert": "1993", "was": "gegründet" },
+      { "wert": "rund 1.000", "was": "geförderte Projekte im Jahr" },
+      { "wert": "mehr als 6 Mio. €", "was": "Fördervolumen im Jahr" },
+      { "wert": "mehr als 2.000", "was": "Kleinprojekte seit 2019" }
+    ],
+    "herkunft": "Der Sächsische Landtag beschloss im April 1993 die Gründung, am 17. Mai 1993 errichtete der Freistaat Sachsen die Kulturstiftung per Gesetz als Stiftung öffentlichen Rechts. Den Vorsitz im Kuratorium führt der Ministerpräsident, Sitz der Stiftung ist Dresden-Hellerau."
+  },
+  "stiftung-mahle-stiftung-134": {
+    "schwerpunkte": [
+      {
+        "titel": "Waldorfpädagogik und Bildung",
+        "text": "Sie fördert ganzheitliche Bildung, waldorfpädagogische Initiativen weltweit, Hilfen für benachteiligte Kinder und Jugendliche, interkulturelle Bildung und Lehrerbildung.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Biologisch-dynamische Landwirtschaft",
+        "text": "Sie unterstützt Höfe, Forschung und Ausbildung im biologisch-dynamischen Landbau, besonders die Züchtung samenfester Getreide- und Gemüsesorten.",
+        "motiv": "umwelt"
+      },
+      {
+        "titel": "Anthroposophische Medizin",
+        "text": "Sie fördert anthroposophische Krankenpflege, Therapie und Medizin sowie die Ausbildung von Ärzten und Pflegekräften.",
+        "motiv": "gesundheit"
+      },
+      {
+        "titel": "Eurythmie und Bühnenkunst",
+        "text": "Eurythmie- und Theaterprojekte gehören zu ihren kulturellen Förderprojekten.",
+        "motiv": "kultur"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Filderklinik",
+        "text": "Das anthroposophische Akutkrankenhaus entstand 1975 auf Initiative der Stifter und ist das Hauptförderprojekt der Stiftung.",
+        "ort": "Filderstadt-Bonlanden"
+      },
+      {
+        "titel": "Interkulturelle Waldorfschule Mannheim",
+        "text": "Über 200 Kinder aus 17 Nationen lernen hier miteinander, die Stiftung fördert die Schule.",
+        "ort": "Mannheim"
+      },
+      {
+        "titel": "Parzival-Schule",
+        "text": "Die Schule mit waldorfpädagogischem Leitbild nimmt auch Kinder auf, die anderswo abgewiesen werden.",
+        "ort": "Karlsruhe"
+      },
+      {
+        "titel": "Kultursaat",
+        "text": "Der Verein entwickelt mit biologisch-dynamischen Methoden samenfeste Gemüsesorten, die Stiftung fördert dabei den Generationenwechsel."
+      },
+      {
+        "titel": "Save our Seeds",
+        "text": "Die Initiative setzt sich für Saatgut frei von gentechnisch veränderten Organismen ein.",
+        "ort": "Berlin"
+      },
+      {
+        "titel": "Freies Jugendseminar",
+        "text": "Die Stiftung fördert das Seminar als Entwicklungslabor für junge Menschen.",
+        "ort": "Stuttgart"
+      }
+    ],
+    "zahlen": [
+      { "wert": "1964", "was": "gegründet" },
+      { "wert": "rund 120", "was": "geförderte Institutionen und Projekte im Jahr" },
+      { "wert": "99,9 %", "was": "Anteil an der MAHLE GmbH" }
+    ],
+    "herkunft": "Die Brüder Hermann und Dr. Ernst Mahle, Gründer des MAHLE Konzerns, riefen die Stiftung im Dezember 1964 in Stuttgart ins Leben und übertrugen ihr ihre Unternehmensanteile. Angeregt hatten sie die Sozialideen Rudolf Steiners. Die Fördermittel stammen aus dem wirtschaftlichen Erfolg des Konzerns."
+  },
+  "stiftung-off-road-kids-stiftung-144": {
+    "schwerpunkte": [
+      {
+        "titel": "Streetwork und Soforthilfe",
+        "text": "Sozialarbeiter beraten junge Menschen bis 27 Jahre ohne sicheres Zuhause online über sofahopper.de und vor Ort in Berlin, Dortmund, Frankfurt, Hamburg und Köln.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Gesundheitsvorsorge",
+        "text": "Geschulte Streetworker sprechen Themen wie psychische Gesundheit, Sucht, Verhütung und Impfungen an und vermitteln medizinische Hilfe.",
+        "motiv": "gesundheit"
+      },
+      {
+        "titel": "Schule und Beruf",
+        "text": "Begleitete Beschulung und weiterführende Hilfen öffnen den Weg zu Abschluss, Ausbildung und Arbeit.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Hilfe für Familien",
+        "text": "Eine Eltern-Hotline und systemische Familienberatung unterstützen Eltern und Familien in Krisen.",
+        "motiv": "soziales"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "sofahopper.de",
+        "text": "Die digitale Streetwork-Station erreicht junge Menschen bundesweit per Chat, Telefon und Video.",
+        "jahr": "2017"
+      },
+      {
+        "titel": "STREETWORK+",
+        "text": "Das Präventionsprogramm mit mehreren Betriebskrankenkassen bringt Gesundheitsthemen in die Beratung."
+      },
+      {
+        "titel": "PREJOB",
+        "text": "Sozialpädagogisch begleitete Einzelbeschulung bereitet junge Menschen auf Abschluss und Beruf vor."
+      },
+      {
+        "titel": "FAMILY-NEUSTART",
+        "text": "Die Praxis für systemische Beratung und Therapie berät Einzelpersonen, Eltern und Familien.",
+        "ort": "Bad Dürrheim",
+        "jahr": "2015"
+      },
+      {
+        "titel": "Streetwork-Station Alexanderplatz",
+        "text": "Die erste Streetwork-Station der Organisation öffnete direkt am Alexanderplatz.",
+        "ort": "Berlin",
+        "jahr": "1995"
+      }
+    ],
+    "zahlen": [
+      { "wert": "1993", "was": "erste Hilfe als Verein" },
+      { "wert": "über 13.000", "was": "junge Menschen vor Obdachlosigkeit bewahrt" },
+      { "wert": "5.883", "was": "junge Menschen in Beratung 2025" },
+      { "wert": "816", "was": "junge Menschen 2025 untergebracht" }
+    ],
+    "herkunft": "Der Journalist Markus Seidel gründete Off Road Kids 1993 mit 50 Gründungsmitgliedern als Verein in Donaueschingen. Im Jahr 2000 entstand in München die Stiftung, seit 2008 ist sie rechtlich selbstständig. Sie arbeitet operativ mit eigenen Hilfsangeboten und finanziert sich vor allem aus Spenden."
+  },
+  "stiftung-schoepflin-stiftung-156": {
+    "schwerpunkte": [
+      {
+        "titel": "Lernen und Partizipation",
+        "text": "Sie fördert Schule als Ort der Mitwirkung, an dem Kinder und Jugendliche sich frei entfalten.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Zuhören und Zusammenhalt",
+        "text": "Sie unterstützt zivilgesellschaftliche Initiativen in Deutschland und Europa, die für eine lebendige, pluralistische Demokratie eintreten.",
+        "motiv": "demokratie"
+      },
+      {
+        "titel": "Wirtschaft und Gemeinsinn",
+        "text": "Sie fördert Ansätze für eine Wirtschaft, die den gesellschaftlichen Zusammenhalt stärkt.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Stabile Strukturen für NGOs",
+        "text": "Sie stärkt NGOs und Sozialunternehmen beim Aufbau tragfähiger Strukturen aus dem Sektor heraus.",
+        "motiv": "allgemein"
+      },
+      {
+        "titel": "Journalismus",
+        "text": "Mit eigener Journalismusförderung und dem Haus Publix stärkt sie Journalismus und Öffentlichkeit.",
+        "motiv": "demokratie"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Schöpflin Schule",
+        "text": "Die staatlich anerkannte Schule der Stiftung macht Lernen in Gemeinschaft erlebbar.",
+        "ort": "Lörrach"
+      },
+      {
+        "titel": "Werkraum Schöpflin und FABRIC",
+        "text": "Der Kultur- und Debattenort und der soziokulturelle Mitmachort laden zu Kunst, Gespräch und Nachbarschaft ein.",
+        "ort": "Lörrach"
+      },
+      {
+        "titel": "Villa Schöpflin",
+        "text": "Das Zentrum für Suchtprävention setzt an, bevor Sucht entsteht.",
+        "ort": "Lörrach"
+      },
+      {
+        "titel": "Publix",
+        "text": "Das Haus für Journalismus und Öffentlichkeit bietet Arbeitsplätze, Studios und Veranstaltungen für Medienschaffende und Zivilgesellschaft.",
+        "ort": "Berlin-Neukölln",
+        "jahr": "2024"
+      },
+      {
+        "titel": "JoinPolitics",
+        "text": "Der Förderpartner begleitet politische Talente mit unterschiedlichen Lebenswegen in die Politik."
+      },
+      {
+        "titel": "Haus für alle",
+        "text": "Auf dem Schöpflin Campus entsteht nach einem Bürgerbeteiligungsverfahren ein offenes Haus mit Park.",
+        "ort": "Lörrach-Brombach",
+        "jahr": "2026"
+      }
+    ],
+    "zahlen": [
+      { "wert": "2001", "was": "gegründet" },
+      { "wert": "21 Mio. €", "was": "jährliches Budget" },
+      { "wert": "rund 50", "was": "geförderte Organisationen" },
+      { "wert": "rund 100", "was": "Mitarbeitende" }
+    ],
+    "herkunft": "Hans Schöpflin gründete die Stiftung 2001 in Lörrach mit seinen Geschwistern Heidi Junghanss und Albert Schöpflin. Die Familie stammt aus dem früheren Versandhaus Schöpflin. Die Mittel kommen vor allem aus der unternehmerischen Tätigkeit von Hans W. Schöpflin, der als Risikokapitalgeber in den USA tätig war."
+  },
+  "stiftung-sparkassenstiftung-landkreis-kassel-kultur-174": {
+    "schwerpunkte": [
+      {
+        "titel": "Kunst und Kultur",
+        "text": "Gefördert werden bildende Kunst, Musik, Literatur und kulturelle Veranstaltungen mit Bezug zur Region Kassel.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Denkmalpflege",
+        "text": "Die Stiftungen unterstützen Projekte des Denkmalschutzes und der Denkmalpflege.",
+        "motiv": "denkmal"
+      },
+      {
+        "titel": "Jugend- und Altenhilfe",
+        "text": "Sie fördern soziale Anliegen, die Jugend- und Altenhilfe sowie Organisationen für Menschen mit Behinderung.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Jugend- und Breitensport",
+        "text": "Bei Sportvereinen liegt der Schwerpunkt auf dem Jugend- und Breitensport.",
+        "motiv": "sport"
+      }
+    ],
+    "zahlen": [
+      { "wert": "1993", "was": "gegründet" },
+      { "wert": "10 Mio. €", "was": "Stiftungskapital der Kasseler Sparkassenstiftungen" }
+    ],
+    "herkunft": "Die Kasseler Sparkasse gründete die Sparkassenstiftung Landkreis Kassel Kultur 1993. Seit 2020 gehört sie zur zusammengelegten Kasseler Sparkassenstiftung Landkreis Kassel. Den Vorstand stellt die Sparkasse, das Kuratorium leitet der Landrat des Landkreises Kassel."
+  },
+  "stiftung-stiftung-bürger-für-leipzig-187": {
+    "schwerpunkte": [
+      {
+        "titel": "Bildungspatenschaften",
+        "text": "Ehrenamtliche Patinnen und Paten entdecken mit Hortkindern aus dem Leipziger Osten die Stadt und stärken sie in ihrer Entwicklung.",
+        "motiv": "kinder"
+      },
+      {
+        "titel": "Gesund kochen",
+        "text": "Spenden ermöglichen, dass in Leipziger Jugendclubs jede Woche frisch mit Kindern und Jugendlichen gekocht wird.",
+        "motiv": "kinder"
+      },
+      {
+        "titel": "Begegnung der Generationen",
+        "text": "Rikschafahrten für Seniorinnen und Senioren und das offene Bürgersingen laden zum Mitmachen ein.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Stiften für Leipzig",
+        "text": "Sie betreut Zustiftungen und Vermächtnisse dauerhaft im Sinne der Stifterinnen und Stifter.",
+        "motiv": "allgemein"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Die Wunderfinder",
+        "text": "Im Bildungsprogramm erkunden Patenteams mit Grundschulkindern bei zehn Ausflügen im Jahr Orte wie Oper, Feuerwache oder Stadtwald.",
+        "ort": "Leipzig",
+        "jahr": "seit 2015"
+      },
+      {
+        "titel": "ZU TISCH!",
+        "text": "Der Spendentopf finanziert das gemeinsame Kochen in vier Leipziger Jugendclubs.",
+        "ort": "Leipzig",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Radeln ohne Alter",
+        "text": "Das Projekt bietet Seniorinnen und Senioren Rikschafahrten durch die Stadt.",
+        "ort": "Leipzig"
+      },
+      {
+        "titel": "Bürgersingen",
+        "text": "Offenes gemeinsames Singen, im Advent in der Propsteigemeinde St. Trinitatis.",
+        "ort": "Leipzig"
+      },
+      {
+        "titel": "Aktion Zuckertüte",
+        "text": "Eine Gemeinschaftsaktion der Bürgerstiftung mit inzwischen acht Leipziger Partnern.",
+        "ort": "Leipzig"
+      }
+    ],
+    "zahlen": [
+      { "wert": "259", "was": "Stifterinnen und Stifter" },
+      { "wert": "100", "was": "Wunderfinder-Kinder im Jahr" },
+      { "wert": "500 €", "was": "Zustiftung, um Stifterin oder Stifter zu werden" }
+    ],
+    "herkunft": "Die Bürgerstiftung Leipzig wird von 259 Stifterinnen und Stiftern getragen, darunter acht Unternehmen. Wer mindestens 500 Euro zustiftet, gehört auf Lebenszeit zur Stifterversammlung, die den Stiftungsrat wählt. Auch die Stadt Leipzig und die Sparkasse Leipzig haben zugestiftet."
+  },
+  "stiftung-stiftung-mercator-194": {
+    "schwerpunkte": [
+      {
+        "titel": "Digitalisierte Gesellschaft",
+        "text": "Sie fördert Wissenschaft, Thinktanks und Zivilgesellschaft, damit digitale Technologien im Einklang mit demokratischen Rechten gestaltet werden.",
+        "motiv": "demokratie"
+      },
+      {
+        "titel": "Europa in der Welt",
+        "text": "Sie stärkt die Handlungsfähigkeit Europas, vertieft das Wissen über China und die Türkei und bindet Länder Afrikas, Asiens und Lateinamerikas ein.",
+        "motiv": "international"
+      },
+      {
+        "titel": "Klimaresiliente Gesellschaft",
+        "text": "Sie unterstützt eine integrierte, sozial ausgewogene Klimapolitik aus Klimaschutz, Entzug von Treibhausgasen und Anpassung an Klimafolgen.",
+        "motiv": "klima"
+      },
+      {
+        "titel": "Teilhabe und Zusammenhalt",
+        "text": "Sie fördert die Teilhabe benachteiligter Menschen, Begegnung über Unterschiede hinweg und starke demokratische Strukturen in den Kommunen.",
+        "motiv": "soziales"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Ab ins Rathaus!",
+        "text": "Praxiseinblicke und Mentorings gewinnen junge Menschen unter 35 Jahren für die Kommunalpolitik.",
+        "ort": "bundesweit",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Aktionsprogramm Starke Kommune 2026",
+        "text": "Kommunen und Bürgermeisterinnen und Bürgermeister verbessern mit der Stiftung Bürgermut die Debattenkultur in Ratsdebatten.",
+        "ort": "Mecklenburg-Vorpommern und Sachsen-Anhalt",
+        "jahr": "2026"
+      },
+      {
+        "titel": "CEU DI Rule of Law Clinic II",
+        "text": "Das Projekt stärkt mit Berichten und Veranstaltungen die Rechtsstaatlichkeit in Europa.",
+        "ort": "Wien",
+        "jahr": "2026"
+      },
+      {
+        "titel": "China Observers in Central and Eastern Europe",
+        "text": "Ein Netzwerk von Analystinnen und Analysten baut China-Kompetenz in Mittel- und Osteuropa auf.",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Change Maker für unternehmerischen Wandel",
+        "text": "Ein Qualifizierungsprogramm bringt Klimaschutz in unternehmerische Entscheidungen.",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Coalition for Independent Technology Research Europe",
+        "text": "Das Projekt schafft Unterstützung für Forschende, die die gesellschaftlichen Folgen von Technologien untersuchen.",
+        "jahr": "2026"
+      }
+    ],
+    "zahlen": [
+      { "wert": "1996", "was": "gegründet" },
+      { "wert": "4", "was": "Standorte: Essen, Berlin, Istanbul, Peking" }
+    ],
+    "herkunft": "Die Handels- und Unternehmerfamilie Karl Schmidt aus Duisburg gründete die Stiftung Mercator, 1996 wurde sie ins Handelsregister eingetragen. Benannt ist sie nach dem Kartographen Gerhard Mercator. Heute finanzieren sie die Meridian Stiftung und die Cambiata Stiftung, auf die die Familie ihr gemeinnütziges Vermögen übertragen hat."
+  },
+  "stiftung-v-bodelschwinghsche-stiftungen-bethel-234": {
+    "schwerpunkte": [
+      {
+        "titel": "Leben mit Behinderung",
+        "text": "Bethel bietet Menschen mit Behinderung Wohnen, Arbeit in Werkstätten und Begleitung im Alltag.",
+        "motiv": "inklusion"
+      },
+      {
+        "titel": "Epilepsie und Krankenhaus",
+        "text": "Epilepsie-Zentren, Akutkliniken und psychiatrische Angebote versorgen kranke Menschen.",
+        "motiv": "gesundheit"
+      },
+      {
+        "titel": "Alter und Pflege",
+        "text": "Ambulante Pflegedienste, betreutes Wohnen und stationäre Angebote begleiten alte Menschen.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Hospiz und Lebensende",
+        "text": "Stationäre und ambulante Hospizarbeit, auch für Kinder und Jugendliche, sorgt für eine würdevolle Begleitung.",
+        "motiv": "gesundheit"
+      },
+      {
+        "titel": "Junge Menschen und Bildung",
+        "text": "Jugendhilfe, Schulen, Ausbildungsstätten und das Betheljahr gehören zum Angebot.",
+        "motiv": "bildung"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Jahresspendenprojekt Mitten im Leben",
+        "text": "Spenden fließen in Wohnen, Arbeit und Freizeitbegleitung für Menschen mit schweren Behinderungen.",
+        "jahr": "2025"
+      },
+      {
+        "titel": "Haus Hohensonne",
+        "text": "Das Haus wird zu einem modernen Zuhause für 48 Menschen mit schwerer geistiger oder mehrfacher Behinderung umgebaut.",
+        "ort": "Lemgo"
+      },
+      {
+        "titel": "Haus Smyrna",
+        "text": "Die Werkstatt für Menschen mit sehr schwerer Behinderung wird mit 65 Plätzen erneuert.",
+        "ort": "Bethel, Bielefeld"
+      },
+      {
+        "titel": "Hospiz am Wandlitzer See",
+        "text": "Das stationäre Hospiz mit sechzehn Zimmern öffnete dank Spenden.",
+        "ort": "Wandlitz",
+        "jahr": "2025"
+      },
+      {
+        "titel": "Kinder- und Jugendhospiz Bethel",
+        "text": "Es versorgt und begleitet Kinder und Jugendliche mit lebensverkürzender Erkrankung."
+      },
+      {
+        "titel": "Betheljahr",
+        "text": "Das Angebot für Schülerinnen, Schüler und Studierende besteht seit 20 Jahren."
+      }
+    ],
+    "zahlen": [
+      { "wert": "1867", "was": "gegründet" },
+      { "wert": "etwa 26.000", "was": "Mitarbeitende" },
+      { "wert": "um die 300", "was": "Standorte" },
+      { "wert": "8", "was": "Bundesländer" }
+    ],
+    "herkunft": "Bethel geht auf ein Pflegehaus für epilepsiekranke Menschen zurück, das die Innere Mission 1867 in Bielefeld gründete. Friedrich von Bodelschwingh prägte die Einrichtung, nach ihm ist sie benannt. Heute ist Bethel ein diakonisches Unternehmen mit eigenen Einrichtungen und bittet für viele Vorhaben um Spenden."
+  },
+  "stiftung-wittelsbacher-ausgleichsfonds-wittelsbacher-land-222": {
+    "schwerpunkte": [
+      {
+        "titel": "Kulturelles Erbe der Wittelsbacher",
+        "text": "Der Fonds bewahrt das ihm anvertraute kulturelle Erbe des Hauses Wittelsbach, mit eigenen Bereichen für Kunst und Tradition sowie für Berchtesgaden und Hohenschwangau.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Forst- und Landwirtschaft",
+        "text": "Seine Forstdirektion bewirtschaftet Wald und landwirtschaftliche Flächen in Bayern und plant die Erzeugung erneuerbarer Energien.",
+        "motiv": "umwelt"
+      }
+    ],
+    "zahlen": [
+      { "wert": "1923", "was": "gegründet" },
+      { "wert": "rund 12.000 ha", "was": "Wald" },
+      { "wert": "300 ha", "was": "landwirtschaftliche Flächen" }
+    ],
+    "herkunft": "Der Wittelsbacher Ausgleichsfonds entstand 1923 als Stiftung öffentlichen Rechts. Er bewahrt das kulturelle Erbe des Hauses Wittelsbach und sichert dessen Versorgung. Zwei Staatskommissare aus Finanz- und Wissenschaftsministerium führen die Stiftungsaufsicht."
+  }
+}

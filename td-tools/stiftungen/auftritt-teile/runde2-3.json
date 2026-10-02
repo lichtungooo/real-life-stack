@@ -1,0 +1,366 @@
+{
+  "stiftung-alfred-toepfer-stiftung-fvs-6": {
+    "schwerpunkte": [
+      { "titel": "Kunst und Kultur", "text": "Die Stiftung fragt in ihrer Kulturförderung, wen ein Konzert, eine Ausstellung oder ein Museum erreicht. Sie erprobt zeitgemäße Konzertformate und arbeitet mit Museen und Kunsthochschulen.", "motiv": "kultur" },
+      { "titel": "Bildung und Gesellschaft", "text": "Sie setzt sich für Demokratie, Zusammenhalt, Chancengleichheit und europäischen Austausch ein. Lokale Bildungslandschaften sollen mehr Bildungsgerechtigkeit schaffen.", "motiv": "bildung" },
+      { "titel": "Wissenschaft", "text": "Sie öffnet Räume zum Nachdenken und legt den Fokus auf Wissenschaftskommunikation und europäische Verständigung in der Wissenschaft.", "motiv": "wissenschaft" },
+      { "titel": "Zukunftsgerechte Landnutzung", "text": "Sie sucht nach Wegen für Landwirtschaft, Ernährung, Wälder und Schutzgebiete, die Klima und Naturschutz gerecht werden. Dazu stärkt sie Fachleute in Schutzgebieten.", "motiv": "umwelt" },
+      { "titel": "Biografien begleiten", "text": "Mit Stipendien, Preisen und Akademien begleitet sie engagierte Menschen in verschiedenen Lebensphasen und bindet sie in Netzwerke ein.", "motiv": "allgemein" }
+    ],
+    "beispiele": [
+      { "titel": "Siggener Übersetzungsresidenzen", "text": "Übersetzerinnen und Übersetzer wohnen und arbeiten für eine Zeit auf Gut Siggen an der Ostsee.", "ort": "Gut Siggen" },
+      { "titel": "WissKomm-Kolleg", "text": "Programm zur Wissenschaftskommunikation, unter anderem mit dem Bundesverband Hochschulkommunikation." },
+      { "titel": "EUROPARC Reisestipendien und Siggen Seminars", "text": "Reisestipendien und Seminare mit der EUROPARC Federation stärken die Arbeit in Schutzgebieten." },
+      { "titel": "Stiftung Innovation in der Hochschullehre", "text": "Die Toepfer Stiftung gGmbH ist im Auftrag von Bund und Ländern Treuhänderin dieser Stiftung, die neue Wege in der Hochschullehre fördert.", "jahr": "2020" }
+    ],
+    "zahlen": [
+      { "wert": "1931", "was": "gegründet" },
+      { "wert": "rund 94 Mio. €", "was": "Stiftungsvermögen" },
+      { "wert": "2,2 bis 2,4 Mio. €", "was": "Zweckaufwand im Jahr" },
+      { "wert": "13", "was": "Menschen im Team der Geschäftsstelle" }
+    ],
+    "herkunft": "Der Hamburger Kaufmann und Landwirt Alfred C. Toepfer gründete 1931 die Stiftung F.V.S. zu Hamburg. Nach seinem Tod 1993 erhielt sie seinen Namen. Die Stiftung arbeitet heute offen die Verstrickungen ihres Stifters in den Nationalsozialismus auf und handelt vor allem mit eigenen Programmen."
+  },
+  "stiftung-bertelsmann-stiftung-25": {
+    "schwerpunkte": [
+      { "titel": "Bildung und Next Generation", "text": "Sie arbeitet an lernfähigen Schulsystemen, flexibler Berufsausbildung und Weiterbildung für Geringqualifizierte.", "motiv": "bildung" },
+      { "titel": "Demokratie und Zusammenhalt", "text": "Sie will die Demokratie krisenfest machen und untersucht Zusammenhalt, Beteiligung und Zivilgesellschaft.", "motiv": "demokratie" },
+      { "titel": "Europas Zukunft", "text": "Sie stärkt das europäische Bewusstsein junger Menschen und macht Prioritäten im EU-Haushalt sichtbar.", "motiv": "international" },
+      { "titel": "Gesundheit", "text": "Sie sucht Lösungen gegen den Fachkräftemangel im Gesundheitswesen, etwa durch bessere Aufgabenteilung zwischen den Berufen.", "motiv": "gesundheit" },
+      { "titel": "Nachhaltige Soziale Marktwirtschaft", "text": "Sie erforscht, wie der Umbau zu einer klimaneutralen Wirtschaft gelingt, etwa mit Kreislaufwirtschaft und breiter Akzeptanz.", "motiv": "klima" },
+      { "titel": "Nachhaltige Kommunen", "text": "Ein eigenes Zentrum für Nachhaltige Kommunen arbeitet zu Themen wie Bevölkerungsentwicklung und digitaler Beteiligung in Städten und Gemeinden.", "motiv": "allgemein" }
+    ],
+    "beispiele": [
+      { "titel": "Change Learning", "text": "Das Projekt half Schleswig-Holstein, ein Daten-Dashboard für Schulen und die Foren „Daten im Dialog“ aufzubauen.", "ort": "Schleswig-Holstein", "jahr": "2026" },
+      { "titel": "Chance Ausbildung", "text": "Das Projekt entwickelt Lösungen, damit jeder junge Mensch eine Berufsausbildung abschließen kann." },
+      { "titel": "Aufstieg durch Kompetenzen", "text": "Das Projekt arbeitet an einer Reform der Weiterbildung, die Fähigkeiten von Geringqualifizierten sichtbar macht und anerkennt." },
+      { "titel": "#NowEurope", "text": "Das Projekt stärkte zur Europawahl das europäische Bewusstsein und die politische Selbstwirksamkeit junger Menschen.", "jahr": "2024" },
+      { "titel": "Reinhard Mohn Preis", "text": "Der Preis ehrt Persönlichkeiten, die Lösungen für gesellschaftliche und politische Aufgaben gefunden haben." }
+    ],
+    "zahlen": [
+      { "wert": "1977", "was": "gegründet" },
+      { "wert": "76 Mio. €", "was": "Gesamtaufwand im Jahr" },
+      { "wert": "337", "was": "Mitarbeitende" },
+      { "wert": "234", "was": "Veranstaltungen im Jahr" }
+    ],
+    "herkunft": "Reinhard Mohn errichtete die Stiftung 1977. Sie arbeitet operativ: Ihre Projekte, Studien und Veranstaltungen entwickelt und führt sie selbst durch."
+  },
+  "stiftung-bürgerstiftung-dresden-34": {
+    "schwerpunkte": [
+      { "titel": "Ehrenamt stärken", "text": "Mit der Landeshauptstadt und dem Freistaat fördert und würdigt sie freiwilliges Engagement. Dazu betreibt sie die Ehrenamtsplattform ehrensache.jetzt in ganz Sachsen.", "motiv": "soziales" },
+      { "titel": "Kultur und Erinnerung", "text": "Sie führt den DenkRaum Sophienkirche als Ort der Erinnerung und bietet im Künstlerhaus Dresden günstige Ateliers für bildende Kunst.", "motiv": "kultur" },
+      { "titel": "Jung und Alt", "text": "Eigene Projekte bringen Generationen ins Gespräch und schenken Menschen im Pflegeheim Musik, Märchen und Hundebesuche.", "motiv": "soziales" },
+      { "titel": "Kulturelle Bildung", "text": "Mit „Theater in die Schule, Schüler ins Theater“ bringt sie Kinder und Jugendliche mit der Bühne zusammen.", "motiv": "bildung" },
+      { "titel": "Stiftungen unter einem Dach", "text": "Sie verwaltet Stiftungsfonds und Treuhandstiftungen und berät Menschen, die selbst stiften wollen, von Denkmalpflege bis Tierschutz.", "motiv": "allgemein" }
+    ],
+    "beispiele": [
+      { "titel": "DenkRaum Sophienkirche", "text": "Gedenkort mit Ausstellungen und dem Bildungsangebot „Schüler:innen managen eine Gedenkstätte“.", "ort": "Dresden" },
+      { "titel": "Künstlerhaus Dresden", "text": "Traditionsreiches Atelierhaus, seit 2024 Teil der Bürgerstiftung und günstiger Arbeitsraum für Kunstschaffende.", "ort": "Dresden-Loschwitz", "jahr": "2024" },
+      { "titel": "ehrensache.jetzt", "text": "Digitale Plattform, die freiwilliges Engagement sichtbar und zugänglich macht.", "ort": "Sachsen", "jahr": "2019" },
+      { "titel": "Lebensfreude", "text": "Junge Musikerinnen und Musiker spielen für pflegebedürftige Menschen in Seniorenheimen.", "ort": "Dresden" },
+      { "titel": "Generationendialog", "text": "Das Projekt bringt Jung und Alt miteinander ins Gespräch.", "ort": "Dresden" }
+    ],
+    "zahlen": [
+      { "wert": "1999", "was": "gegründet" },
+      { "wert": "21", "was": "Mitarbeitende in der Geschäftsstelle" },
+      { "wert": "4", "was": "eigene operative Projekte" }
+    ],
+    "herkunft": "Die Bürgerstiftung Dresden entstand 1999 mit Unterstützung der Körber-Stiftung als Stiftung von Bürgern für Bürger. Sie hat ihren Sitz in der Villa Reuter in Blasewitz."
+  },
+  "stiftung-crespo-foundation-45": {
+    "schwerpunkte": [
+      { "titel": "Kulturelle Bildung", "text": "Kinder und Jugendliche, besonders in schwierigen Lebenslagen, sollen früh und leicht Zugang zu Kunst finden. Dafür baut sie Programme auf, die Kunst in den Alltag von Schulen und Stadtteilen bringen.", "motiv": "kultur" },
+      { "titel": "Kunst", "text": "Sie stärkt Kunstschaffende von der Ausbildung bis zur Weiterbildung mit Stipendien, Preisen und Orten zum Zeigen ihrer Arbeit.", "motiv": "kultur" },
+      { "titel": "Bildungschancen", "text": "Sie fördert Leseförderung an Schulen und hilft Menschen mit Migrationsgeschichte, einen Schulabschluss nachzuholen.", "motiv": "bildung" },
+      { "titel": "Persönlichkeit stärken", "text": "Sie unterstützt Angebote für seelische Gesundheit junger Menschen und für den Schutz von Frauen und Mädchen.", "motiv": "soziales" }
+    ],
+    "beispiele": [
+      { "titel": "Das fliegende Künstler:innenzimmer", "text": "Ein mobiles Wohnatelier, in dem Kunstschaffende bis zu zwei Schuljahre lang mit Schulen und Stadtteilen arbeiten.", "ort": "ländliches Hessen und Frankfurt am Main", "jahr": "2018" },
+      { "titel": "SABA Bildungsstipendium", "text": "Das Stipendium begleitet Menschen mit Migrations- und Fluchterfahrung zum nachgeholten Schulabschluss.", "ort": "Rhein-Main-Gebiet", "jahr": "2006" },
+      { "titel": "Leseband", "text": "Tägliche gemeinsame Lesezeit an Grundschulen, die die Stiftung mit vier weiteren Stiftungen und den Ländern verbreitet.", "ort": "bundesweit" },
+      { "titel": "After Nature . Ulrike Crespo Photography Prize", "text": "Fotografiepreis mit C/O Berlin für Arbeiten über Mensch, Natur und Technik.", "jahr": "2024" },
+      { "titel": "KuTaMu", "text": "Der Verein öffnet jungen Menschen mit Tanz, Rap, Graffiti und DJing den Zugang zur Kultur.", "ort": "Frankfurt am Main", "jahr": "2023" },
+      { "titel": "WORTMELDUNGEN", "text": "Literaturpreis und Förderpreis für kritische Kurztexte mit einer Langen Lesenacht.", "ort": "Frankfurt am Main", "jahr": "2026" }
+    ],
+    "zahlen": [
+      { "wert": "235", "was": "Schulabschlüsse mit SABA seit 2006" }
+    ],
+    "herkunft": "Die Fotografin Ulrike Crespo (1950 bis 2019) ist die Stifterin. Ihre Themen Kultur und Soziales prägen die Arbeit. Als Verbrauchsstiftung soll die Stiftung den größten Teil ihres Vermögens in einer festen Frist für gemeinnützige Zwecke einsetzen."
+  },
+  "stiftung-deutsche-telekom-stiftung-63": {
+    "schwerpunkte": [
+      { "titel": "Konzepte und Materialien", "text": "Sie entwickelt und erprobt mit Partnern neue Wege für das Lehren, Lernen und Prüfen in Mathematik, Informatik, Naturwissenschaften und Technik.", "motiv": "bildung" },
+      { "titel": "Lernen mit KI", "text": "Sie fördert den souveränen Umgang mit Künstlicher Intelligenz im Unterricht und qualifiziert Lehrkräfte dafür.", "motiv": "bildung" },
+      { "titel": "Netzwerke", "text": "Sie stärkt Schulen, die mit Bibliotheken, Jugendhäusern, Museen oder Schülerlaboren zusammenarbeiten.", "motiv": "bildung" },
+      { "titel": "Bildungssteuerung", "text": "Mit Politik, Verwaltung und Zivilgesellschaft setzt sie sich für bessere Rahmenbedingungen im Bildungssystem ein.", "motiv": "bildung" }
+    ],
+    "beispiele": [
+      { "titel": "Data Science in der Schule", "text": "Mit der Universität Paderborn und dem DZLM entstehen Unterrichtskonzepte und Fortbildungen zu Daten und KI.", "jahr": "2018" },
+      { "titel": "Deeper Learning", "text": "Mit der Universität Heidelberg und Lehrkräften entstanden Unterrichtseinheiten für tiefes Lernen im MINT-Unterricht.", "jahr": "2022/2023" },
+      { "titel": "Die Zukunft des MINT-Lernens KI", "text": "Universitäten und Landesinstitute entwickeln gemeinsam Fortbildungen zum Einsatz von KI im MINT-Unterricht, zuerst mit der Universität Konstanz." },
+      { "titel": "Trendmonitor KI in der Bildung", "text": "Der Bericht gibt Orientierung über den Einsatz von KI in der Bildung.", "jahr": "2026" },
+      { "titel": "KI-Schulpreis", "text": "Eines der drei KI-Vorhaben, die der Jahresbericht 2025/2026 ausführlich vorstellt." }
+    ],
+    "zahlen": [
+      { "wert": "2003", "was": "gegründet" },
+      { "wert": "150 Mio. €", "was": "Grundstockkapital" }
+    ],
+    "herkunft": "Die Deutsche Telekom gründete die Stiftung 2003 als Unternehmensstiftung. Sie arbeitet vorrangig operativ und fördert Dritte nur über eigene, angekündigte Ausschreibungen."
+  },
+  "stiftung-edith-maryon-stiftung-76": {
+    "schwerpunkte": [
+      { "titel": "Boden als Gemeingut", "text": "Sie entzieht Grundstücke der Spekulation und gibt sie im Baurecht, Erbbaurecht oder in Pacht für soziale Zwecke ab. Die meisten Häuser erhält sie als Schenkung oder Erbe.", "motiv": "soziales" },
+      { "titel": "Gemeinsam wohnen", "text": "Sie sichert günstigen Wohnraum für gemeinschaftliche und selbstverwaltete Wohnprojekte und bietet in der Region Basel Hilfen rund ums Wohnen.", "motiv": "soziales" },
+      { "titel": "Orte für Kultur und Gewerbe", "text": "Sie stellt Häuser für Ateliers, Kulturprojekte und lokales Gewerbe bereit.", "motiv": "kultur" },
+      { "titel": "Landwirtschaft und Gartenbau", "text": "Sie stellt Höfe, darunter Demeter-Höfe, dauerhaft zur Verfügung und entlastet sie so von steigenden Bodenpreisen.", "motiv": "umwelt" },
+      { "titel": "Kulturförderung Region Basel", "text": "Sie fördert zeitgenössische Kunst, Kunst am Bau, Kunsttherapien, Waldorfpädagogik, Ernährung und Komplementärmedizin, in der Kunst vor allem junge Kunstschaffende.", "motiv": "kultur" }
+    ],
+    "beispiele": [
+      { "titel": "ExRotaprint", "text": "Mit der Stiftung trias kaufte sie das Fabrikareal, das heute an soziale Projekte, Kunst und Gewerbe vermietet ist.", "ort": "Berlin-Wedding", "jahr": "2007" },
+      { "titel": "Siedlungsprojekt Sophie Stinde", "text": "Auf ihrem Land baute eine Genossenschaft eine Wohnsiedlung für alle Altersgruppen und ein Wohnheim für Menschen mit Unterstützungsbedarf.", "ort": "Dornach", "jahr": "2008" },
+      { "titel": "Atelierhaus Grenze", "text": "Eine frühere Fabrik dient einer Genossenschaft von Kunstschaffenden und Gewerbetreibenden als Arbeits- und Wohnort.", "ort": "Basel", "jahr": "2002" },
+      { "titel": "Wohnhaus Am Kräherwald 313", "text": "Eine Familie löste ihr Grundstück aus dem Privatbesitz und wohnt im Erbbaurecht weiter im Haus.", "ort": "Stuttgart" },
+      { "titel": "Rheingasse 17", "text": "Die Stiftung vermietet ab Januar 2027 vierzehn Wohnungen in einem historischen Haus.", "ort": "Basel", "jahr": "2027" }
+    ],
+    "zahlen": [
+      { "wert": "1990", "was": "gegründet" },
+      { "wert": "12.000 Franken", "was": "Startkapital" },
+      { "wert": "über 160", "was": "Projekte realisiert oder gesichert" },
+      { "wert": "rund 20", "was": "Mitarbeitende in Basel" }
+    ],
+    "herkunft": "Christoph Langscheid, John Ermel und Michael Riggenbach gründeten die Stiftung 1990 mit 12.000 Franken, angeregt von Rudolf Steiners Schrift zur sozialen Frage. Namensgeberin ist die englische Bildhauerin Edith Maryon, die in den 1920er Jahren in Dornach günstige Häuser für Mitarbeitende des Goetheanums baute. Sitz der Stiftung ist Basel."
+  },
+  "stiftung-friedrich-ebert-stiftung-85": {
+    "schwerpunkte": [
+      { "titel": "Politische Bildung und Beratung", "text": "Mit Veranstaltungen und Publikationen vermittelt sie Wissen über Politik und öffnet den Zugang zu aktuellen Debatten.", "motiv": "demokratie" },
+      { "titel": "Internationale Zusammenarbeit", "text": "In über 100 Ländern fördert sie mit Partnern soziale Gerechtigkeit, Demokratie, Frieden und Sicherheit.", "motiv": "international" },
+      { "titel": "Studienförderung", "text": "Sie fördert Studierende und Promovierende, vor allem aus Arbeiter- und Einwandererfamilien.", "motiv": "bildung" },
+      { "titel": "Archiv und Bibliothek", "text": "Sie bewahrt die Geschichte der Sozialdemokratie und der Gewerkschaften in Archiv und Fachbibliothek.", "motiv": "wissenschaft" },
+      { "titel": "Sozial-ökologischer Wandel", "text": "Sie verbindet Klimaschutz mit sozialer Gerechtigkeit und guten Arbeitsplätzen.", "motiv": "klima" }
+    ],
+    "beispiele": [
+      { "titel": "Hans-Matthöfer-Preis", "text": "Preis für Wirtschaftspublizistik, der Antworten auf Fragen der Wirtschaftspolitik auszeichnet." },
+      { "titel": "Gute Beispiele zukunftsfähiger Politik", "text": "Die Projektseite stellt Menschen und Projekte vor, die vor Ort den sozial-ökologischen Wandel voranbringen." },
+      { "titel": "Archiv der sozialen Demokratie", "text": "Das Archiv sammelt Schriftgut zur Geschichte der Sozialdemokratie, der Gewerkschaften und anderer Bewegungen." }
+    ],
+    "zahlen": [
+      { "wert": "1925", "was": "gegründet" },
+      { "wert": "204.063.000 €", "was": "Etat 2025" },
+      { "wert": "2.781", "was": "Stipendiatinnen und Stipendiaten" },
+      { "wert": "97", "was": "Auslandsbüros" }
+    ],
+    "herkunft": "Die politische Stiftung trägt seit ihrer Gründung 1925 den Namen von Friedrich Ebert, dem ersten demokratisch gewählten Reichspräsidenten. Sie ist als gemeinnütziger Verein organisiert und mit der Sozialen Demokratie und der Gewerkschaftsbewegung verbunden."
+  },
+  "stiftung-haniel-stiftung-97": {
+    "schwerpunkte": [
+      { "titel": "Enkelfähiges Unternehmertum", "text": "Sie vergibt Stipendien an junge unternehmerische Talente, die nach dem Leitbild des ehrbaren Kaufmanns handeln wollen.", "motiv": "bildung" },
+      { "titel": "Bildung als Chance", "text": "Sie bringt Kinder und Jugendliche aus schwierigem Umfeld im Ruhrgebiet zum Schulabschluss und in den Beruf, gemeinsam mit Partnern.", "motiv": "kinder" }
+    ],
+    "beispiele": [
+      { "titel": "Aletta Haniel Programm", "text": "Das Programm begleitet Jugendliche mit Nachhilfe, Berufsorientierung und Berufswahlmessen zum Abschluss und in die Ausbildung.", "ort": "Duisburg" },
+      { "titel": "LeseAdler und SchreibFüchse", "text": "Die Initiative mit Chancenwerk e.V. hilft Kindern mit Lese-Rechtschreibschwierigkeiten." },
+      { "titel": "European Haniel Program", "text": "Das Programm bildet künftige Unternehmerinnen und Unternehmer in Europa aus." },
+      { "titel": "McCloy Academic Scholarship Program", "text": "Das Stipendium ermöglicht zwei Studienjahre an der Harvard University." },
+      { "titel": "Enkelfähig-Preis", "text": "Essaypreis mit der Studienstiftung des deutschen Volkes zu nachhaltigem und fairem Unternehmertum.", "jahr": "2023" }
+    ],
+    "zahlen": [
+      { "wert": "1988", "was": "gegründet" },
+      { "wert": "1.500", "was": "Schülerinnen und Schüler pro Schuljahr mit „Bildung als Chance“" },
+      { "wert": "1.638", "was": "geförderte Stipendiatinnen, Stipendiaten und Alumni" },
+      { "wert": "220", "was": "Duisburger Schulabschlüsse über das Aletta Haniel Programm" }
+    ],
+    "herkunft": "Die Stiftung wurde 1988 gegründet. Hinter ihr steht die Franz Haniel & Cie. GmbH, ein Familienunternehmen mit Wurzeln bis 1756, und die Stifterfamilie Haniel. Sitz ist Duisburg."
+  },
+  "stiftung-international-alumni-center-berlin-iac-berlin-107": {
+    "schwerpunkte": [
+      { "titel": "Alumni-Netzwerke", "text": "Das iac Berlin baut Netzwerke ehemaliger Geförderter auf und pflegt allen voran das Bosch Alumni Network.", "motiv": "international" },
+      { "titel": "Wirkungsbündnisse", "text": "Es hilft Stiftungen und gemeinnützigen Organisationen, Bündnisse über Sektoren hinweg für ein gemeinsames Ziel zu gestalten.", "motiv": "allgemein" },
+      { "titel": "Lerngemeinschaften", "text": "In Lernformaten tauschen Netzwerkbauerinnen und Netzwerkbauer aus vielen Organisationen Erfahrungen aus.", "motiv": "bildung" },
+      { "titel": "Demokratie und Zugehörigkeit", "text": "Im Democracy & Belonging Forum stärkt es Gemeinschaften, die sich vor Ort für Demokratie einsetzen.", "motiv": "demokratie" }
+    ],
+    "beispiele": [
+      { "titel": "Bosch Alumni Network", "text": "Weltweites Netzwerk von Geförderten, Partnern und Mitarbeitenden der Robert Bosch Stiftung." },
+      { "titel": "Connecting Networks", "text": "Lernnetzwerk von rund 50 Stiftungen und gemeinnützigen Organisationen, die ihre Netzwerkarbeit stärken.", "jahr": "2017" },
+      { "titel": "Democracy & Belonging Forum", "text": "Sechs Network Catalyzers leiteten Gemeinschaften zu regionalen und thematischen Fragen der Demokratie.", "jahr": "2025" },
+      { "titel": "Learning Lab Impact Alliances", "text": "Treffen von über 25 Mitgliedern zu Theorie und Praxis von Wirkungsbündnissen.", "ort": "Wien", "jahr": "2021" }
+    ],
+    "zahlen": [
+      { "wert": "2017", "was": "gegründet" }
+    ],
+    "herkunft": "Die Robert Bosch Stiftung gründete das iac Berlin 2017 mit zwei Aufgaben: ein Alumni-Netzwerk ihrer Geförderten aufzubauen und Netzwerke für gesellschaftliche Wirkung zu stärken. Es versteht sich als Do & Think Tank für Wirkungsnetzwerke und berät Stiftungen und gemeinnützige Organisationen."
+  },
+  "stiftung-katholischer-fonds-dbk-hilfswerke-116": {
+    "schwerpunkte": [
+      { "titel": "Weltkirchliche Bildungsarbeit", "text": "Der Fonds fördert Bildungs- und Öffentlichkeitsarbeit in Deutschland zu weltkirchlichen und entwicklungsbezogenen Themen, etwa Seminare, Kampagnen und Ausstellungen.", "motiv": "kirche" },
+      { "titel": "Partnerbegegnungen", "text": "Er unterstützt Begegnungen mit Ortskirchen des Globalen Südens sowie Mittel- und Osteuropas in Deutschland und Langzeitaufenthalte junger Menschen.", "motiv": "international" },
+      { "titel": "Vernetzung und Schulung", "text": "Er vernetzt lokale Eine-Welt-Gruppen und fördert Schulungen für Multiplikatorinnen und Multiplikatoren.", "motiv": "bildung" }
+    ],
+    "beispiele": [
+      { "titel": "Ökumenischer Förderpreis Eine Welt", "text": "Mit Brot für die Welt ehrt der Fonds vorbildliches Engagement für eine gerechte globale Entwicklung.", "ort": "Düsseldorf", "jahr": "2027" },
+      { "titel": "Ökumenischer Pilgerweg für Klimagerechtigkeit", "text": "Preisträger des Ökumenischen Förderpreises Eine Welt.", "jahr": "2022" },
+      { "titel": "erlassjahr.de", "text": "Das Bündnis für Entschuldung erhielt den Ökumenischen Förderpreis Eine Welt.", "jahr": "2022" },
+      { "titel": "Eine-Welt-Laden Fürth", "text": "Preisträger des Ökumenischen Förderpreises Eine Welt.", "ort": "Fürth", "jahr": "2013" }
+    ],
+    "zahlen": [
+      { "wert": "1997", "was": "gegründet" },
+      { "wert": "500.000 €", "was": "Mittel im Jahr" },
+      { "wert": "über 1.000", "was": "Projekte im Jahr, gemeinsam mit Brot für die Welt" }
+    ],
+    "herkunft": "Die Deutsche Bischofskonferenz beschloss den Fonds im November 1997, seit Januar 1998 arbeitet er. Die Hilfswerke Adveniat, Caritas international, Misereor, missio und Renovabis stellen ihm jährlich Kirchensteuermittel bereit. Er ist ein kirchlicher Förderfonds und keine Stiftung."
+  },
+  "stiftung-kunst-und-kulturstiftung-opelvillen-125": {
+    "_grund": "Die Website lieferte nur den Seitentitel und keinen Text; nichts ist belegbar."
+  },
+  "stiftung-manfred-lautenschlaeger-stiftung-135": {
+    "schwerpunkte": [
+      { "titel": "Wissenschaftspreise", "text": "Sie stiftet Preise für Spitzenforschung und für den wissenschaftlichen Nachwuchs in Heidelberg.", "motiv": "wissenschaft" },
+      { "titel": "Schulen in Heidelberg", "text": "Sie fördert Schulprojekte zu Leseförderung, Demokratiebildung, Gesundheit, Sport und internationalen Begegnungen.", "motiv": "bildung" },
+      { "titel": "Bürgerrechte von Sinti und Roma", "text": "Sie finanziert den Europäischen Bürgerrechtspreis der Sinti und Roma und ein Forschungsstipendium zur Antiziganismusforschung.", "motiv": "demokratie" },
+      { "titel": "Film und Kultur", "text": "Sie stellt das Preisgeld für den Nachwuchspreis des Internationalen Filmfestivals Mannheim-Heidelberg.", "motiv": "kultur" }
+    ],
+    "beispiele": [
+      { "titel": "Lautenschläger-Forschungspreis", "text": "Der Preis der Universität Heidelberg ehrt alle zwei Jahre herausragende Forschung, seit 2018 auch den Nachwuchs.", "ort": "Heidelberg", "jahr": "2025" },
+      { "titel": "Europäischer Bürgerrechtspreis der Sinti und Roma", "text": "Die Stiftung stellt seit Beginn des Preises das Preisgeld.", "ort": "Berlin", "jahr": "2025" },
+      { "titel": "Romani Rose-Fellowship", "text": "Forschungsstipendium der Forschungsstelle Antiziganismus für Promovierende und Postdocs aus der EU.", "ort": "Heidelberg", "jahr": "2026" },
+      { "titel": "International Newcomer Award", "text": "Hauptpreis des IFFMH für junge Regie, dessen Preisgeld die Stiftung seit 2020 stellt.", "ort": "Mannheim-Heidelberg", "jahr": "2025" },
+      { "titel": "Selbstbehauptungskurs an der Graf von Galen-Schule", "text": "Ein Krav-Maga-Kurs stärkt Schülerinnen mit Behinderung gegen Übergriffe.", "jahr": "2025/2026" },
+      { "titel": "Villa HeidelPräp", "text": "Die Stiftung verlängerte ihre Förderung dieses Angebots zur gemeinsamen Examensvorbereitung." }
+    ],
+    "zahlen": [
+      { "wert": "2001", "was": "gegründet" }
+    ],
+    "herkunft": "Manfred Lautenschläger gründete 1971 die Marschollek, Lautenschläger und Partner KG, die spätere MLP AG, und 2001 die Stiftung. Sie ist eine gGmbH mit Sitz in Gaiberg."
+  },
+  "stiftung-otto-beisheim-foundation-metro-gruender-145": {
+    "schwerpunkte": [
+      { "titel": "Bildung", "text": "Sie fördert chancengerechte Bildung, gute Übergänge und persönliche, soziale und unternehmerische Fähigkeiten.", "motiv": "bildung" },
+      { "titel": "Mentale Gesundheit", "text": "Sie fördert Prävention und gesunde Lebensweise und hilft, psychische Erkrankungen zu entstigmatisieren.", "motiv": "gesundheit" },
+      { "titel": "Kultur", "text": "Sie öffnet Menschen den Zugang zu Kunst und Kultur und stärkt die Zukunftsfähigkeit von Kulturorganisationen.", "motiv": "kultur" },
+      { "titel": "Sport", "text": "Ihre Projekte motivieren zu Bewegung und schaffen Zugänge zum Sport, auch für Menschen mit Behinderung.", "motiv": "sport" }
+    ],
+    "beispiele": [
+      { "titel": "ich bin alles", "text": "Mit dem LMU Klinikum entstand ein wissenschaftlich fundiertes Infoportal zu Depression bei Kindern und Jugendlichen.", "ort": "München", "jahr": "2021" },
+      { "titel": "MHFA Ersthelfer", "text": "Mit dem Zentralinstitut für Seelische Gesundheit bringt die Stiftung Erste-Hilfe-Kurse für psychische Gesundheit nach Deutschland.", "ort": "Mannheim", "jahr": "2019" },
+      { "titel": "kulturstark", "text": "Förderprogramm für Kulturorganisationen in Brandenburg, besonders im ländlichen Raum.", "ort": "Brandenburg" },
+      { "titel": "Ankommen in Schule & Stadt Frankfurt", "text": "Neu eingewanderte Grundschulkinder erhalten sprachliche Unterstützung und Hilfe beim Ankommen.", "ort": "Frankfurt am Main" },
+      { "titel": "Berliner Begegnungen", "text": "Schülerinnen, Schüler und Senioren erleben gemeinsam Theater im Berliner Ensemble.", "ort": "Berlin" },
+      { "titel": "KICKFAIR", "text": "Über Straßenfußball entdecken Kinder und Jugendliche ihre Talente." }
+    ]
+  },
+  "stiftung-siemens-stiftung-158": {
+    "schwerpunkte": [
+      { "titel": "MINT-Bildung", "text": "Sie bietet Lehrkräften Fortbildungen und offene Lernmaterialien für Mathematik, Informatik, Naturwissenschaften und Technik.", "motiv": "bildung" },
+      { "titel": "Grundversorgung sichern", "text": "Sie stärkt Sozialunternehmen, die in unterversorgten Regionen Energie, Wasser, Mobilität und Gesundheit verbessern.", "motiv": "international" },
+      { "titel": "Kunst und Kultur", "text": "Sie fördert Kunstproduktionen und Kulturnetzwerke, vor allem im Dialog zwischen Lateinamerika und Europa.", "motiv": "kultur" },
+      { "titel": "Klima", "text": "Sie fördert Klimawandelbildung und regenerative Praktiken aus lokalen Zusammenhängen.", "motiv": "klima" }
+    ],
+    "beispiele": [
+      { "titel": "Experimento", "text": "Internationales Bildungsprogramm für MINT-Unterricht und Fähigkeiten des 21. Jahrhunderts." },
+      { "titel": "Office for Climate Education", "text": "Internationale Initiative, mit der Lehr- und Lernmaterialien zur Klimawandelbildung entstehen." },
+      { "titel": "Red STEM Latinoamérica", "text": "Netzwerk von über 180 Partnern aus 14 Ländern für MINT-Bildung in Lateinamerika.", "ort": "Lateinamerika" },
+      { "titel": "WaterQuip", "text": "Das Projekt bringt Trinkwasser an Schulen.", "ort": "Uganda" },
+      { "titel": "StaRK", "text": "Projekt der Stiftung Kinder forschen und der Charité, das Kinder im Kita-Alter im Umgang mit Gefühlen stärkt.", "jahr": "2026" },
+      { "titel": "Music In Africa", "text": "Portal für die Musikwelt Afrikas." }
+    ],
+    "zahlen": [
+      { "wert": "2008", "was": "gegründet" },
+      { "wert": "390 Mio. €", "was": "Stiftungskapital" },
+      { "wert": "17", "was": "Länder mit MINT-Bildungsangeboten" }
+    ],
+    "herkunft": "Die Siemens AG gründete die Stiftung 2008 als unabhängige, gemeinnützige Organisation. Sie hat ihren Hauptsitz in München und Büros in Berlin, Erlangen und Santiago de Chile."
+  },
+  "stiftung-sparkassenstiftung-landkreis-kassel-soziales-und-175": {
+    "schwerpunkte": [
+      { "titel": "Jugend- und Altenhilfe", "text": "Sie fördert soziale Projekte in Stadt und Landkreis Kassel, auch in der Jugend- und Altenpflege.", "motiv": "soziales" },
+      { "titel": "Menschen mit Behinderung", "text": "Sie unterstützt Behindertenorganisationen und Forschung, die benachteiligten Menschen das Leben erleichtert.", "motiv": "inklusion" },
+      { "titel": "Jugend- und Breitensport", "text": "Bei Sportvereinen fördert sie vor allem Angebote für Jugendliche und den Breitensport.", "motiv": "sport" },
+      { "titel": "Kunst und Kultur", "text": "Sie fördert bildende Kunst, Musik, Literatur und kulturelle Veranstaltungen mit Bezug zur Region.", "motiv": "kultur" },
+      { "titel": "Denkmalpflege", "text": "Sie unterstützt Denkmalschutz und Denkmalpflege in der Region Kassel.", "motiv": "denkmal" }
+    ],
+    "zahlen": [
+      { "wert": "1997", "was": "gegründet" },
+      { "wert": "10 Mio. €", "was": "Stiftungskapital der Kasseler Sparkassenstiftungen gesamt" }
+    ],
+    "herkunft": "Die Kasseler Sparkasse gründete 1997 die Sparkassenstiftung Landkreis Kassel für Soziales und Sport. 2018 beschloss sie, ihre Stiftungen zusammenzulegen; seit Mai 2020 gibt es die Kasseler Sparkassenstiftung Stadt Kassel und die Kasseler Sparkassenstiftung Landkreis Kassel. Den Vorstand stellt die Sparkasse, das Kuratorium leitet der Landrat."
+  },
+  "stiftung-stiftung-der-deutschen-wirtschaft-sdw-203": {
+    "schwerpunkte": [
+      { "titel": "Studien- und Promotionsförderung", "text": "Das Studienförderwerk Klaus Murmann fördert leistungsstarke, engagierte Studierende und Promovierende aller Fächer und Hochschularten.", "motiv": "bildung" },
+      { "titel": "Orientierung nach der Schule", "text": "Sie begleitet junge Menschen, oft aus Familien ohne akademische Erfahrung, bei der Wahl von Studium und Beruf.", "motiv": "bildung" },
+      { "titel": "Talente in der Ausbildung", "text": "Mit einem eigenen Stipendium fördert sie Auszubildende und junge Berufstätige.", "motiv": "bildung" },
+      { "titel": "Unternehmerisches Denken", "text": "Sie stärkt Gründungsgeist und unternehmerische Fähigkeiten schon bei Schülerinnen und Schülern.", "motiv": "allgemein" },
+      { "titel": "Pädagogik und MINT", "text": "Sie wirkt dem Fachkräftemangel in pädagogischen Berufen und im MINT-Bereich entgegen.", "motiv": "bildung" }
+    ],
+    "beispiele": [
+      { "titel": "Studienförderwerk Klaus Murmann", "text": "Begabtenförderungswerk mit rund 2.000 Stipendiatinnen und Stipendiaten." },
+      { "titel": "Studienkompass", "text": "Das Programm begleitet junge Menschen aus Familien ohne akademische Erfahrung nach dem Abitur zum passenden Bildungsweg." },
+      { "titel": "TidA", "text": "Das Stipendium für Talente in der Ausbildung stärkt Auszubildende mit Netzwerk und persönlicher Entwicklung." },
+      { "titel": "Entrepreneurship Talent Academy", "text": "Die Akademie fördert gründungsbegeisterte Schülerinnen und Schüler." },
+      { "titel": "Lehramt Mintoring", "text": "Stipendienprogramm für junge Menschen auf dem Weg ins Lehramt." },
+      { "titel": "Hans Weisser Stipendium", "text": "Das Stipendium ermöglicht ein Masterstudium im Ausland, etwa am University College London." }
+    ],
+    "zahlen": [
+      { "wert": "1994", "was": "gegründet" },
+      { "wert": "rund 4.400", "was": "Geförderte" },
+      { "wert": "über 23 Mio. €", "was": "investiert 2024, mit Partnern" },
+      { "wert": "9", "was": "Stipendien- und Förderprogramme" }
+    ],
+    "herkunft": "Die Stiftung entstand 1994 auf Initiative der Bundesvereinigung der Deutschen Arbeitgeberverbände und des damaligen Arbeitgeberpräsidenten Klaus Murmann. Unter ihrem Dach wirken Arbeitgeberverbände, die Stifterfamilie Murmann, Ministerien, Unternehmen und Stiftungen. Sie arbeitet ausschließlich in eigenen Stipendien- und Förderprogrammen."
+  },
+  "stiftung-stiftung-niedersaechsischer-volksbanken-und-raif-195": {
+    "schwerpunkte": [
+      { "titel": "Kunst und Musik", "text": "Sie fördert Kunstprojekte, Ausstellungen und Konzerte in Niedersachsen.", "motiv": "kultur" },
+      { "titel": "Heimatpflege", "text": "Sie unterstützt Vorhaben, die regionale Geschichte und Kultur lebendig halten.", "motiv": "kultur" },
+      { "titel": "Wissenschaft", "text": "Sie fördert auch wissenschaftliche Vorhaben im Sinne ihres Stiftungszwecks.", "motiv": "wissenschaft" }
+    ],
+    "beispiele": [
+      { "titel": "Neujahrskonzert in Zeven", "text": "Konzert zum Jahresbeginn.", "ort": "Zeven" },
+      { "titel": "Fotoausstellung „Ankommen“", "text": "Porträts von Geflüchteten aus verschiedenen Zeiten.", "ort": "Isenhagener Land" },
+      { "titel": "Klassikkonzert in der St. Severi Kirche", "text": "Konzert mit klassischer Musik in der Kirche.", "ort": "Otterndorf" },
+      { "titel": "Steinway Gedächtniskonzert", "text": "Konzert mit Sebastian Krumbiegel.", "jahr": "2020" },
+      { "titel": "Skulpturen von Siegfried Neuenhausen", "text": "Fünf Skulpturen für die Gala zur Wahl „Behindertensportler des Jahres in Niedersachsen“." }
+    ],
+    "zahlen": [
+      { "wert": "1990", "was": "gegründet" }
+    ],
+    "herkunft": "Die Kreditgenossenschaften Niedersachsens, vertreten durch den Genoverband e.V., errichteten die Stiftung im Dezember 1990. Sie hat ihren Sitz in Hannover. Anträge stellen die Volks- und Raiffeisenbanken als Stifterbanken für Projekte in ihrer Region."
+  },
+  "stiftung-vector-stiftung-215": {
+    "schwerpunkte": [
+      { "titel": "Forschung für den Klimaschutz", "text": "Sie fördert Forschung, die mit neuen Verfahren CO₂ in der Atmosphäre verringert, und Nachwuchsgruppen für „MINT für die Umwelt“.", "motiv": "klima" },
+      { "titel": "MINT-Forschung", "text": "Sie fördert mutige, ungewöhnliche Forschungsprojekte in Mathematik, Informatik, Naturwissenschaften und Technik.", "motiv": "wissenschaft" },
+      { "titel": "MINT-Bildung", "text": "Von der Grundschule bis zur Hochschule fördert sie Schulprojekte, die Qualifizierung von Lehrkräften und praxisnahe Lehre in Baden-Württemberg.", "motiv": "bildung" },
+      { "titel": "Soziales Engagement", "text": "Sie fördert die Integration junger Menschen und Projekte gegen Wohnungslosigkeit in Baden-Württemberg.", "motiv": "soziales" }
+    ],
+    "beispiele": [
+      { "titel": "Mkid: Mathe kann ich doch!", "text": "Mathematikförderung für weiterführende Schulen.", "ort": "Baden-Württemberg" },
+      { "titel": "Sprache fürs Leben", "text": "Sprachförderprogramm der aim an Grundschulen, das die Stiftung auf zehn weitere Schulen ausdehnt.", "ort": "nördliches Baden-Württemberg", "jahr": "2023" },
+      { "titel": "Lernwerkstatt in Weilimdorf", "text": "Ein Bildungsort für Jugendliche ohne Schulerfahrung.", "ort": "Weilimdorf" },
+      { "titel": "Lernen vom Gehirn", "text": "Forschung an neuen Materialien für energieeffiziente, lernfähige Elektronik.", "ort": "Konstanz" },
+      { "titel": "YEEP", "text": "Das Programm fördert junge Talente für Unternehmertum und wird weitere fünf Jahre unterstützt.", "jahr": "2026" },
+      { "titel": "MINT@School", "text": "Schulen in Baden-Württemberg erhalten unkompliziert Mittel für eigene MINT-Projekte.", "ort": "Baden-Württemberg" }
+    ],
+    "zahlen": [
+      { "wert": "2011", "was": "gegründet" },
+      { "wert": "60 %", "was": "Anteile an der Vector Informatik GmbH" },
+      { "wert": "über 100 Mio. €", "was": "gefördert seit 2011" },
+      { "wert": "532", "was": "geförderte Schulen" }
+    ],
+    "herkunft": "Eberhard Hinderer, Martin Litschel und Dr. Helmut Schelling, die Gründer der Vector Informatik GmbH, gründeten die Stiftung 2011. Sie hält 60 % der Unternehmensanteile und finanziert ihre Arbeit aus der Dividende."
+  },
+  "stiftung-wolfgang-und-elisabeth-grupp-stiftung-trigema-223": {
+    "schwerpunkte": [
+      { "titel": "Vereine und soziale Einrichtungen", "text": "Sie unterstützt Vereine und soziale Einrichtungen in Burladingen und Umgebung, etwa mit neuen Einsatzfahrzeugen.", "motiv": "soziales" },
+      { "titel": "Sport vor Ort", "text": "Mit einer Millionenspende half sie beim Bau der neuen Sporthalle in Burladingen.", "motiv": "sport" },
+      { "titel": "Musik für junge Menschen", "text": "Sie förderte ein Jugendmusikfestival, einen Flügel für die Jugendmusikschule und das Singen an Schulen.", "motiv": "musik" },
+      { "titel": "Hilfe in Notlagen", "text": "Sie hilft bei akuten Nöten, etwa nach Hochwasser in der Nachbargemeinde oder nach Erdbeben.", "motiv": "allgemein" },
+      { "titel": "Kampf gegen Blutkrebs", "text": "Seit Jahren fördert sie Typisierungsaktionen der Deutschen Leukämie-Hilfe.", "motiv": "gesundheit" }
+    ],
+    "beispiele": [
+      { "titel": "trigema Arena", "text": "Die neue Sporthalle trägt dank der Spende der Stiftung diesen Namen.", "ort": "Burladingen" },
+      { "titel": "SingPause", "text": "Singprojekt an den Schulen im Landkreis, gefördert über eine Spende an die Stadt Burladingen." },
+      { "titel": "Internationales Jugendmusikfestival", "text": "Das Festival in Burladingen erhielt Unterstützung der Stiftung.", "ort": "Burladingen" }
+    ],
+    "herkunft": "Die gemeinnützige Stiftung entstand zum 50. Geburtstag von Wolfgang Grupp, dem Inhaber und Geschäftsführer von Trigema. Das Familienunternehmen mit Sitz in Burladingen wurde 1919 gegründet."
+  }
+}

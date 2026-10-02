@@ -1,0 +1,759 @@
+{
+  "stiftung-baden-wuerttemberg-stiftung-18": {
+    "schwerpunkte": [
+      {
+        "titel": "Bildung von klein auf",
+        "text": "Die Stiftung entwickelt eigene Programme von der frühkindlichen Bildung bis zu den beruflichen Schulen, etwa zur MINT-Förderung und zum Lesen.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Spitzenforschung",
+        "text": "Sie finanziert Forschungsprogramme in Lebenswissenschaften, Medizin, Quantentechnologie und Künstlicher Intelligenz.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "Demokratie und Zusammenhalt",
+        "text": "Sie fördert demokratische Bildung, Bürgerbeteiligung und Programme gegen Antisemitismus und Einsamkeit.",
+        "motiv": "demokratie"
+      },
+      {
+        "titel": "Kunst und Kultur",
+        "text": "Mit dem Literatursommer und dem Programm zum kulturellen Erbe trägt sie Kultur ins ganze Land.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Klimaschutz",
+        "text": "Ihre Tochter, die Klimaschutzstiftung Baden-Württemberg, fördert Klimaschutz in Forschung, Bildung und Natur und vermittelt Klimafinanzierung.",
+        "motiv": "klima"
+      },
+      {
+        "titel": "Kinder und Familien",
+        "text": "Über die Stiftung Kinderland und Programme wie „Kinder stärken, Familien fördern“ unterstützt sie Kinder, Jugendliche und Familien.",
+        "motiv": "kinder"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Theater hinter Gittern",
+        "text": "Das Theater Konstanz erarbeitet mit Inhaftierten in mehreren Justizvollzugsanstalten Theaterstücke und stärkt so ihren Weg zurück ins Leben.",
+        "ort": "Konstanz",
+        "jahr": "2018"
+      },
+      {
+        "titel": "Literatursommer 2026",
+        "text": "Von April bis Oktober finden im ganzen Land Lesungen und Veranstaltungen statt.",
+        "ort": "Baden-Württemberg",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Artur Fischer Erfinderpreis",
+        "text": "Der Preis zeichnet alle zwei Jahre private Erfinderinnen und Erfinder sowie Schulklassen für nützliche Erfindungen aus.",
+        "jahr": "2001"
+      },
+      {
+        "titel": "Bürgerforum 2025",
+        "text": "In Bürgerforen mit der Pressestiftung erarbeiteten zufällig ausgewählte Menschen 44 Empfehlungen zu Medien und Verständigung.",
+        "jahr": "2025"
+      },
+      {
+        "titel": "Social-Media-Detox-Studie",
+        "text": "Das Universitätsklinikum Ulm untersuchte im Auftrag der Stiftung, wie soziale Medien die psychische Gesundheit junger Menschen prägen.",
+        "ort": "Ulm"
+      },
+      {
+        "titel": "Baden-Württemberg-STIPENDIUM",
+        "text": "Das Stipendium fördert seit 25 Jahren den internationalen Austausch von Studierenden und Berufstätigen."
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "2000",
+        "was": "gegründet"
+      },
+      {
+        "wert": "rund 2,3 Mrd. €",
+        "was": "Stiftungsvermögen"
+      },
+      {
+        "wert": "30 bis 40 Mio. €",
+        "was": "Ausschüttung im Jahr für Programme"
+      }
+    ],
+    "herkunft": "Die Stiftung entstand am 1. Januar 2000 aus den Landesbeteiligungen Baden-Württemberg und hieß bis 2010 Landesstiftung Baden-Württemberg. Ihr Kapital stammt aus der Landesholding und aus dem Verkauf der EnBW-Anteile des Landes an die Électricité de France. Sie ist eine gemeinnützige GmbH mit Sitz in Stuttgart und arbeitet überwiegend operativ mit eigenen Programmen."
+  },
+  "stiftung-bonifatiuswerk-der-deutschen-katholiken-30": {
+    "schwerpunkte": [
+      {
+        "titel": "Bauhilfe",
+        "text": "Das Werk bezuschusst Bau und Sanierung von Kirchen, Kapellen und Gemeindehäusern in Gemeinden mit höchstens 12 Prozent Katholikenanteil.",
+        "motiv": "kirche"
+      },
+      {
+        "titel": "Verkehrshilfe",
+        "text": "Gemeinden und Einrichtungen in der Diaspora erhalten Zuschüsse für neue BONI-Busse und Dienstfahrzeuge, damit Seelsorge weite Wege überbrückt.",
+        "motiv": "kirche"
+      },
+      {
+        "titel": "Kinder- und Jugendhilfe",
+        "text": "Es fördert religiöse Bildung, Ferienfreizeiten, Religiöse Kinderwochen und katholische Kitas in den östlichen Bundesländern.",
+        "motiv": "kinder"
+      },
+      {
+        "titel": "Glaubenshilfe",
+        "text": "Es unterstützt neue missionarische Projekte, die sich an kirchenferne Menschen richten, und finanziert dafür auch befristete Personalstellen.",
+        "motiv": "kirche"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Neue Kirche in Selfoss",
+        "text": "Nach mehr als zwei Jahren Bauzeit wurde das Gotteshaus des Bistums Reykjavík eingeweiht.",
+        "ort": "Selfoss, Island",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Klaras Küche",
+        "text": "Eine Tafel in Hamburg bietet bedürftigen Menschen Essen und Gemeinschaft.",
+        "ort": "Hamburg"
+      },
+      {
+        "titel": "Haus Martha",
+        "text": "Das Werk sammelt Spenden für das Haus in Berlin, das Kindern und Jugendlichen eine Zukunft schenken will.",
+        "ort": "Berlin"
+      },
+      {
+        "titel": "Erweiterung der Schule St. Michael",
+        "text": "Die katholische Schule in Tallinn erhielt Bauhilfe für ihren Ausbau.",
+        "ort": "Tallinn, Estland",
+        "jahr": "2023"
+      },
+      {
+        "titel": "SPIRIT EXPO|SURE",
+        "text": "Das Austauschprogramm bringt pastorale Mitarbeitende und Ehrenamtliche aus Deutschland, Nordeuropa und dem Baltikum in Tandems zusammen.",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Tat.Ort Nikolaus",
+        "text": "Die Aktion bezuschusst Orte guter Taten, die Gemeinden und Gruppen rund um den Nikolaustag gestalten.",
+        "jahr": "2026"
+      }
+    ],
+    "herkunft": "Das Bonifatiuswerk der deutschen Katholiken ist ein katholisches Hilfswerk und sammelt Spenden für Katholikinnen und Katholiken, die als kleine Minderheit leben. Es fördert Projekte in Deutschland, Nordeuropa und dem Baltikum."
+  },
+  "stiftung-caritas-stiftung-deutschland-41": {
+    "schwerpunkte": [
+      {
+        "titel": "Soziale Arbeit der Caritas",
+        "text": "Aus ihren Erträgen finanziert die Stiftung Projekte der Zentrale des Deutschen Caritasverbandes für Menschen in Not.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Caritas international",
+        "text": "Sie unterstützt die weltweite Hilfe von Caritas international, dem Hilfswerk der deutschen Caritas.",
+        "motiv": "international"
+      },
+      {
+        "titel": "Stiften unter einem Dach",
+        "text": "Sie berät Menschen bei der Gründung eigener Stiftungen und verwaltet mehr als 100 Treuhandstiftungen und Stiftungsfonds.",
+        "motiv": "allgemein"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1999",
+        "was": "gegründet"
+      },
+      {
+        "wert": "500.000 €",
+        "was": "Grundkapital zum Start"
+      },
+      {
+        "wert": "mehr als 74 Mio. €",
+        "was": "Stiftungskapital heute"
+      },
+      {
+        "wert": "mehr als 100",
+        "was": "Treuhandstiftungen unter ihrem Dach"
+      }
+    ],
+    "herkunft": "Der Deutsche Caritasverband, der Wohlfahrtsverband der katholischen Kirche, gründete die Stiftung 1999 mit Sitz in Köln. Sie sichert dem Verband Unabhängigkeit von öffentlichen Geldern und untersteht der Aufsicht des Erzbischofs von Freiburg."
+  },
+  "stiftung-deutsche-postcode-lotterie-60": {
+    "schwerpunkte": [
+      {
+        "titel": "Sozialer Zusammenhalt",
+        "text": "Die Lotterie fördert gemeinnützige Projekte, die Nachbarschaften, Generationen und Menschen unterschiedlicher Herkunft zusammenbringen.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Chancengerechtigkeit",
+        "text": "Sie unterstützt Bildungs- und Mentoringprojekte, damit Kinder und Jugendliche faire Chancen bekommen.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Natur- und Umweltschutz",
+        "text": "Sie finanziert Vorhaben für Artenvielfalt, saubere Flüsse, Wälder und Klimaschutz.",
+        "motiv": "umwelt"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Süduferchor Freiburg",
+        "text": "Der Chor von Menschen mit und ohne Fluchtgeschichte baut Kinderlieder-Workshops für Familien auf.",
+        "ort": "Freiburg",
+        "jahr": "2025"
+      },
+      {
+        "titel": "DKMS",
+        "text": "Die Lotterie unterstützt die Suche nach passenden Stammzellspenden für Menschen mit Blutkrebs.",
+        "ort": "bundesweit",
+        "jahr": "2026"
+      },
+      {
+        "titel": "#Platzmachen für die Natur",
+        "text": "GermanZero entsiegelt gemeinsam mit der Deutschen Jugendfeuerwehr Flächen und erhielt dafür den Traumtaler.",
+        "jahr": "2026"
+      },
+      {
+        "titel": "TeachDemocracy",
+        "text": "Teach First Deutschland und aula erhielten den Traumtaler für ihre gemeinsame Demokratie-Initiative an Schulen.",
+        "ort": "Berlin",
+        "jahr": "2024"
+      },
+      {
+        "titel": "Rewilding Oder-Delta",
+        "text": "Der Verein schützt die wilde Naturlandschaft am Stettiner Haff mit dem Traumtaler.",
+        "ort": "Stettiner Haff",
+        "jahr": "2020"
+      },
+      {
+        "titel": "Freunde alter Menschen",
+        "text": "Der Verein bringt Generationen zusammen und schenkt älteren Menschen Zeit und Nähe.",
+        "ort": "deutschlandweit",
+        "jahr": "2025"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "2016",
+        "was": "Start in Deutschland"
+      },
+      {
+        "wert": "mehr als 480 Mio. €",
+        "was": "Fördermittel seit 2016"
+      },
+      {
+        "wert": "30 %",
+        "was": "jedes Losbeitrags für gute Zwecke"
+      },
+      {
+        "wert": "90.745.106 €",
+        "was": "Förderung im vergangenen Jahr"
+      }
+    ],
+    "herkunft": "Die Postcode Lotterie ist eine staatlich lizenzierte Soziallotterie und keine Stiftung. Sie gehört zur internationalen Postcode Lottery Group, deren erste Lotterie 1989 in den Niederlanden startete; die deutsche Lotterie folgte 2016. Über die Anträge entscheidet ein Beirat, die nächste Förderrunde beginnt 2027."
+  },
+  "stiftung-dieter-schwarz-stiftung-72": {
+    "schwerpunkte": [
+      {
+        "titel": "Bildung",
+        "text": "Die Stiftung fördert MINT, Sprach- und Leseförderung entlang der ganzen Bildungsbiografie, von der Kita bis zur Weiterbildung.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Forschung",
+        "text": "Sie unterstützt Hochschulen und Forschungseinrichtungen, vor allem in Künstlicher Intelligenz, Cyber Security und Quantencomputing.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "Unternehmertum",
+        "text": "Sie fördert Startups und Co-Innovation, um Wirtschaft und Wissenschaft in der Region Heilbronn-Franken zu verbinden.",
+        "motiv": "allgemein"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "experimenta",
+        "text": "Das Science Center begeistert Besucherinnen und Besucher für Naturwissenschaft und Technik.",
+        "ort": "Heilbronn",
+        "jahr": "2009"
+      },
+      {
+        "titel": "Bildungscampus Heilbronn",
+        "text": "Der Campus vereint Hochschulen und Bildungseinrichtungen wie DHBW, GGS, aim und den TUM Campus Heilbronn.",
+        "ort": "Heilbronn",
+        "jahr": "2011"
+      },
+      {
+        "titel": "aim Akademie",
+        "text": "Die Weiterbildungseinrichtung qualifiziert Fachkräfte für Krippe, Kindergarten und Schule, etwa für Sprach- und Matheförderung.",
+        "ort": "Heilbronn",
+        "jahr": "2002"
+      },
+      {
+        "titel": "IPAI",
+        "text": "Das Projekt baut im Norden Heilbronns ein Zentrum für angewandte Künstliche Intelligenz auf.",
+        "ort": "Heilbronn"
+      },
+      {
+        "titel": "Campus Founders",
+        "text": "Das Zentrum für Entrepreneurship und Innovation begleitet Gründerinnen und Gründer.",
+        "ort": "Heilbronn",
+        "jahr": "2018"
+      },
+      {
+        "titel": "Mental Health Alliance",
+        "text": "Die Stiftung fördert das bundesweite Bündnis für mentale Gesundheit.",
+        "jahr": "2026"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1999",
+        "was": "gegründet"
+      },
+      {
+        "wert": "mehr als 40",
+        "was": "Einrichtungen und Projekte in der Bildung"
+      },
+      {
+        "wert": "über 100",
+        "was": "Projekte im Jahr in Forschung und Unternehmertum"
+      }
+    ],
+    "herkunft": "Der Unternehmer Dieter Schwarz gründete die Stiftung am 18. November 1999 als gemeinnützige Stiftung, getragen von seinem Leitsatz „Bildung ist unser wichtigster Rohstoff“. Ihre Anschrift liegt in Neckarsulm, ihr Büro auf dem Bildungscampus Heilbronn; viele ihrer Einrichtungen trägt sie selbst."
+  },
+  "stiftung-foerderfonds-handwerk-stiftung-bildung-wolfgang-82": {
+    "schwerpunkte": [
+      {
+        "titel": "Förderfonds Handwerk",
+        "text": "Der Fonds fördert Projekte, in denen Kita-Kinder und Schülerinnen und Schüler selbst bauen, reparieren und Handwerksberufe kennenlernen. Anträge laufen über Kita- und Schulfördervereine.",
+        "motiv": "handwerk"
+      },
+      {
+        "titel": "Kind-zu-Kind-Patenschaften",
+        "text": "Die Stiftung vermittelt Kindern, die es im Kita- oder Schulalltag schwer haben, ein gleichaltriges Patenkind für gemeinsame Erlebnisse.",
+        "motiv": "kinder"
+      },
+      {
+        "titel": "Bildung für nachhaltige Entwicklung",
+        "text": "Jugendliche bringen mit ihrer Unterstützung eigene Klimaschutzprojekte auf den Weg.",
+        "motiv": "klima"
+      },
+      {
+        "titel": "Kita- und Schulfördervereine",
+        "text": "Sie vernetzt und qualifiziert Ehrenamtliche in Fördervereinen und gibt ihnen eine Stimme in der Bildungspolitik.",
+        "motiv": "bildung"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Faszination Bootsbau",
+        "text": "Schülerinnen und Schüler der Freien Waldorfschule Oberg bauen eigene Boote, von der Planung bis zum fertigen Stück.",
+        "ort": "Oberg"
+      },
+      {
+        "titel": "Papier und Handwerk",
+        "text": "Kinder der Grundschule Hohennauen und der Kita Storchennest schöpfen Papier, drucken und binden Bücher.",
+        "ort": "Hohennauen"
+      },
+      {
+        "titel": "Desinfektionsmittelspender aus Holz",
+        "text": "Die Schülerfirma der Dietrich-Bonhoeffer-Schule baut sichere Spender aus Holz."
+      },
+      {
+        "titel": "Freundschaftsbank",
+        "text": "Kinder der Grundschule am See bauen gemeinsam eine Bank und übernehmen Verantwortung.",
+        "ort": "Neubrandenburg"
+      },
+      {
+        "titel": "Wir machen es selbst",
+        "text": "Die Grundschule Grabenstätt holt das Handwerk in die Schule.",
+        "ort": "Grabenstätt"
+      },
+      {
+        "titel": "Unser Lehmofen",
+        "text": "Kinder bauen einen Lehmofen und backen darin Pizza und Brot."
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "2012",
+        "was": "gegründet"
+      },
+      {
+        "wert": "18",
+        "was": "Projekte im Förderfonds Handwerk bisher"
+      },
+      {
+        "wert": "3.000",
+        "was": "Patenschaften im Jahr 2025"
+      }
+    ],
+    "herkunft": "Engagierte und Mitglieder der Verbände der Kita- und Schulfördervereine gründeten die Stiftung Bildung im September 2012 als gemeinnützige Stiftung bürgerlichen Rechts. Sie finanziert sich über Spenden. Den Förderfonds Handwerk trägt sie gemeinsam mit der Wolfgang Dürr Stiftung."
+  },
+  "stiftung-globus-stiftung-92": {
+    "_grund": "texte.md enthält nur unlesbare Binärdaten (komprimierte Antwort der Website), kein auswertbarer Text zur Stiftung."
+  },
+  "stiftung-ikk-classic-stiftung-103": {
+    "_grund": "Die Texte stammen von der Krankenkasse IKK classic (Leistungen, Service, Unternehmen) und erwähnen keine Stiftung."
+  },
+  "stiftung-karl-diehl-stiftung-irmgard-diehl-kinderstiftung-114": {
+    "_grund": "Die Texte landen bei der Diehl-Gruppe (Konzernstartseite, Geschäftsfelder, News); zur Karl-Diehl-Stiftung und zur Irmgard Diehl Kinderstiftung steht dort nichts."
+  },
+  "stiftung-kulturstiftung-der-kasseler-sparkasse-122": {
+    "schwerpunkte": [
+      {
+        "titel": "Kunst und Kultur",
+        "text": "Die Stiftungen fördern bildende Kunst, Musik, Literatur und kulturelle Veranstaltungen mit Bezug zur Region Kassel.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Denkmalschutz",
+        "text": "Sie unterstützen Projekte der Denkmalpflege und des Denkmalschutzes in Stadt und Landkreis Kassel.",
+        "motiv": "denkmal"
+      },
+      {
+        "titel": "Wissenschaft und Forschung",
+        "text": "Sie fördern wissenschaftliche Arbeiten und Forschungsvorhaben aus der Region.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "Soziales und Inklusion",
+        "text": "Sie helfen Projekten der Jugend- und Altenhilfe sowie Organisationen von und für Menschen mit Behinderung.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Jugend- und Breitensport",
+        "text": "Bei Sportvereinen liegt der Schwerpunkt auf Jugend- und Breitensport.",
+        "motiv": "sport"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1992",
+        "was": "Kulturstiftung gegründet"
+      },
+      {
+        "wert": "2020",
+        "was": "Zusammenlegung zu den Sparkassenstiftungen"
+      },
+      {
+        "wert": "10 Mio. €",
+        "was": "Stiftungskapital beider Sparkassenstiftungen"
+      }
+    ],
+    "herkunft": "Die Kasseler Sparkasse gründete 1992 die Kulturstiftung neben einer Sozial- und Sportstiftung; für den Landkreis folgten 1993 und 1997 zwei weitere Stiftungen. Seit Mai 2020 sind sie in der Kasseler Sparkassenstiftung Stadt Kassel und der Kasseler Sparkassenstiftung Landkreis Kassel zusammengefasst. Den Vorstand stellt die Sparkasse, die Kuratorien leiten Oberbürgermeister und Landrat."
+  },
+  "stiftung-lotto-rheinland-pfalz-stiftung-129": {
+    "_grund": "Die Website hat den Abruf aus Sicherheitsgründen geblockt; texte.md enthält nur eine Fehlermeldung."
+  },
+  "stiftung-muenchener-rueck-stiftung-142": {
+    "schwerpunkte": [
+      {
+        "titel": "Klimarisiken und Anpassung",
+        "text": "Die Stiftung entwickelt mit Partnern Lösungen zur Vorsorge gegen Katastrophen und zur Anpassung an den Klimawandel, vor allem in Schwellen- und Entwicklungsländern.",
+        "motiv": "klima"
+      },
+      {
+        "titel": "Inklusive Versicherungen",
+        "text": "Sie setzt sich dafür ein, dass Menschen in Schwellen- und Entwicklungsländern Zugang zu Versicherungsschutz bekommen, und fördert dazu Wissen und Austausch.",
+        "motiv": "international"
+      },
+      {
+        "titel": "Klimaschutz im Dialog",
+        "text": "Mit Dialogforen und Bildungsangeboten stößt sie die öffentliche Debatte über Klimaschutz an.",
+        "motiv": "klima"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "RISK Award 2025",
+        "text": "Der Preis ging an eine Klimainitiative junger Menschen in Bolivien.",
+        "ort": "Bolivien",
+        "jahr": "2025"
+      },
+      {
+        "titel": "RISK Award 2023",
+        "text": "Das ausgezeichnete Projekt bringt Frühwarnung in die Gemeinden am Inkomati-Fluss.",
+        "ort": "Inkomati-Flussgebiet",
+        "jahr": "2023"
+      },
+      {
+        "titel": "International Conference on Inclusive Insurance",
+        "text": "Die Konferenz bringt Fachleute für inklusive Versicherungen zusammen.",
+        "ort": "Kigali, Ruanda",
+        "jahr": "2026"
+      },
+      {
+        "titel": "RAIN Challenge",
+        "text": "Der Wettbewerb sucht innovative Landwirtschaft, die Klimafolgen standhält."
+      },
+      {
+        "titel": "Dialogforum 2026",
+        "text": "Das Forum fragte, wie Gesundheit und Wirtschaft bei Arbeit im Klimawandel geschützt bleiben.",
+        "jahr": "2026"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "2005",
+        "was": "gegründet"
+      }
+    ],
+    "herkunft": "Munich Re errichtete die Stiftung 2005 zu ihrem 125-jährigen Bestehen als gemeinnützige Organisation. Sie hat ihren Sitz in München, wirkt weltweit und teilt das Risikowissen des Rückversicherers mit Menschen in gefährdeten Regionen. Fördermittel vergibt sie über eigene Ausschreibungen auf ihrer Website."
+  },
+  "stiftung-right-livelihood-foundation-151": {
+    "schwerpunkte": [
+      {
+        "titel": "Right Livelihood Award",
+        "text": "Die Stiftung ehrt jedes Jahr vier Menschen oder Organisationen, die praktische Lösungen für drängende globale Probleme zeigen.",
+        "motiv": "international"
+      },
+      {
+        "titel": "Schutz und Unterstützung",
+        "text": "Sie begleitet Preisträgerinnen und Preisträger ein Leben lang, vertritt ihre Anliegen bei den Vereinten Nationen und schützt sie, wenn Leben oder Freiheit bedroht sind.",
+        "motiv": "demokratie"
+      },
+      {
+        "titel": "Bildung und Hochschulen",
+        "text": "Über Partnerschaften mit Universitäten auf fünf Kontinenten verbindet sie Aktivismus und Wissenschaft.",
+        "motiv": "bildung"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Rural Women’s Assembly",
+        "text": "Die Bewegung organisiert über 178.000 Kleinbäuerinnen in elf Ländern des südlichen Afrika für Land, Saatgut und Selbstbestimmung.",
+        "ort": "Südliches Afrika",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Georgian Young Lawyers’ Association",
+        "text": "Die Menschenrechtsorganisation verteidigt die Demokratie in Georgien.",
+        "ort": "Georgien",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Jalila Haider",
+        "text": "Die Anwältin aus der Hazara-Gemeinschaft schützt verfolgte Menschen in Pakistan.",
+        "ort": "Pakistan",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Timnit Gebru",
+        "text": "Die KI-Forscherin hinterfragt Machtkonzentration in der Technologie und gründete ein eigenes Forschungsinstitut.",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Tony Rinaudo",
+        "text": "Der Preis machte seine Methode bekannt, Bäume auf trockenem, ausgelaugtem Land wachsen zu lassen.",
+        "jahr": "2018"
+      },
+      {
+        "titel": "Monika Hauser, medica mondiale",
+        "text": "Ihre Organisation unterstützt Frauen, die sexualisierte Gewalt erlebt haben; im halben Jahr nach dem Preis verdoppelten sich die Spenden.",
+        "jahr": "2008"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1980",
+        "was": "erster Preis verliehen"
+      },
+      {
+        "wert": "207",
+        "was": "Preisträger aus 82 Ländern"
+      },
+      {
+        "wert": "4",
+        "was": "Auszeichnungen im Jahr"
+      },
+      {
+        "wert": "6,7 Mio. €",
+        "was": "an Preisträger weitergegeben"
+      }
+    ],
+    "herkunft": "Jakob von Uexkull bot der Nobelstiftung 1979 an, zwei neue Preise zu finanzieren; nach ihrer Absage rief er 1980 den Right Livelihood Award ins Leben. Die Stiftung hinter dem Preis entstand 1989 in Schweden und arbeitet heute von Stockholm und Genf aus."
+  },
+  "stiftung-sparkassen-kulturstiftung-hessen-thueringen-169": {
+    "_grund": "Die Texte stammen vom Deutschen Sparkassen- und Giroverband (dsgv.de) und erwähnen die Sparkassen-Kulturstiftung Hessen-Thüringen nicht."
+  },
+  "stiftung-stiftung-bildung-und-handwerk-183": {
+    "schwerpunkte": [
+      {
+        "titel": "Aus- und Weiterbildung",
+        "text": "Die Stiftung ist Dach einer Gruppe von Bildungsträgern, die Ausbildung, Umschulung, Weiterbildung und Meisterqualifizierung anbieten.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Berufsorientierung",
+        "text": "Jugendliche probieren in Werkstätten verschiedene Berufsfelder praktisch aus und finden ihren Weg ins Berufsleben.",
+        "motiv": "handwerk"
+      },
+      {
+        "titel": "Sprache, Beruf, Integration",
+        "text": "Sprach- und Integrationskurse bereiten Geflüchtete und Zugewanderte auf Ausbildung und Arbeit vor.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Berufliche Rehabilitation",
+        "text": "Mit Angeboten der beruflichen Rehabilitation begleitet sie Menschen zurück ins Arbeitsleben.",
+        "motiv": "inklusion"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "STABIL",
+        "text": "Das Jugendprojekt der SBH Nordost begleitete in 15 Jahren 1.139 benachteiligte Jugendliche auf dem Weg in Arbeit und Ausbildung.",
+        "ort": "Halle (Saale)",
+        "jahr": "2025"
+      },
+      {
+        "titel": "Tagebuch der Gefühle",
+        "text": "Jugendliche aus STABIL folgen den Spuren deportierter Familien aus Halle und schreiben ihre Eindrücke in einer Tagebuchreihe auf.",
+        "ort": "Halle (Saale)"
+      },
+      {
+        "titel": "German Professional School",
+        "text": "Die Schule bereitet Geflüchtete in Thüringen auf Ausbildung und Arbeit vor.",
+        "ort": "Eisenach und Meiningen",
+        "jahr": "2024"
+      },
+      {
+        "titel": "Guided Professional Skills",
+        "text": "Das Erasmus+ Projekt entwickelt mit Partnern aus fünf Ländern Leitfäden und eine App für arbeitsbasiertes Lernen.",
+        "ort": "Magdeburg",
+        "jahr": "2023"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "2001",
+        "was": "gegründet"
+      },
+      {
+        "wert": "rund 50.000",
+        "was": "Teilnehmende im Jahr"
+      },
+      {
+        "wert": "250",
+        "was": "Standorte in Deutschland"
+      },
+      {
+        "wert": "363",
+        "was": "Werkstätten"
+      }
+    ],
+    "herkunft": "Die Stiftung ging am 1. Januar 2001 aus der Kreishandwerkerschaft Paderborn hervor und hat dort ihren Sitz. Sie ist gemeinnützige Dachorganisation der SBH-Gruppe mit 15 Bildungsunternehmen und wirkt als Bildungsträger mit eigenen Angeboten."
+  },
+  "stiftung-stiftung-kirchenerhaltungsfonds-ekkw-192": {
+    "_grund": "Die Texte landen auf ekkw.de bei der Landeskirche (Startseite, Reformprozess, Themenschwerpunkte) und enthalten nichts zum Kirchenerhaltungsfonds."
+  },
+  "stiftung-stiftung-wuerth-reinhold-wuerth-musikstiftung-201": {
+    "_grund": "Die Texte stammen von den Würth Philharmonikern (Konzerte, Orchester der Unternehmensgruppe Würth); zur Stiftung Würth und zur Reinhold Würth Musikstiftung steht dort nichts."
+  },
+  "stiftung-wilhelm-sander-stiftung-220": {
+    "schwerpunkte": [
+      {
+        "titel": "Krebsforschung",
+        "text": "Die Stiftung fördert klinische und experimentelle Krebsforschung, die Prävention, Diagnose und Therapie voranbringt.",
+        "motiv": "gesundheit"
+      },
+      {
+        "titel": "Medizinische Forschung",
+        "text": "Forschende an Hochschulen, Kliniken und Instituten in Deutschland und der Schweiz bringen ihre eigene Idee ein; die Stiftung finanziert themenoffen nach wissenschaftlicher Begutachtung.",
+        "motiv": "wissenschaft"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1975",
+        "was": "Beginn der Förderung"
+      },
+      {
+        "wert": "knapp 110",
+        "was": "aktuell geförderte Einrichtungen"
+      },
+      {
+        "wert": "4.700",
+        "was": "Wohnungen im Nachlass des Stifters"
+      }
+    ],
+    "herkunft": "Wilhelm Sander stellte zunächst Sterilcatgut her und baute später Tausende Wohnungen, unter anderem für Werksangehörige der Bayer AG. Bei seinem Tod 1973 hinterließ er der Stiftung 4.700 Wohnungen in Deutschland und der Schweiz; aus persönlicher Betroffenheit wollte er die medizinische Forschung stärken. Die Stiftung wurde 1974 genehmigt und nahm 1975 ihre Arbeit auf."
+  },
+  "stiftung-zukunftsstiftung-landwirtschaft-232": {
+    "schwerpunkte": [
+      {
+        "titel": "Ökologische Saatgutzüchtung",
+        "text": "Der Saatgutfonds fördert die Züchtung samenfester Getreide-, Gemüse- und Obstsorten, frei von Gentechnik und Patenten.",
+        "motiv": "umwelt"
+      },
+      {
+        "titel": "Ökologische Tierzucht",
+        "text": "Der Tierzuchtfonds unterstützt Zuchtprojekte, bei denen die Gesundheit der Tiere im Mittelpunkt steht.",
+        "motiv": "umwelt"
+      },
+      {
+        "titel": "Landwirtschaftliche Bildung",
+        "text": "Der Bildungsfonds fördert Bildung für Kinder, Jugendliche und Erwachsene zu ökologischer Landwirtschaft und Agrarpolitik.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Freie Projektförderung",
+        "text": "Sie fördert Forschung zum Ökolandbau, regionale Wertschöpfung, Landschaftspflege und Artenschutz.",
+        "motiv": "wissenschaft"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Biodiversität jetzt!",
+        "text": "Drei Mitmachcamps von zukunftsFähig e.V. verwandelten 1,5 Hektar Acker in eine Biodiversitätsinsel.",
+        "ort": "Sonnenwalde, Brandenburg",
+        "jahr": "2025"
+      },
+      {
+        "titel": "Wann ist Politik wissenschaftsbasiert?",
+        "text": "ENSSER e.V. brachte auf einer internationalen Konferenz Forschende zusammen und gab die Ergebnisse an die Politik weiter.",
+        "ort": "Athen",
+        "jahr": "2025"
+      },
+      {
+        "titel": "Neue Obstbäume für Bio-Betriebe",
+        "text": "Zeitlupe gGmbH pflanzte auf fünf Demeter-Betrieben neue Obstbäume und erhält alte Sorten.",
+        "ort": "Norddeutschland",
+        "jahr": "2024"
+      },
+      {
+        "titel": "RegenerationsTraining",
+        "text": "fakt21 e.V. stärkt mit Menschen aus Stadt und Land die Artenvielfalt und den Wasserhaushalt von Landschaften.",
+        "jahr": "2024"
+      },
+      {
+        "titel": "Fachtag Solidarische Landwirtschaft",
+        "text": "Das Netzwerk Solidarische Landwirtschaft lud zum Austausch über Bodenpolitik und Landwirtschaft als Gemeingut ein.",
+        "jahr": "2024"
+      },
+      {
+        "titel": "1. Heckentag",
+        "text": "Etwa 150 Menschen aus Landwirtschaft, Politik und Wissenschaft berieten, wie mehr Hecken in die Landwirtschaft kommen.",
+        "jahr": "2024"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "25 Jahre",
+        "was": "Bestehen im Jahr 2025"
+      },
+      {
+        "wert": "30 Jahre",
+        "was": "Saatgutfonds im Jahr 2026"
+      },
+      {
+        "wert": "4",
+        "was": "Antragsfristen im Jahr beim Bildungsfonds"
+      }
+    ],
+    "herkunft": "Die Zukunftsstiftung Landwirtschaft entstand vor 25 Jahren, um gemeinnützige Projekte der ökologischen Landwirtschaft voranzubringen. Sie arbeitet von Bochum aus, erreichbar über die GLS Treuhand, und unterhält in Berlin das Kampagnenbüro Save our Seeds. Gefördert werden ausschließlich gemeinnützige Träger."
+  }
+}

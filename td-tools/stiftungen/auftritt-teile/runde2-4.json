@@ -1,0 +1,952 @@
+{
+  "stiftung-alfried-krupp-von-bohlen-und-halbach-stiftung-7": {
+    "schwerpunkte": [
+      {
+        "titel": "Wissenschaft",
+        "text": "Die Stiftung setzt Akzente in der Wissenschafts- und Hochschulentwicklung. Sie hat das Alfried Krupp Wissenschaftskolleg in Greifswald mit angestoßen und fördert es.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "Bildung",
+        "text": "Sie will Chancengleichheit schaffen und die Ausbildung junger Menschen verbessern, etwa mit Fahrten für Schulklassen zu Orten der Erinnerung.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Kunst und Kultur",
+        "text": "Sie zeigt Ausstellungen in der Villa Hügel und fördert Musikvermittlung für alle Altersgruppen.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Gesundheit",
+        "text": "Gesundheit ist einer ihrer fünf Satzungsbereiche, zudem gehört ihr das Alfried Krupp Krankenhaus.",
+        "motiv": "gesundheit"
+      },
+      {
+        "titel": "Sport",
+        "text": "Sport gehört zu den fünf Bereichen, die ihre Satzung festlegt.",
+        "motiv": "sport"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Berthold Beitz Schüler*innenfahrten nach Berlin",
+        "text": "Jedes Jahr fahren zehn Essener Schulklassen nach Berlin, unter anderem ins Jüdische Museum, um deutsch-jüdische Geschichte an historischen Orten kennenzulernen.",
+        "ort": "Essen und Berlin",
+        "jahr": "2023"
+      },
+      {
+        "titel": "Vermittlungsprogramm des Beethovenfests",
+        "text": "Die Stiftung fördert offene Workshops, Schulangebote und Mitmachformate rund um das Festival.",
+        "ort": "Bonn",
+        "jahr": "2026"
+      },
+      {
+        "titel": "MAKING SENSE OF THINGS",
+        "text": "Die Stiftung zeigt in der Villa Hügel eine Ausstellung zu Memphis und zeitgenössischem Design.",
+        "ort": "Villa Hügel",
+        "jahr": "2027"
+      },
+      {
+        "titel": "Alfried Krupp und der Nationalsozialismus",
+        "text": "Ein unabhängiges Forschungsprojekt untersucht die Haltung des Stifters zum Nationalsozialismus und mündet in einen Sammelband.",
+        "jahr": "2022"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1968",
+        "was": "Beginn der Tätigkeit"
+      },
+      {
+        "wert": "715,1 Mio. €",
+        "was": "für Förderprojekte seit 1968"
+      },
+      {
+        "wert": "rund 14,1 Mio. €",
+        "was": "bewilligt im Jahr 2025"
+      },
+      {
+        "wert": "rund 0,7 Mrd. €",
+        "was": "Buchwert des Stiftungsvermögens Ende 2025"
+      }
+    ],
+    "herkunft": "Alfried Krupp von Bohlen und Halbach, letzter persönlicher Inhaber der Firma Fried. Krupp, setzte die Stiftung 1966 in seinem Testament als Alleinerbin ein. Nach seinem Tod 1967 ging sein Vermögen auf sie über, am 1. Januar 1968 nahm sie die Arbeit auf. Berthold Beitz leitete das Kuratorium bis 2013, heute finanziert sich die Stiftung aus ihrer Beteiligung an der thyssenkrupp AG."
+  },
+  "stiftung-berthold-leibinger-stiftung-trumpf-26": {
+    "schwerpunkte": [
+      {
+        "titel": "Lasertechnologie",
+        "text": "In der Wissenschaft fördert die Stiftung vor allem die Lasertechnologie.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "Musik und Literatur",
+        "text": "Sie unterstützt ausgewählte Häuser und Projekte der klassischen Musik sowie der gesprochenen Sprache und Literatur.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Erinnerung und Demokratie",
+        "text": "Sie fördert die Aufarbeitung der NS-Verbrechen, Völkerverständigung und Fellowship-Programme.",
+        "motiv": "demokratie"
+      },
+      {
+        "titel": "Kirche und Diakonie",
+        "text": "Sie steht der Evangelischen Landeskirche in Württemberg nahe, unterstützt die Diakonie und die bauliche Pflege von Kirchen.",
+        "motiv": "kirche"
+      },
+      {
+        "titel": "Menschen am Rand",
+        "text": "Im Bereich Soziales hilft sie benachteiligten Menschen am Rand der Gesellschaft.",
+        "motiv": "soziales"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Berthold Leibinger Innovations- und Zukunftspreis",
+        "text": "Ein eigenes Preisprogramm, mit dem sich die Stiftung in die wissenschaftliche Entwicklung einbringt."
+      },
+      {
+        "titel": "Comicbuchpreis",
+        "text": "Die Stiftung vergibt einen eigenen Preis für Comicschaffende."
+      },
+      {
+        "titel": "Theater im öffentlichen Raum",
+        "text": "Eine Ausschreibung für Theater im öffentlichen Raum mit neuer Runde für 2027.",
+        "jahr": "2027"
+      },
+      {
+        "titel": "Zeit für Zukunft",
+        "text": "Eine Initiative der Stiftung, mit der sie sich in gesellschaftliche Entwicklungen einbringt."
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1992",
+        "was": "gegründet"
+      },
+      {
+        "wert": "45,7 Mio. €",
+        "was": "Fördersumme bis Mitte 2025"
+      },
+      {
+        "wert": "5,09 Mio. €",
+        "was": "für Satzungszwecke im Geschäftsjahr 2024/25"
+      },
+      {
+        "wert": "9,5 %",
+        "was": "mittelbare Beteiligung an TRUMPF"
+      }
+    ],
+    "herkunft": "Berthold Leibinger, von 1978 bis 2005 Vorsitzender der Geschäftsführung des Maschinenbauers Trumpf in Ditzingen, gründete die gemeinnützige GmbH 1992. Ihre Mittel stammen überwiegend aus einer mittelbaren Beteiligung an der TRUMPF SE + Co. KG. Seine Frau Doris Leibinger bündelte ihr Engagement 2007 in einer eigenen Stiftung."
+  },
+  "stiftung-bürgerstiftung-hamburg-35": {
+    "schwerpunkte": [
+      {
+        "titel": "Gutes Aufwachsen",
+        "text": "Die Stiftung stärkt Kinder und Jugendliche aus benachteiligten Stadtteilen mit Angeboten zu Bildung, Kultur, Bewegung und Lesen.",
+        "motiv": "kinder"
+      },
+      {
+        "titel": "Freiwilliges Engagement",
+        "text": "Sie berät Vereine und Initiativen und schafft gute Bedingungen für Ehrenamt in der Stadt.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Menschen verbinden",
+        "text": "Sie bringt Generationen, Kulturen und Lebenswelten zusammen, etwa über Patenschaften und Projekte gegen Einsamkeit im Alter.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Hamburg nachhaltiger machen",
+        "text": "Sie ermöglicht Naturerleben, Bildung für nachhaltige Entwicklung und praktischen Umweltschutz.",
+        "motiv": "umwelt"
+      },
+      {
+        "titel": "Demokratie stärken",
+        "text": "Ein Gemeinschaftsfonds fördert Engagement, Dialog und Bildungsarbeit von Vereinen vor Ort.",
+        "motiv": "demokratie"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "LeseZeit",
+        "text": "Ehrenamtliche lesen Kindern vor und wecken so die Lust am Lesen.",
+        "ort": "Hamburg",
+        "jahr": "2005"
+      },
+      {
+        "titel": "Yoldaş",
+        "text": "Ein Mentoringprojekt, in dem Erwachsene Kinder als Weggefährten begleiten.",
+        "ort": "Hamburg"
+      },
+      {
+        "titel": "TUSCH",
+        "text": "Ein Kooperationsprojekt, das Theater und Schulen zusammenbringt.",
+        "ort": "Hamburg"
+      },
+      {
+        "titel": "Jugendumweltrat",
+        "text": "Junge Menschen entscheiden selbst über Fördergeld für Klima- und Umweltschutzprojekte.",
+        "ort": "Hamburg"
+      },
+      {
+        "titel": "Bachpatenschaft Fangdiekgraben",
+        "text": "Grundschulkinder aus Lurup kümmern sich um einen Bach und lernen dabei Umweltschutz.",
+        "ort": "Hamburg-Lurup"
+      },
+      {
+        "titel": "Hot Schrott",
+        "text": "Das erste eigene Projekt: eine Band vom Osdorfer Born, die auf Instrumenten vom Schrottplatz spielte.",
+        "ort": "Hamburg-Osdorf"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1999",
+        "was": "gegründet"
+      },
+      {
+        "wert": "rund 320",
+        "was": "Ehrenamtliche"
+      },
+      {
+        "wert": "40.000",
+        "was": "geförderte Menschen pro Jahr"
+      }
+    ],
+    "herkunft": "Hamburgerinnen und Hamburger gründeten die Stiftung 1999 als Gemeinschaftsstiftung für ihre Stadt, als fünfte Bürgerstiftung in Deutschland. Ehrenamtliche, ein hauptamtliches Team sowie viele Spenderinnen, Spender, Stifterinnen und Stifter tragen sie."
+  },
+  "stiftung-daimler-und-benz-stiftung-49": {
+    "schwerpunkte": [
+      {
+        "titel": "Nachwuchs in der Forschung",
+        "text": "Die Stiftung vergibt Stipendien an Juniorprofessuren und Postdocs in Leitungsfunktion, um ihren Weg nach der Promotion zu ebnen.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "Interdisziplinäre Forschungsverbünde",
+        "text": "Im Ladenburger Kolleg bearbeiten Arbeitsgruppen mehrerer Einrichtungen über längere Zeit ein gemeinsames Thema.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "Forschung mit Afrika",
+        "text": "Die Förderlinie Ladenburger Horizonte stärkt Kooperationen zwischen deutschen und afrikanischen Forschungseinrichtungen.",
+        "motiv": "international"
+      },
+      {
+        "titel": "Wissenschaftsvermittlung",
+        "text": "Sie fördert Veranstaltungen, die Forschung neu und anschaulich in die Öffentlichkeit tragen.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Ingenieurinnen",
+        "text": "Mit dem Bertha-Benz-Preis ehrt sie jedes Jahr eine Ingenieurin für ihre Dissertation.",
+        "motiv": "wissenschaft"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Erfahrungswissen in der Pflege",
+        "text": "Ein Forschungsverbund erfasst Pflegeerfahrung mit Sensoren und vermittelt sie über KI-gestützte humanoide Roboter."
+      },
+      {
+        "titel": "Künstliche Intelligenz in der Justiz",
+        "text": "Ein Forschungsverbund untersucht, wie moderne Software im Rechtswesen helfen kann."
+      },
+      {
+        "titel": "WUSCHEL-App",
+        "text": "Eine App misst in einer Modellphase den Sprachstand von 2.000 Vierjährigen.",
+        "ort": "Saarland"
+      },
+      {
+        "titel": "Science Streets",
+        "text": "Comics erklären Neurowissenschaften mitten in der Stadt.",
+        "ort": "Leipzig",
+        "jahr": "2026"
+      },
+      {
+        "titel": "True Math",
+        "text": "Eine Online-Reihe mit Christian Spannagel öffnet Interessierten von 16 bis 99 Jahren den Zugang zur Mathematik.",
+        "jahr": "2024"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "12",
+        "was": "Stipendien im Jahr"
+      },
+      {
+        "wert": "40 Jahre",
+        "was": "Stiftungsjubiläum 2026"
+      }
+    ],
+    "herkunft": "Die Stiftung feiert 2026 ihr 40-jähriges Bestehen. Ihre Vortragsreihen gestaltet sie mit der Daimler Truck AG, der Mercedes-Benz Group AG und der Mercedes-Benz Heritage GmbH."
+  },
+  "stiftung-deutsches-handwerksinstitut-e-v-dhi-65": {
+    "schwerpunkte": [
+      {
+        "titel": "Handwerksforschung",
+        "text": "Das DHI ist ein Verein und Dach für fünf Forschungsinstitute, die Fragen des Handwerks wirtschaftlich, technisch, rechtlich und gesellschaftlich untersuchen.",
+        "motiv": "handwerk"
+      },
+      {
+        "titel": "Berufsbildung im Handwerk",
+        "text": "Ein eigenes Institut an der Universität zu Köln erforscht die Ausbildung im Handwerk, ein Ziel bleibt die Sicherung von Fachkräften.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Betriebe stärken",
+        "text": "Studien und Modellvorhaben helfen, Betriebe sowie Arbeits- und Ausbildungsplätze zu sichern.",
+        "motiv": "handwerk"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Handwerk als Resilienzakteur",
+        "text": "Eine Studie fragt, welche Rolle das Handwerk nach der Flutkatastrophe spielte und was daraus für künftige Krisen folgt.",
+        "ort": "Koblenz"
+      },
+      {
+        "titel": "Forschungs- und Arbeitsprogramm 2026/27",
+        "text": "Das gemeinsame Programm der Institute entsteht aus Vorschlägen von Kammern, Fachverbänden und Wirtschaftsministerien.",
+        "jahr": "2026"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "5",
+        "was": "Forschungsinstitute unter einem Dach"
+      }
+    ],
+    "herkunft": "Das DHI ist ein eingetragener Verein, getragen von Handwerkskammern, Fachverbänden und weiteren dem Handwerk nahen Mitgliedern. Bund, Wirtschaftsministerien der Länder und der Deutsche Handwerkskammertag finanzieren es, die Geschäftsstelle sitzt im Haus des Deutschen Handwerks in Berlin."
+  },
+  "stiftung-ein-herz-für-kinder-bild-hilft-77": {
+    "schwerpunkte": [
+      {
+        "titel": "Medizin und Forschung",
+        "text": "Der Verein finanziert Operationen, medizinische Forschung sowie Bau und Ausstattung von Kinderkliniken.",
+        "motiv": "gesundheit"
+      },
+      {
+        "titel": "Bildung und Chancengerechtigkeit",
+        "text": "Er fördert Bildungsprojekte in Deutschland, Schulen, Kitas und Mahlzeiten für Kinder.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Hilfe in Krieg und Katastrophe",
+        "text": "Er unterstützt Kinder in Kriegs- und Katastrophengebieten, zum Beispiel in der Ukraine.",
+        "motiv": "international"
+      },
+      {
+        "titel": "Besonderer Förderbedarf",
+        "text": "Er hilft Kindern mit Behinderung oder chronischer Krankheit und einzelnen Familien in Deutschland.",
+        "motiv": "inklusion"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "SPRUNGbrett",
+        "text": "Sporttherapeuten machen an sechs Unikliniken chronisch kranke Kinder wieder mobil, eine Studie der Uniklinik Essen begleitet das.",
+        "ort": "Essen, Hamburg, Heidelberg, Leipzig, München"
+      },
+      {
+        "titel": "Chancenmonitor 2026",
+        "text": "Eine Studie mit dem ifo Institut zeigt, wie stark Herkunft und Geschlecht die Bildungschancen prägen.",
+        "ort": "Berlin",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Herzretter",
+        "text": "Schauspielerinnen und Schauspieler üben mit Schulkindern die Wiederbelebung.",
+        "ort": "Hamburg",
+        "jahr": "2024"
+      },
+      {
+        "titel": "Sommercamps in den Karpaten",
+        "text": "Die Hilfsorganisation Rise of Ukraine schenkt Kindern im Krieg einige Tage Auszeit.",
+        "ort": "Ukraine"
+      },
+      {
+        "titel": "Behandlungsraum für Schmetterlingskinder",
+        "text": "Ein geeigneter Raum für Kinder mit der Hautkrankheit Epidermolysis bullosa soll entstehen.",
+        "ort": "Freiburg"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1978",
+        "was": "Start der Aktion"
+      },
+      {
+        "wert": "26.158.736 €",
+        "was": "Spenden der Gala 2025"
+      },
+      {
+        "wert": "rund 50 %",
+        "was": "der Spenden bleiben in Deutschland"
+      }
+    ],
+    "herkunft": "Verleger Axel Springer rief 1978 mit der BILD zu mehr Rücksicht auf Kinder im Straßenverkehr auf, daraus wuchs der Verein BILD hilft e.V. Er ist ein eingetragener Verein, eine Großspende der Axel Springer Deutschland GmbH und Zinsen decken Personal- und Verwaltungskosten. 2008 gründete der Verein zusätzlich die EIN HERZ FÜR KINDER Stiftung zur dauerhaften Absicherung."
+  },
+  "stiftung-fritz-thyssen-stiftung-86": {
+    "schwerpunkte": [
+      {
+        "titel": "Geschichte, Sprache und Kultur",
+        "text": "Meist über die Hälfte der Mittel fließt in Forschung zu Geschichte, Sprache und Kultur.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Staat, Wirtschaft und Gesellschaft",
+        "text": "Die Stiftung fördert sozialwissenschaftliche Forschung zu Staat, Wirtschaft und Gesellschaft.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "Medizin und Naturwissenschaften",
+        "text": "Sie unterstützt Forschungsprojekte in Medizin und Naturwissenschaften an Hochschulen und Instituten.",
+        "motiv": "gesundheit"
+      },
+      {
+        "titel": "Wissenschaftlicher Nachwuchs",
+        "text": "Sie fördert besonders junge Forschende, auch mit Stipendien, Reisebeihilfen und eigenen Programmen.",
+        "motiv": "wissenschaft"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "19. Jahrhundert",
+        "text": "Mit diesem interdisziplinären Großprojekt begann die Stiftung ihre eigenen Initiativen."
+      },
+      {
+        "titel": "Thinking and Designing Futures",
+        "text": "Ein Vorhaben fragt aus didaktischer und interdisziplinärer Sicht, wie wir in Zukunft leben wollen."
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1959",
+        "was": "gegründet"
+      },
+      {
+        "wert": "rund 644 Mio. €",
+        "was": "für Forschung seit 1961"
+      },
+      {
+        "wert": "100 Mio. DM",
+        "was": "Nominalwert des Aktienpakets zur Gründung"
+      }
+    ],
+    "herkunft": "Amélie Thyssen und ihre Tochter Anita Gräfin Zichy-Thyssen gründeten die Stiftung am 7. Juli 1959 in Köln im Gedenken an August und Fritz Thyssen. Sie statteten sie mit einem Aktienpaket der August Thyssen-Hütte AG aus. Die Stiftung war die erste große private Stiftung für Wissenschaft in der Bundesrepublik."
+  },
+  "stiftung-hanns-voith-stiftung-98": {
+    "zahlen": [
+      {
+        "wert": "1953",
+        "was": "gegründet"
+      }
+    ],
+    "herkunft": "Die gemeinnützige und unabhängige Stiftung entstand 1953, um das soziale Engagement der Familie Voith auf feste Füße zu stellen. Namensgeber ist Dr. Hanns Voith, der die Firma fast 60 Jahre lang lenkte."
+  },
+  "stiftung-iona-stichting-108": {
+    "schwerpunkte": [
+      {
+        "titel": "Mensch, Erde und Geist",
+        "text": "Die niederländische Stiftung unterstützt Menschen mit eigener Initiative, die zu einer sozial verantwortlichen und nachhaltigen Welt beitragen. Sie pflegt dabei persönlichen Kontakt zu Gebenden und Antragstellenden.",
+        "motiv": "umwelt"
+      },
+      {
+        "titel": "Eigene Initiativen",
+        "text": "In eigenen Projekten greift sie gemeinsam mit anderen ein bestimmtes Thema heraus.",
+        "motiv": "bildung"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Fonds Vrijplaats voor kinderen",
+        "text": "Ein Fonds unter dem Dach der Stiftung, der sich Kindern widmet."
+      },
+      {
+        "titel": "Earth Charter Nederland",
+        "text": "Ein Fonds der Stiftung rund um Earth Charter Nederland."
+      },
+      {
+        "titel": "Vriendenfonds Vrije Hogeschool",
+        "text": "Ein Freundesfonds unter dem Dach der Stiftung für die Vrije Hogeschool."
+      }
+    ]
+  },
+  "stiftung-klaus-tschira-stiftung-117": {
+    "schwerpunkte": [
+      {
+        "titel": "Forschung",
+        "text": "Die Stiftung trägt eigene Institute für Grundlagenforschung in Naturwissenschaften, Mathematik und Informatik und fördert Vorhaben nach Begutachtung.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "MINT-Bildung",
+        "text": "Ihr Engagement beginnt im Kindergarten und reicht über Schulen bis zu den Hochschulen, etwa mit Fortbildung für Kita-Fachkräfte und Lehrkräfte.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Wissenschaftskommunikation",
+        "text": "Sie bringt Forschung verständlich zu Medien und Öffentlichkeit und schult Forschende darin.",
+        "motiv": "wissenschaft"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Explore Science",
+        "text": "Naturwissenschaftliche Erlebnistage im Freien laden Kinder, Jugendliche und Familien zum Forschen und Experimentieren ein.",
+        "ort": "Mannheim, Bremen, Friedrichshafen, Magdeburg",
+        "jahr": "2006"
+      },
+      {
+        "titel": "Heidelberger Institut für Theoretische Studien",
+        "text": "Ein gemeinnütziges Forschungsinstitut für Simulation, Datenwissenschaft und rechnergestützte Methoden.",
+        "ort": "Heidelberg",
+        "jahr": "2010"
+      },
+      {
+        "titel": "KlarText-Preis",
+        "text": "Junge Promovierte erklären ihre Doktorarbeit in einem allgemein verständlichen Artikel oder einer Infografik."
+      },
+      {
+        "titel": "Forscherstation",
+        "text": "Ein Kompetenzzentrum stärkt Fachkräfte aus Kita und Grundschule, damit sie Kinder für Naturwissenschaften begeistern."
+      },
+      {
+        "titel": "Science Media Center Germany",
+        "text": "Es liefert Medienschaffenden schnell und kostenfrei Fakten aus der Forschung."
+      },
+      {
+        "titel": "Heidelberg Laureate Forum",
+        "text": "Preisträgerinnen und Preisträger der Mathematik und Informatik treffen jedes Jahr junge Forschende aus aller Welt.",
+        "ort": "Heidelberg"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1995",
+        "was": "gegründet"
+      },
+      {
+        "wert": "etwa 130",
+        "was": "Forschende am HITS"
+      }
+    ],
+    "herkunft": "Der Physiker und SAP-Mitgründer Klaus Tschira gründete die Stiftung 1995 als gemeinnützige GmbH mit Sitz in Heidelberg. Die Familie Tschira trägt sie als Gesellschafterin, Sitz ist die Villa Bosch."
+  },
+  "stiftung-kunststiftung-des-landes-sachsen-anhalt-126": {
+    "schwerpunkte": [
+      {
+        "titel": "Stipendien für Kunstschaffende",
+        "text": "Die Stiftung vergibt Arbeitsstipendien von drei bis sechs Monaten sowie Auslands- und Aufenthaltsstipendien für Kunstschaffende aus Sachsen-Anhalt.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Projektförderung",
+        "text": "Sie fördert Vorhaben aus Malerei, Fotografie, Theater, Tanz, Film, Musik, Literatur und Medienkunst, dazu Publikationen, Werkverzeichnisse und Kunstankäufe.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Messe, Ausstellung, Film",
+        "text": "Eigene Programme stärken Messeauftritte, Ausstellungen in Galerien und Kurzfilme.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Kunst für Kinder",
+        "text": "Das Vermittlungsprogramm kinder-leicht gibt der jungen Generation Zugang zur Gegenwartskunst.",
+        "motiv": "kinder"
+      },
+      {
+        "titel": "Kunst und Kulturerbe",
+        "text": "Kunstschaffende arbeiten ein Jahr lang mit den Sammlungen von Museen und Bibliotheken im Land.",
+        "motiv": "kultur"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "HEIMATSTIPENDIUM #3",
+        "text": "Kunstschaffende arbeiten zwölf Monate in Museen des Landes und entwickeln mit ihnen Angebote für das Publikum.",
+        "ort": "Magdeburg und Merseburg"
+      },
+      {
+        "titel": "„Meine liebste Otte!“",
+        "text": "Eine Ausstellung würdigt die Weberin Benita Koch-Otte im Dialog mit zeitgenössischen Positionen.",
+        "ort": "Halle (Saale)",
+        "jahr": "2026"
+      },
+      {
+        "titel": "AUTONOMIE",
+        "text": "Künstlerische Positionen von KLUB7 und Julia Schleicher begleiten die Jahresversammlung der Leopoldina.",
+        "ort": "Halle (Saale)"
+      },
+      {
+        "titel": "kinder-leicht",
+        "text": "Ein Programm, das Kindern zeitgenössische Kunst näherbringt.",
+        "jahr": "2017"
+      },
+      {
+        "titel": "wage-mutig",
+        "text": "Eine eigene Förderung für Kurzfilme."
+      },
+      {
+        "titel": "Art Affairs",
+        "text": "Ein Messeprogramm für Kunstschaffende und Galerien."
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "ca. 500.000 €",
+        "was": "Fördersumme im Jahr"
+      },
+      {
+        "wert": "circa 10,1 Mio. €",
+        "was": "Grundstockvermögen Ende 2017"
+      }
+    ],
+    "herkunft": "Die Kunststiftung des Landes Sachsen-Anhalt hat ihren Sitz in Halle (Saale). Ein Künstlerischer Beirat berät, der Stiftungsrat entscheidet zweimal im Jahr über Anträge. Die Kloster Bergesche Stiftung unterstützt die Förderung über eine Vereinbarung."
+  },
+  "stiftung-meisterstueck-stiftung-handwerkskammer-mannheim-136": {
+    "schwerpunkte": [
+      {
+        "titel": "Meister im traditionellen Handwerk",
+        "text": "Die Stiftung vergibt Stipendien an begabte Gesellinnen und Gesellen, die in Berufen wie Instrumentenbau, Buchrestaurierung oder Möbeltischlerei den Meister anstreben.",
+        "motiv": "handwerk"
+      },
+      {
+        "titel": "Wanderschaft",
+        "text": "Sie unterstützt Gesellinnen und Gesellen, die auf traditionelle Wanderschaft gehen.",
+        "motiv": "handwerk"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Wanderschaft von Malin Tobben",
+        "text": "Eine Holzblasinstrumentenmacherin geht mit Unterstützung der Stiftung auf Wanderschaft.",
+        "jahr": "2024"
+      },
+      {
+        "titel": "Stipendium für Oliver Meinicke",
+        "text": "Ein Kunstgießer, der vor seinem Meister auf Wanderschaft war, regte das Programm zur Wanderschaft an.",
+        "jahr": "2022"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "2013",
+        "was": "errichtet"
+      },
+      {
+        "wert": "12 Monate",
+        "was": "Dauer eines Stipendiums"
+      }
+    ],
+    "herkunft": "Kristina Herzog und Dr. Marc Herzog gründeten die Stiftung 2013. Seit 2018 steht sie im Goldenen Buch der Stiftungen der Stadt Frankfurt."
+  },
+  "stiftung-paritaetischer-wohlfahrtsverband-landesverband-h-146": {
+    "schwerpunkte": [
+      {
+        "titel": "Fördermittelberatung",
+        "text": "Der Paritätische ist ein Wohlfahrtsverband. Er berät seine Mitgliedsorganisationen bei der Suche nach Fördergeld und begleitet Anträge bei Soziallotterien und Stiftungen.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Eigene Förderprogramme",
+        "text": "Mit Mikroförderung und einem Programm für Digitalisierung und IT unterstützt er seine Mitglieder direkt.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Bürgerschaftliches Engagement",
+        "text": "Er stärkt Ehrenamt und Selbsthilfe und bietet Fortbildungen für Fach- und Ehrenamtliche.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Stimme für Benachteiligte",
+        "text": "Er vertritt seine Mitglieder gegenüber Politik und Verwaltung und setzt sich für soziale Gerechtigkeit ein.",
+        "motiv": "demokratie"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Paritätische Mikroförderung",
+        "text": "Ein Programm für kleinere Vorhaben, mit denen Mitgliedsorganisationen ihre Arbeit verbessern und erweitern."
+      },
+      {
+        "titel": "Digitale Modernisierung und IT",
+        "text": "Ein Programm für technische Ausstattung, Digitalisierung und barrierefreie Websites der Mitglieder."
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "800",
+        "was": "Mitgliedsorganisationen"
+      }
+    ],
+    "herkunft": "Der Paritätische Hessen ist der zweitgrößte Dach- und Spitzenverband der Freien Wohlfahrtspflege in Hessen. Er arbeitet überparteilich und überkonfessionell und vereint Kitas, Behindertenhilfe, Migrationsarbeit, Familienberatung und Selbsthilfe unter einem Dach."
+  },
+  "stiftung-signal-iduna-stiftung-160": {
+    "schwerpunkte": [
+      {
+        "titel": "Umwelt- und Klimaschutz",
+        "text": "Die Stiftung fördert Natur- und Umweltschutz einschließlich Klima-, Küsten- und Hochwasserschutz.",
+        "motiv": "umwelt"
+      },
+      {
+        "titel": "Gesundheit",
+        "text": "Sie unterstützt Vorhaben im öffentlichen Gesundheitswesen und in der Gesundheitspflege.",
+        "motiv": "gesundheit"
+      },
+      {
+        "titel": "Bildung",
+        "text": "Sie fördert Erziehung, Volks- und Berufsbildung sowie Studierende.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Jugend- und Altenhilfe",
+        "text": "Sie stärkt gemeinnützige Arbeit für junge und alte Menschen.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Entwicklungszusammenarbeit",
+        "text": "Sie unterstützt Entwicklungszusammenarbeit, etwa für sauberes Wasser in Ostafrika.",
+        "motiv": "international"
+      },
+      {
+        "titel": "Bürgerschaftliches Engagement",
+        "text": "Sie fördert das Engagement von Bürgerinnen und Bürgern in gemeinnützigen Organisationen.",
+        "motiv": "soziales"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "JuKi-Haus und JuKi-Bus",
+        "text": "Mit dem Verein Erlebt-was schafft die Stiftung Lernorte in der Natur für benachteiligte Kinder und Jugendliche."
+      },
+      {
+        "titel": "SIGNAL IDUNA Umwelt- und Gesundheitspreis",
+        "text": "Gemeinsam mit der Handwerkskammer Hamburg ehrt der Preis alle zwei Jahre Lösungen privater Erfinderinnen und Erfinder.",
+        "ort": "Hamburg",
+        "jahr": "1987"
+      },
+      {
+        "titel": "Wasser für Ostafrika",
+        "text": "Mit der Stiftung well:fair entstehen Brunnen und Sanitäranlagen in Äthiopien, Kenia und Tansania.",
+        "ort": "Äthiopien, Kenia, Tansania"
+      },
+      {
+        "titel": "we design society",
+        "text": "Ein Hamburger Verein stärkt Frauen mit Hürden auf dem Arbeitsmarkt in Workshops.",
+        "ort": "Hamburg"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "2026",
+        "was": "gegründet"
+      }
+    ],
+    "herkunft": "Die Versicherungsgruppe SIGNAL IDUNA gründete die Stiftung 2026 als Treuhandstiftung unter dem Dach des Stifterverbandes, um ihr bisheriges Engagement zu bündeln. Das Kuratorium leitet der Vorstandsvorsitzende der SIGNAL IDUNA Gruppe."
+  },
+  "stiftung-sparkassenstiftung-waldeck-frankenberg-176": {
+    "_grund": "Die Texte stammen von der Website der Sparkasse Waldeck-Frankenberg. Dort steht nur ein Spendenprojekt der Sparkasse aus PS-Lotteriemitteln, zur Stiftung selbst steht nichts."
+  },
+  "stiftung-stiftung-der-kreissparkasse-schwalm-eder-4-teils-204": {
+    "_grund": "Die Texte stammen von der Website der Kreissparkasse Schwalm-Eder mit Bankangeboten. Zur Stiftung und ihren vier Teilstiftungen steht dort nichts."
+  },
+  "stiftung-stiftung-nord-süd-brücken-196": {
+    "schwerpunkte": [
+      {
+        "titel": "Entwicklungspolitische Bildung",
+        "text": "Die Stiftung fördert Bildungs- und Informationsarbeit ostdeutscher Vereine zu Agenda 2030, Kolonialismus und globaler Gerechtigkeit.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Kleinprojekte im Globalen Süden",
+        "text": "Vereine aus Ostdeutschland und Berlin setzen mit Partnern im Globalen Süden Projekte gegen Armut und für Menschenrechte um.",
+        "motiv": "international"
+      },
+      {
+        "titel": "Weltoffene Gesellschaft",
+        "text": "Das Programm weltoffen, solidarisch, dialogisch stärkt Fachstellen, die in Ostdeutschland für eine offene Gesellschaft arbeiten.",
+        "motiv": "demokratie"
+      },
+      {
+        "titel": "Beratung und Qualifizierung",
+        "text": "In Seminaren und Webinaren lernen Vereine Antragstellung, Projektplanung und Abrechnung.",
+        "motiv": "allgemein"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Future Ball",
+        "text": "Spirit of Football verbindet Fußball mit politischer Bildung, Fairplay und interkulturellem Lernen.",
+        "ort": "Erfurt",
+        "jahr": "2026"
+      },
+      {
+        "titel": "WSD-Fachstelle Mecklenburg lokal-global",
+        "text": "Schulpartnerschaften mit Kapstadt und eine Fortbildung zu kolonialen Bildern stärken den Dialog.",
+        "ort": "Mecklenburgische Seenplatte",
+        "jahr": "2026"
+      },
+      {
+        "titel": "GrIStuF 2026",
+        "text": "Ein internationales Studierendenfestival bringt bis zu 100 Teilnehmende aus aller Welt zusammen.",
+        "ort": "Greifswald",
+        "jahr": "2026"
+      },
+      {
+        "titel": "FaMoja",
+        "text": "Ein Bildungs- und Empowerment-Center bekämpft Armut mit Bildung und nachhaltiger Landwirtschaft.",
+        "ort": "Kandongu, Kenia",
+        "jahr": "2026"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1994",
+        "was": "gegründet"
+      },
+      {
+        "wert": "17 Mio. €",
+        "was": "Stiftungskapital zur Gründung"
+      },
+      {
+        "wert": "1.700.000 €",
+        "was": "Berliner Landesmittel im Jahr, verwaltet von der Stiftung"
+      }
+    ],
+    "herkunft": "Die Stiftung entstand am 28. März 1994 in Berlin auf Initiative des Entwicklungspolitischen Runden Tischs. Das Kapital stiftete der Solidaritätsdienst-international e.V., Rechtsnachfolger des Solidaritätskomitees der DDR. So verdankt sie ihr Bestehen auch der Solidarität von Bürgerinnen und Bürgern der DDR."
+  },
+  "stiftung-vinci-stiftung-deutschland-212": {
+    "schwerpunkte": [
+      {
+        "titel": "Weg in die Arbeit",
+        "text": "Die Stiftung fördert dauerhafte Projekte, die ausgegrenzte Menschen über Bildung, Qualifizierung oder Beschäftigung ins Berufsleben bringen.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Solidarische Stadt",
+        "text": "In einer eigenen Ausschreibung fördert sie Einrichtungen in benachteiligten Vierteln einer Stadt, zuletzt in Gelsenkirchen.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Patenschaft von Mitarbeitenden",
+        "text": "Beschäftigte aus dem VINCI-Konzern begleiten jedes Projekt als Patinnen und Paten mit ihrem Wissen.",
+        "motiv": "allgemein"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Zusammen schaffen wir's",
+        "text": "Die Amigonianer Soziale Werke begleiten Jugendliche mit Lernförderung und MINT-Angeboten zum Abschluss.",
+        "ort": "Gelsenkirchen",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Schule trifft Stadtteilzentrum",
+        "text": "Ein Förderverein schafft mit Kinderbibliothek, Lesefesten und Lesecafé einen Ort der Leseförderung.",
+        "ort": "Gelsenkirchen",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Hier leb ich, hier mach ich mit",
+        "text": "Das Generationennetz stärkt die Teilhabe älterer Menschen in Schalke und Scholven.",
+        "ort": "Gelsenkirchen",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Kaffee-Stopp",
+        "text": "Ein mobiler Kaffeestand bringt Menschen im Stadtteil zusammen.",
+        "ort": "Gelsenkirchen",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Falkentreff SprachZauber",
+        "text": "Die Falkenjugend verbindet Sprachförderung, Bewegung und handyfreie Spielräume für Kinder.",
+        "ort": "Gelsenkirchen-Schalke"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "2010",
+        "was": "gegründet"
+      },
+      {
+        "wert": "über 200",
+        "was": "geförderte Projekte seit 2010"
+      },
+      {
+        "wert": "2013",
+        "was": "Start der Solidarischen Stadt"
+      }
+    ],
+    "herkunft": "Der Bau- und Konzessionskonzern VINCI gründete die Stiftung 2010 für Deutschland und Österreich. Vorbild ist die französische Fondation VINCI pour la Cité aus dem Jahr 2002."
+  },
+  "stiftung-wuebben-stiftung-bildung-224": {
+    "schwerpunkte": [
+      {
+        "titel": "Schulen im Brennpunkt",
+        "text": "Die Stiftung berät und begleitet Schulen mit vielen sozial benachteiligten Kindern bei ihrer Entwicklung. Sie arbeitet operativ, Förderungen bilden nur einen kleinen Teil ihrer Arbeit.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Startchancen-Programm",
+        "text": "Sie unterstützt neun Bundesländer bei der Umsetzung und macht den Stand in allen 16 Ländern sichtbar.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Familiengrundschulzentren",
+        "text": "Sie setzt sich für Grundschulen ein, die Eltern einbinden und sich zum Stadtteil öffnen.",
+        "motiv": "kinder"
+      },
+      {
+        "titel": "Schulleitung und Schulaufsicht",
+        "text": "Sie stärkt Führungskräfte im Schulsystem, etwa mit Kompetenzprofilen für datengestützte Qualitätsentwicklung.",
+        "motiv": "bildung"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "impakt schulleitung",
+        "text": "Das erste eigene Programm der Stiftung für Schulleitungen an Schulen im Brennpunkt.",
+        "ort": "Nordrhein-Westfalen",
+        "jahr": "2015"
+      },
+      {
+        "titel": "SchuB",
+        "text": "Ein kostenloses Online-Magazin macht Schulen im Brennpunkt und ihre Konzepte sichtbar."
+      },
+      {
+        "titel": "Fachtag Familienschulzentren Mitteldeutschland",
+        "text": "Fachleute aus Sachsen, Sachsen-Anhalt und Thüringen tauschten sich über Familienschulzentren aus.",
+        "ort": "Leipzig",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Kompetenzprofile für datengestützte Qualitätsentwicklung",
+        "text": "Für Schulleitungen und Schulaufsicht entstehen gemeinsame Profile als Grundlage für Fortbildung.",
+        "ort": "Bremen"
+      },
+      {
+        "titel": "CIDER, Kohorte V",
+        "text": "Die Stiftung fördert die fünfte Gruppe junger Forschender der empirischen Bildungsforschung."
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "2013",
+        "was": "gegründet"
+      },
+      {
+        "wert": "rund 20",
+        "was": "Mitarbeitende"
+      },
+      {
+        "wert": "9",
+        "was": "kooperierende Bundesländer im Startchancen-Programm"
+      }
+    ],
+    "herkunft": "Der Unternehmer Dr. Walter Wübben, Hauptgesellschafter der ABG-Gruppe, gründete die Stiftung 2013. Sie ist eine gemeinnützige GmbH mit Sitz in Düsseldorf und arbeitet als operative Bildungsstiftung."
+  }
+}

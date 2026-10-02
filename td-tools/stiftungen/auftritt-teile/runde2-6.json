@@ -1,0 +1,1002 @@
+{
+  "stiftung-aloys-wobben-stiftung-enercon-10": {
+    "schwerpunkte": [
+      {
+        "titel": "Forschung und Bildung",
+        "text": "Sie fördert Forschung und Bildung, besonders im Energiebereich. Einzelpersonen können hier ebenfalls Zuschüsse beantragen.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "Soziales und Humanitäres",
+        "text": "Sie gibt Mittel für soziale und humanitäre Zwecke.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Einrichtungen für Kinder",
+        "text": "Sie unterstützt Einrichtungen, die Kinder schützen und fördern.",
+        "motiv": "kinder"
+      },
+      {
+        "titel": "Kultur",
+        "text": "Sie fördert kulturelle Vorhaben von Trägern und Einzelpersonen.",
+        "motiv": "kultur"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "2012",
+        "was": "Vermögen des Stifters an die Stiftung übertragen"
+      }
+    ],
+    "herkunft": "Der Windenergie-Pionier Aloys Wobben gründete 1984 in Aurich das Unternehmen ENERCON. 2012 zog er sich aus gesundheitlichen Gründen zurück und übertrug sein Vermögen auf die Familienstiftung, die seither alleinige Gesellschafterin von ENERCON ist. Ihr Leitgedanke ist sein Anliegen, die Schöpfung zu erhalten."
+  },
+  "stiftung-bistum-fulda-foerdert-kirche-28": {
+    "schwerpunkte": [
+      {
+        "titel": "Kirchliche Jugendarbeit",
+        "text": "Jugendverbände und Pfarreien erhalten Zuschüsse für religiöse Bildungsmaßnahmen, Lager, Fahrten, Lehrgänge und internationale Begegnungen, aus Bistums- und Landesmitteln.",
+        "motiv": "kinder"
+      },
+      {
+        "titel": "Religiöse Familienveranstaltungen",
+        "text": "Das Bistum bezuschusst Familientage und Kurse bis zu fünf Tagen, etwa in der Sakramentenvorbereitung, die Gemeinden, Verbände und Familienkreise selbst ausrichten.",
+        "motiv": "kirche"
+      },
+      {
+        "titel": "Katholische Erwachsenenbildung",
+        "text": "Pfarreien, Bildungseinrichtungen und Verbände erhalten Zuschüsse für öffentlich ausgeschriebene Bildungsveranstaltungen nach dem Hessischen Weiterbildungsgesetz.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Weltkirche und Katastrophenhilfe",
+        "text": "Das Bistum gibt Mittel für Projekte auf weltkirchlicher Ebene und für Hilfe nach Katastrophen.",
+        "motiv": "international"
+      }
+    ],
+    "herkunft": "Das Bistum Fulda bündelt auf dieser Seite Zuschüsse, mit denen es Kirchensteuermittel wieder in kirchliche Arbeit lenkt. Verantwortlich ist der Fachbereich Pastoral, Bildung, Kultur im Bischöflichen Generalvikariat. Es handelt sich um ein Zuschussangebot des Bistums, getragen von der Kirche."
+  },
+  "stiftung-bürgerstiftung-köln-37": {
+    "schwerpunkte": [
+      {
+        "titel": "Bildung und Erziehung",
+        "text": "Sie fördert Lernprojekte für Kinder und Jugendliche, etwa Schulgärten oder Medienworkshops für bildungsbenachteiligte Schülerinnen und Schüler.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Leseförderung",
+        "text": "Mit dem eigenen Projekt Eselsohr stellt sie öffentliche Bücherschränke in ganz Köln auf, die Nachbarschaften als Paten betreuen.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Umwelt und Naturschutz",
+        "text": "Sie finanziert Umweltworkshops für Kinder und stärkt Gemeinschaftsgärten in der Stadt.",
+        "motiv": "umwelt"
+      },
+      {
+        "titel": "Gesundheit und Teilhabe",
+        "text": "Sie unterstützt therapeutische Kletterangebote für Kinder und Jugendliche und Schulungen für Bewegungsangebote bei Parkinson.",
+        "motiv": "inklusion"
+      },
+      {
+        "titel": "Ehrenamt und Bürgerbeteiligung",
+        "text": "Sie bringt Bürgerinnen, Unternehmen, Vereine und Institutionen zusammen und vermittelt Freiwillige, etwa in die Nachmittagsbetreuung von Grundschulen.",
+        "motiv": "demokratie"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Op zack för Pänz",
+        "text": "Gemeinsam mit IN VIA Köln gewinnt die Stiftung Freiwillige für die Nachmittagsbetreuung an Offenen Ganztagsschulen.",
+        "ort": "Köln"
+      },
+      {
+        "titel": "Projekt Eselsohr",
+        "text": "Öffentliche, wetterfeste Bücherschränke laden im ganzen Stadtgebiet zum Büchertausch ein.",
+        "ort": "Köln"
+      },
+      {
+        "titel": "Polli und das Plastik",
+        "text": "Workshops von Change&More bringen Kindern achtsamen Umgang mit der Natur nahe und enden oft mit einem gemeinsamen Clean-Up.",
+        "ort": "Köln"
+      },
+      {
+        "titel": "Boxen für Parkinson",
+        "text": "18 Fachkräfte lernten an der Deutschen Sporthochschule, Boxtraining in die Arbeit mit Parkinson-Betroffenen einzubauen.",
+        "ort": "Köln",
+        "jahr": "2025"
+      },
+      {
+        "titel": "GemüseAckerdemie",
+        "text": "Rund 20 Schülerinnen und Schüler bauten an der Erzbischöflichen Schule Köln-Kalk ein Jahr lang eigenes Gemüse an.",
+        "ort": "Köln-Kalk",
+        "jahr": "2025"
+      },
+      {
+        "titel": "Gartengerätecontainer für Querbeet",
+        "text": "Der Verein Querbeet erhielt einen Container für seine Gemeinschaftsgärten am Brüsseler Platz.",
+        "ort": "Köln",
+        "jahr": "2025"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "500 €",
+        "was": "Mindestbetrag, um Bürgerstifterin oder Bürgerstifter zu werden"
+      }
+    ],
+    "herkunft": "Die Bürgerstiftung Köln wird von Bürgerinnen und Bürgern, Unternehmen, Vereinen und Institutionen getragen. Ein ehrenamtlicher Vorstand führt sie, alle Stifterinnen und Stifter haben Sitz und Stimme in der Stifterversammlung."
+  },
+  "stiftung-deichmann-stiftung-46": {
+    "schwerpunkte": [
+      {
+        "titel": "Einsatz gegen Kinderarmut",
+        "text": "Im Ruhrgebiet fördert sie Projekte für Kinder aus Familien mit wenig Geld, damit sie Zugang zu Bildung, Gesundheit und Teilhabe finden.",
+        "motiv": "kinder"
+      },
+      {
+        "titel": "Hilfe für Madagaskar",
+        "text": "Seit 2023 begleitet sie mit Partnern vor Ort Projekte für Wasserversorgung, Gesundheit und Bildung.",
+        "motiv": "international"
+      },
+      {
+        "titel": "Gesundheit",
+        "text": "Sie fördert eine mobile Klinik in Madagaskar und medizinische Forschung am Universitätsklinikum Essen.",
+        "motiv": "gesundheit"
+      },
+      {
+        "titel": "Entwicklung und Nothilfe",
+        "text": "Über das Hilfswerk wortundtat unterstützt sie Partner in Indien, Griechenland, Moldau und Tansania und hilft nach Katastrophen.",
+        "motiv": "international"
+      },
+      {
+        "titel": "Kunst und Kultur",
+        "text": "In Deutschland begleitet sie ausgewählte Kulturprojekte, etwa Musikunterricht für Kinder und Vorhaben zu jüdischer Kultur.",
+        "motiv": "kultur"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Wasserprojekte mit SaniTap",
+        "text": "Die Stiftung finanziert die Instandsetzung von zunächst 500 Brunnen, die der Partner danach dauerhaft wartet.",
+        "ort": "Madagaskar"
+      },
+      {
+        "titel": "Stern im Norden",
+        "text": "Das Begegnungszentrum bietet Familien in finanziell schwierigen Lagen Programme und einen geschützten Raum.",
+        "ort": "Dortmund"
+      },
+      {
+        "titel": "Sicherer Start",
+        "text": "Das Projekt berät Schwangere und Mütter mit Kleinkindern; die Stiftung trug es bis zur Übernahme durch die Stadt.",
+        "ort": "Essen",
+        "jahr": "2008"
+      },
+      {
+        "titel": "KIUMA",
+        "text": "Das wortundtat-Projekt bringt Ärzte, Schulen und Ausbildung in eine abgelegene Region.",
+        "ort": "Tansania",
+        "jahr": "1996"
+      },
+      {
+        "titel": "Alte Synagoge Essen",
+        "text": "Die Stiftung förderte die Neukonzeption des Hauses wesentlich mit.",
+        "ort": "Essen",
+        "jahr": "2009"
+      },
+      {
+        "titel": "Cardellino e.V.",
+        "text": "Der Verein bietet Kindern Geigen- und Cellounterricht.",
+        "ort": "Essen"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1973",
+        "was": "gegründet"
+      },
+      {
+        "wert": "2023",
+        "was": "Beginn der Arbeit in Madagaskar"
+      },
+      {
+        "wert": "500",
+        "was": "Brunnen in Madagaskar, deren Instandsetzung sie finanziert"
+      }
+    ],
+    "herkunft": "Heinz-Horst Deichmann gründete die Stiftung am 29. August 1973 und gab dem sozialen Engagement der Familie und des Schuhunternehmens DEICHMANN damit einen rechtlichen Rahmen. Heute leitet Heinrich Deichmann den Vorstand."
+  },
+  "stiftung-diadem-stiftungsfonds-diakonie-hessen-67": {
+    "_grund": "Die Texte stammen von der Website der Diakonie Hessen (Landesverband, Themen). Zum Stiftungsfonds DiaDem steht dort nichts."
+  },
+  "stiftung-evangelische-schulstiftung-in-der-ekd-79": {
+    "schwerpunkte": [
+      {
+        "titel": "Evangelisches Profil",
+        "text": "Sie stärkt den Glauben im Schulalltag, etwa mit Projekten, in denen Schülerinnen und Schüler Schulgottesdienste selbst gestalten.",
+        "motiv": "kirche"
+      },
+      {
+        "titel": "Inklusion",
+        "text": "Mit dem Förderprogramm „Umbau inklusive“ entstehen Räume für mehr Teilhabe, Stipendien finanzieren Hilfsmittel für einzelne Kinder.",
+        "motiv": "inklusion"
+      },
+      {
+        "titel": "Verantwortung",
+        "text": "Sie bietet Lehrkräften Fortbildung, etwa eine Vortragsreihe zur Traumapädagogik und ein Programm zur KI-Kompetenz.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Demokratie und Vielfalt",
+        "text": "Sie fördert Projekte gegen Antisemitismus und für demokratisches Lernen an evangelischen Schulen.",
+        "motiv": "demokratie"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Gottesdienstlots*innen",
+        "text": "In vier Jahrgängen gestalteten Schülerinnen und Schüler an 22 evangelischen Schulen in zehn Bundesländern Schulgottesdienste."
+      },
+      {
+        "titel": "Umbau inklusive",
+        "text": "Das Förderprogramm macht aus Ideen konkrete Räume, etwa Flure als Lernorte oder Rückzugsräume."
+      },
+      {
+        "titel": "AI-Literacy für Kollegien an evangelischen Schulen",
+        "text": "Ein Schulentwicklungsprogramm mit sechs Werkstätten stärkt die KI-Kompetenz von Lehrkräften.",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Digitale Vortragsreihe Traumapädagogik",
+        "text": "Die Reihe zeigt Pädagoginnen und Pädagogen, wie sie traumasensibel mit Kindern arbeiten."
+      },
+      {
+        "titel": "Antisemitismus begegnen und Verantwortung stärken",
+        "text": "Das Projekt endete mit einer dreitägigen Abschlussveranstaltung."
+      },
+      {
+        "titel": "FreiRaum",
+        "text": "Am Evangelischen Gymnasium Nordhorn entstand ein Klassenraum im Freien.",
+        "ort": "Nordhorn"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1994",
+        "was": "gegründet"
+      },
+      {
+        "wert": "über 1.000",
+        "was": "evangelische Schulen in Deutschland"
+      }
+    ],
+    "herkunft": "Die Stiftung entstand 1994 als Folge der friedlichen Revolution und der Wiedervereinigung, als in den neuen Bundesländern viele evangelische Schulen gegründet wurden. Mehrere Landeskirchen trugen die Gründung gemeinsam. Seit 2003 sitzt sie in Hannover und arbeitet heute vorwiegend operativ."
+  },
+  "stiftung-fuggersche-stiftungen-fuggerei-88": {
+    "schwerpunkte": [
+      {
+        "titel": "Wohnen in der Fuggerei",
+        "text": "Bedürftige katholische Augsburgerinnen und Augsburger wohnen hier für eine Jahreskaltmiete von 0,88 € und drei tägliche Gebete.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Kirchliche Stiftungen",
+        "text": "Die Stiftungen erhalten die Fuggerkapelle bei St. Anna, die Predigerstelle in St. Moritz und die Fuggerei-Kirche St. Markus.",
+        "motiv": "kirche"
+      },
+      {
+        "titel": "Erhalt und Vermittlung",
+        "text": "Sie pflegen die historischen Gebäude der Fuggerei und öffnen vier Museen, Führungen und das Fugger-Archiv für Besucher.",
+        "motiv": "denkmal"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Fuggerei",
+        "text": "Die älteste bestehende Sozialsiedlung der Welt umfasst 67 Häuser mit 142 Wohnungen und eine eigene Kirche.",
+        "ort": "Augsburg",
+        "jahr": "1521"
+      },
+      {
+        "titel": "Fuggerkapelle bei St. Anna",
+        "text": "Jakob Fugger stiftete die Kapelle mit derselben Urkunde wie die Fuggerei.",
+        "ort": "Augsburg",
+        "jahr": "1521"
+      },
+      {
+        "titel": "Prädikatur bei St. Moritz",
+        "text": "Die Stiftung finanziert eine Predigerstelle für eine bessere Predigt in Augsburg.",
+        "ort": "Augsburg",
+        "jahr": "1521"
+      },
+      {
+        "titel": "Spitalstiftung Waltenhausen",
+        "text": "Anton Fugger errichtete ein Spital für je 25 bedürftige Frauen und Männer aus den Fugger-Herrschaften.",
+        "ort": "Waltenhausen",
+        "jahr": "1548"
+      },
+      {
+        "titel": "Theater-Rundgang „Walsturz“",
+        "text": "Zum 500. Todestag Jakob Fuggers entstand mit dem Staatstheater Augsburg ein interaktiver Rundgang durch die Fuggerei.",
+        "ort": "Augsburg",
+        "jahr": "2025"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1521",
+        "was": "Stiftungsurkunde der Fuggerei"
+      },
+      {
+        "wert": "9",
+        "was": "Stiftungen in gemeinsamer Verwaltung"
+      },
+      {
+        "wert": "142",
+        "was": "Wohnungen in der Fuggerei"
+      },
+      {
+        "wert": "0,88 €",
+        "was": "Jahreskaltmiete in der Fuggerei"
+      }
+    ],
+    "herkunft": "Jakob Fugger der Reiche stiftete 1521, auch im Namen seiner Brüder Georg und Ulrich, mit einem Konto von 10.000 Gulden die Fuggerei, die Fuggerkapelle bei St. Anna und die Predigerstelle in St. Moritz. Sein Neffe Anton und mehrere Angestellte fügten weitere Stiftungen hinzu. Die Familie Fugger führt sie bis heute ehrenamtlich im Familienseniorat, finanziert vor allem aus Forstwirtschaft."
+  },
+  "stiftung-heinrich-böll-stiftung-100": {
+    "schwerpunkte": [
+      {
+        "titel": "Ökologie und Klima",
+        "text": "Sie veröffentlicht Analysen und Atlanten zu Energiewende, Landwirtschaft, Rohstoffen und Schadstoffen und lädt zu Debatten darüber ein.",
+        "motiv": "klima"
+      },
+      {
+        "titel": "Demokratie",
+        "text": "Sie stärkt demokratische Debatten mit Wahlanalysen, Veranstaltungen und Weiterbildung für politisch Engagierte über die Akademie GreenCampus.",
+        "motiv": "demokratie"
+      },
+      {
+        "titel": "Geschlechtergerechtigkeit",
+        "text": "Das Gunda-Werner-Institut in der Stiftung bündelt geschlechterpolitische und feministische Themen.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Internationale Zusammenarbeit",
+        "text": "Mit Büros im Ausland und Partnerprojekten weltweit setzt sie sich für Menschenrechte, Klimaschutz und eine offene Gesellschaft ein.",
+        "motiv": "international"
+      },
+      {
+        "titel": "Studienwerk",
+        "text": "Über ihr Studienwerk begleitet sie Stipendiatinnen und Stipendiaten.",
+        "motiv": "bildung"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Ausstellung „Weil wir Frauen sind.“",
+        "text": "Afghanische Aktivistinnen erzählen von Mut und Widerstand.",
+        "ort": "Berlin",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Agribusiness-Atlas 2026",
+        "text": "Der Atlas zeigt, wie wenige Konzerne die Ernährung bestimmen und wie Politik ihre Macht begrenzen kann.",
+        "jahr": "2026"
+      },
+      {
+        "titel": "böll.fakten „Elektrisierend!“",
+        "text": "Die Ausgabe erklärt in 15 Fakten, wie die Stromversorgung funktioniert und was erneuerbare Energien bringen.",
+        "jahr": "2026"
+      },
+      {
+        "titel": "GreenCampus",
+        "text": "Die Weiterbildungsakademie bietet praxisnahe Seminare für politisch und zivilgesellschaftlich Engagierte."
+      },
+      {
+        "titel": "Heimatkunde",
+        "text": "Das migrationspolitische Portal der Stiftung sammelt Beiträge zu Migration und Vielfalt."
+      },
+      {
+        "titel": "Wasser, Würde, Willenskraft",
+        "text": "Eine Scrollstory erzählt, wie Menschen in Ägypten, Tunesien und Marokko mit Wasserknappheit leben.",
+        "jahr": "2026"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "34",
+        "was": "Länder mit Büros der Stiftung"
+      },
+      {
+        "wert": "rund 60",
+        "was": "Länder mit Partnerprojekten"
+      }
+    ],
+    "herkunft": "Die Heinrich-Böll-Stiftung ist die grüne politische Stiftung mit Sitz in Berlin und trägt den Namen des Schriftstellers Heinrich Böll. Sie arbeitet als eingetragener Verein mit Mitgliederversammlung und Aufsichtsrat, den Vorstand bilden Imme Scholz und Jan Philipp Albrecht."
+  },
+  "stiftung-johanna-quandt-stiftung-herbert-quandt-medien-pr-110": {
+    "schwerpunkte": [
+      {
+        "titel": "Herbert Quandt Medien-Preis",
+        "text": "Sie zeichnet jedes Jahr wirtschaftsjournalistische Beiträge aller Genres aus, die wirtschaftliche Zusammenhänge gut recherchiert vermitteln.",
+        "motiv": "allgemein"
+      },
+      {
+        "titel": "Nachwuchs im Wirtschaftsjournalismus",
+        "text": "Ein einjähriges Stipendium begleitet junge Journalistinnen und Journalisten bis 35 Jahre mit Seminaren und Mitteln für ein eigenes Projekt.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Verständnis für Marktwirtschaft",
+        "text": "Sie will in Öffentlichkeit und Medien das Verständnis für die Marktwirtschaft und das private Unternehmertum fördern.",
+        "motiv": "allgemein"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Herbert Quandt Medien-Preis 2026",
+        "text": "Ausgezeichnet wurden unter anderem Recherchen im Handelsblatt über Palantir und eine ZDF-Dokumentation über Deals mit Strom.",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Johanna-Quandt-Wirtschaftsstipendium",
+        "text": "Das Programm verbindet Themenkonferenz, Sommerforum, Praxisphase und Ergebniskonferenz.",
+        "jahr": "2027"
+      },
+      {
+        "titel": "Johanna-Quandt-Forum",
+        "text": "Ein mehrtägiges Sommerseminar bringt Stipendiatinnen und Stipendiaten mit erfahrenen Journalisten und Fachleuten zusammen.",
+        "ort": "Bad Homburg",
+        "jahr": "2027"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1995",
+        "was": "gegründet"
+      },
+      {
+        "wert": "1986",
+        "was": "Herbert Quandt Medien-Preis gestiftet"
+      },
+      {
+        "wert": "50.000 €",
+        "was": "Preisgeld des Medien-Preises insgesamt"
+      }
+    ],
+    "herkunft": "Die Unternehmerin Johanna Quandt (1926 bis 2015), Witwe von Herbert Quandt, stiftete 1986 den Herbert Quandt Medien-Preis und gründete 1995 die Stiftung zur Förderung des Wirtschaftsjournalismus. Den Vorsitz des Kuratoriums hat heute ihr Sohn Stefan Quandt."
+  },
+  "stiftung-kolping-recycling-gmbh-118": {
+    "schwerpunkte": [
+      {
+        "titel": "Altkleidersammlungen für Vereine",
+        "text": "Vereine und Verbände sammeln Altkleider, Kolping Recycling übernimmt Planung und Logistik. Die Erlöse gehen etwa an Sportvereine, Musikkapellen, Feuerwehren und Fördervereine.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Textilverwertung",
+        "text": "Das Unternehmen lässt gebrauchte Textilien und Schuhe fachgerecht sortieren und verwerten und schont so Ressourcen.",
+        "motiv": "umwelt"
+      },
+      {
+        "titel": "Arbeit und Integration",
+        "text": "Bei der Leerung der Container arbeitet es mit Beschäftigungsinitiativen zusammen, die Menschen in den Arbeitsmarkt bringen.",
+        "motiv": "inklusion"
+      },
+      {
+        "titel": "Ausbildung weltweit",
+        "text": "Es setzt sich für eine gute Ausbildung junger Menschen im Ausland ein.",
+        "motiv": "international"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Ausbildungswerkstatt in Ruanda",
+        "text": "Kolping Recycling unterstützt dort die Ausbildung junger Menschen.",
+        "ort": "Ruanda"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "2000",
+        "was": "gegründet"
+      },
+      {
+        "wert": "über 500",
+        "was": "Sammelpartner"
+      }
+    ],
+    "herkunft": "Kolping Recycling ist ein Unternehmen des Kolpingwerks mit Sitz in Fulda, gegründet im Jahr 2000. Es handelt mit gebrauchten Textilien und Schuhen, stellt Sammelcontainer und unterstützt Sammelgruppen; es ist eine GmbH, keine Stiftung."
+  },
+  "stiftung-landesstiftung-miteinander-in-hessen-131": {
+    "schwerpunkte": [
+      {
+        "titel": "Bürgerschaftliches Engagement",
+        "text": "Sie gibt Initiativen, Vereinen und Engagierten in Hessen Starthilfe für Projekte und berät sie bei der Finanzierung.",
+        "motiv": "demokratie"
+      },
+      {
+        "titel": "Digitale Teilhabe im Alter",
+        "text": "Im Projekt Di@-Lotsen helfen Ehrenamtliche Seniorinnen und Senioren beim Umgang mit digitalen Geräten, inzwischen in allen Landkreisen.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Mobilität auf dem Land",
+        "text": "Sie unterstützt und vernetzt ehrenamtliche Bürgerbus-Initiativen in hessischen Gemeinden.",
+        "motiv": "allgemein"
+      },
+      {
+        "titel": "Dialog junger Menschen",
+        "text": "Im Projekt „Lass mal reden!“ sprechen junge Menschen in moderierten Runden über demokratisches Zusammenleben.",
+        "motiv": "demokratie"
+      },
+      {
+        "titel": "Hilfe für Wohnungslose",
+        "text": "Mit der Diakonie Hessen ruft sie im Winter zu Spenden für obdachlose Menschen auf, etwa für Schlafsäcke und warme Kleidung.",
+        "motiv": "soziales"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Digital im Alter, Di@-Lotsen",
+        "text": "Ehrenamtliche begleiten ältere Menschen an Stützpunkten in ganz Hessen in die digitale Welt.",
+        "ort": "Hessen"
+      },
+      {
+        "titel": "Lass mal reden!",
+        "text": "Ausgebildete Moderierende leiten Dialogrunden, in denen junge Menschen Erfahrungen teilen.",
+        "ort": "Hessen",
+        "jahr": "2022"
+      },
+      {
+        "titel": "Projekt Bürgerbus",
+        "text": "Regionaltreffen und ein Werbeclip stärken die Bürgerbus-Initiativen im ländlichen Raum.",
+        "ort": "Hessen"
+      },
+      {
+        "titel": "#wärmespenden",
+        "text": "Die Kampagne mit der Diakonie Hessen sammelt warme Mahlzeiten, Kleidung und Schlafsäcke für wohnungslose Menschen.",
+        "ort": "Hessen",
+        "jahr": "2025"
+      },
+      {
+        "titel": "Dialog der Generationen",
+        "text": "Schülerinnen und Schüler der Schule am Ried tauschten sich mit älteren Ehrenamtlichen aus, gemeinsam mit dem Bürgerinstitut Frankfurt.",
+        "ort": "Frankfurt",
+        "jahr": "2025"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "5.000 €",
+        "was": "Mindestbetrag einer Zustiftung"
+      },
+      {
+        "wert": "50.000 €",
+        "was": "Mindestkapital einer Treuhandstiftung"
+      }
+    ],
+    "herkunft": "Die Landesstiftung finanziert ihre Arbeit vor allem aus Zuschüssen des Landes Hessen und aus Kapitalerträgen. Den Vorsitz des Kuratoriums hat der Hessische Ministerpräsident."
+  },
+  "stiftung-michael-otto-stiftung-2014-sozial-kulturell-138": {
+    "schwerpunkte": [
+      {
+        "titel": "Freiheitliche Demokratie",
+        "text": "Über die Michael Otto Foundation for Sustainability unterstützt sie Medien- und Diskurskompetenz sowie Beteiligungs- und Dialogformate gegen Polarisierung.",
+        "motiv": "demokratie"
+      },
+      {
+        "titel": "Artenvielfalt in Ostafrika",
+        "text": "Mit den Menschen vor Ort schützt sie Ökosysteme und verbindet Artenschutz mit lokaler Entwicklung.",
+        "motiv": "umwelt"
+      },
+      {
+        "titel": "Wissenschaftliche Gründungen",
+        "text": "Mit Impossible Founders baut sie in Hamburg ein Umfeld für Start-ups aus der Wissenschaft auf.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "Globale Nachhaltigkeit",
+        "text": "Sie hat die Hamburg Sustainability Conference zur Agenda 2030 mit initiiert.",
+        "motiv": "international"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Michael Otto Foundation for Sustainability",
+        "text": "Die junge Stiftung widmet sich Demokratie, Menschenrechten, Artenvielfalt und Bildung für Nachhaltigkeit.",
+        "jahr": "2023"
+      },
+      {
+        "titel": "Impossible Founders",
+        "text": "Das Programm begleitet Ausgründungen aus der Forschung von der Idee bis zur Skalierung.",
+        "ort": "Hamburg"
+      },
+      {
+        "titel": "Hamburg Sustainability Conference",
+        "text": "Die Konferenz bringt Führungskräfte aus Politik, Wirtschaft, Wissenschaft und Zivilgesellschaft zur Umsetzung der Agenda 2030 zusammen.",
+        "ort": "Hamburg"
+      }
+    ],
+    "herkunft": "Michael Otto hat die Stiftung als gemeinwohlorientierte Unternehmensstiftung mit Familienbegünstigung errichtet. Ihre Hauptaufgabe ist es, die Mehrheitsbeteiligung an der Otto Gruppe zu halten und damit den Wirtschaftsstandort Hamburg zu sichern. Den Stiftungsrat leitet Benjamin Otto."
+  },
+  "stiftung-prof-otto-beisheim-stiftung-vertieft-148": {
+    "schwerpunkte": [
+      {
+        "titel": "Bildung",
+        "text": "Sie fördert Bildungschancen, etwa Mentoring für benachteiligte Primarschulkinder oder Klimaschutz-Programme an Schulen.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Gesundheit",
+        "text": "Sie stärkt die mentale und körperliche Gesundheit, zum Beispiel mit Erster Hilfe für psychische Gesundheit und Bewegungsprogrammen für Schulkinder.",
+        "motiv": "gesundheit"
+      },
+      {
+        "titel": "Kultur",
+        "text": "Sie ermöglicht jungen und älteren Menschen kulturelle Teilhabe, etwa mit Konzerten in Pflegeheimen oder Theater im dritten Lebensabschnitt.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Sport",
+        "text": "Sie begeistert Menschen für Bewegung und fördert gleichberechtigte Teilhabe, etwa bei Spielen für Menschen mit geistiger Beeinträchtigung.",
+        "motiv": "sport"
+      },
+      {
+        "titel": "Leben im Alter",
+        "text": "Studien und Projekte widmen sich guter Betreuung, Freiwilligenarbeit und digitalen Kompetenzen älterer Menschen.",
+        "motiv": "soziales"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Mental Health Ratgeber",
+        "text": "Mit ZEIT Campus entstand ein kostenloser Ratgeber zu mentaler Gesundheit für Studierende auf Deutsch und Französisch.",
+        "ort": "Baar",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Les Concerts du Cœur",
+        "text": "Musikerinnen und Musiker spielen kostenlos in Alters- und Pflegeheimen.",
+        "ort": "Wallis, Waadt, Genf, Freiburg",
+        "jahr": "2019"
+      },
+      {
+        "titel": "National Games Zug 2026",
+        "text": "Die Sommerspiele von Special Olympics Switzerland machen Inklusion im Sport erlebbar.",
+        "ort": "Kanton Zug",
+        "jahr": "2024"
+      },
+      {
+        "titel": "DreamTeam",
+        "text": "Studierende begleiten Primarschulkinder mindestens ein Jahr lang als Mentorinnen und Mentoren.",
+        "ort": "Zürich",
+        "jahr": "2022"
+      },
+      {
+        "titel": "Digital Academy",
+        "text": "Jüngere Menschen geben ihr digitales Wissen an ältere weiter."
+      },
+      {
+        "titel": "GemüseAckerdemie",
+        "text": "Schulen erhalten naturnahe Lernorte, an denen Kinder Gemüse anbauen."
+      }
+    ]
+  },
+  "stiftung-skf-stiftung-im-bistum-fulda-163": {
+    "_grund": "Die Texte stammen vom Sozialdienst katholischer Frauen e.V. Fulda. Zur SkF-Stiftung steht dort nur ein Menüpunkt ohne Inhalt."
+  },
+  "stiftung-stiftung-aktive-buergerschaft-volksbanken-raiffe-178": {
+    "schwerpunkte": [
+      {
+        "titel": "Bürgerstiftungen stärken",
+        "text": "Als Support-Organisation berät sie Bürgerstiftungen kostenfrei bei Gründung, Management, Stiftungsfonds, Digitalisierung und Gremiennachfolge.",
+        "motiv": "demokratie"
+      },
+      {
+        "titel": "Service Learning an Schulen",
+        "text": "Mit dem Programm sozialgenial verbinden weiterführende Schulen Unterricht mit Engagement; Projekte des Monats erhalten ein Preisgeld.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Partner der Genossenschaftsbanken",
+        "text": "Sie begleitet Volksbanken und Raiffeisenbanken bei ihrem Einsatz für Bürgerstiftungen und Schulen in ihrer Region.",
+        "motiv": "allgemein"
+      },
+      {
+        "titel": "Wissen über Engagement",
+        "text": "Mit dem Report Bürgerstiftungen und dem Service-Learning-Monitor erhebt sie regelmäßig Zahlen und Trends.",
+        "motiv": "wissenschaft"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "sozialgenial",
+        "text": "Das Service-Learning-Programm hilft Lehrkräften, Engagement und Unterricht zu verknüpfen."
+      },
+      {
+        "titel": "Report Bürgerstiftungen 2025",
+        "text": "Der Bericht fasst Finanzdaten und Trends der Bürgerstiftungen für 2023 und 2024 zusammen.",
+        "jahr": "2025"
+      },
+      {
+        "titel": "Lieber gleich-berechtigt",
+        "text": "Neuntklässlerinnen der Luisenschule informierten Jugendliche im Quartier über Gleichberechtigung; es wurde Projekt des Schuljahres.",
+        "ort": "Bielefeld",
+        "jahr": "2026"
+      },
+      {
+        "titel": "EULE: Schüler unterrichten Senioren",
+        "text": "Schülerinnen und Schüler des Ludwig-Erhard-Berufskollegs geben älteren Menschen Unterricht.",
+        "ort": "Paderborn"
+      },
+      {
+        "titel": "Klimapuzzle",
+        "text": "Schülerinnen und Schüler der Carl-Engler-Schule leiten als ausgebildete Moderatoren Workshops zum Klimawandel.",
+        "ort": "Karlsruhe",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Regionalforen",
+        "text": "Jedes Jahr im Herbst treffen sich Bürgerstiftungen in Schwäbisch Hall, Münster und Berlin zum Austausch.",
+        "jahr": "2026"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "2000",
+        "was": "Beginn der Unterstützung für Bürgerstiftungen"
+      },
+      {
+        "wert": "435",
+        "was": "Bürgerstiftungen in Deutschland"
+      },
+      {
+        "wert": "200.000",
+        "was": "Schülerinnen und Schüler, die über sozialgenial aktiv waren"
+      }
+    ],
+    "herkunft": "Die gemeinnützige Stiftung ist Partnerin der Volksbanken und Raiffeisenbanken. Ihren Stiftungsrat leitet der Vorstandsvorsitzende der DZ BANK, im ehrenamtlichen Vorstand sitzen Fachleute aus genossenschaftlichen Banken und Wissenschaft. 2022 feierte sie ihr 25-jähriges Bestehen."
+  },
+  "stiftung-stiftung-für-kultur-und-umwelt-der-ksk-saarpfalz-205": {
+    "_grund": "Die Texte stammen von der Website der Kreissparkasse Saarpfalz (Konten, Kredite, Stiftergemeinschaft). Zur Stiftung für Kultur und Umwelt steht dort nichts."
+  },
+  "stiftung-stiftung-ravensburger-verlag-199": {
+    "schwerpunkte": [
+      {
+        "titel": "Familienforschung",
+        "text": "Mit Partnern aus der Wissenschaft entwickelt sie Studien zum Familienalltag, etwa zu Vätern, Müttern mit Zuwanderungsgeschichte und Großeltern.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "Medienerziehung",
+        "text": "Projekte zeigen, wie Kita und Familie gemeinsam Medienkompetenz bei Kindern aufbauen.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Theater und Kunst an Schulen",
+        "text": "Die Förderwettbewerbe Theater.Klasse. und Kunst.Klasse. unterstützen Theaterprojekte und freie Kunstangebote an Schulen.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Ehrenamt für Kinder",
+        "text": "Der Leuchtturmpreis Ehrenamt würdigt jedes Jahr vorbildliches Engagement in Bildung und Erziehung von Kindern und Jugendlichen.",
+        "motiv": "kinder"
+      },
+      {
+        "titel": "Familie in der Literatur",
+        "text": "Der Buchpreis Familienroman ehrt jährlich ein deutschsprachiges Prosawerk, das ein heutiges Bild der Familie zeichnet.",
+        "motiv": "kultur"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Theater.Klasse.",
+        "text": "17 Schulen in Brandenburg starten mit Fördergeld eigene Schauspielvorhaben.",
+        "ort": "Brandenburg",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Leuchtturmpreis Ehrenamt für Eulen & Lerchen",
+        "text": "Ehrenamtliche des Mütterzentrums Dortmund betreuen Kinder zu Hause, wenn Eltern im Schichtdienst arbeiten.",
+        "ort": "Dortmund",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Buchpreis Familienroman",
+        "text": "Birgit Birnbacher erhält den Preis für ihren Roman „Sie wollen uns erzählen“ über einen Jungen mit ADHS.",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Medienerziehung im Dialog",
+        "text": "Mit der Stiftung Digitale Chancen entstanden Empfehlungen für digitale Bildung als gemeinsame Aufgabe von Kita und Familie.",
+        "jahr": "2022"
+      },
+      {
+        "titel": "Vermittlung im Kunstmuseum Ravensburg",
+        "text": "Die Stiftung fördert kreative Formate, die Kinder mit Kunst vertraut machen.",
+        "ort": "Ravensburg"
+      },
+      {
+        "titel": "Vaterschaft im Wandel",
+        "text": "Das Forschungsprojekt fragt, wie Väter Themen wie Klimawandel und Digitalisierung im Familienalltag aufgreifen."
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "2000",
+        "was": "gegründet"
+      },
+      {
+        "wert": "2011",
+        "was": "erster Leuchtturmpreis Ehrenamt"
+      },
+      {
+        "wert": "15.000 €",
+        "was": "Preisgeld des Buchpreises Familienroman"
+      },
+      {
+        "wert": "17",
+        "was": "geförderte Theater.Klasse.-Schulen 2026"
+      }
+    ],
+    "herkunft": "Die Ravensburger AG und ihre Gesellschafterinnen und Gesellschafter errichteten die gemeinnützige Stiftung im Jahr 2000. Ihre Zwecke folgen den Zielen und Programmen von Ravensburger, im Stiftungsrat sitzen Vertreter des Unternehmens und der Wissenschaft."
+  },
+  "stiftung-volkswagenstiftung-218": {
+    "schwerpunkte": [
+      {
+        "titel": "Exploration",
+        "text": "Sie fördert Forschende mit unkonventionellen Ideen und experimentellen Ansätzen in neuen Feldern.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "Gesellschaftliche Transformationen",
+        "text": "Sie fördert Forschung über gesellschaftlichen Wandel, die mit Akteuren aus der Gesellschaft Handlungswege entwickelt.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "Wissen über Wissen",
+        "text": "Sie lässt das Wissenschaftssystem selbst erforschen, etwa Karrierewege, Governance, Forschung und Lehre.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "zukunft.niedersachsen",
+        "text": "Gemeinsam mit dem Land fördert sie Forschung und Lehre in Niedersachsen, bis hin zur Erforschung des kulturellen Erbes.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Wissenschaft im Dialog",
+        "text": "Im Schloss Herrenhausen lädt sie zu öffentlichen Gesprächen über Wissenschaft und Gesellschaft ein.",
+        "motiv": "allgemein"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Opus Magnum",
+        "text": "Das Angebot finanziert Vertretungsprofessuren für Professorinnen und Professoren der Geistes- und Gesellschaftswissenschaften."
+      },
+      {
+        "titel": "Transatlantische Brückenprofessuren",
+        "text": "Professorinnen und Professoren aus den USA können zugleich in den USA und in Deutschland arbeiten."
+      },
+      {
+        "titel": "NEXT: Dual Use von Ideen",
+        "text": "Projektteams untersuchen, wie Ideen aus der Wissenschaft in politische und ideologische Zusammenhänge wandern.",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Klima.Zukunftslabore",
+        "text": "Ein Forschungsverbund widmet sich klimaresilienten Ökosystemen im ländlichen Raum.",
+        "ort": "Niedersachsen",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Pro*Niedersachsen: Kulturelles Erbe",
+        "text": "Das Programm fördert die Erforschung von Sammlungen, Archivgut und Denkmalen in Niedersachsen.",
+        "ort": "Niedersachsen"
+      },
+      {
+        "titel": "Herrenhäuser Gespräch „… und raus bist du?“",
+        "text": "Fachleute sprechen öffentlich über den Umgang mit Außenseitern.",
+        "ort": "Hannover",
+        "jahr": "2026"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1961",
+        "was": "gegründet"
+      },
+      {
+        "wert": "4,3 Mrd. €",
+        "was": "Stiftungskapital"
+      },
+      {
+        "wert": "über 300 Mio. €",
+        "was": "für Forschung und Lehre bewilligt (2025)"
+      },
+      {
+        "wert": "rund 400",
+        "was": "ehrenamtliche Gutachterinnen und Gutachter im Jahr"
+      }
+    ],
+    "herkunft": "Bund und Land Niedersachsen gründeten die private, gemeinnützige Stiftung 1961 aus dem Erlös, als die Volkswagenwerk GmbH zur Aktiengesellschaft wurde und an die Börse ging. Mit einem Kapital von einer Mrd. DM nahm sie 1962 in Hannover die Arbeit auf. Sie ist trotz ihres Namens keine Unternehmensstiftung."
+  },
+  "stiftung-zeit-stiftung-bucerius-228": {
+    "schwerpunkte": [
+      {
+        "titel": "Wissenschaft und Forschung",
+        "text": "Sie stärkt Wissenschaftskommunikation und Wissenschaftsfreiheit und vergibt Stipendien an Rechts-, Geistes- und Sozialwissenschaftler.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "Bildung und Erziehung",
+        "text": "Eigene Programme wie das Mentoring WEICHENSTELLUNG und Demokratie-Workshops für Schulen fördern Kinder und Jugendliche mit Unterstützungsbedarf.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Kunst und Kultur",
+        "text": "Sie trägt das Bucerius Kunst Forum und unterstützt Theater, Literatur, Musik und Bildende Kunst, vor allem in Hamburg und Norddeutschland.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Kulturerhalt",
+        "text": "Ein Programm sichert denkmalgeschützte Kirchen und kulturelle Gedächtnisorte in Norddeutschland.",
+        "motiv": "denkmal"
+      },
+      {
+        "titel": "Presseförderung",
+        "text": "Sie fördert Pressefreiheit, unabhängigen Journalismus in Deutschland und Osteuropa und Medienkompetenz.",
+        "motiv": "demokratie"
+      },
+      {
+        "titel": "Politik und Gesellschaft",
+        "text": "Sie stärkt die demokratische Zivilgesellschaft, besonders in Ostdeutschland, und regt Debatten zu Europa an.",
+        "motiv": "demokratie"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Bucerius Law School",
+        "text": "Die Stiftung gründete die erste private Stiftungshochschule für Rechtswissenschaft in Deutschland.",
+        "ort": "Hamburg",
+        "jahr": "2000"
+      },
+      {
+        "titel": "Bucerius Kunst Forum",
+        "text": "Das Ausstellungshaus am Rathausmarkt zeigt aktuell Sammlungen jüdischer Kunstsammlerinnen und Kunstsammler.",
+        "ort": "Hamburg",
+        "jahr": "2002"
+      },
+      {
+        "titel": "WEICHENSTELLUNG",
+        "text": "Das Mentoring-Programm gibt jungen Menschen Orientierung in entscheidenden Lebensphasen."
+      },
+      {
+        "titel": "LYRIK laut!",
+        "text": "36 Hamburger Schulen mit 2.800 Schülerinnen und Schülern üben den Vortrag von Gedichten vor Publikum.",
+        "ort": "Hamburg",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Free Media Awards",
+        "text": "Der Preis ehrt unabhängige Journalistinnen und Journalisten.",
+        "ort": "Oslo",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Zukunftswege Ost",
+        "text": "Die Gemeinschaftsinitiative unterstützt die demokratische Zivilgesellschaft in Ostdeutschland."
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1971",
+        "was": "gegründet"
+      },
+      {
+        "wert": "über 400",
+        "was": "geförderte Initiativen"
+      }
+    ],
+    "herkunft": "Der Verleger Gerd Bucerius gründete 1971 die ZEIT-Stiftung, heute ZEIT STIFTUNG BUCERIUS. Mit seiner Frau Ebelin prägte er die Wochenzeitung DIE ZEIT. Sitz der Stiftung ist Hamburg, seit 2022 leitet Manuel Hartung den Vorstand."
+  }
+}

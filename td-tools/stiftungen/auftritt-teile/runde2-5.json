@@ -1,0 +1,1073 @@
+{
+  "stiftung-allianz-kulturstiftung-8": {
+    "schwerpunkte": [
+      {
+        "titel": "Nachhaltige Städte",
+        "text": "Sie fördert Ansätze für eine klimafreundliche und gerechte Stadtentwicklung. Dazu gehören Sanieren statt Abreißen, kreislauffähige Baustoffe und bezahlbarer Wohnraum.",
+        "motiv": "klima"
+      },
+      {
+        "titel": "Vertrauenswürdige Information",
+        "text": "Sie stärkt unabhängigen Journalismus, neue Medienmodelle und Formate gegen Desinformation. Dafür bringt sie Medien, Zivilgesellschaft und Wissenschaft zusammen.",
+        "motiv": "demokratie"
+      },
+      {
+        "titel": "Sozial engagierte Kunst",
+        "text": "Sie unterstützt Kunstprojekte, die soziale und ökologische Fragen aufgreifen und Menschen beteiligen. Sie stärkt auch die Widerstandskraft von Kulturschaffenden.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Netzwerke in Europa",
+        "text": "Mit regionalen Hubs, Fellowships und einer Studie zur jungen Generation verbindet sie Initiativen in Europa und im Mittelmeerraum.",
+        "motiv": "international"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "OSTEN Festival",
+        "text": "Der Kulturpark e.V. öffnet auf dem früheren Chemiegelände Bitterfeld einen Raum für Theater, Workshops und Gespräche.",
+        "ort": "Bitterfeld",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Common Roots",
+        "text": "Upfarming nutzt Essen für Austausch und Teilhabe im Viertel Arroios und baut eine vertikale Farm auf dem Dach der Markthalle.",
+        "ort": "Lissabon"
+      },
+      {
+        "titel": "Democratic Future for Ukrainian Theatre",
+        "text": "Das Theater Nafta begleitet junge Kunstschaffende in der Frontstadt Charkiw mit Mentoring bei eigenen Inszenierungen.",
+        "ort": "Charkiw"
+      },
+      {
+        "titel": "Masahat",
+        "text": "Die Initiative baut ein Netz von Gemeinschaftskinos in unterversorgten Gegenden auf, nach Libanon, Palästina und Tunesien nun auch in Syrien."
+      },
+      {
+        "titel": "Schutz für Journalisten im Exil",
+        "text": "Reporter ohne Grenzen unterstützt Journalistinnen und Journalisten im Exil gegen Überwachung und Angriffe von Staaten."
+      },
+      {
+        "titel": "Media Forward Fund",
+        "text": "Der Fonds fördert gemeinwohlorientierten Journalismus mit langfristiger Finanzierung.",
+        "jahr": "2024"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "2022",
+        "was": "Zusammenschluss zur Allianz Foundation"
+      },
+      {
+        "wert": "1989",
+        "was": "Gründung der Allianz Umweltstiftung"
+      },
+      {
+        "wert": "2000",
+        "was": "Gründung der Allianz Kulturstiftung"
+      },
+      {
+        "wert": "12",
+        "was": "neue Förderprojekte im Programm 2025"
+      }
+    ],
+    "herkunft": "Die Allianz Foundation entstand 2022 aus der Allianz Umweltstiftung von 1989 und der Allianz Kulturstiftung von 2000. Gründerin ist die Allianz SE, die zusätzlich eine jährliche Spende zugesagt hat. Die Stiftung bürgerlichen Rechts hat ihren Sitz in Berlin am Brandenburger Tor."
+  },
+  "stiftung-bewegungsstiftung-27": {
+    "schwerpunkte": [
+      {
+        "titel": "Protest und Kampagnen",
+        "text": "Sie fördert soziale Bewegungen für Ökologie, Frieden und Menschenrechte mit Geld und Beratung. Anträge laufen seit Juli 2026 über ein Online-Förderportal.",
+        "motiv": "demokratie"
+      },
+      {
+        "titel": "Bewegungsarbeiter*innen",
+        "text": "Sie unterstützt einzelne Aktive dauerhaft als Bewegungsarbeiterinnen und Bewegungsarbeiter. Spenden gehen direkt an sie oder in einen gemeinsamen Topf.",
+        "motiv": "demokratie"
+      },
+      {
+        "titel": "Basisförderung",
+        "text": "Projekte, die schon zur Stiftungsgemeinschaft gehören, erhalten über die Basisförderung eine langfristige Unterstützung.",
+        "motiv": "allgemein"
+      },
+      {
+        "titel": "Klimagerechtigkeit",
+        "text": "Sie fördert Gruppen, die sich für den Kohleausstieg und gegen das Abbaggern weiterer Dörfer einsetzen.",
+        "motiv": "klima"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "NINA (WomN IN Action)",
+        "text": "Die Hamburger Gruppe erhielt in der Antragsrunde 2025 die Basisförderung.",
+        "ort": "Hamburg",
+        "jahr": "2025"
+      },
+      {
+        "titel": "Queeraspora",
+        "text": "Die Bremer Gruppe erhielt in der Antragsrunde 2025 die Basisförderung.",
+        "ort": "Bremen",
+        "jahr": "2025"
+      },
+      {
+        "titel": "Klima*Kollektiv",
+        "text": "Das Kölner Kollektiv erhielt in der Antragsrunde 2025 die Basisförderung.",
+        "ort": "Köln",
+        "jahr": "2025"
+      },
+      {
+        "titel": "Athletic Sonnenberg",
+        "text": "Die Initiative erhielt in der Antragsrunde 2025 die Basisförderung.",
+        "jahr": "2025"
+      },
+      {
+        "titel": "Hamburger Bündnis für mehr Personal im Krankenhaus",
+        "text": "Das Bündnis streitet für würdige Bedingungen für Patientinnen, Patienten und Beschäftigte.",
+        "ort": "Hamburg"
+      }
+    ],
+    "herkunft": "Die Bewegungsstiftung wird von einer Gemeinschaft vieler Stifterinnen und Stifter getragen. Wer ab 5.000 Euro zustiftet, erhält volles Stimmrecht. Einmal im Jahr treffen sich Stiftende und Aktive aus den Projekten zur Strategiewerkstatt in Berlin."
+  },
+  "stiftung-bürgerstiftung-hannover-36": {
+    "schwerpunkte": [
+      {
+        "titel": "Kinder und Jugend",
+        "text": "Der Förderschwerpunkt 2026 „Von klein auf stark“ unterstützt Projekte, die jungen Menschen Zugang zu Bildung, Kultur und Teilhabe öffnen.",
+        "motiv": "kinder"
+      },
+      {
+        "titel": "Bildung und Chancen",
+        "text": "Sie fördert Nachhilfe, Mentoring und kreative Angebote für Kinder aus benachteiligten Familien und begleitet Übergänge wie Einschulung und Berufseinstieg.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Gesundheit und Prävention",
+        "text": "Sie unterstützt Projekte für die seelische und körperliche Gesundheit von Kindern und Jugendlichen.",
+        "motiv": "gesundheit"
+      },
+      {
+        "titel": "Familien und Ältere",
+        "text": "Sie fördert Beratung und Entlastung für Familien in besonderen Lagen und bringt mit Besuchspatenschaften Nähe zu älteren Menschen.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Beteiligung junger Menschen",
+        "text": "Sie ermutigt Jugendliche, ihre Stimme einzubringen und eigene Projekte für ihre Stadt zu entwickeln.",
+        "motiv": "demokratie"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "MusikPatenschaften",
+        "text": "Das Eigenprojekt ermöglicht musikbegeisterten Schülerinnen und Schülern seit 2009 Instrumentalunterricht.",
+        "ort": "Hannover"
+      },
+      {
+        "titel": "Die MathePaten",
+        "text": "Ehrenamtliche helfen Grundschulkindern spielerisch beim Anschluss in Mathematik.",
+        "ort": "Hannover"
+      },
+      {
+        "titel": "ZwischenMenschlich",
+        "text": "Ehrenamtliche Patinnen und Paten besuchen regelmäßig Menschen in Pflegeeinrichtungen.",
+        "ort": "Hannover"
+      },
+      {
+        "titel": "Hannover.erfahren",
+        "text": "Geführte Fahrradtouren mit ehrenamtlichen Radelpaten vermitteln Wissen über Natur und Umwelt der Region.",
+        "ort": "Hannover",
+        "jahr": "2024"
+      },
+      {
+        "titel": "Gemeinsam Singen",
+        "text": "Öffentliche Mitsingaktionen mit dem Treppenhausorchester bringen Menschen jeden Alters zusammen.",
+        "ort": "Hannover"
+      },
+      {
+        "titel": "Ideen auf laut",
+        "text": "Jugendliche entwickeln eigene Projekte und gestalten ihre Stadt mit.",
+        "ort": "Hannover"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1997",
+        "was": "aktiv seit"
+      },
+      {
+        "wert": "über 2.000",
+        "was": "geförderte Projekte"
+      },
+      {
+        "wert": "über 14 Mio. €",
+        "was": "Förderung seit 1997"
+      },
+      {
+        "wert": "26",
+        "was": "Treuhandstiftungen unter ihrem Dach"
+      }
+    ],
+    "herkunft": "Die Bürgerstiftung Hannover arbeitet seit 1997 und zählt zu den ersten Bürgerstiftungen Deutschlands. Bürgerinnen und Bürger aus Stadt und Region tragen sie, Vorstand, Stiftungsrat und Kuratorium arbeiten ehrenamtlich. Mehr als 400 Bürgerstiftungen sind nach ihrem Vorbild entstanden."
+  },
+  "stiftung-danner-stiftung-53": {
+    "schwerpunkte": [
+      {
+        "titel": "Danner-Preis",
+        "text": "Mit dem Danner-Preis zeichnet sie Kunsthandwerkerinnen und Kunsthandwerker aus und zeigt deren Arbeiten in einer Ausstellung.",
+        "motiv": "handwerk"
+      },
+      {
+        "titel": "Förderung für Kunsthandwerk",
+        "text": "Sie fördert Messeauftritte, Kataloge, Ausstellungen und Investitionen von Menschen und Werkstätten im Kunsthandwerk.",
+        "motiv": "handwerk"
+      },
+      {
+        "titel": "Nachwuchs und Ausbildung",
+        "text": "Sie unterstützt Fachschulen und Akademien sowie junge Talente, etwa über Stipendien und Preise.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Sammlungen und Ausstellungen",
+        "text": "Sie macht Kunsthandwerk erlebbar, mit Kuratierungen in der Danner-Rotunde, eigenen Sammlungen und Ausstellungen mit Museen.",
+        "motiv": "kultur"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Glaspreis der Ausstellung „aufbruch“",
+        "text": "Die Stiftung förderte den Glaspreis der internationalen Glaskunstausstellung im Waldmuseum Zwiesel.",
+        "ort": "Zwiesel",
+        "jahr": "2024"
+      },
+      {
+        "titel": "Katalog „Ernst Gamperl: Urkraft“",
+        "text": "Die Stiftung förderte den Katalog zu Ernst Gamperl."
+      },
+      {
+        "titel": "Messeauftritt von Marcus Götschl",
+        "text": "Die Stiftung förderte seinen Auftritt auf dem Salone Internazionale del Mobile.",
+        "ort": "Mailand"
+      },
+      {
+        "titel": "K3 im Heilig-Geist-Stadel",
+        "text": "Eine Investitionsförderung begleitete die Eröffnung von K3 im Heilig-Geist-Stadel.",
+        "ort": "Landshut"
+      },
+      {
+        "titel": "Ausstellung „Glas, Glasur, Email“",
+        "text": "Die Stiftung förderte die Ausstellung im Museum Penzberg.",
+        "ort": "Penzberg"
+      },
+      {
+        "titel": "Danner-Talk III „Resonanzen“",
+        "text": "Das Gespräch fand mit dem Bayerischen Nationalmuseum und der Galerie Handwerk statt.",
+        "jahr": "2025"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1920",
+        "was": "gegründet"
+      }
+    ],
+    "herkunft": "Therese Danner gründete die Stiftung am 9. Juni 1920 zum Andenken an ihren Mann Benno Danner. Der Münchner Hofgoldschmied Karl Rothmüller, ein Freund der Familie, gewann sie für eine Stiftung für das Kunsthandwerk. Im Vorstand sitzen heute unter anderem Vertreter der Bayerischen Staatsregierung, der Familie Rothmüller und des Bayerischen Kunstgewerbevereins."
+  },
+  "stiftung-deutsches-kinderhilfswerk-dkhw-66": {
+    "schwerpunkte": [
+      {
+        "titel": "Kinderrechte",
+        "text": "Es macht die UN-Kinderrechte bekannt und fördert jedes Jahr Projekte und Aktionen, die Kinder über ihre Rechte aufklären.",
+        "motiv": "kinder"
+      },
+      {
+        "titel": "Kinderarmut überwinden",
+        "text": "Es setzt sich für gerechte Chancen aller Kinder ein und hilft mit dem Kindernothilfefonds Familien in individuellen Notlagen.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Beteiligung und Demokratie",
+        "text": "Es stärkt Kinder darin, bei allen sie betreffenden Fragen mitzubestimmen, etwa in Kinderstädten oder Jugendparlamenten.",
+        "motiv": "demokratie"
+      },
+      {
+        "titel": "Spiel und Bewegung",
+        "text": "Es fördert Spielplätze, Bewegungsbaustellen und sichere Schulwege und koordiniert den Weltspieltag.",
+        "motiv": "sport"
+      },
+      {
+        "titel": "Kultur und Medien",
+        "text": "Es fördert Projekte, die allen Kindern Zugang zu Kultur geben und sie im Umgang mit Medien stärken.",
+        "motiv": "kultur"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Teilhabe ermöglichen, Ferien und Begegnung",
+        "text": "Geflüchtete Jugendliche gestalteten ihre Ferien selbst, das Projekt wurde Förderprojekt des Monats.",
+        "ort": "Borken",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Schulhofträume",
+        "text": "Gemeinsam mit Partnerfirmen wurden Schulhöfe von 60 Schulen zu grünen Spielorten umgebaut.",
+        "jahr": "2019 bis 2023"
+      },
+      {
+        "titel": "Zu Fuß zur Schule und zum Kindergarten",
+        "text": "Die Aktionstage im September ermutigen Kinder, ihre Wege zu Schule und Kita selbstständig zu gehen."
+      },
+      {
+        "titel": "Kinderrechtepfad",
+        "text": "Die Stadt Frankfurt und das Kinderhilfswerk eröffneten einen Lernpfad zu den Kinderrechten.",
+        "ort": "Frankfurt am Main",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Deutscher Kinder- und Jugendpreis",
+        "text": "Der Preis würdigt Projekte, mit denen Kinder und Jugendliche etwas bewegen."
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1972",
+        "was": "gegründet"
+      }
+    ],
+    "herkunft": "Das Deutsche Kinderhilfswerk ist ein Verein, gegründet am 17. Februar 1972 in München. Anfangs wollte es die Lage der Spielplätze in Deutschland verbessern. Heute arbeitet es als Kinderrechtsorganisation, die Projekte fördert und politisch für Kinder eintritt."
+  },
+  "stiftung-ev-stiftung-volmarstein-78": {
+    "schwerpunkte": [
+      {
+        "titel": "Assistenz und Teilhabe",
+        "text": "Sie begleitet Menschen mit Behinderung im Alltag und setzt sich für ihre volle Teilhabe in allen Bereichen der Gesellschaft ein.",
+        "motiv": "inklusion"
+      },
+      {
+        "titel": "Medizin und Rehabilitation",
+        "text": "Mit Kliniken wie der Orthopädischen Klinik Volmarstein und dem Ev. Krankenhaus Hagen-Haspe bietet sie medizinische Behandlung und Rehabilitation.",
+        "motiv": "gesundheit"
+      },
+      {
+        "titel": "Bildung und Arbeit",
+        "text": "Sie bietet schulische und berufliche Rehabilitation, Ausbildung und Qualifizierung.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Kinder- und Jugendhilfe",
+        "text": "Sie bietet unter anderem Autismustherapie und heilpädagogische Förderung für Kinder und Jugendliche.",
+        "motiv": "kinder"
+      },
+      {
+        "titel": "Pflege und Wohnen",
+        "text": "Sie betreibt Pflegeangebote und unterschiedliche Wohnformen für Menschen jeden Alters.",
+        "motiv": "soziales"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Zentrum für Autismustherapie und heilpädagogische Förderung",
+        "text": "Das Zentrum bietet Menschen jeden Alters pädagogisch-therapeutische Hilfen und Unterstützte Kommunikation.",
+        "ort": "Ennepetal und Volmarstein"
+      },
+      {
+        "titel": "Kompetenzzentrum Barrierefreiheit Volmarstein",
+        "text": "Das Zentrum gehört zum Geschäftsfeld Health Care Service der Stiftung.",
+        "ort": "Wetter (Ruhr)"
+      },
+      {
+        "titel": "Aufarbeitung der Heimkinder-Geschichte",
+        "text": "Historiker untersuchten das Leben der Heimkinder im Johanna-Helenen-Heim der 1950er und 1960er Jahre und legten ein Buch vor.",
+        "jahr": "2010"
+      },
+      {
+        "titel": "Zentrum für Theologie, Diakonie und Ethik",
+        "text": "Das Zentrum bündelt Seelsorge, Ethik, Gewaltprävention, Inklusion und Ehrenamt der Stiftung."
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1904",
+        "was": "gegründet"
+      }
+    ],
+    "herkunft": "Pfarrer Franz Arndt gründete die Stiftung 1904 in Volmarstein für die Pflege von Menschen mit Körperbehinderung, ihr erstes Haus war für 100 Menschen ausgelegt. Heute ist sie eine diakonische Komplexeinrichtung mit Tochterunternehmen und arbeitet als freier Träger der Wohlfahrtspflege. Sie steht unter der kirchlichen Stiftungsaufsicht der Evangelischen Kirche von Westfalen."
+  },
+  "stiftung-fuchs-foerderpreis-fuchs-se-87": {
+    "_grund": "Die Texte stammen von der Konzernseite der FUCHS SE (Schmierstoffe) und enthalten nichts zum Förderpreis."
+  },
+  "stiftung-hans-erich-und-marie-elfriede-dotter-stiftung-99": {
+    "schwerpunkte": [
+      {
+        "titel": "Kinder, Jugend und Ältere",
+        "text": "Sie fördert Projekte für Kinder, Jugendliche, Familien und Seniorinnen und Senioren in Eberstadt, von Schülerpatenschaften bis zu Ausflügen.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Erziehung und Bildung",
+        "text": "Sie unterstützt Schulen, Jugendeinrichtungen sowie Bildungs- und Ausbildungsprojekte im Stadtteil.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Kunst und Kultur",
+        "text": "Sie fördert örtliche Musik-, Theater- und Kulturvereine und eigene Kulturprojekte.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Dotter-Konzerte",
+        "text": "Sie veranstaltet eigene Konzerte und fördert musikalische Gottesdienste in den fünf christlichen Kirchengemeinden Eberstadts.",
+        "motiv": "musik"
+      },
+      {
+        "titel": "Heimatpflege",
+        "text": "Sie pflegt das Ortsbild und die Geschichte Eberstadts, etwa mit Stadtteil-Historikern und Erinnerungsprojekten.",
+        "motiv": "denkmal"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Rekonstruktion der Eberstädter Synagoge",
+        "text": "Die Stiftung ließ die 1938 zerstörte Synagoge virtuell und als Modell im 3D-Edelstahldruck nachbilden.",
+        "ort": "Darmstadt-Eberstadt",
+        "jahr": "2025"
+      },
+      {
+        "titel": "Diesterweg-Stipendium",
+        "text": "Begabte Grundschulkinder mit Förderbedarf und ihre Eltern werden auf dem Weg in die weiterführende Schule begleitet.",
+        "ort": "Darmstadt und Eberstadt"
+      },
+      {
+        "titel": "„KunstStücke“ Theatertage",
+        "text": "Drei Ensembles aus Kindern, Erwachsenen und Älteren zeigten im Circus Waldoni eigens entwickelte Stücke.",
+        "ort": "Darmstadt-Eberstadt",
+        "jahr": "2025"
+      },
+      {
+        "titel": "Huch, ein Buch!",
+        "text": "Das Kinder- und Jugendliteraturfestival arbeitet mit Förderung der Stiftung enger mit Eberstädter Schulen zusammen.",
+        "ort": "Darmstadt",
+        "jahr": "2024"
+      },
+      {
+        "titel": "Schülerpatenschaft Räuberleiter",
+        "text": "Ehrenamtliche Patinnen und Paten begleiten Kinder aus benachteiligten Familien, die Stiftung fördert ihre Fortbildung."
+      },
+      {
+        "titel": "Eberstadt bewegen: Tanzen bildet!",
+        "text": "Mit dem Hessischen Staatsballett stärkt das Projekt Kinder, Jugendliche und Erwachsene durch Tanz.",
+        "ort": "Eberstadt",
+        "jahr": "2024"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "2014",
+        "was": "anerkannt"
+      },
+      {
+        "wert": "4",
+        "was": "Bewilligungssitzungen im Jahr"
+      }
+    ],
+    "herkunft": "Hans Erich Dotter gründete 1948 in Eberstadt das Friseurkosmetik-Unternehmen Goldwell und verkaufte es 1989. Das kinderlose Ehepaar Hans Erich und Marie Elfriede Dotter setzte 2003 die Stiftung als Alleinerbin ein. Das Regierungspräsidium Darmstadt erkannte sie am 1. Dezember 2014 an, ihr Wirken bleibt auf Darmstadt-Eberstadt begrenzt."
+  },
+  "stiftung-joachim-herz-stiftung-109": {
+    "schwerpunkte": [
+      {
+        "titel": "Neue Materialien und Ressourcen",
+        "text": "Sie fördert riskante, anwendungsnahe Forschung zwischen Ingenieur- und Naturwissenschaften und den Transfer über Ausgründungen, Patente und Lizenzen.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "Gründen aus der Wissenschaft",
+        "text": "Sie stärkt das Umfeld für Ausgründungen, begleitet Forschende zur Gründung und fördert unternehmerisches Denken bei jungen Menschen.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "Berufliche Bildung",
+        "text": "Sie stärkt digitale Kompetenzen von Auszubildenden und befähigt Lehrkräfte, digitale Technik und KI im Unterricht einzusetzen.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Transatlantischer Dialog",
+        "text": "Sie fördert den Austausch zwischen Deutschland und den USA, besonders von jungen Fachkräften und beruflichen Schulen.",
+        "motiv": "international"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Joachim Herz Preis",
+        "text": "2026 ging der Preis an Prof. Dr. Sebastian Tonke für seine Forschung zum Wasserverbrauch.",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Azubis USA",
+        "text": "Das Stipendienprogramm ermöglicht Auszubildenden aus Deutschland einen Aufenthalt in den USA."
+      },
+      {
+        "titel": "Joachim Herz Haus",
+        "text": "Das frühere Wohnhaus des Stifters dient Partnern aus beiden Ländern als Ort für Tagungen und Workshops.",
+        "ort": "bei Atlanta"
+      },
+      {
+        "titel": "Transatlantic Career Connections",
+        "text": "Rund 70 Schülerinnen und Schüler aus Deutschland und den USA arbeiteten zu Bildungs- und Karrierewegen.",
+        "ort": "bei Atlanta"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "2008",
+        "was": "gegründet"
+      },
+      {
+        "wert": "rund 1,3 Mrd. €",
+        "was": "Grundstock aus dem Vermögen des Stifters"
+      },
+      {
+        "wert": "29,0 Mio. €",
+        "was": "Ausgaben für gemeinnützige Zwecke 2025"
+      }
+    ],
+    "herkunft": "Die Stiftung entstand 2008 aus dem Vermögen von Joachim Herz, das bei seinem Tod rund 1,3 Milliarden Euro betrug. Seine Frau Petra Herz leitete sie bis 2016 als Vorsitzende und ist heute Ehrenvorsitzende. Der Großteil des Kapitals liegt mittelbar bei der Beiersdorf AG, Sitz ist Hamburg."
+  },
+  "stiftung-kolping-bildungs-stiftung-bamberg-119": {
+    "schwerpunkte": [
+      {
+        "titel": "Kompetenztraining für Jugendliche",
+        "text": "Schülerinnen und Schüler mit Schwierigkeiten in der Schule entdecken im Kolping-Sommercamp ihre Talente und stärken soziale Kompetenzen.",
+        "motiv": "kinder"
+      },
+      {
+        "titel": "Qualifizierung ohne Abschluss",
+        "text": "Sie entwickelt niedrigschwellige Angebote, die Menschen ohne Schul- oder Berufsabschluss in Arbeit begleiten.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Coaching für Ältere und Betriebe",
+        "text": "Sie unterstützt ältere Arbeitslose beim Wiedereinstieg und zeigt kleinen und mittleren Betrieben, wie sie ältere Fachkräfte einbinden.",
+        "motiv": "soziales"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Kolping-Sommercamp",
+        "text": "Das Camp begleitet Schülerinnen und Schüler ab der 6. Klasse mit sozialpädagogischer Hilfe Schritt für Schritt zur Ausbildungsreife."
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "2010",
+        "was": "gegründet"
+      },
+      {
+        "wert": "100.000 €",
+        "was": "Stiftungskapital zur Gründung"
+      }
+    ],
+    "herkunft": "Das Kolping-Bildungswerk im Erzbistum Bamberg, seit 1970 Träger beruflicher Bildung in Ober- und Mittelfranken, gründete die Stiftung im November 2010. Es stattete sie mit 100.000 Euro aus und will die Basis mit Zustiftungen und Spenden verbreitern. Die Arbeit folgt christlichen Werten in der Tradition Adolph Kolpings."
+  },
+  "stiftung-körber-stiftung-127": {
+    "schwerpunkte": [
+      {
+        "titel": "Alter und Demografie",
+        "text": "Sie arbeitet mit Kommunen an altersfreundlichen Städten und digitaler Teilhabe Älterer und betreibt das KörberHaus als Begegnungsort.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Bildung",
+        "text": "Sie verbindet MINT, digitale Fähigkeiten und Kreativität und baut mit Partnern regionale Netzwerke für Zukunftsbildung auf.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Demokratie und Zusammenhalt",
+        "text": "Sie schafft Räume für faire Debatten, stärkt Engagierte in Kommunen und tritt Desinformation entgegen.",
+        "motiv": "demokratie"
+      },
+      {
+        "titel": "Internationale Politik",
+        "text": "Sie bringt Fachleute aus Politik und Wissenschaft zu Fragen Europas und der Sicherheit zusammen.",
+        "motiv": "international"
+      },
+      {
+        "titel": "Wissenschaft",
+        "text": "Sie zeichnet Forschende aus, etwa mit dem Körber-Preis und dem Deutschen Studienpreis, und fördert den Austausch über Forschung.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "Kultur",
+        "text": "Sie fördert Musikvermittlung und Theaternachwuchs mit eigenen Reihen und Preisen.",
+        "motiv": "kultur"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Code Week",
+        "text": "Jedes Jahr im Herbst bieten Partner kostenfreie Workshops zum Tüfteln und Programmieren für Kinder und Jugendliche an.",
+        "ort": "Hamburg und bundesweit",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Hamburger Woche der Pressefreiheit",
+        "text": "Mit der ZEIT STIFTUNG BUCERIUS und über 50 Partnern bietet die Aktionswoche ein offenes Programm zu Pressefreiheit und Desinformation.",
+        "ort": "Hamburg",
+        "jahr": "2023"
+      },
+      {
+        "titel": "Geschichtswettbewerb des Bundespräsidenten",
+        "text": "Kinder und Jugendliche gehen auf historische Spurensuche, die neue Runde trägt das Thema Essen und Trinken in der Geschichte."
+      },
+      {
+        "titel": "Körber-Preis für die Europäische Wissenschaft",
+        "text": "Der Preis zeichnet jährlich in Europa tätige Forschende aus, Kurt A. Körber rief ihn 1984 ins Leben.",
+        "jahr": "1984"
+      },
+      {
+        "titel": "Eingeloggt!",
+        "text": "Die Aktionswoche lädt Menschen ab 50 ein, die digitale Welt zu entdecken."
+      },
+      {
+        "titel": "Körber Start-Hub",
+        "text": "Das Inkubator-Programm begleitet Teams unter 30 Jahren ein Jahr lang bei ihren Ideen für die Gesellschaft.",
+        "ort": "Hamburg"
+      }
+    ],
+    "herkunft": "Der Stifter Kurt A. Körber verstand sich als Anstifter neuer Initiativen. Als überzeugter Europäer rief er 1961 den Bergedorfer Gesprächskreis und 1984 den heutigen Körber-Preis für die Europäische Wissenschaft ins Leben. Die Stiftung arbeitet von Hamburg aus vor allem mit eigenen Projekten."
+  },
+  "stiftung-merck-family-foundation-merck-finck-stiftung-137": {
+    "schwerpunkte": [
+      {
+        "titel": "Bildung und Erziehung",
+        "text": "Sie vergibt Stipendien an Studierende, etwa Deutschlandstipendien, und fördert Bildungsarbeit.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Kinder und Jugend",
+        "text": "Sie unterstützt Projekte für Kinder, die von Armut, Krankheit oder schweren Erlebnissen betroffen sind.",
+        "motiv": "kinder"
+      },
+      {
+        "titel": "Altenhilfe",
+        "text": "Sie fördert Lebensfreude und Teilhabe älterer Menschen sowie die Begleitung am Lebensende.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Breiter Zweckkatalog",
+        "text": "Zustifter wählen aus 15 Stiftungszwecken, von Tierschutz über Denkmalpflege bis zur Rettung aus Lebensgefahr.",
+        "motiv": "allgemein"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Ausflug mit der Dr. Geisenhofer-Stiftung",
+        "text": "Die Stiftung ermöglichte 250 benachteiligten Kindern einen Ausflugstag und einen Schwimmkurs.",
+        "jahr": "2025"
+      },
+      {
+        "titel": "KlinikClowns Bayern",
+        "text": "Seit 2016 ermöglicht die Stiftung Clownsbesuche für Kinder in Münchner Kinderkliniken, etwa im Dr. von Haunerschen Kinderspital.",
+        "ort": "München"
+      },
+      {
+        "titel": "Deutschlandstipendien an der Zeppelin Universität",
+        "text": "Studierende der Zeppelin Universität erhielten sechs Deutschlandstipendien der Stiftung.",
+        "jahr": "2023"
+      },
+      {
+        "titel": "Bildungsarbeit der Whale and Dolphin Conservation",
+        "text": "Die Stiftung unterstützt Schulbesuche und die Kinderseite wale.org zum Schutz von Delfinen."
+      },
+      {
+        "titel": "Deutsche Gesellschaft zur Rettung Schiffbrüchiger",
+        "text": "Die Stiftung unterstützt die Seenotretter seit einigen Jahren."
+      },
+      {
+        "titel": "Retla e.V.",
+        "text": "Der Verein setzt sich für Lebensfreude und Teilhabe in jedem Alter ein."
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "2007",
+        "was": "gegründet"
+      },
+      {
+        "wert": "15",
+        "was": "Stiftungszwecke"
+      }
+    ],
+    "herkunft": "Die Privatbank Merck Finck Privatbankiers gründete die Stiftung 2007, um gemeinsam mit ihren Kundinnen und Kunden gemeinnützige Zwecke zu fördern. Zustiftungen sind ab 100.000 Euro möglich und fließen ganz in das Grundstockvermögen. Die Gremien arbeiten ehrenamtlich, Sitz ist München."
+  },
+  "stiftung-paritätischer-wohlfahrtsverband-bundesstiftung-147": {
+    "schwerpunkte": [
+      {
+        "titel": "Armut und Sozialpolitik",
+        "text": "Der Verband tritt in der Politik für Chancengleichheit und soziale Gerechtigkeit ein und gibt Menschen mit Armutserfahrung eine Stimme.",
+        "motiv": "soziales"
+      },
+      {
+        "titel": "Kinder, Jugend und Familie",
+        "text": "Er begleitet Themen von der Kita bis zur Jugendsozialarbeit und setzt Bundesprogramme wie „Kultur macht stark“ um.",
+        "motiv": "kinder"
+      },
+      {
+        "titel": "Gesundheit, Teilhabe und Pflege",
+        "text": "Er arbeitet zu Altenhilfe und Pflege, Selbsthilfe und Teilhabe von Menschen mit Behinderung.",
+        "motiv": "gesundheit"
+      },
+      {
+        "titel": "Migration und Flucht",
+        "text": "Er setzt sich für gleiche Rechte aller Menschen ein und begleitet Beratungsangebote für Geflüchtete.",
+        "motiv": "international"
+      },
+      {
+        "titel": "Wege zur Finanzierung",
+        "text": "Er berät seine Mitglieder zu Förderquellen wie Aktion Mensch und GlücksSpirale und vermittelt zinslose Darlehen aus dem Revolvingfonds des Bundes.",
+        "motiv": "allgemein"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Kultur macht stark",
+        "text": "Im Bundesprogramm fördert der Verband außerschulische kulturelle Bildung für Kinder und Jugendliche mit wenig Zugang dazu."
+      },
+      {
+        "titel": "Demokratie und Vielfalt in Kindertageseinrichtungen",
+        "text": "Das Bundesprogramm stärkt frühe Demokratiebildung in Kitas."
+      },
+      {
+        "titel": "Gipfel gegen soziale Ungleichheit",
+        "text": "Mit Diakonie und Nationaler Armutskonferenz brachte der Verband Wohlfahrt, Armutsbetroffene und Kunstschaffende zusammen.",
+        "ort": "Berlin",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Kita-Bericht 2026",
+        "text": "Der Bericht wertet Daten aus 3.267 Einrichtungen zur Lage in der Kindertagesbetreuung aus.",
+        "jahr": "2026"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "über 10.000",
+        "was": "Mitgliedsorganisationen"
+      },
+      {
+        "wert": "100 Jahre",
+        "was": "Verbandsgeschichte"
+      }
+    ],
+    "herkunft": "Der Paritätische ist ein Dachverband gemeinnütziger sozialer Organisationen und einer der sechs Spitzenverbände der Freien Wohlfahrtspflege. Er arbeitet konfessionell und parteipolitisch unabhängig und feierte sein hundertjähriges Jubiläum."
+  },
+  "stiftung-sir-peter-ustinov-stiftung-162": {
+    "schwerpunkte": [
+      {
+        "titel": "Bildung für Kinder in Not",
+        "text": "Sie fördert Schulen, Kindergärten und Bildungsprogramme für sozial benachteiligte Kinder weltweit.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Basisversorgung",
+        "text": "Sie unterstützt Projekte gegen Hunger und für die Gesundheitsvorsorge von Kindern.",
+        "motiv": "gesundheit"
+      },
+      {
+        "titel": "Kreative Talente",
+        "text": "Sie gibt Kindern Raum, ihre Fähigkeiten in Kunst, Musik, Tanz und Schauspiel zu entdecken.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Offenheit und Toleranz",
+        "text": "Sie fördert Projekte, die Vorurteile abbauen und ausgeschlossenen Kindern Wege zur Integration öffnen.",
+        "motiv": "international"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Sir Peter Ustinov School",
+        "text": "Mit SOLWODI Deutschland e.V. entstand eine Vorschule für 75 Kinder.",
+        "ort": "Kenia"
+      },
+      {
+        "titel": "Ustinov Day Care Centre",
+        "text": "Das Zentrum im Kigamboni Community Centre bietet Kindern einen sicheren Ort zum Lernen und Spielen.",
+        "ort": "Tansania"
+      },
+      {
+        "titel": "SCOLA+",
+        "text": "Mit Science4People e.V. schließt das Projekt Bildungslücken von Kindern im Kriegsgebiet.",
+        "ort": "Ukraine"
+      },
+      {
+        "titel": "Kindermalschule Infantilarte",
+        "text": "Mit Pan y Arte e.V. bekommen Kinder Zugang zu Kunst und Kultur.",
+        "ort": "Nicaragua"
+      },
+      {
+        "titel": "Familienklasse",
+        "text": "Das Albert-Schweitzer-Kinderdorf Hessen bietet ein multifamilientherapeutisches Angebot an einer Grundschule.",
+        "ort": "Deutschland"
+      },
+      {
+        "titel": "Him Shikar Carène-Ustinov-Schule",
+        "text": "Mit Hilfe für Nepal e.V. wurde die Schule nach einer Naturkatastrophe wieder aufgebaut.",
+        "ort": "Nepal"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1999",
+        "was": "gegründet"
+      }
+    ],
+    "herkunft": "Sir Peter Ustinov gründete die Stiftung 1999 gemeinsam mit seinem Sohn Igor Ustinov. Ustinov war Schauspieler mit Oscar, Schriftsteller, Regisseur und UNICEF-Sonderbotschafter. Die Stiftung ist Mitglied im Bundesverband Deutscher Stiftungen und fördert erfahrene Kinderhilfsorganisationen vor Ort."
+  },
+  "stiftung-stiftergemeinschaft-sparkasse-saarbrücken-177": {
+    "_grund": "Die Texte stammen vom Online-Auftritt der Sparkasse Saarbrücken (Girokonto, Kredite, Kreditkarte) und enthalten nichts zur Stiftergemeinschaft."
+  },
+  "stiftung-stiftung-deutsche-jugendmarke-189": {
+    "schwerpunkte": [
+      {
+        "titel": "Innovation für die Jugend",
+        "text": "Sie fördert Modellprojekte, die neue Wege in der Kinder- und Jugendhilfe zeigen und Vorbild für andere sein können.",
+        "motiv": "kinder"
+      },
+      {
+        "titel": "Bauen für die Jugend",
+        "text": "Sie vergibt zinslose Darlehen für Erwerb, Neubau, Umbau und Ausbau bundeszentraler Bildungsorte, vom Medienraum bis zum Therapiezentrum.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Forschen für die Jugend",
+        "text": "Sie fördert Praxisforschung, Fachtagungen und Schulungen als Grundlage guter Kinder- und Jugendhilfe.",
+        "motiv": "wissenschaft"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Canvas City",
+        "text": "Ein Augmented-Reality-Spiel macht in der außerschulischen Bildung erfahrbar, wie Algorithmen und KI die Gesellschaft prägen."
+      },
+      {
+        "titel": "bilingual-picturebooks.org",
+        "text": "Die Bücherpiraten bieten eine kostenlose Online-Bibliothek zweisprachiger Bilderbücher, übersetzt von rund 200 Ehrenamtlichen."
+      },
+      {
+        "titel": "jfc Medienzentrum",
+        "text": "Die Stiftung förderte die Ausstattung des neuen Medienzentrums mit Lernraum, Medienstudio und Lernparcours.",
+        "ort": "Köln"
+      },
+      {
+        "titel": "Vormundschaft im Wandel",
+        "text": "Eine Studie untersucht Beziehung und Beteiligung zwischen Vormündern und Kindern."
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1965",
+        "was": "gegründet"
+      },
+      {
+        "wert": "über 2.000",
+        "was": "geförderte Vorhaben und Bildungseinrichtungen"
+      },
+      {
+        "wert": "2",
+        "was": "Vergaberunden im Jahr"
+      }
+    ],
+    "herkunft": "Das Familien-, das Finanz- und das Postministerium gründeten die Stiftung 1965 als Förderorganisation für die Kinder- und Jugendhilfe. Ihr Geld stammt aus dem Zuschlag der jährlichen Briefmarken „Für die Jugend“. Den Vorsitz führt die für Jugend zuständige Bundesministerin oder der Bundesminister."
+  },
+  "stiftung-stiftung-polytechnische-gesellschaft-197": {
+    "schwerpunkte": [
+      {
+        "titel": "Bildungslandschaft und Sprachbildung",
+        "text": "Sie fördert Kinder entlang ihres Bildungswegs, etwa mit Deutschlernen in den Ferien und Stipendien für Familien.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Wissenschaft, Technik, Berufliche Bildung",
+        "text": "Sie stärkt Studierende und junge Menschen in Wissenschaft und Technik.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "Demokratie und Engagement",
+        "text": "Sie bildet Engagierte weiter, vernetzt sie und fördert kleine Ideen für den Zusammenhalt in Frankfurt.",
+        "motiv": "demokratie"
+      },
+      {
+        "titel": "Kulturelle Bildung",
+        "text": "Sie fördert kulturelle Bildung und unterhält mit ihren Programmen unter anderem einen Chor und eine Band.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Soziales und Humanitäres",
+        "text": "Sie unterstützt Familien und Projekte Dritter mit hohem Nutzen für die Frankfurter Stadtgesellschaft.",
+        "motiv": "soziales"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Deutschsommer",
+        "text": "Grundschulkinder lernen in drei Ferienwochen spielerisch Deutsch.",
+        "ort": "Frankfurt am Main"
+      },
+      {
+        "titel": "Diesterweg-Stipendium",
+        "text": "Begabte Kinder mit Förderbedarf und ihre Eltern werden beim Übergang auf die weiterführende Schule begleitet.",
+        "ort": "Frankfurt am Main"
+      },
+      {
+        "titel": "Main-Campus-Stipendiatenwerk",
+        "text": "Das Programm fördert Studierende mit Treffen, Lehrveranstaltungen und Stipendien.",
+        "ort": "Frankfurt am Main"
+      },
+      {
+        "titel": "Stadtteil-Botschafter",
+        "text": "Junge Menschen engagieren sich für ihre Mitmenschen in einem Frankfurter Stadtteil.",
+        "ort": "Frankfurt am Main"
+      },
+      {
+        "titel": "Frankfurter Miteinanderfonds",
+        "text": "Der Fonds unterstützt Personen und Vereine unkompliziert bei Ideen für das Gemeinschaftsgefühl, im ersten Jahr 100 Projekte.",
+        "ort": "Frankfurt am Main"
+      },
+      {
+        "titel": "Frankfurter Begegnungen",
+        "text": "Gemeinsam mit der Volkshochschule bietet die Stiftung Engagierten Netzwerktreffen und kostenlose Seminare.",
+        "ort": "Frankfurt am Main",
+        "jahr": "2026"
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "2005",
+        "was": "gegründet"
+      },
+      {
+        "wert": "1816",
+        "was": "Gründung der Polytechnischen Gesellschaft"
+      },
+      {
+        "wert": "467 Mio. €",
+        "was": "Stiftungsvermögen (Ende 2022)"
+      }
+    ],
+    "herkunft": "Die Polytechnische Gesellschaft e. V., 1816 von Frankfurter Bürgern gegründet, errichtete die Stiftung 2005. Sie brachte dafür den größten Teil der Erlöse aus dem Verkauf der Frankfurter Sparkasse ein, die sie 1822 selbst gegründet hatte. Zur Bürgervereinigung gehörten einst auch Goethe und Freiherr vom Stein."
+  },
+  "stiftung-vodafone-stiftung-deutschland-216": {
+    "schwerpunkte": [
+      {
+        "titel": "Lernen in der digitalen Welt",
+        "text": "Sie befähigt Lehrkräfte für digitalen Unterricht und fördert die Fähigkeiten, die Schülerinnen und Schüler im 21. Jahrhundert brauchen.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Medienkompetenz",
+        "text": "Sie sensibilisiert junge Menschen über Social-Media-Kampagnen für Desinformation und stärkt so die Meinungsbildung.",
+        "motiv": "demokratie"
+      },
+      {
+        "titel": "Technologische Bildung",
+        "text": "Sie schult Lehrkräfte bundesweit und bietet Unterrichtseinheiten, Feriencamps und Projekttage rund ums Programmieren.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Studien und Bildungsreformen",
+        "text": "Als Thinktank veröffentlicht sie Studien zur digitalen Bildung und wirkt an Reformen des Schulsystems mit.",
+        "motiv": "wissenschaft"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "LeseKI:DS",
+        "text": "Die Initiative bringt KI-gestützte Leseförderung in Grundschulen."
+      },
+      {
+        "titel": "Skills Upload Jr",
+        "text": "Die Initiative fördert Teilhabe durch digitales Lernen."
+      },
+      {
+        "titel": "Kliick",
+        "text": "Die Initiative macht junge Menschen zu meinungsstarken Gestalterinnen und Gestaltern digitaler Medien."
+      },
+      {
+        "titel": "Coding for Tomorrow",
+        "text": "Der Hub für digitale Bildung bildet Lehrkräfte weiter und bringt Technikbildung an Schulen."
+      },
+      {
+        "titel": "Jugendstudie zu sozialen Medien",
+        "text": "Die Studie zeigt, dass die Hälfte der Jugendlichen soziale Medien weniger nutzen will, und leitet Empfehlungen ab."
+      }
+    ],
+    "herkunft": "Die Vodafone Stiftung Deutschland gehört zum Netzwerk der Vodafone Stiftungen, zu dem neben der Vodafone Foundation in Großbritannien 27 weitere Stiftungen zählen. Die Vodafone Foundation wurde 2002 von der Vodafone Group gegründet. Den Vorsitz der Geschäftsführung in Deutschland hat der Leiter für gesellschaftliches Engagement von Vodafone."
+  },
+  "stiftung-wuestenrot-stiftung-225": {
+    "schwerpunkte": [
+      {
+        "titel": "Denkmale",
+        "text": "Sie setzt Baudenkmale selbst als Bauherrin instand und erforscht Material und Konstruktion, mit einem Schwerpunkt auf Bauten nach 1945.",
+        "motiv": "denkmal"
+      },
+      {
+        "titel": "Zukunftsfragen",
+        "text": "Sie erforscht Fragen wie den demografischen Wandel gemeinsam mit den Menschen und entwickelt Lösungen für das Gemeinwesen.",
+        "motiv": "wissenschaft"
+      },
+      {
+        "titel": "Stadt und Land",
+        "text": "Sie arbeitet zu Wohnen, Flächennutzung, Klimaanpassung und Zusammenleben in Städten, Dörfern und Kleinstädten.",
+        "motiv": "allgemein"
+      },
+      {
+        "titel": "Literatur, Kunst und Kultur",
+        "text": "Sie macht vergessene literarische Werke wieder zugänglich und unterstützt Museen, Bibliotheken und Archive bei ihren Beständen.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Bildung und Nachwuchs",
+        "text": "Sie fördert junge Forschende mit Stipendien und Fellowships und lobt Wettbewerbe und Preise aus.",
+        "motiv": "bildung"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Grüne Gerechtigkeit",
+        "text": "Das mehrjährige Forschungsprojekt zeigt an zehn Fallstudien, wie bezahlbare und grüne Wohnquartiere entstehen.",
+        "jahr": "2026"
+      },
+      {
+        "titel": "Gerhard Richter „Lebensfreude“",
+        "text": "Eine Publikation der Stiftung dokumentiert die Teilfreilegung des verschwundenen Wandbildes von 1956 im Deutschen Hygiene-Museum.",
+        "ort": "Dresden"
+      },
+      {
+        "titel": "Wandmosaik von Josep Renau",
+        "text": "Eine Publikation der Stiftung dokumentiert Geschichte und Restaurierung des Mosaiks.",
+        "ort": "Halle"
+      },
+      {
+        "titel": "Dokumentarfotografie Förderpreise",
+        "text": "Die Stiftung vergibt Förderpreise für Dokumentarfotografie und veröffentlicht die Ergebnisse als Buch."
+      },
+      {
+        "titel": "Teilhabeatlas Kinder und Jugendliche",
+        "text": "Die Stiftung veröffentlichte einen Atlas zur Teilhabe junger Menschen."
+      },
+      {
+        "titel": "Zukunftsfragen der Gesellschaft",
+        "text": "Die Gesprächsreihe bringt Fachleute zu Themen wie Demokratie, Wählerwille und Rechtsstaat zusammen."
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1921",
+        "was": "Gründung des Vereins"
+      },
+      {
+        "wert": "1990",
+        "was": "Umbau zur Stiftung"
+      }
+    ],
+    "herkunft": "Idealistinnen und Idealisten um den Publizisten Georg Kropp und die Abgeordnete Mathilde Planck gründeten 1921 in Stuttgart den Verein „Gemeinschaft der Freunde“, der Wohnraum schaffen wollte. Ab 1924 arbeitete er in Wüstenrot als Bausparkasse und blieb Anker der wachsenden Wüstenrot-Gruppe. 1990 gestaltete sich der Verein zu einer Institution mit Stiftungscharakter um, die heute selbst operativ dem Gemeinwohl dient."
+  }
+}
