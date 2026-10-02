@@ -70,10 +70,19 @@ export function ErweiterungenUebersicht(p: ErweiterungenProps & { offen: boolean
   const [art, setArt] = useState<(typeof ARTEN)[number]["id"]>("modul")
   const [reife, setReife] = useState<Reife>("geprueft")
   const [laeuft, setLaeuft] = useState<string | null>(null)
+  // Ein Fehler beim Schalten wird gesagt, nicht verschluckt (Kimi, 02.10.2026).
+  const [fehler, setFehler] = useState<string | null>(null)
   const sichtbar = p.erweiterungen.filter((e) => e.art === art && e.reife === reife)
   const schalten = async (id: string, an: boolean) => {
     setLaeuft(id)
-    try { await p.onSchalten(id, an) } finally { setLaeuft(null) }
+    setFehler(null)
+    try {
+      await p.onSchalten(id, an)
+    } catch (e) {
+      setFehler(`Das ließ sich nicht speichern${e instanceof Error && e.message ? `: ${e.message}` : "."} Noch einmal versuchen.`)
+    } finally {
+      setLaeuft(null)
+    }
   }
   const hinweis = REIFEN.find((r) => r.id === reife)?.hinweis
 
@@ -115,6 +124,9 @@ export function ErweiterungenUebersicht(p: ErweiterungenProps & { offen: boolean
                 <p className="w-full text-xs text-muted-foreground">Fertige Darstellungen, die man ganz nimmt: Im Space gewählt, zeigt sich jeder passende Eintrag so, sobald man ihn öffnet.</p>
               )}
             </div>
+            {fehler && (
+              <p role="alert" className="mx-6 mt-3 rounded-lg bg-rose-50/70 px-3 py-2 text-xs text-rose-800 dark:bg-rose-950/40 dark:text-rose-200">{fehler}</p>
+            )}
             {!p.darfAendern && (
               <p className="mx-6 mt-3 rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">Nur wer den Space verwaltet, nimmt Erweiterungen dazu. Du kannst dich umsehen.</p>
             )}

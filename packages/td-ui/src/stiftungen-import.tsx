@@ -16,7 +16,7 @@
 // eine Stiftung versehentlich drückt:
 //
 //     trustdonation.org/app/<space-id>/feed?connector=wot&import=stiftungen
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import type { DataInterface, CreateItemInput, Item } from "@real-life-stack/data-interface"
 
 export type ImportStand =
@@ -119,7 +119,10 @@ export async function stiftungenSchreiben(
     if (da) {
       const patch = nachtrag(da.data, item.data as Record<string, unknown>)
       if (patch && typeof connector.updateItem === "function") {
-        try { await connector.updateItem(da.id, { data: patch }); geschrieben++ } catch { uebersprungen++ }
+        // Ergänzen, nie ersetzen: Alle Connectoren ersetzen `data` ganz
+        // (Vertrag, contract-suite). Nur den Nachtrag zu schicken hätte Titel,
+        // Beschreibung und alles Übrige gelöscht (Kimi, 02.10.2026, kritisch).
+        try { await connector.updateItem(da.id, { data: { ...(da.data as Record<string, unknown>), ...patch } }); geschrieben++ } catch { uebersprungen++ }
       } else {
         uebersprungen++
       }
@@ -166,9 +169,14 @@ export function StiftungenImport({
   zielId?: string
 }) {
   const [stand, setStand] = useState<ImportStand>({ art: "ruht" })
+  // Geschlossen bleibt geschlossen: Die Adresse trägt `?import=stiftungen`
+  // weiter, und ohne das lud der Dialog gleich wieder (Kimi, 02.10.2026).
+  const [weg, setWeg] = useState(false)
+  // Eine Antwort, die nach dem Schließen ankommt, öffnet nichts mehr.
+  const lauf = useRef(0)
 
   useEffect(() => {
-    if (aktiv && stand.art === "ruht") {
+    if (aktiv && !weg && stand.art === "ruht") {
       if (beispielwelt) {
         setStand({
           art: "fehler",
@@ -181,13 +189,16 @@ export function StiftungenImport({
         setStand({ art: "fehler", text: ohneZiel })
         return
       }
-      void stiftungen().then((liste) => setStand({ art: "fragt", anzahl: liste.length }))
+      const meins = ++lauf.current
+      stiftungen()
+        .then((liste) => { if (lauf.current === meins) setStand({ art: "fragt", anzahl: liste.length }) })
+        .catch(() => { if (lauf.current === meins) setStand({ art: "fehler", text: "Die Daten ließen sich nicht laden. Seite neu laden und noch einmal versuchen." }) })
     }
-  }, [aktiv, beispielwelt, ohneZiel, stand.art])
+  }, [aktiv, weg, beispielwelt, ohneZiel, stand.art])
 
-  if (!aktiv || stand.art === "ruht") return null
+  if (!aktiv || weg || stand.art === "ruht") return null
 
-  const schliessen = () => setStand({ art: "ruht" })
+  const schliessen = () => { lauf.current++; setWeg(true); setStand({ art: "ruht" }) }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4">

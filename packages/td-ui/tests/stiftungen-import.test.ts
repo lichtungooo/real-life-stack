@@ -110,16 +110,19 @@ describe("Ein zweiter Lauf traegt das Symbol nach (01.10.2026)", () => {
     const { musterItems } = await import("@trustdonation/core/musterdaten")
     const erste = musterItems.find((i) => String(i.id).startsWith("stiftung-"))!
     const titel = (erste.data as { title: string }).title
-    const geaendert: { id: string; data: unknown }[] = []
     const angelegt: unknown[] = []
+    // Wie die echten Connectoren: `updateItem` ERSETZT data (Vertrag,
+    // contract-suite). Die alte Attrappe schrieb nur mit und schrieb so den
+    // Datenverlust als Erwartung fest (Kimi, 02.10.2026, kritisch).
+    const gespeichert = new Map<string, Record<string, unknown>>([["schon-da", { title: titel, beschreibung: "von Hand gepflegt" }]])
     const connector = {
-      getItems: async () => [{ id: "schon-da", type: "place", data: { title: titel } }],
+      getItems: async () => [...gespeichert].map(([id, data]) => ({ id, type: "place", data })),
       createItem: async (i: unknown) => { angelegt.push(i) },
-      updateItem: async (id: string, u: { data?: unknown }) => { geaendert.push({ id, data: u.data }) },
+      updateItem: async (id: string, u: { data?: Record<string, unknown> }) => { gespeichert.set(id, { ...(u.data ?? {}) }) },
     }
     let ende: unknown = null
     await stiftungenSchreiben(connector as never, (s) => { if (s.art === "fertig") ende = s }, undefined, async () => {})
-    expect(geaendert).toEqual([{ id: "schon-da", data: { icon: "hands" } }])
+    expect(gespeichert.get("schon-da")).toEqual({ title: titel, beschreibung: "von Hand gepflegt", icon: "hands" })
     expect(angelegt.some((i) => (i as { data: { title: string } }).data.title === titel)).toBe(false)
     expect(angelegt.every((i) => (i as { data: { icon?: string } }).data.icon === "hands")).toBe(true)
     expect(ende).toMatchObject({ art: "fertig" })

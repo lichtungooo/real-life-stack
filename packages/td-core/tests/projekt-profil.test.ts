@@ -71,6 +71,13 @@ describe("Project Profile", () => {
     expect(spendenLink(null, 50)).toBeNull()
     expect(spendenLink("https://opencollective.com/garten/", 50)).toBe("https://opencollective.com/garten/donate?amount=50")
     expect(spendenLink("https://opencollective.com/garten")).toBe("https://opencollective.com/garten")
+    // Eine Seite mit Query bleibt heil (Kimi, 02.10.2026).
+    expect(spendenLink("https://opencollective.com/verein?ref=web", 50)).toBe("https://opencollective.com/verein/donate?ref=web&amount=50")
+  })
+
+  it("zählt nur sichere Bilder als Inhalt (Kimi, 02.10.2026)", () => {
+    expect(traegtProjektProfil({ bilder: ["javascript:alert(1)", "../geheim.png"] })).toBe(false)
+    expect(traegtProjektProfil({ bilder: ["https://x.org/a.jpg"] })).toBe(true)
   })
 
   it("zeigt hoechstens vier Kennzahlen, nur vollstaendige", () => {

@@ -12,7 +12,7 @@
 //
 // Den Plan (Reihenfolge, Verweise, was ausgelassen wird) rechnet
 // `netzwerkePlanen` in @trustdonation/core; hier wird nur geschrieben.
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import type { DataInterface, Group, GroupManager } from "@real-life-stack/data-interface"
 import { netzwerkePlanen, type NetzwerkPlan } from "@trustdonation/core"
 
@@ -97,6 +97,8 @@ export function NetzwerkeImport({
   onZu: () => void
 }) {
   const [stand, setStand] = useState<NetzwerkeStand>({ art: "ruht" })
+  // Eine Antwort, die nach dem Schließen ankommt, öffnet nichts mehr (Kimi, 02.10.2026).
+  const lauf = useRef(0)
 
   useEffect(() => {
     if (!aktiv || stand.art !== "ruht") return
@@ -108,11 +110,14 @@ export function NetzwerkeImport({
       setStand({ art: "fehler", text: "Keine Verbindung." })
       return
     }
-    void netzwerkePlanHolen(connector as never).then((plan) => setStand({ art: "fragt", plan }))
+    const meins = ++lauf.current
+    netzwerkePlanHolen(connector as never)
+      .then((plan) => { if (lauf.current === meins) setStand({ art: "fragt", plan }) })
+      .catch(() => { if (lauf.current === meins) setStand({ art: "fehler", text: "Die Daten ließen sich nicht laden. Seite neu laden und noch einmal versuchen." }) })
   }, [aktiv, beispielwelt, connector, stand.art])
 
   if (!aktiv || stand.art === "ruht") return null
-  const schliessen = () => { setStand({ art: "ruht" }); onZu() }
+  const schliessen = () => { lauf.current++; setStand({ art: "ruht" }); onZu() }
   const neu = stand.art === "fragt" ? stand.plan.schritte.filter((s) => !s.vorhandenId) : []
 
   return (

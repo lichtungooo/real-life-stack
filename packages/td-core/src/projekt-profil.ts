@@ -167,7 +167,9 @@ function kontaktAus(v: unknown, adresse: string | null): ProjektKontakt | null {
 /** Traegt dieser Eintrag genug fuer ein Projektprofil? Das Beduerfnis oder Bilder oder eine Spende. */
 export function traegtProjektProfil(daten: Roh | null | undefined): boolean {
   if (!daten) return false
-  return Boolean(text(daten.beduerfnis) || text(daten.kurz) || texte(daten.bilder).length || spendeAus(daten.spende))
+  // Bilder durch dieselbe Schleuse wie beim Anzeigen (Kimi, 02.10.2026).
+  const bilder = liste(daten.bilder).map(sichererBildPfad).filter(Boolean)
+  return Boolean(text(daten.beduerfnis) || text(daten.kurz) || bilder.length || spendeAus(daten.spende))
 }
 
 /** Aus den Daten eines Projekts, was die Seite zeigt. */
@@ -251,6 +253,14 @@ export function euro(betrag: number): string {
 export function spendenLink(opencollective: string | null, betrag?: number | null): string | null {
   if (!opencollective) return null
   if (!betrag) return opencollective
-  const basis = opencollective.replace(/\/+$/, "")
-  return `${/\/donate$/.test(basis) ? basis : `${basis}/donate`}?amount=${Math.round(betrag)}`
+  // Über URL gebaut: Eine Seite mit Query (`?ref=web`) bleibt heil (Kimi, 02.10.2026).
+  try {
+    const u = new URL(opencollective)
+    const pfad = u.pathname.replace(/\/+$/, "")
+    u.pathname = /\/donate$/.test(pfad) ? pfad : `${pfad}/donate`
+    u.searchParams.set("amount", String(Math.round(betrag)))
+    return u.toString()
+  } catch {
+    return opencollective
+  }
 }
