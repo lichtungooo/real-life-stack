@@ -16,3 +16,4 @@ steht in der Spalte Lehre (von Claude nachgetragen).
 | 2026-10-02-090126-3440 | 1 | 31d13fc3 | 23 | 2 | 0 | 478 s | [kimi-2026-10-02-090126-3440-runde1.md](kimi-2026-10-02-090126-3440-runde1.md) | |
 | 2026-10-02-090927-1576 | 1 | 31d13fc3 | 17 | 4 | 1 | 653 s | [kimi-2026-10-02-090927-1576-runde1.md](kimi-2026-10-02-090927-1576-runde1.md) | |
 | 2026-10-02-100628 | – | a535dfb1 | – | – | – | – | ohne Kimi ausgeliefert | Timo, 02.10.2026: weiterarbeiten ohne Kimi; Kimi hat td-core und td-ui nachgeprüft, alle 6 Befunde (1 kritisch) behoben; Karte (Naht A-Cluster) und Runde 2 folgen, sobald das Kontingent zurück ist |
+| 2026-10-02-115908 | – | 1e15473d | – | – | – | – | ohne Kimi ausgeliefert | Fehlerbehebung zum kritischen Kimi-Befund (Stiftungs-Import), Timo bestätigt mehrere Läufe im echten Space; td-ui ist von Kimi geprüft, Kontingent für Runde 2 erschöpft |
