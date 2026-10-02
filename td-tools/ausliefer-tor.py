@@ -100,6 +100,11 @@ def kimi(sha):
         stand = re.search(r"^- Stand: `([0-9a-f]{40})`", text, re.M)
         if not stand:
             continue  # Bericht von vor dem Tor
+        # Ein Bericht über einen Bereich (kimi-pruefen.py --nur) sah nur einen
+        # Teil des Unterschieds. Er hilft beim Nachholen, gibt aber nichts frei.
+        if re.search(r"^- Bereich:", text, re.M):
+            gruende.append(f"{bericht.name}: prüfte nur einen Bereich (--nur), keine Freigabe")
+            continue
         geprueft_ab = re.search(r"^- Basis-Commit: `([0-9a-f]{40})`", text, re.M)
         if not geprueft_ab or geprueft_ab.group(1) != basis:
             gruende.append(f"{bericht.name}: prüfte nicht ab der letzten Auslieferung {basis_name}")
