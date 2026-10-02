@@ -1,0 +1,201 @@
+{
+  "stiftung-adveniat-2": {
+    "logo": "kandidat-1.png",
+    "hausfarbe": "#501464",
+    "akzent": "#79b426",
+    "kurz": "Adveniat ist das Lateinamerika-Hilfswerk der katholischen Kirche in Deutschland. Es fördert Hilfe zur Selbsthilfe mit Partnern vor Ort in Lateinamerika und der Karibik.",
+    "zweck": "Adveniat unterstützt Menschen in Armut dabei, ein sicheres, gesundes und selbstbestimmtes Leben aufzubauen. Das Hilfswerk fördert Projekte zu Bildung und Arbeit, Umwelt und Klima, Frieden und Menschenrechten sowie für Frauen, Indigene und Menschen auf der Flucht. Es finanziert sich vor allem aus Spenden und der Weihnachtskollekte.",
+    "zielgruppen": [
+      "Kinder",
+      "Jugendliche",
+      "Frauen und Mädchen",
+      "Indigene",
+      "Menschen auf der Flucht",
+      "Menschen in Armut"
+    ],
+    "foerderbereiche": [
+      "international",
+      "kirche",
+      "armut",
+      "bildung",
+      "kinder",
+      "jugend",
+      "umwelt",
+      "frieden"
+    ],
+    "hinweis": "Die Projekte liegen in Lateinamerika und der Karibik und werden von Partnern vor Ort getragen, etwa Pfarreien, Diözesen oder kirchlichen Organisationen.",
+    "auftrittQuelle": "https://www.adveniat.de/"
+  },
+  "stiftung-aktion-mensch-3": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#e2151c",
+    "kurz": "Die Aktion Mensch fördert mit Geld aus ihrer Soziallotterie soziale Projekte in Deutschland. Im Mittelpunkt stehen Inklusion, Menschen mit Behinderung und junge Menschen.",
+    "zweck": "Die Aktion Mensch setzt sich für eine Gesellschaft ein, in der alle selbstverständlich dazugehören. Sie fördert Vorhaben in vier Schwerpunkten: inklusiver Sozialraum, inklusiver Arbeitsmarkt, inklusives Wohnen und Bauen sowie junge Menschen. Die Zielgruppen gestalten die Projekte von Anfang an mit, und jedes Vorhaben beschreibt seine Wirkung.",
+    "zielgruppen": [
+      "Menschen mit Behinderung",
+      "Kinder",
+      "Jugendliche",
+      "Menschen in besonderen sozialen Schwierigkeiten"
+    ],
+    "foerderbereiche": [
+      "inklusion",
+      "kinder",
+      "jugend",
+      "gemeinwesen",
+      "arbeit",
+      "wohnen"
+    ],
+    "hinweis": "Anträge stellen gemeinnützige Organisationen mit Sitz in Deutschland in drei Antragsphasen im Jahr über das Portal DIAS.",
+    "auftrittQuelle": "https://www.aktion-mensch.de/foerderung"
+  },
+  "stiftung-auridis-stiftung-11": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#00245c",
+    "akzent": "#fdc400",
+    "kurz": "Die Auridis Stiftung setzt sich dafür ein, dass Kinder in Deutschland gut aufwachsen. Ihr Schwerpunkt liegt bei Familien mit Kindern bis zehn Jahre in benachteiligenden Lebenslagen.",
+    "zweck": "Die Stiftung wird von ALDI SÜD finanziert und arbeitet in Kinder- und Jugendhilfe, Bildung und Gesundheit. Sie hilft wirksamen Ansätzen, sich überregional zu verbreiten, und stärkt die Zusammenarbeit kommunaler Akteure, etwa in Präventionsketten. Themen sind unter anderem frühe Hilfen, frühe Bildung, Grundschule und Kinder psychisch oder suchtkranker Eltern.",
+    "zielgruppen": [
+      "Kinder",
+      "Familien",
+      "Eltern",
+      "Fachkräfte"
+    ],
+    "foerderbereiche": [
+      "kinder",
+      "familie",
+      "bildung",
+      "gesundheit",
+      "armut",
+      "potenzialentfaltung"
+    ],
+    "hinweis": "Die Stiftung wählt ihre Partnerorganisationen selbst aus; für ihre gelegentlichen Ausschreibungen können Organisationen ihr Interesse per E-Mail hinterlegen.",
+    "auftrittQuelle": "https://www.auridis-stiftung.de/"
+  },
+  "stiftung-buergerstiftung-fuer-die-stadt-und-den-landkreis-32": {
+    "logo": "kandidat-1.jpg",
+    "hausfarbe": "#86bd24",
+    "kurz": "Die Bürgerstiftung fördert gemeinnützige Vorhaben in Stadt und Landkreis Kassel. Unter ihrem Dach tragen viele Zustiftungen Projekte in Bildung, Sozialem, Sport, Natur und Kultur.",
+    "zweck": "Die Kasseler Sparkasse gründete die Bürgerstiftung 1999. Sie fördert Bildung und Erziehung, Jugend- und Altenhilfe, Sport und Gesundheit, Natur- und Umweltschutz sowie Kunst, Kultur und Denkmalschutz. Die Förderungen reichen von Ferienfreizeiten und Schulprojekten bis zum Naturschutz vor Ort.",
+    "zielgruppen": [
+      "Kinder",
+      "Jugendliche",
+      "ältere Menschen"
+    ],
+    "foerderbereiche": [
+      "jugend",
+      "kinder",
+      "bildung",
+      "sport",
+      "kultur",
+      "natur",
+      "umwelt",
+      "gemeinwesen"
+    ],
+    "hinweis": "Passend sind gemeinnützige Vorhaben in der Stadt oder im Landkreis Kassel.",
+    "auftrittQuelle": "https://www.buergerstiftung-kassel.de"
+  },
+  "stiftung-deutsche-bundesstiftung-umwelt-55": {
+    "logo": "kandidat-2.png",
+    "hausfarbe": "#00a9e5",
+    "akzent": "#4d8e40",
+    "kurz": "Die Deutsche Bundesstiftung Umwelt fördert innovative und modellhafte Vorhaben zum Schutz der Umwelt. Mittelständische Unternehmen hat sie dabei besonders im Blick.",
+    "zweck": "Die DBU unterstützt Lösungen für Umwelt, Klima und Natur, von Landwirtschaft und Ernährung bis zu Energiewende und Kreislaufwirtschaft. Neben der Projektförderung unterstützt sie grüne Start-ups und fördert den Nachwuchs mit Stipendien. Förderinitiativen setzen eigene Schwerpunkte, auch in Bildung und Gesundheit.",
+    "zielgruppen": [
+      "mittelständische Unternehmen",
+      "Start-ups",
+      "Promovierende"
+    ],
+    "foerderbereiche": [
+      "umwelt",
+      "klima",
+      "nachhaltigkeit",
+      "bildung",
+      "forschung",
+      "innovation",
+      "natur",
+      "wirtschaft"
+    ],
+    "hinweis": "Passend sind neue, modellhafte Lösungen mit klarer Umweltwirkung; mittelständische Unternehmen stehen besonders im Blick.",
+    "auftrittQuelle": "https://www.dbu.de"
+  },
+  "stiftung-handwerkskammer-kassel-96": {
+    "_grund": "Website beim Abruf nicht erreichbar (SSL-Zertifikatsfehler), daher weder Texte noch Logo-Kandidaten."
+  },
+  "stiftung-landeswohlfahrtsverband-hessen-lwv-132": {
+    "logo": "kandidat-5.svg",
+    "hausfarbe": "#0093d3",
+    "akzent": "#db0812",
+    "kurz": "Der Landeswohlfahrtsverband Hessen ist überörtlicher Träger der Eingliederungshilfe. Er setzt sich für die gleichberechtigte Teilhabe von Menschen mit Behinderung in Hessen ein.",
+    "zweck": "Der LWV arbeitet auf Grundlage der UN-Behindertenrechtskonvention für Inklusion in Arbeit, Wohnen, Schule und Alltag. Er finanziert Leistungen etwa in Tagesförderstätten und Beratungsstellen und trägt Frühberatungsstellen und Förderschulen. Dazu kommen Hilfen für wohnungslose Menschen und Menschen mit psychischen Erkrankungen.",
+    "zielgruppen": [
+      "Menschen mit Behinderung",
+      "Kinder",
+      "Jugendliche",
+      "Menschen mit psychischen Erkrankungen",
+      "wohnungslose Menschen"
+    ],
+    "foerderbereiche": [
+      "inklusion",
+      "kinder",
+      "jugend",
+      "bildung",
+      "arbeit",
+      "wohnen"
+    ],
+    "hinweis": "Der LWV wirkt in ganz Hessen und finanziert Leistungen der Eingliederungshilfe, etwa in Tagesförderstätten, Inklusionsbetrieben und Beratungsstellen.",
+    "auftrittQuelle": "https://www.lwv-hessen.de"
+  },
+  "stiftung-robert-bosch-stiftung-152": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#550a2d",
+    "kurz": "Die Robert Bosch Stiftung arbeitet in Gesundheit, Bildung und globalen Fragen. Sie fördert Projekte und Programme in Deutschland, Europa, der Ukraine, Westafrika und Westasien.",
+    "zweck": "Die Stiftung setzt sich für faire Bildungschancen, zukunftsfähige Kitas und Schulen und eine Gesundheitsversorgung ein, die den Menschen in den Mittelpunkt stellt. Bei globalen Fragen stärkt sie Partner in Demokratie, Frieden, Migration und Klimaresilienz. Sie unterhält eigene Einrichtungen wie den Bosch Health Campus und arbeitet in langfristigen Partnerschaften.",
+    "zielgruppen": [
+      "Kinder",
+      "Kitas",
+      "Schulen",
+      "Kommunen",
+      "Zivilgesellschaft"
+    ],
+    "foerderbereiche": [
+      "bildung",
+      "gesundheit",
+      "international",
+      "demokratie",
+      "frieden",
+      "migration",
+      "klima"
+    ],
+    "hinweis": "Der Weg zur Förderung führt über die veröffentlichten Ausschreibungen; unaufgeforderte Anfragen bleiben unbearbeitet.",
+    "auftrittQuelle": "https://bosch-stiftung.de/"
+  },
+  "stiftung-software-ag-stiftung-164": {
+    "logo": "kandidat-5.png",
+    "hausfarbe": "#f6de30",
+    "akzent": "#b65639",
+    "kurz": "Die Software AG-Stiftung aus Darmstadt fördert gemeinnützige Projekte vor allem in Deutschland und Europa. Sie stellt den Menschen in seinen Lebensphasen in den Mittelpunkt.",
+    "zweck": "Die Stiftung fördert Alten- und Behindertenhilfe, Schulen und Bildung, Elementarpädagogik, Kinder- und Jugendhilfe, integrative und anthroposophische Medizin sowie Landwirtschaft und Naturhilfe. Dazu kommt Wissenschaftsförderung in diesen Feldern. Projektleitungen begleiten die Vorhaben eng vor und nach der Bewilligung.",
+    "zielgruppen": [
+      "Kinder",
+      "Jugendliche",
+      "Menschen mit Assistenzbedarf",
+      "ältere Menschen"
+    ],
+    "foerderbereiche": [
+      "reformpädagogik",
+      "bildung",
+      "kinder",
+      "jugend",
+      "natur",
+      "potenzialentfaltung",
+      "inklusion",
+      "gesundheit"
+    ],
+    "hinweis": "Passend sind gemeinnützige Vorhaben vor allem in Deutschland und Europa; in der Elementarpädagogik unterstützt die Stiftung Einrichtungen in freier Trägerschaft.",
+    "auftrittQuelle": "https://www.sagst.de"
+  },
+  "stiftung-volksbank-kassel-goettingen-stiftung-217": {
+    "hausfarbe": "#0066b3",
+    "auftrittQuelle": "https://www.volksbank-kassel-goettingen.de/startseite.html"
+  }
+}

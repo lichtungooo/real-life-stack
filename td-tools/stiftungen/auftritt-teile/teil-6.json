@@ -1,0 +1,356 @@
+{
+  "stiftung-aloys-wobben-stiftung-enercon-10": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#00594c",
+    "kurz": "Die Familienstiftung ist alleinige Gesellschafterin von ENERCON und fördert gemeinnützige Vorhaben in Forschung, Bildung, Sozialem, Kinderschutz und Kultur.",
+    "zweck": "Die Stiftung trägt das Anliegen ihres Stifters Aloys Wobben weiter, die Schöpfung zu erhalten. Sie fördert Forschung und Bildung, besonders im Energiebereich, soziale und humanitäre Zwecke, Einrichtungen für Kinder und kulturelle Vorhaben. Sie arbeitet überwiegend fördernd.",
+    "zielgruppen": [
+      "Kinder"
+    ],
+    "foerderbereiche": [
+      "forschung",
+      "bildung",
+      "energie",
+      "kinder",
+      "soziales",
+      "humanitäre hilfe",
+      "kultur",
+      "umwelt"
+    ],
+    "hinweis": "Träger förderwürdiger Vorhaben stellen einen formlosen Antrag oder nutzen das Online-Formular, Einzelpersonen nur in Forschung, Bildung und Kultur.",
+    "auftrittQuelle": "https://aloys-wobben-stiftung.de"
+  },
+  "stiftung-bistum-fulda-foerdert-kirche-28": {
+    "logo": "kandidat-1.webp",
+    "hausfarbe": "#f6a62d",
+    "kurz": "Auf dieser Seite bündelt das Bistum Fulda seine Zuschüsse aus Kirchensteuermitteln für kirchliche Arbeit, etwa für Jugend, Familien, Erwachsenenbildung und Weltkirche.",
+    "zweck": "Das Bistum Fulda gibt Kirchensteuermittel als Zuschüsse an die kirchliche Arbeit zurück. Es fördert unter anderem Jugendarbeit, religiöse Familienveranstaltungen, katholische Erwachsenenbildung, Exerzitien, Weltkirche, Katastrophenhilfe und Bauvorhaben. Viele Zuschüsse lassen sich online beantragen.",
+    "zielgruppen": [
+      "Pfarrgemeinden",
+      "kirchliche Verbände",
+      "Jugendgruppen",
+      "Familien"
+    ],
+    "foerderbereiche": [
+      "jugend",
+      "familie",
+      "erwachsenenbildung",
+      "kirche",
+      "weltkirche",
+      "katastrophenhilfe",
+      "exerzitien",
+      "bauen"
+    ],
+    "hinweis": "Anträge stellen Pfarreien, Verbände, Gruppen und teils Einzelpersonen aus der katholischen Arbeit im Bistum Fulda.",
+    "auftrittQuelle": "https://www.bistum-fulda-foerdert-kirche.de"
+  },
+  "stiftung-bürgerstiftung-köln-37": {
+    "logo": "kandidat-1.png",
+    "hausfarbe": "#8bbb37",
+    "akzent": "#778fc3",
+    "kurz": "Die Bürgerstiftung fördert gemeinnützige Projekte in Köln und führt eigene durch, etwa für Kinder, Bildung, Umwelt und Gesundheit.",
+    "zweck": "Bürgerinnen und Bürger, Unternehmen, Vereine und Institutionen tragen die Stiftung gemeinsam. Sie setzt sich für ein demokratisches, sozial gerechtes, kulturell offenes und nachhaltiges Köln ein und stärkt das Ehrenamt. Sie unterstützt vor allem kleine Initiativen und nimmt Anträge über ein Formular an.",
+    "zielgruppen": [
+      "Kinder",
+      "Jugendliche",
+      "ältere Menschen"
+    ],
+    "foerderbereiche": [
+      "bildung",
+      "kinder",
+      "jugend",
+      "altenhilfe",
+      "kultur",
+      "umwelt",
+      "ehrenamt",
+      "bürgerbeteiligung"
+    ],
+    "hinweis": "Sie fördert Vereine, Initiativen und Organisationen mit Vorhaben in Köln.",
+    "auftrittQuelle": "https://buergerstiftung-koeln.de"
+  },
+  "stiftung-deichmann-stiftung-46": {
+    "logo": "kandidat-1.png",
+    "hausfarbe": "#009661",
+    "kurz": "Die Stiftung der Familie Deichmann fördert Projekte für Kinder und Jugendliche in Bildung, Gesundheit und sozialer Teilhabe, in Deutschland vor allem im Ruhrgebiet, im Ausland in Madagaskar.",
+    "zweck": "Die DEICHMANN-Stiftung setzt sich gegen Kinderarmut und für gleiche Chancen ein. Ihre Schwerpunkte sind Bildung, soziale Teilhabe und Gesundheit, dazu Entwicklungszusammenarbeit und humanitäre Hilfe im Ausland sowie einzelne Vorhaben in Kunst, Kultur und Forschung. Gemeinnützige Organisationen stellen den Förderantrag online.",
+    "zielgruppen": [
+      "Kinder",
+      "Jugendliche",
+      "Familien mit geringem Einkommen"
+    ],
+    "foerderbereiche": [
+      "kinder",
+      "jugend",
+      "bildung",
+      "armut",
+      "gesundheit",
+      "teilhabe",
+      "international",
+      "ausbildung"
+    ],
+    "hinweis": "In Deutschland liegt der Fokus auf Kindern aus Familien im Ruhrgebiet, die mit wenig Geld auskommen.",
+    "auftrittQuelle": "https://www.deichmann-stiftung.org"
+  },
+  "stiftung-diadem-stiftungsfonds-diakonie-hessen-67": {
+    "logo": "kandidat-6.png",
+    "hausfarbe": "#0099cd",
+    "akzent": "#5a2572",
+    "auftrittQuelle": "https://www.diakonie-hessen.de"
+  },
+  "stiftung-evangelische-schulstiftung-in-der-ekd-79": {
+    "logo": "kandidat-1.jpg",
+    "hausfarbe": "#bd1216",
+    "kurz": "Die Stiftung unterstützt evangelische Schulen mit Förderprogrammen und Projekten, etwa zu Inklusion, evangelischem Profil und Künstlicher Intelligenz.",
+    "zweck": "Die Evangelische Schulstiftung in der EKD stärkt das evangelische Schulwesen in Deutschland. Sie fördert inklusive Umbauten, vergibt Stipendien für Hilfsmittel an Schülerinnen und Schüler und bietet Fortbildungen und Schulentwicklungsprogramme an. Projekte bewerben sich über die Website um Förderung.",
+    "zielgruppen": [
+      "evangelische Schulen",
+      "Schülerinnen und Schüler",
+      "Lehrkräfte"
+    ],
+    "foerderbereiche": [
+      "schule",
+      "bildung",
+      "inklusion",
+      "kirche",
+      "demokratie",
+      "digitalisierung"
+    ],
+    "hinweis": "Sie richtet sich an evangelische Schulen und ihre Schülerinnen und Schüler.",
+    "auftrittQuelle": "https://www.schulstiftung-ekd.de"
+  },
+  "stiftung-fuggersche-stiftungen-fuggerei-88": {
+    "logo": "kandidat-2.png",
+    "hausfarbe": "#002d5c",
+    "akzent": "#f6bf35",
+    "kurz": "Die neun Fuggerschen Stiftungen in Augsburg bestehen seit dem 16. Jahrhundert und tragen eigene Einrichtungen, allen voran die Fuggerei als Sozialsiedlung.",
+    "zweck": "Jakob und Anton Fugger gründeten die Stiftungen, um Augsburger Bürger mit Wohnraum und medizinischer Versorgung zu unterstützen und kirchliche Zwecke zu fördern. In der Fuggerei leben rund 150 bedürftige katholische Augsburger für eine Jahreskaltmiete von 0,88 Euro. Die Familie Fugger führt die Stiftungen ehrenamtlich im Sinne der Stifter weiter.",
+    "zielgruppen": [
+      "bedürftige Menschen in Augsburg"
+    ],
+    "foerderbereiche": [
+      "armut",
+      "wohnen",
+      "kirche",
+      "gesundheit",
+      "kultur",
+      "bayern"
+    ],
+    "auftrittQuelle": "https://www.fugger.de"
+  },
+  "stiftung-heinrich-böll-stiftung-100": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#91c800",
+    "kurz": "Die grüne politische Stiftung arbeitet zu Ökologie, Demokratie, Geschlechtergerechtigkeit und Menschenrechten, mit Projekten und Büros in 34 Ländern.",
+    "zweck": "Die Heinrich-Böll-Stiftung leistet politische Bildung mit Veranstaltungen, Studien und Publikationen in Deutschland und weltweit. Sie arbeitet mit Partnerorganisationen im Ausland, bietet über GreenCampus Weiterbildung für Engagierte an und unterhält ein Studienwerk.",
+    "zielgruppen": [
+      "politisch und zivilgesellschaftlich Engagierte"
+    ],
+    "foerderbereiche": [
+      "demokratie",
+      "bildung",
+      "international",
+      "ökologie",
+      "menschenrechte",
+      "gender",
+      "migration"
+    ],
+    "auftrittQuelle": "https://www.boell.de/de"
+  },
+  "stiftung-johanna-quandt-stiftung-herbert-quandt-medien-pr-110": {
+    "logo": "kandidat-1.png",
+    "hausfarbe": "#ee7203",
+    "kurz": "Die Stiftung fördert Wirtschaftsjournalismus. Sie vergibt den Herbert Quandt Medien-Preis und ein Stipendium für junge Journalistinnen und Journalisten.",
+    "zweck": "Die Johanna-Quandt-Stiftung will das Verständnis für die Marktwirtschaft und für privates Unternehmertum in Öffentlichkeit und Medien stärken. Der Herbert Quandt Medien-Preis zeichnet wirtschaftsjournalistische Beiträge aus. Das Wirtschaftsstipendium begleitet junge Medienschaffende bis 35 Jahre ein Jahr lang und gibt Mittel für ein eigenes Projekt.",
+    "zielgruppen": [
+      "Journalistinnen und Journalisten",
+      "junge Medienschaffende"
+    ],
+    "foerderbereiche": [
+      "wirtschaft",
+      "medien",
+      "journalismus",
+      "förderpreis",
+      "stipendium",
+      "national"
+    ],
+    "hinweis": "Sie fördert über Preis und Stipendium, Bewerbungen laufen über Formulare auf der Website.",
+    "auftrittQuelle": "https://www.johanna-quandt-stiftung.de"
+  },
+  "stiftung-kolping-recycling-gmbh-118": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#ef7300",
+    "kurz": "Die Kolping Recycling GmbH ist ein Textilrecycling-Unternehmen des Kolpingwerks. Die Erlöse der Altkleidersammlungen gehen an Vereine und soziale Zwecke.",
+    "zweck": "Das Unternehmen stellt Container bereit und unterstützt Vereine und Verbände bei Planung und Logistik eigener Altkleidersammlungen. Die Erlöse kommen den Sammelgruppen zugute, etwa für Renovierungen, Spielplätze oder Jugend-, Bildungs- und Flüchtlingsarbeit. Im Ausland unterstützt es die Ausbildung junger Menschen, zum Beispiel in Ruanda.",
+    "zielgruppen": [
+      "Vereine",
+      "Verbände"
+    ],
+    "foerderbereiche": [
+      "jugend",
+      "bildung",
+      "ausbildung",
+      "integration",
+      "nachhaltigkeit",
+      "umwelt",
+      "ehrenamt"
+    ],
+    "hinweis": "Vereine erhalten Geld, indem sie als Sammelpartner eine eigene Altkleidersammlung durchführen.",
+    "auftrittQuelle": "https://www.kolping-textilrecycling.de/wo-wir-helfen/"
+  },
+  "stiftung-landesstiftung-miteinander-in-hessen-131": {
+    "logo": "kandidat-5.png",
+    "hausfarbe": "#941612",
+    "kurz": "Die Landesstiftung stärkt bürgerschaftliches Engagement in Hessen und gibt Starthilfe für Projekte von Vereinen, Initiativen und engagierten Menschen.",
+    "zweck": "Die Stiftung unterstützt Initiativen und Vereine, fördert die Gründung von Bürgerstiftungen und stärkt Genossenschaften in Hessen. Sie vernetzt Engagierte und entwickelt eigene Projekte, etwa zu Bürgerbussen, digitaler Teilhabe im Alter und Dialog junger Menschen. Vor dem Antrag steht eine Voranfrage mit kurzer Projektskizze.",
+    "zielgruppen": [
+      "Vereine",
+      "Initiativen",
+      "Ehrenamtliche",
+      "Seniorinnen und Senioren"
+    ],
+    "foerderbereiche": [
+      "ehrenamt",
+      "gemeinwesen",
+      "bürgerstiftungen",
+      "genossenschaften",
+      "mobilität",
+      "digitale teilhabe",
+      "demokratie"
+    ],
+    "hinweis": "Antragsteller und Projekt brauchen ihren Sitz in Hessen, und die Förderung deckt einen Teil der Gesamtkosten.",
+    "auftrittQuelle": "https://miteinander-in-hessen.de/"
+  },
+  "stiftung-michael-otto-stiftung-2014-sozial-kulturell-138": {
+    "logo": "kandidat-2.svg",
+    "hausfarbe": "#3278e8",
+    "kurz": "Die Unternehmensstiftung hält die Mehrheit an der Otto Group und engagiert sich in wenigen ausgewählten gemeinnützigen Projekten.",
+    "zweck": "Die Michael Otto Stiftung sichert den Wirtschaftsstandort Hamburg über ihre Beteiligung an der Otto Group. Gemeinnützig wirkt sie über die Michael Otto Foundation for Sustainability, die freiheitliche Demokratie, Menschenrechte, Artenvielfalt und Bildung fördert, sowie über Impossible Founders und die Hamburg Sustainability Conference.",
+    "foerderbereiche": [
+      "demokratie",
+      "menschenrechte",
+      "artenvielfalt",
+      "bildung",
+      "nachhaltigkeit",
+      "wissenschaft",
+      "hamburg"
+    ],
+    "hinweis": "Sie plant derzeit keine weiteren Projekte und bittet darum, von Förderanfragen abzusehen.",
+    "auftrittQuelle": "https://www.michaelottostiftung.org/deutsch/index.php"
+  },
+  "stiftung-prof-otto-beisheim-stiftung-vertieft-148": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#00b0b1",
+    "akzent": "#7659a1",
+    "kurz": "Die Beisheim Stiftung fördert und entwickelt mit Partnern Projekte in Bildung, Gesundheit, Kultur und Sport, damit Menschen ihre Potenziale entfalten.",
+    "zweck": "Die Stiftung will jedem Menschen ermöglichen, seine Potenziale zu entfalten und aktiv an der Gemeinschaft teilzuhaben. Sie investiert in Projekte für junge und ältere Menschen, etwa zu mentaler Gesundheit, kultureller Teilhabe im Alter und inklusivem Sport. Anträge laufen über eine Antragsplattform.",
+    "zielgruppen": [
+      "junge Menschen",
+      "ältere Menschen",
+      "Menschen mit Beeinträchtigung"
+    ],
+    "foerderbereiche": [
+      "bildung",
+      "gesundheit",
+      "kultur",
+      "sport",
+      "alter",
+      "inklusion"
+    ],
+    "auftrittQuelle": "https://www.beisheim-stiftung.com/ch/de"
+  },
+  "stiftung-skf-stiftung-im-bistum-fulda-163": {
+    "logo": "kandidat-1.jpg",
+    "hausfarbe": "#723044",
+    "auftrittQuelle": "https://www.skf-fulda.de/skffulda/index.php"
+  },
+  "stiftung-stiftung-aktive-buergerschaft-volksbanken-raiffe-178": {
+    "logo": "kandidat-1.png",
+    "hausfarbe": "#006bb4",
+    "akzent": "#ff5a00",
+    "kurz": "Die Stiftung der Volksbanken Raiffeisenbanken unterstützt Bürgerstiftungen in ganz Deutschland und trägt das Programm sozialgenial für Engagement an Schulen.",
+    "zweck": "Die Stiftung Aktive Bürgerschaft berät Bürgerstiftungen kostenfrei bei Gründung, Management, Projekten und der Gewinnung von Stiftern, Spendern und Ehrenamtlichen. Mit sozialgenial hilft sie Lehrkräften, Engagement und Unterricht zu verbinden. Sie ist Partnerin der Volksbanken Raiffeisenbanken in deren Einsatz für Bürgerstiftungen.",
+    "zielgruppen": [
+      "Bürgerstiftungen",
+      "Schulen",
+      "Lehrkräfte"
+    ],
+    "foerderbereiche": [
+      "ehrenamt",
+      "gemeinwesen",
+      "bildung",
+      "schule",
+      "bürgerstiftungen"
+    ],
+    "hinweis": "Sie begleitet vor allem Bürgerstiftungen und Schulen mit Beratung und Programmen.",
+    "auftrittQuelle": "https://www.aktive-buergerschaft.de/"
+  },
+  "stiftung-stiftung-für-kultur-und-umwelt-der-ksk-saarpfalz-205": {
+    "logo": "kandidat-3.svg",
+    "hausfarbe": "#ee0000",
+    "auftrittQuelle": "https://www.ksk-saarpfalz.de/de/home.html"
+  },
+  "stiftung-stiftung-ravensburger-verlag-199": {
+    "logo": "kandidat-1.png",
+    "kurz": "Die Stiftung des Ravensburger Verlags fördert Initiativen für Kinder und Familien und entwickelt mit Partnern Forschungs- und Bildungsprojekte.",
+    "zweck": "Die Ravensburger AG und ihre Gesellschafter errichteten die Stiftung im Jahr 2000. Sie fördert Bildung und Erziehung, unterstützt Schulen über die Förderwettbewerbe Theater.Klasse. und Kunst.Klasse. und vergibt jährlich den Leuchtturmpreis Ehrenamt und den Buchpreis Familienroman. Ihre Forschungsergebnisse sollen Eltern und pädagogischen Fachkräften helfen.",
+    "zielgruppen": [
+      "Kinder",
+      "Familien",
+      "Schulen",
+      "pädagogische Fachkräfte"
+    ],
+    "foerderbereiche": [
+      "kinder",
+      "familie",
+      "bildung",
+      "erziehung",
+      "forschung",
+      "kunst",
+      "kultur",
+      "förderpreis"
+    ],
+    "hinweis": "Schulen bewerben sich über die Förderwettbewerbe Theater.Klasse. und Kunst.Klasse. um Mittel.",
+    "auftrittQuelle": "https://www.stiftung-ravensburger.de/de"
+  },
+  "stiftung-volkswagenstiftung-218": {
+    "logo": "kandidat-2.svg",
+    "hausfarbe": "#001b40",
+    "kurz": "Die VolkswagenStiftung fördert Wissenschaft und Technik in Forschung und Lehre, über feste Förderangebote in vier Profilbereichen.",
+    "zweck": "Die Stiftung ermöglicht Forschungsvorhaben in neuen Gebieten und hilft wissenschaftlichen Einrichtungen, ihre Arbeitsbedingungen zu verbessern. Ihre Profilbereiche sind Exploration, gesellschaftliche Transformationen, Wissen über Wissen und das Programm zukunft.niedersachsen für Forschung und Lehre in Niedersachsen.",
+    "zielgruppen": [
+      "Forschende",
+      "wissenschaftliche Einrichtungen"
+    ],
+    "foerderbereiche": [
+      "wissenschaft",
+      "forschung",
+      "lehre",
+      "wissenschaftskommunikation",
+      "niedersachsen"
+    ],
+    "hinweis": "Sie nimmt Anträge nur im Rahmen ihrer laufenden Förderangebote an, Schulen und Einrichtungen der Erwachsenenbildung zählen zu den ausgeschlossenen Vorhaben.",
+    "auftrittQuelle": "https://www.volkswagenstiftung.de/de"
+  },
+  "stiftung-zeit-stiftung-bucerius-228": {
+    "logo": "kandidat-2.svg",
+    "hausfarbe": "#e32a3b",
+    "kurz": "Die ZEIT STIFTUNG BUCERIUS fördert eine offene Zivilgesellschaft und Streitkultur, mit Projekten in Wissenschaft, Kultur, Bildung, Politik und Medien.",
+    "zweck": "Die Stiftung unterstützt über 400 Initiativen. Sie trägt die Bucerius Law School und das Bucerius Kunst Forum, vergibt Stipendien an junge Forschende und Talente der darstellenden Künste, stärkt Pressefreiheit und unabhängigen Journalismus und begleitet Bildungswege mit dem Mentoring-Programm WEICHENSTELLUNG. Förderanträge sind über die Website möglich.",
+    "zielgruppen": [
+      "junge Forschende",
+      "Künstlerinnen und Künstler",
+      "Journalistinnen und Journalisten"
+    ],
+    "foerderbereiche": [
+      "bildung",
+      "wissenschaft",
+      "kunst",
+      "kultur",
+      "demokratie",
+      "journalismus",
+      "kulturerhalt"
+    ],
+    "auftrittQuelle": "https://www.zeit-stiftung.de",
+    "bildHell": false
+  }
+}

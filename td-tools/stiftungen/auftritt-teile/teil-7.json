@@ -1,0 +1,368 @@
+{
+  "stiftung-aventis-foundation-13": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#383b7b",
+    "kurz": "Die Aventis Foundation fördert Projekte und Institutionen in Kultur und Wissenschaft. Sie unterstützt freie Ensembles, digitale Kulturprojekte und junge Forschende.",
+    "zweck": "Die Stiftung gibt Förderbeiträge an einzelne Projekte und Einrichtungen in Kultur, Wissenschaft und Engagement. In der Reihe „Klang“ stärkt sie professionelle freie Ensembles und Orchester der klassischen Musik in ganz Deutschland. Mit dem Life Sciences Bridge Award zeichnet sie Nachwuchs in den Lebenswissenschaften aus.",
+    "zielgruppen": [
+      "Kulturinstitutionen",
+      "Ensembles und Orchester",
+      "Nachwuchsforschende"
+    ],
+    "foerderbereiche": [
+      "kultur",
+      "wissenschaft",
+      "kunst",
+      "musik",
+      "digitalisierung",
+      "forschung",
+      "förderpreis",
+      "engagement"
+    ],
+    "hinweis": "Bewerben können sich gemeinnützig organisierte Kulturträger, etwa Vereine oder gGmbHs, in festen Bewerbungsphasen über ein Antragsformular.",
+    "auftrittQuelle": "https://www.aventis-foundation.org"
+  },
+  "stiftung-bmw-foundation-herbert-quandt-17": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#46b27e",
+    "kurz": "Die BMW Foundation Herbert Quandt bringt Führungskräfte aus Wirtschaft, Politik, Wissenschaft und Zivilgesellschaft zusammen, damit sie gemeinsam Lösungen für globale Aufgaben entwickeln.",
+    "zweck": "Die unabhängige Unternehmensstiftung der BMW Group arbeitet als Netzwerkstiftung mit Sitz in München und Berlin. Ihre drei Schwerpunkte sind Klimawandel und Energiewende, Urbanisierung und Infrastruktur sowie Bildung und Qualifizierung. Einen Teil ihres Vermögens legt sie in Impact Investments an.",
+    "zielgruppen": [
+      "Führungskräfte",
+      "Zivilgesellschaft"
+    ],
+    "foerderbereiche": [
+      "klima",
+      "energiewende",
+      "stadtentwicklung",
+      "bildung",
+      "nachhaltigkeit",
+      "international",
+      "innovation",
+      "demokratie"
+    ],
+    "auftrittQuelle": "https://www.bmw-foundation.org",
+    "bildHell": true
+  },
+  "stiftung-bürgerstiftung-münchen-38": {
+    "logo": "kandidat-2.png",
+    "hausfarbe": "#8db3e2",
+    "kurz": "Die BürgerStiftung München ist eine gemeinschaftliche Stiftung von Münchnerinnen und Münchnern für ihre Stadt. Sie fördert Engagement für eine nachhaltige Stadtgesellschaft im Sinne der Agenda 2030.",
+    "zweck": "Die Stiftung initiiert, fördert und vernetzt soziale, ökologische und kulturelle Projekte in München. Ihre Felder sind Bildung, Kultur und Toleranz, Teilhabe und Demokratie sowie Natur und Umwelt. Sie arbeitet nur lokal und überwiegend ehrenamtlich.",
+    "zielgruppen": [
+      "Kinder",
+      "Jugendliche",
+      "Vereine"
+    ],
+    "foerderbereiche": [
+      "kinder",
+      "bildung",
+      "kultur",
+      "demokratie",
+      "teilhabe",
+      "umwelt",
+      "nachhaltigkeit"
+    ],
+    "hinweis": "Sie fördert eingetragene gemeinnützige Vereine aus München, die Anträge über ein Formular in jährlichen Förderrunden stellen.",
+    "auftrittQuelle": "https://buergerstiftung-muenchen.de"
+  },
+  "stiftung-deutsche-bank-stiftung-54": {
+    "logo": "kandidat-1.png",
+    "hausfarbe": "#0119a8",
+    "akzent": "#00a3e0",
+    "kurz": "Die Deutsche Bank Stiftung stärkt die Potenziale junger Menschen und fördert künstlerischen Nachwuchs, Integration und kulturelles Leben in Deutschland.",
+    "zweck": "Die Stiftung initiiert und unterstützt Projekte, die jungen Menschen neue Erfahrungen eröffnen und ihre Begabungen entfalten. Sie fördert Integration von Menschen mit Migrations- und Fluchtgeschichte und mehr Chancengerechtigkeit. Weltweit engagiert sie sich mit Partnern in der Katastrophenprävention.",
+    "zielgruppen": [
+      "Junge Menschen",
+      "Künstlerischer Nachwuchs",
+      "Menschen mit Migrations- und Fluchtgeschichte"
+    ],
+    "foerderbereiche": [
+      "bildung",
+      "kunst",
+      "kultur",
+      "integration",
+      "chancengerechtigkeit",
+      "begabtenförderung",
+      "katastrophenprävention",
+      "international"
+    ],
+    "auftrittQuelle": "https://www.deutsche-bank-stiftung.de"
+  },
+  "stiftung-diakonie-deutschland-68": {
+    "hausfarbe": "#462672",
+    "kurz": "Die Diakonie Deutschland ist ein kirchlicher Sozialverband mit rund 34.000 Angeboten in Pflege, Betreuung und Beratung. Sie setzt sich für Menschen ein, die Hilfe brauchen oder benachteiligt sind.",
+    "zweck": "Die Diakonie versteht ihre Arbeit als gelebte Nächstenliebe. Ihre Einrichtungen reichen von Kinder- und Jugendhilfe über Alten- und Krankenpflege bis zu Hilfen für Menschen mit Behinderung und Menschen in besonderen sozialen Lagen. Sie bezieht auch politisch Stellung, etwa zur Pflegereform.",
+    "zielgruppen": [
+      "Kinder",
+      "Jugendliche",
+      "Ältere Menschen",
+      "Pflegebedürftige",
+      "Menschen mit Behinderung",
+      "Wohnungslose Menschen",
+      "Geflüchtete"
+    ],
+    "foerderbereiche": [
+      "armut",
+      "inklusion",
+      "pflege",
+      "jugendhilfe",
+      "teilhabe"
+    ],
+    "auftrittQuelle": "https://www.diakonie.de"
+  },
+  "stiftung-evangelisches-werk-fuer-diakonie-und-entwicklung-80": {
+    "hausfarbe": "#462672",
+    "auftrittQuelle": "https://www.diakonie.de"
+  },
+  "stiftung-gemeinnützige-hertie-stiftung-90": {
+    "logo": "kandidat-2.svg",
+    "hausfarbe": "#e6012c",
+    "kurz": "Die Gemeinnützige Hertie-Stiftung arbeitet in zwei Feldern: Demokratie stärken und Gehirn erforschen. Sie führt eigene Programme und fördert ausgewählte Vorhaben Dritter.",
+    "zweck": "Im Feld Demokratie vermittelt sie Kenntnisse für das politische Engagement, etwa mit „Jugend debattiert“ oder „Jugend entscheidet“ für Kommunen. Im Feld Gehirn fördert sie klinische Hirnforschung, Forschung zur Multiplen Sklerose und den wissenschaftlichen Nachwuchs.",
+    "zielgruppen": [
+      "Schülerinnen und Schüler",
+      "Jugendliche",
+      "Kommunen",
+      "Nachwuchsforschende",
+      "Menschen mit Multipler Sklerose"
+    ],
+    "foerderbereiche": [
+      "demokratie",
+      "hirnforschung",
+      "forschung",
+      "bildung",
+      "gesundheit",
+      "jugendbeteiligung",
+      "förderpreis"
+    ],
+    "hinweis": "Sie arbeitet modellhaft mit eigenen Programmen und gewährt Förderung grundsätzlich auf Zeit.",
+    "auftrittQuelle": "https://www.ghst.de"
+  },
+  "stiftung-hessische-kulturstiftung-101": {
+    "logo": "kandidat-1.png",
+    "hausfarbe": "#c32135",
+    "kurz": "Die Hessische Kulturstiftung fördert und bewahrt Kunst und Kultur in Hessen. Sie hilft Museen beim Ankauf wertvoller Werke und vergibt Stipendien an bildende Künstlerinnen und Künstler.",
+    "zweck": "Die Stiftung unterstützt Museen, Bibliotheken und Archive beim Erwerb und bei der Sicherung bedeutender Kulturgüter. Sie fördert Ausstellungen, Publikationen und Kataloge hessischer Museen und Kunstvereine. Mit Reise- und Residenzstipendien und Ateliers im Ausland fördert sie künstlerischen Nachwuchs.",
+    "zielgruppen": [
+      "Museen",
+      "Kunstvereine",
+      "Bibliotheken",
+      "Archive",
+      "Künstlerinnen und Künstler"
+    ],
+    "foerderbereiche": [
+      "kunst",
+      "kultur",
+      "museen",
+      "ankauf",
+      "ausstellungen",
+      "publikationen",
+      "stipendium",
+      "hessen"
+    ],
+    "hinweis": "Ihre Förderung richtet sich an Museen und vergleichbare gemeinnützige Einrichtungen der bildenden Kunst in Hessen.",
+    "auftrittQuelle": "https://www.hkst.de/home/"
+  },
+  "stiftung-josef-wagner-stiftung-111": {
+    "hausfarbe": "#4163a8",
+    "kurz": "Die Josef-Wagner-Stiftung in Friedrichshafen fördert Bildung und hilft bedürftigen Menschen, vor allem im Bodenseekreis.",
+    "zweck": "Die Stiftung vergibt Deutschlandstipendien an Studierende, bevorzugt in Technik und Naturwissenschaften, und unterstützt Bildungsprojekte im Bodenseekreis. Über Sozialleistungsträger hilft sie bedürftigen Menschen sowie Kindergärten, Wohn-, Alten- und Pflegeheimen an Standorten der Wagner Group.",
+    "zielgruppen": [
+      "Studierende",
+      "Kinder",
+      "Jugendliche",
+      "Bedürftige Menschen",
+      "Ältere Menschen"
+    ],
+    "foerderbereiche": [
+      "bildung",
+      "stipendium",
+      "gemeinwesen",
+      "soziales",
+      "jugend",
+      "kinder"
+    ],
+    "hinweis": "Bildungsprojekte aus dem Bodenseekreis senden einen Projektförderantrag per E-Mail; Hilfe für Einzelpersonen läuft über die Sozialleistungsträger auf ihrer Liste.",
+    "auftrittQuelle": "https://josef-wagner-stiftung.de"
+  },
+  "stiftung-kolping-stiftung-koeln-120": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#eb6800",
+    "kurz": "Die Gemeinschaftsstiftung Kolpingwerk Deutschland fördert mit Spenden und Zustiftungen die gemeinnützige Arbeit des katholischen Sozialverbands Kolping.",
+    "zweck": "Die Stiftung wurde 2002 in Köln gegründet. Sie unterstützt Kolpingsfamilien, Diözesanverbände und den Bundesverband, etwa bei Angeboten für Kinder und Jugendliche in Armut, bei Ausbildung, Inklusion, Familienhilfe, internationalen Projekten und dem Schutz eines alten Buchenwalds.",
+    "zielgruppen": [
+      "Kinder",
+      "Jugendliche",
+      "Familien"
+    ],
+    "foerderbereiche": [
+      "jugend",
+      "bildung",
+      "ausbildung",
+      "familie",
+      "inklusion",
+      "armut",
+      "international",
+      "natur"
+    ],
+    "hinweis": "Sie fördert die Kolpingarbeit auf allen Ebenen des Verbands.",
+    "auftrittQuelle": "https://www.kolping.de"
+  },
+  "stiftung-loki-schmidt-stiftung-133": {
+    "logo": "kandidat-1.png",
+    "hausfarbe": "#8eb83b",
+    "kurz": "Die Loki Schmidt Stiftung schützt seltene Pflanzen und Tiere in ganz Deutschland und begeistert Menschen für den Naturschutz.",
+    "zweck": "Auf eigenen Flächen in zwölf Bundesländern erhält die Stiftung bedrohte Arten. Sie kürt die „Blume des Jahres“, betreibt Infohäuser in Hamburg und bietet Umweltbildung an, etwa mit einer Naturschutz-Akademie und dem Wettbewerb „Blühende Schulen“.",
+    "zielgruppen": [
+      "Schulen"
+    ],
+    "foerderbereiche": [
+      "natur",
+      "umwelt",
+      "bildung",
+      "artenschutz",
+      "moorschutz"
+    ],
+    "auftrittQuelle": "https://loki-schmidt-stiftung.de"
+  },
+  "stiftung-miele-stiftung-140": {
+    "kurz": "Die Miele-Stiftung unterstützt Kinder, Jugendliche und das Kulturleben in Gütersloh. Die Gesellschafter der Miele & Cie. KG haben sie 1974 errichtet.",
+    "zweck": "Die Stiftung trägt seit Jahrzehnten die Gütersloher Ferienspiele für Kinder, die in den Ferien zu Hause bleiben. Sie fördert die Westfälische Kammerphilharmonie und den Knabenchor Gütersloh und hat den Neubau des Theaters mitfinanziert.",
+    "zielgruppen": [
+      "Kinder",
+      "Jugendliche"
+    ],
+    "foerderbereiche": [
+      "kinder",
+      "jugend",
+      "sport",
+      "kultur",
+      "musik",
+      "theater",
+      "nrw"
+    ],
+    "auftrittQuelle": "https://www.guetersloh.de/de/leben-in-guetersloh/stiftungen/miele-stiftung.php"
+  },
+  "stiftung-rainer-markgraf-stiftung-149": {
+    "logo": "kandidat-2.png",
+    "hausfarbe": "#792182",
+    "akzent": "#f07d00",
+    "kurz": "Die Rainer Markgraf Stiftung fördert Bildung, Wissenschaft und Forschung in Oberfranken und der Oberpfalz und unterstützt die berufliche Aus- und Weiterbildung junger Menschen.",
+    "zweck": "Die Stiftung vergibt Stipendien, unterstützt Hochschulen und Bildungseinrichtungen und stärkt die Infrastruktur der beiden Regionen. Sie verleiht den Rainer-Markgraf-Preis und einen Nachwuchspreis und lädt mit der Reihe FORUM-HEIMAT-MARKGRAF zum Dialog. Ihr gehört die Bauunternehmung Markgraf.",
+    "zielgruppen": [
+      "Jugendliche",
+      "Junge Erwachsene",
+      "Hochschulen",
+      "Bildungseinrichtungen"
+    ],
+    "foerderbereiche": [
+      "bildung",
+      "wissenschaft",
+      "forschung",
+      "ausbildung",
+      "weiterbildung",
+      "stipendium",
+      "förderpreis",
+      "handwerk"
+    ],
+    "hinweis": "Ihr Engagement gilt den Regionen Oberfranken und Oberpfalz und den Menschen, die dort leben.",
+    "auftrittQuelle": "https://www.rainer-markgraf-stiftung.de"
+  },
+  "stiftung-sophien-stiftung-wallerfangen-villeroy-boch-fami-167": {
+    "logo": "kandidat-1.png",
+    "hausfarbe": "#006e8e",
+    "akzent": "#fbbb00",
+    "kurz": "Die Sophienstiftung in Wallerfangen trägt eine Fachklinik für Psychiatrie, eine Fachklinik für Geriatrie, ein Seniorenstift sowie ein Kinder- und Jugendhaus.",
+    "zweck": "Die freigemeinnützige Stiftung bietet medizinische, pflegerische, therapeutische und pädagogische Hilfe für Menschen in unterschiedlichen Lebenslagen. Seit mehr als 160 Jahren tragen sie die Stifterfamilie, Ordensschwestern sowie Kirchen- und Ortsgemeinde.",
+    "zielgruppen": [
+      "Ältere Menschen",
+      "Menschen mit psychischen Erkrankungen",
+      "Kinder",
+      "Jugendliche"
+    ],
+    "foerderbereiche": [
+      "gesundheit",
+      "pflege",
+      "psychiatrie",
+      "geriatrie",
+      "kinder",
+      "jugend",
+      "saarland"
+    ],
+    "hinweis": "Sie arbeitet als Trägerin eigener Kliniken und Heime in Wallerfangen.",
+    "auftrittQuelle": "https://www.sophienstiftung.de"
+  },
+  "stiftung-stiftung-begabtenfoerderung-berufliche-bildung-s-179": {
+    "hausfarbe": "#cc1726",
+    "kurz": "Die SBB ist eine gemeinnützige GmbH. Sie betreut zwei Stipendienprogramme des Bundes für Fachkräfte mit Berufsausbildung: das Weiterbildungsstipendium und das Aufstiegsstipendium.",
+    "zweck": "Mit Mitteln des Bundesforschungsministeriums fördert die SBB berufliche Talente, die in Ausbildung und Beruf besondere Leistung zeigen. Das Weiterbildungsstipendium unterstützt Berufseinsteiger, das Aufstiegsstipendium ein Studium nach mindestens zwei Jahren Berufserfahrung. Träger sind die Kammerorganisationen.",
+    "zielgruppen": [
+      "Fachkräfte mit Berufsausbildung",
+      "Berufserfahrene",
+      "Auszubildende"
+    ],
+    "foerderbereiche": [
+      "weiterbildung",
+      "stipendium",
+      "begabtenförderung",
+      "studium",
+      "ausbildung"
+    ],
+    "hinweis": "Sie vergibt Stipendien an einzelne Fachkräfte; das Weiterbildungsstipendium läuft über die Kammern, das Aufstiegsstipendium direkt über die SBB.",
+    "auftrittQuelle": "https://www.sbb-stipendien.de/sbb-start"
+  },
+  "stiftung-stiftung-hessischer-naturschutz-191": {
+    "_grund": "Die Website zeigt nur den Hinweis, dass eine neue Homepage entsteht; es gibt weder Logo noch Text."
+  },
+  "stiftung-stiftung-rewe-dortmund-198": {
+    "logo": "kandidat-2.png",
+    "hausfarbe": "#cd1316",
+    "kurz": "Die Stiftung REWE Dortmund fördert gemeinnützige Vereine und Einrichtungen in Nordrhein-Westfalen, etwa in Sport, Gesundheit, Jugend- und Altenhilfe.",
+    "zweck": "Die Stiftung wurde 1998 gegründet. Ihre Satzung umfasst Bildung und Erziehung, Sport, Entwicklungshilfe, Jugend- und Altenhilfe, Gesundheitsförderung, Behindertenhilfe, Wohlfahrtspflege und Mildtätigkeit. Gefördert hat sie etwa Sportvereine, Kinderhäuser und Feiern für Wohnungslose.",
+    "zielgruppen": [
+      "Kinder",
+      "Jugendliche",
+      "Familien",
+      "Ältere Menschen",
+      "Menschen mit Behinderung",
+      "Wohnungslose Menschen"
+    ],
+    "foerderbereiche": [
+      "kinder",
+      "jugend",
+      "gesundheit",
+      "ernährung",
+      "sport",
+      "bildung",
+      "inklusion",
+      "altenhilfe"
+    ],
+    "hinweis": "Vereine stellen sich und ihr Projekt zuerst kurz per E-Mail vor; passt es zu den Förderrichtlinien, folgt ein Förderantrag.",
+    "auftrittQuelle": "https://www.rewe-dortmund.de/stiftung/"
+  },
+  "stiftung-vr-partnerbank-heimatstiftungen-chattengau-schwa-214": {
+    "hausfarbe": "#0066b3",
+    "auftrittQuelle": "https://www.vr-partnerbank.de/startseite.html"
+  },
+  "stiftung-zentralverband-des-deutschen-handwerks-230": {
+    "logo": "kandidat-3.png",
+    "hausfarbe": "#ef7c00",
+    "akzent": "#062e3a",
+    "kurz": "Der Zentralverband des Deutschen Handwerks ist der Spitzenverband des Handwerks. Er vertritt über eine Million Handwerksbetriebe gegenüber Politik und Öffentlichkeit.",
+    "zweck": "Der ZDH arbeitet als Dachverband und Interessenvertretung. Seine Mitglieder sind die 53 Handwerkskammern und 50 Fachverbände. Er setzt sich für die berufliche Bildung ein, richtet Berufswettbewerbe aus und verleiht den Heribert-Späth-Preis für besondere Ausbildungsleistungen.",
+    "zielgruppen": [
+      "Handwerksbetriebe",
+      "Auszubildende",
+      "Handwerkerinnen und Handwerker"
+    ],
+    "foerderbereiche": [
+      "handwerk",
+      "ausbildung",
+      "beruf",
+      "berufswettbewerb",
+      "förderpreis"
+    ],
+    "auftrittQuelle": "https://www.zdh.de"
+  }
+}

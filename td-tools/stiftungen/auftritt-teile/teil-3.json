@@ -1,0 +1,391 @@
+{
+  "stiftung-alfred-toepfer-stiftung-fvs-6": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#79b0ae",
+    "kurz": "Die Hamburger Stiftung arbeitet europaweit in Kunst und Kultur, Bildung und Gesellschaft, Wissenschaft und zukunftsgerechter Landnutzung. Sie setzt vor allem eigene Programme mit Stipendien, Preisen und Akademien um.",
+    "zweck": "Die Alfred Toepfer Stiftung F.V.S. entstand 1931 und hat ihren Sitz in Hamburg. Sie begleitet engagierte Persönlichkeiten, stößt Veränderungen mit Modellcharakter an und öffnet ihre Häuser wie das Seminarzentrum Gut Siggen für Begegnung. Ein besonderes Anliegen ist ihr die europäische Verständigung bei Wahrung der kulturellen Vielfalt.",
+    "foerderbereiche": [
+      "bildung",
+      "kultur",
+      "natur",
+      "international",
+      "wissenschaft",
+      "landnutzung",
+      "demokratie"
+    ],
+    "hinweis": "Sie arbeitet als operative Stiftung mit eigenen Programmen und fördert nur im Ausnahmefall auf externen Antrag.",
+    "auftrittQuelle": "https://www.toepfer-stiftung.de"
+  },
+  "stiftung-bertelsmann-stiftung-25": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#0c55a6",
+    "kurz": "Die Bertelsmann Stiftung regt mit Projekten, Studien und Veranstaltungen gesellschaftliche Debatten an. Sie arbeitet in eigenen Programmen, etwa zu Bildung, Demokratie, Europa und Gesundheit.",
+    "zweck": "Die Stiftung will Impulse für gesellschaftliche Veränderung geben und mit Daten und Studien Orientierung für eine breite Öffentlichkeit schaffen. Ihre Programme reichen von Bildung und Next Generation über Demokratie und Zusammenhalt, Digitalisierung und Gemeinwohl, Europas Zukunft und Gesundheit bis zur nachhaltigen sozialen Marktwirtschaft. Ein eigenes Zentrum widmet sich nachhaltigen Kommunen.",
+    "foerderbereiche": [
+      "bildung",
+      "demokratie",
+      "gesundheit",
+      "wirtschaft",
+      "europa",
+      "digitalisierung",
+      "kommunen"
+    ],
+    "auftrittQuelle": "https://www.bertelsmann-stiftung.de/de/startseite"
+  },
+  "stiftung-bürgerstiftung-dresden-34": {
+    "logo": "kandidat-4.webp",
+    "hausfarbe": "#1d718d",
+    "kurz": "Die Bürgerstiftung Dresden ist eine Stiftung von Bürgern für Bürger. Sie fördert aus ihren Erträgen gemeinnützige Projekte in Dresden und würdigt ehrenamtliches Engagement.",
+    "zweck": "Die Bürgerstiftung entstand 1999 und hat ihren Sitz in der Villa Reuter in Blasewitz. Ihre Zwecke reichen von Bildung, Jugend und Kultur über Soziales, Umwelt und Tierschutz bis zu Denkmalpflege, Gesundheitsprävention und Katastrophenhilfe. Sie führt eigene Projekte wie das Künstlerhaus Dresden, verwaltet zahlreiche Stiftungen und Stiftungsfonds unter ihrem Dach und berät Menschen, die selbst stiften wollen.",
+    "zielgruppen": [
+      "Ehrenamtliche",
+      "Jugendliche",
+      "Menschen in Seniorenheimen"
+    ],
+    "foerderbereiche": [
+      "kultur",
+      "bildung",
+      "umwelt",
+      "ehrenamt",
+      "soziales",
+      "jugend",
+      "tierschutz",
+      "denkmalpflege"
+    ],
+    "hinweis": "Sie wirkt in Dresden und der Region und fördert aus den Erträgen ihres Kapitals Vorhaben in Bildung, Jugend, Kultur, Soziales und Umwelt.",
+    "auftrittQuelle": "https://buergerstiftung-dresden.de"
+  },
+  "stiftung-crespo-foundation-45": {
+    "logo": "kandidat-1.svg",
+    "kurz": "Die Crespo Foundation aus Frankfurt am Main stärkt Menschen darin, selbstbestimmt zu leben und die Gesellschaft mitzugestalten. Sie fördert Kunst, kulturelle Bildung und Bildungschancen, vor allem für junge Menschen.",
+    "zweck": "Die Stiftung schafft direkt oder über Partner Angebote, in denen Menschen ihr Potenzial entfalten und an der Gesellschaft teilhaben. Ihre Themen sind Kunst, kulturelle Bildung, Stärkung der Persönlichkeit und Bildungschancen. Als Verbrauchsstiftung setzt sie den größten Teil ihres Vermögens innerhalb einer festen Frist ein.",
+    "zielgruppen": [
+      "Kinder",
+      "Jugendliche",
+      "Künstlerinnen und Künstler",
+      "Fach- und Lehrkräfte"
+    ],
+    "foerderbereiche": [
+      "bildung",
+      "kinder",
+      "jugend",
+      "kunst",
+      "kultur",
+      "potenzialentfaltung",
+      "teilhabe",
+      "soziales"
+    ],
+    "hinweis": "Sie arbeitet mit Partnern, die Kreativität, Bildung und Soziales verbinden, besonders für junge Menschen in schwierigen Lebenslagen.",
+    "auftrittQuelle": "https://www.crespo-foundation.de/de"
+  },
+  "stiftung-deutsche-telekom-stiftung-63": {
+    "logo": "kandidat-3.png",
+    "hausfarbe": "#e20074",
+    "akzent": "#78ffc8",
+    "kurz": "Die Deutsche Telekom Stiftung setzt sich für gute Bildung in Mathematik, Informatik, Naturwissenschaften und Technik ein. Sie entwickelt dafür eigene Projekte mit Schulen und Partnern.",
+    "zweck": "Die Deutsche Telekom gründete die Stiftung 2003. Ihr Ziel ist, dass alle Kinder und Jugendlichen ihre Potenziale entfalten können, gleich unter welchen Voraussetzungen. Sie entwickelt Konzepte und Materialien für das Lehren und Lernen in MINT, stärkt Netzwerke von Schulen mit außerschulischen Partnern und setzt sich für bessere Rahmenbedingungen im Bildungssystem ein.",
+    "zielgruppen": [
+      "Kinder",
+      "Jugendliche",
+      "Schulen",
+      "Lehrkräfte"
+    ],
+    "foerderbereiche": [
+      "bildung",
+      "mint",
+      "jugend",
+      "schule",
+      "digitalisierung"
+    ],
+    "hinweis": "Sie arbeitet vorrangig operativ und berücksichtigt Anträge nur im Rahmen ihrer eigenen Ausschreibungen.",
+    "auftrittQuelle": "https://www.telekom-stiftung.de"
+  },
+  "stiftung-edith-maryon-stiftung-76": {
+    "logo": "kandidat-2.png",
+    "hausfarbe": "#af0013",
+    "kurz": "Die Stiftung Edith Maryon aus Basel entzieht Grundstücke und Häuser der Spekulation. Sie stellt sie dauerhaft für gemeinschaftliches Wohnen, Kultur, Bildung und Demeter-Höfe bereit.",
+    "zweck": "Die Stiftung entstand 1990 und sichert Boden und Immobilien als Gemeingut, vor allem in der Schweiz und in Deutschland. Sie vermietet, verpachtet oder vergibt Liegenschaften im Baurecht an Projekte für günstigen Wohnraum, soziale und kulturelle Vorhaben und Höfe und berät sie in Rechts- und Vertragsfragen. Daneben fördert sie Projekte in Kunst, Pädagogik, Landwirtschaft und Ernährung sowie Komplementärmedizin.",
+    "foerderbereiche": [
+      "wohnen",
+      "boden",
+      "landwirtschaft",
+      "kultur",
+      "bildung",
+      "pädagogik",
+      "gemeinwesen",
+      "nachhaltigkeit"
+    ],
+    "hinweis": "Sie passt zu Vorhaben, die ein Grundstück oder Gebäude dauerhaft gemeinnützig nutzen wollen, und begleitet sie von der ersten Idee bis zum Abschluss.",
+    "auftrittQuelle": "https://maryon.ch"
+  },
+  "stiftung-friedrich-ebert-stiftung-85": {
+    "logo": "kandidat-2.svg",
+    "hausfarbe": "#d70000",
+    "akzent": "#5b085a",
+    "kurz": "Die Friedrich-Ebert-Stiftung ist eine politische Stiftung der Sozialen Demokratie, organisiert als gemeinnütziger Verein. Sie bietet politische Bildung, Analysen und Beratung und vergibt Stipendien.",
+    "zweck": "Seit 1925 steht sie für Freiheit, Gerechtigkeit, Solidarität und Frieden. Sie arbeitet in Deutschland und in über 100 Ländern mit Partnern an Zukunftsprojekten und befähigt Menschen, sich politisch zu engagieren. Mit ihrer Studienförderung unterstützt sie begabte und engagierte Studierende und Promovierende, gleich welcher sozialen Herkunft.",
+    "zielgruppen": [
+      "Studierende",
+      "Promovierende"
+    ],
+    "foerderbereiche": [
+      "demokratie",
+      "bildung",
+      "international",
+      "stipendien",
+      "gleichstellung",
+      "entwicklungszusammenarbeit"
+    ],
+    "auftrittQuelle": "https://www.fes.de"
+  },
+  "stiftung-haniel-stiftung-97": {
+    "logo": "kandidat-1.png",
+    "hausfarbe": "#008e3c",
+    "akzent": "#a3b800",
+    "kurz": "Die Haniel Stiftung aus Duisburg fördert junge unternehmerische Talente mit Stipendien und Studienprogrammen. Im Ruhrgebiet begleitet sie benachteiligte Kinder und Jugendliche zum Schulabschluss und in den Beruf.",
+    "zweck": "Sie engagiert sich für eine zukunftsfähige Gesellschaft und Wirtschaft nach dem Leitbild des ehrbaren Kaufmanns. Unter dem Titel Enkelfähiges Unternehmertum vergibt sie Stipendien, etwa mit der Studienstiftung des deutschen Volkes, und fördert Workshops und Forschung. Mit Bildung als Chance unterstützt sie gemeinsam mit Partnern Programme und Initiativen in Duisburg und der Region.",
+    "zielgruppen": [
+      "Kinder",
+      "Jugendliche",
+      "Studierende"
+    ],
+    "foerderbereiche": [
+      "bildung",
+      "stipendium",
+      "jugend",
+      "international",
+      "wissenschaft",
+      "unternehmertum"
+    ],
+    "hinweis": "In der Bildung konzentriert sie sich auf Duisburg und das Ruhrgebiet und arbeitet dort mit Sozialpartnern zusammen.",
+    "auftrittQuelle": "https://www.haniel-stiftung.de"
+  },
+  "stiftung-international-alumni-center-berlin-iac-berlin-107": {
+    "hausfarbe": "#b51621",
+    "kurz": "Das iac Berlin ist eine Denk- und Praxiswerkstatt für Wirkungsnetzwerke, 2017 von der Robert Bosch Stiftung gegründet. Es berät Stiftungen und gemeinnützige Organisationen bei Alumni-Arbeit und beim Aufbau von Allianzen.",
+    "zweck": "Das International Alumni Center Berlin arbeitet mit Stiftungen, Wissenschaft, öffentlichen Einrichtungen und lokalen gemeinnützigen Organisationen an Netzwerken mit gesellschaftlicher Wirkung. Es begleitet Netzwerkbauer, erprobt Alumni-Netzwerke, Wirkungsallianzen und Lerngemeinschaften und teilt sein Wissen offen. Zu seinen Projekten zählen das Bosch Alumni Network und Foundations for Ukraine.",
+    "zielgruppen": [
+      "Stiftungen",
+      "gemeinnützige Organisationen"
+    ],
+    "foerderbereiche": [
+      "international",
+      "innovation",
+      "gemeinwesen",
+      "digitalisierung",
+      "demokratie",
+      "netzwerke",
+      "philanthropie"
+    ],
+    "hinweis": "Es passt zu Stiftungen und gemeinnützigen Organisationen, die Beratung und Begleitung beim Aufbau von Netzwerken suchen.",
+    "auftrittQuelle": "https://www.iac-berlin.org"
+  },
+  "stiftung-katholischer-fonds-dbk-hilfswerke-116": {
+    "logo": "kandidat-2.png",
+    "hausfarbe": "#222955",
+    "akzent": "#48aedd",
+    "kurz": "Der Katholische Fonds bezuschusst weltkirchliche und entwicklungsbezogene Bildungs- und Öffentlichkeitsarbeit in Deutschland. Anträge stellen kirchliche und christliche Gruppen sowie Eine-Welt-Gruppen.",
+    "zweck": "Die Deutsche Bischofskonferenz gründete den Fonds 1997, und die Hilfswerke Adveniat, Caritas international, Misereor, missio und Renovabis tragen ihn aus Kirchensteuermitteln. Er fördert Seminare, Kampagnen, Ausstellungen, Bildungsmaterial, Partnerbegegnungen und Vernetzung mit Bezug zum Globalen Süden sowie zu Mittel- und Osteuropa. Gemeinsam mit Brot für die Welt vergibt er den Ökumenischen Förderpreis Eine Welt.",
+    "zielgruppen": [
+      "Pfarrgemeinden",
+      "Eine-Welt-Gruppen",
+      "katholische Jugend- und Erwachsenenverbände"
+    ],
+    "foerderbereiche": [
+      "entwicklungspolitik",
+      "bildung",
+      "weltkirche",
+      "partnerschaft",
+      "öffentlichkeitsarbeit",
+      "förderpreis"
+    ],
+    "hinweis": "Er fördert nur Vorhaben in Deutschland, höchstens bis zur Hälfte der anrechenbaren Kosten und ohne Personalkosten.",
+    "auftrittQuelle": "https://www.katholischer-fonds.de"
+  },
+  "stiftung-kunst-und-kulturstiftung-opelvillen-125": {
+    "_grund": "Die Website liefert keinen lesbaren Text, und der einzige Kandidat ist ein schwarzes Favicon ohne Schriftzug."
+  },
+  "stiftung-manfred-lautenschlaeger-stiftung-135": {
+    "logo": "kandidat-1.png",
+    "hausfarbe": "#003362",
+    "akzent": "#e4670b",
+    "kurz": "Die Manfred Lautenschläger-Stiftung aus Heidelberg fördert Wissenschaft, Bildung und Kultur. Sie stiftet Forschungs- und Nachwuchspreise und unterstützt Projekte an Heidelberger Schulen.",
+    "zweck": "Der Unternehmer Manfred Lautenschläger gründete die Stiftung 2001. Sie stiftet Preise wie den Lautenschläger-Forschungspreis der Universität Heidelberg und den Hauptpreis des Internationalen Filmfestivals Mannheim-Heidelberg. Für Heidelberger Schulen schrieb sie eine Sonderförderung für Projekte zu Leseförderung, Demokratiebildung, Gesundheitsprävention, Sport und internationalen Begegnungen aus.",
+    "zielgruppen": [
+      "Schulen",
+      "Kinder",
+      "Jugendliche",
+      "junge Forschende"
+    ],
+    "foerderbereiche": [
+      "bildung",
+      "kinder",
+      "jugend",
+      "wissenschaft",
+      "kultur",
+      "gesundheit",
+      "forschung"
+    ],
+    "hinweis": "Ihre Preise und Ausschreibungen richten sich vor allem an Heidelberg, etwa an die Universität und an Heidelberger Schulen.",
+    "auftrittQuelle": "https://www.manfred-lautenschlaeger-stiftung.de/"
+  },
+  "stiftung-otto-beisheim-foundation-metro-gruender-145": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#00b0b1",
+    "akzent": "#7659a1",
+    "kurz": "Die Beisheim Stiftung aus München fördert und entwickelt Projekte in Bildung, Gesundheit, Kultur und Sport. Sie will Menschen helfen, ihr Potenzial zu entfalten und selbstbestimmt zu leben.",
+    "zweck": "Die Stiftung setzt mit Partnern Projekte um, die Menschen unabhängig von Herkunft und sozialem Umfeld stärken. In der Bildung setzt sie auf Chancengerechtigkeit und gut begleitete Übergänge, in der Gesundheit auf Prävention und mentale Gesundheit. In der Kultur öffnet sie Zugänge zu Kunst und stärkt die Zukunftsfähigkeit von Kulturorganisationen.",
+    "zielgruppen": [
+      "Kinder",
+      "Jugendliche",
+      "ältere Menschen"
+    ],
+    "foerderbereiche": [
+      "bildung",
+      "gesundheit",
+      "kultur",
+      "sport"
+    ],
+    "hinweis": "Sie sucht neue, wirkungsvolle Konzepte und nimmt Förderanfragen über eine eigene Antragsplattform entgegen.",
+    "auftrittQuelle": "https://www.beisheim-stiftung.com/de/de"
+  },
+  "stiftung-siemens-stiftung-158": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#009aa3",
+    "akzent": "#eb780a",
+    "kurz": "Die Siemens Stiftung aus München arbeitet international an nachhaltiger gesellschaftlicher Entwicklung. Ihre Arbeitsbereiche sind MINT-Bildung, Sozialunternehmertum sowie Kunst und Kultur.",
+    "zweck": "Die Siemens AG gründete die gemeinnützige Stiftung 2008. Sie konzentriert sich auf gesicherte Grundversorgung, Digitalität und Klima und arbeitet mit Partnern in Afrika, Europa und Lateinamerika. Ihre Bildungsangebote richten sich vor allem an Lehrkräfte und stehen zum Teil als offene Lernmaterialien bereit.",
+    "zielgruppen": [
+      "Lehrkräfte",
+      "Kinder",
+      "Jugendliche",
+      "Sozialunternehmen"
+    ],
+    "foerderbereiche": [
+      "bildung",
+      "mint",
+      "kultur",
+      "international",
+      "innovation",
+      "sozialunternehmertum",
+      "klima",
+      "grundversorgung"
+    ],
+    "hinweis": "Sie arbeitet operativ und partnerschaftlich vor Ort, vor allem in Afrika, Europa und Lateinamerika.",
+    "auftrittQuelle": "https://www.siemens-stiftung.org"
+  },
+  "stiftung-sparkassenstiftung-landkreis-kassel-soziales-und-175": {
+    "logo": "kandidat-3.svg",
+    "hausfarbe": "#ee0000",
+    "kurz": "Die Stiftungen der Kasseler Sparkasse fördern gemeinnützige Vereine und Initiativen in Stadt und Landkreis Kassel. Sie unterstützen Soziales, Sport, Kultur, Bildung sowie Wissenschaft und Forschung.",
+    "zweck": "Die Sparkassenstiftung Landkreis Kassel für Soziales und Sport entstand 1997 und gehört heute zur Kasseler Sparkassenstiftung für den Landkreis Kassel. Gefördert werden soziale und sportliche Vorhaben, Jugend- und Altenhilfe, Organisationen von Menschen mit Behinderung sowie Jugend- und Breitensport. Hinzu kommen Kunst und Kultur, Denkmalschutz, Bildung und Forschung mit Bezug zur Region.",
+    "zielgruppen": [
+      "Vereine",
+      "Initiativen",
+      "Jugendliche",
+      "ältere Menschen",
+      "Menschen mit Behinderung"
+    ],
+    "foerderbereiche": [
+      "jugend",
+      "sport",
+      "soziales",
+      "altenhilfe",
+      "kultur",
+      "denkmalschutz",
+      "bildung",
+      "wissenschaft"
+    ],
+    "hinweis": "Sie fördert nur Projekte gemeinnütziger Einrichtungen, die in Stadt oder Landkreis Kassel stattfinden, und ihre Kuratorien entscheiden im Frühjahr.",
+    "auftrittQuelle": "https://www.kasseler-sparkasse.de/stiftungen"
+  },
+  "stiftung-stiftung-der-deutschen-wirtschaft-sdw-203": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#ffcc00",
+    "kurz": "Die Stiftung der Deutschen Wirtschaft vergibt Stipendien an junge Menschen aus allen Bildungswegen, von der Schule bis zur Promotion. Sie arbeitet ausschließlich mit eigenen Programmen.",
+    "zweck": "Die sdw entstand 1994 auf Initiative der Bundesvereinigung der Deutschen Arbeitgeberverbände und versteht sich als Gemeinschaftsinitiative für Bildung. Mit neun Stipendien- und Förderprogrammen begleitet sie Schülerinnen und Schüler, Auszubildende, Studierende, Promovierende und junge Berufstätige. Ihre Ziele sind mehr Chancengerechtigkeit, unternehmerisches Denken und mehr Nachwuchs in pädagogischen und MINT-Berufen.",
+    "zielgruppen": [
+      "Schülerinnen und Schüler",
+      "Auszubildende",
+      "Studierende",
+      "Promovierende",
+      "junge Berufstätige"
+    ],
+    "foerderbereiche": [
+      "bildung",
+      "ausbildung",
+      "handwerk",
+      "beruf",
+      "jugend",
+      "stipendium",
+      "mint",
+      "unternehmertum"
+    ],
+    "hinweis": "Sie arbeitet ausschließlich in eigenen Stipendienprogrammen und bearbeitet keine Projektanträge anderer Träger.",
+    "auftrittQuelle": "https://www.sdw.org/"
+  },
+  "stiftung-stiftung-niedersaechsischer-volksbanken-und-raif-195": {
+    "logo": "kandidat-2.webp",
+    "hausfarbe": "#005ba4",
+    "akzent": "#c56200",
+    "kurz": "Die Stiftung Niedersächsischer Volksbanken und Raiffeisenbanken fördert Kultur, vor allem Kunst und Heimatpflege, sowie Wissenschaft. Den Antrag stellt die örtliche Volksbank oder Raiffeisenbank.",
+    "zweck": "Kreditgenossenschaften gründeten die Stiftung 1990, ihr Sitz ist Hannover. Sie will kulturschöpfende Kräfte stärken, Begegnung und Dialog zwischen Menschen fördern und so zur kulturellen Gestaltung der Gesellschaft beitragen. Gefördert wurden etwa Konzerte, Ausstellungen und Projekte der Heimatpflege.",
+    "foerderbereiche": [
+      "kultur",
+      "kunst",
+      "heimatpflege",
+      "wissenschaft"
+    ],
+    "hinweis": "Den Antrag reicht eine niedersächsische Stifterbank für ein gemeinnütziges Vorhaben ein und trägt zehn Prozent selbst bei.",
+    "auftrittQuelle": "https://www.genoverband.de/verband/stiftung-niedersaechsischer-volksbanken-und-raiffeisenbanken/"
+  },
+  "stiftung-vector-stiftung-215": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#d5102b",
+    "akzent": "#00bbff",
+    "kurz": "Die Vector Stiftung aus Stuttgart fördert technikwissenschaftliche Forschung und MINT-Bildung. Sie setzt sich außerdem gegen Wohnungslosigkeit und Jugendarbeitslosigkeit in Baden-Württemberg ein.",
+    "zweck": "Die Gründer der Vector Informatik GmbH riefen die unternehmensverbundene Stiftung 2011 ins Leben, und sie finanziert sich aus der Dividende ihrer Unternehmensanteile. Den größten Teil ihrer Mittel setzt sie für MINT-Forschung und MINT-Bildung ein, etwa für Forschung zum Klimaschutz, Nachwuchsgruppen und Schulprojekte. Im sozialen Bereich fördert sie die Integration junger Menschen und Projekte gegen Wohnungslosigkeit.",
+    "zielgruppen": [
+      "Schulen",
+      "Kinder",
+      "Jugendliche",
+      "Lehrkräfte",
+      "junge Forschende"
+    ],
+    "foerderbereiche": [
+      "mint",
+      "bildung",
+      "wissenschaft",
+      "forschung",
+      "jugend",
+      "ausbildung",
+      "wohnungslosigkeit",
+      "klimaschutz"
+    ],
+    "hinweis": "Sie fördert über Ausschreibungen, und Schulen in Baden-Württemberg können MINT-Projekte ohne Einreichungsfrist beantragen.",
+    "auftrittQuelle": "https://vector-stiftung.de"
+  },
+  "stiftung-wolfgang-und-elisabeth-grupp-stiftung-trigema-223": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#0019a0",
+    "akzent": "#ff3030",
+    "kurz": "Die Wolfgang und Elisabeth Grupp Stiftung des Textilherstellers Trigema unterstützt Vereine und soziale Einrichtungen in Burladingen und Umgebung. Sie hilft auch bei akuten Notlagen.",
+    "zweck": "Die gemeinnützige Stiftung entstand zum 50. Geburtstag von Wolfgang Grupp. Sie finanzierte etwa Einsatzfahrzeuge für DRK und Sozialstation, die Sporthalle in Burladingen, Musikprojekte an Schulen und einen Kindergarten. Daneben unterstützt sie Typisierungsaktionen gegen Blutkrebs und Hilfe nach Katastrophen.",
+    "zielgruppen": [
+      "Vereine",
+      "soziale Einrichtungen"
+    ],
+    "foerderbereiche": [
+      "kinder",
+      "kultur",
+      "musik",
+      "sport",
+      "gemeinwesen",
+      "soziales",
+      "gesundheit",
+      "katastrophenhilfe"
+    ],
+    "hinweis": "Sie fördert vor allem Vereine und Einrichtungen in Burladingen und Umgebung.",
+    "auftrittQuelle": "https://www.trigema.de/unternehmen/ueber-uns/stiftung/"
+  }
+}

@@ -1,0 +1,185 @@
+{
+  "stiftung-b-braun-stiftung-15": {
+    "logo": "kandidat-1.png",
+    "hausfarbe": "#00b0b9",
+    "akzent": "#571865",
+    "kurz": "Die B. Braun-Stiftung fördert Menschen aus Medizin, Pflege und anderen Gesundheitsberufen. Sie vergibt Stipendien für Weiterbildung, fördert klinische Forschung und bietet Leadership-Programme an.",
+    "zweck": "Die Stiftung dient Bildung, Wissenschaft und Forschung im Gesundheitswesen. Ärztinnen, Ärzte, Pflegende und andere Fachkräfte erhalten Zuschüsse für ihre berufliche Weiterbildung, für Veranstaltungen und für klinische Forschungsprojekte. Dazu kommen ein Mentoringprogramm für Nachwuchsführungskräfte und ein Preis für Hygienefachkräfte.",
+    "zielgruppen": ["Ärztinnen und Ärzte", "Pflegende", "Fachkräfte im Gesundheitswesen", "Nachwuchsführungskräfte"],
+    "foerderbereiche": ["gesundheit", "medizin", "pflege", "weiterbildung", "wissenschaft", "forschung", "stipendium"],
+    "hinweis": "Bewerbungen laufen online in festen Einreichungszeiträumen im Frühjahr und im Herbst.",
+    "auftrittQuelle": "https://www.bbraun-stiftung.de/de.html"
+  },
+  "stiftung-boehringer-ingelheim-stiftung-29": {
+    "logo": "kandidat-2.svg",
+    "hausfarbe": "#002d73",
+    "kurz": "Die Boehringer Ingelheim Stiftung fördert medizinische, biologische, chemische und pharmazeutische Wissenschaft. Sie unterstützt Grundlagenforschung mit Förderprogrammen, Initiativen und Preisen.",
+    "zweck": "Die Stiftung ist eigenständig und gemeinnützig. Sie setzt sich für Grundlagenforschung in den Natur- und Lebenswissenschaften ein und will Forschenden Freiraum für ungewöhnliche Ideen geben. Ihre Programme richten sich an Wissenschaftlerinnen und Wissenschaftler in entscheidenden Phasen ihrer Laufbahn.",
+    "zielgruppen": ["Wissenschaftlerinnen und Wissenschaftler"],
+    "foerderbereiche": ["wissenschaft", "forschung", "medizin", "biologie", "chemie", "pharmazie"],
+    "hinweis": "Sie fördert Forschende über ausgeschriebene Programme mit festen Bewerbungsfristen.",
+    "auftrittQuelle": "https://boehringer-ingelheim-stiftung.de/"
+  },
+  "stiftung-bürgerstiftung-stuttgart-39": {
+    "logo": "kandidat-1.png",
+    "hausfarbe": "#d34286",
+    "akzent": "#61b865",
+    "kurz": "In der Bürgerstiftung Stuttgart setzen sich Bürgerinnen und Bürger mit Zeit, Geld und Ideen für ihre Stadt ein. Sie fördert Kinderprojekte, Flüchtlingshilfe, Palliativversorgung und Ehrenamtliche.",
+    "zweck": "Die Stiftung schafft Begegnungen, unterstützt Menschen und stärkt das Engagement in ganz Stuttgart. Sie arbeitet in drei Feldern: engagierte, nachhaltige und demokratische Stadt. Neben eigenen Projekten unterhält sie Förderprogramme, etwa für Nachbarschaftsinitiativen und Gemeinschaftsgärten.",
+    "zielgruppen": ["Kinder", "Geflüchtete", "Menschen ab 50", "Ehrenamtliche", "Nachbarschaftsinitiativen"],
+    "foerderbereiche": ["kinder", "bildung", "ehrenamt", "demokratie", "nachbarschaft", "flüchtlingshilfe", "nachhaltigkeit", "palliativversorgung"],
+    "hinweis": "Sie fördert gemeinnützige Vorhaben in Stuttgart, ihre Gartenförderung etwa steht Organisationen mit Sitz in der Stadt offen.",
+    "auftrittQuelle": "https://www.buergerstiftung-stuttgart.de"
+  },
+  "stiftung-deutsche-kinder-und-jugendstiftung-58": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#cc5a43",
+    "akzent": "#43a5d5",
+    "kurz": "Die Deutsche Kinder- und Jugendstiftung setzt sich dafür ein, dass junge Menschen in Deutschland gut aufwachsen. Sie arbeitet mit Programmen für Bildung und Beteiligung, von der Kita bis zum Einstieg in den Beruf.",
+    "zweck": "Die Stiftung gestaltet mit Partnern auf allen Ebenen gute Bildung, von der Kita über die Schule bis zu Verwaltung und Politik. Sie sorgt dafür, dass Kinder und Jugendliche mitreden und mitgestalten. Sie qualifiziert Fachkräfte im Bildungswesen und ist mit elf Standorten bundesweit tätig.",
+    "zielgruppen": ["Kinder", "Jugendliche", "Fachkräfte in Kita und Schule"],
+    "foerderbereiche": ["bildung", "kinder", "jugend", "demokratie", "beteiligung", "ganztag", "berufsorientierung"],
+    "hinweis": "Sie setzt eigene Programme gemeinsam mit Kitas, Schulen und Kommunen um und sucht dafür selbst Förderer.",
+    "auftrittQuelle": "https://www.dkjs.de/"
+  },
+  "stiftung-diakonie-hessen-kurhessen-waldeck-70": {
+    "logo": "kandidat-2.png",
+    "hausfarbe": "#009ee3",
+    "akzent": "#5c2675",
+    "kurz": "Die Diakonie Hessen ist der Landesverband der evangelischen Sozial- und Gesundheitsarbeit in Hessen und angrenzenden Gebieten. Sie ist ein Verband und berät ihre Mitglieder bei Förderanträgen.",
+    "zweck": "Als Werk der Kirche ist die Diakonie Hessen Mitglieder- und Spitzenverband im Gebiet der Evangelischen Kirche in Hessen und Nassau und der Evangelischen Kirche von Kurhessen-Waldeck. Sie setzt sich für Menschen ein, die benachteiligt oder auf Hilfe angewiesen sind. Ihr Fördermittelservice begleitet Mitglieder von der Projektidee bis zum fertigen Antrag.",
+    "zielgruppen": ["diakonische Mitgliedseinrichtungen"],
+    "foerderbereiche": ["soziales", "armut", "familie", "migration", "pflege", "inklusion", "engagement", "bildung"],
+    "hinweis": "Sie passt für diakonische Träger, die Mitglied im Landesverband sind und Hilfe bei Förderanträgen suchen.",
+    "auftrittQuelle": "https://www.diakonie-hessen.de"
+  },
+  "stiftung-ferry-porsche-stiftung-81": {
+    "logo": "kandidat-1.png",
+    "kurz": "Die Ferry-Porsche-Stiftung fördert gemeinnützige Projekte in Soziales, Umwelt, Bildung und Wissenschaft, Kultur und Sport. Im Mittelpunkt stehen Kinder und Jugendliche.",
+    "zweck": "Die Stiftung entstand 2018 zum 70-jährigen Jubiläum der Marke Porsche. Sie steht für Vielfalt, Teilhabe und Chancengerechtigkeit und fördert im Sport vor allem den Breitensport. Einmal im Jahr ruft sie mit der Ferry Porsche Challenge Organisationen zur Bewerbung zu einem wechselnden Thema auf.",
+    "zielgruppen": ["Kinder", "Jugendliche"],
+    "foerderbereiche": ["soziales", "umwelt", "bildung", "wissenschaft", "kultur", "sport", "jugend"],
+    "hinweis": "Sie fördert rund um die Standorte der Porsche AG in Stuttgart und Leipzig und ihrer Tochtergesellschaften.",
+    "auftrittQuelle": "https://ferry-porsche-stiftung.de"
+  },
+  "stiftung-gemeinschaftsstiftung-kolpingwerk-deutschland-91": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#eb6800",
+    "kurz": "Die Gemeinschaftsstiftung Kolpingwerk Deutschland fördert mit Spenden und Zustiftungen die gemeinnützige Kolpingarbeit auf allen Ebenen des Verbandes.",
+    "zweck": "Die Stiftung besteht seit 2002 als selbstständige Stiftung privaten Rechts. Sie fördert junge Menschen, Familien, Bildung, die Arbeitswelt und internationale Projekte, etwa Jugendfreizeiten, Familienseminare und Ausbildungshilfen. Zudem verwaltet sie treuhänderische Stiftungen von Kolpingsfamilien und Diözesanverbänden.",
+    "zielgruppen": ["junge Menschen", "Familien", "Kolpingsfamilien"],
+    "foerderbereiche": ["jugend", "familie", "bildung", "ausbildung", "international", "arbeitswelt", "klimaschutz"],
+    "hinweis": "Sie unterstützt die Arbeit innerhalb des Kolpingwerkes, also Kolpingsfamilien, Diözesanverbände und Kolping Deutschland.",
+    "auftrittQuelle": "https://www.kolping.de/verband/die-stiftung/"
+  },
+  "stiftung-hilti-foundation-102": {
+    "logo": "kandidat-1.png",
+    "hausfarbe": "#d2051e",
+    "kurz": "Die Hilti Foundation ist eine gemeinnützige Organisation aus dem Umfeld der Hilti-Gruppe. Sie hilft Menschen in Not, ein selbstbestimmtes und wirtschaftlich unabhängiges Leben zu führen.",
+    "zweck": "Die Stiftung arbeitet mit Partnern in Liechtenstein und in Entwicklungs- und Schwellenländern. In Liechtenstein stehen Biodiversität, Technik sowie Wettbewerbsfähigkeit und Lebensqualität im Mittelpunkt. International unterstützt sie Musik für sozialen Wandel, bezahlbares Wohnen, Berufsbildung, Nothilfe und Unterwasserarchäologie.",
+    "zielgruppen": ["Menschen in Not", "Kinder", "Jugendliche"],
+    "foerderbereiche": ["biodiversität", "technik", "musik", "wohnen", "berufsbildung", "nothilfe", "archäologie", "international"],
+    "hinweis": "Sie arbeitet mit Partnerorganisationen in Liechtenstein und weltweit.",
+    "auftrittQuelle": "https://www.hiltifoundation.org"
+  },
+  "stiftung-karg-stiftung-112": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#e51f40",
+    "akzent": "#641446",
+    "kurz": "Die Karg-Stiftung setzt sich für hochbegabte Kinder und Jugendliche ein. Sie stärkt Kitas, Schulen und Beratungsstellen, damit diese hohe Begabung erkennen und fördern.",
+    "zweck": "Laut Satzung fördert die Stiftung hochbegabte Kinder und Jugendliche vor und während der Schulzeit. Sie arbeitet für ein Bildungssystem, das jedem Kind gerecht wird, und qualifiziert dafür Erzieherinnen, Lehrkräfte und psychologische Fachkräfte. Gegründet hat sie 1989 der Unternehmer Hans-Georg Karg mit seiner Frau Adelheid.",
+    "zielgruppen": ["hochbegabte Kinder", "Jugendliche", "Fachkräfte in Kita, Schule und Beratung"],
+    "foerderbereiche": ["kinder", "jugend", "bildung", "hochbegabung", "potenzialentfaltung", "qualifizierung"],
+    "hinweis": "Sie arbeitet vorrangig operativ in eigenen Programmen, gemeinsam mit Bildungseinrichtungen sowie Fachleuten aus Wissenschaft und Praxis.",
+    "auftrittQuelle": "https://karg-stiftung.de"
+  },
+  "stiftung-kolping-stiftung-mainfranken-wuerzburg-121": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#ef7d00",
+    "kurz": "Die Kolping-Stiftung-Würzburg ist eine kirchliche Stiftung im Kolpingwerk der Diözese Würzburg. Sie fördert Bildung, Völkerverständigung und Entwicklungshilfe mit Zuschüssen und Darlehen.",
+    "zweck": "Die Stiftung will Kirche und Gesellschaft im Sinne Adolph Kolpings mitgestalten. Sie fördert kirchliche Jugend- und Erwachsenenbildung, religiöse, berufliche und soziale Bildung sowie Völkerverständigung. Beispiele sind ein Straßenkinderprojekt in Nairobi, Jugendpartnerschaften mit Rumänien und Hilfen für bedürftige Familien in der Region.",
+    "zielgruppen": ["Jugendliche", "Erwachsene", "Familien"],
+    "foerderbereiche": ["bildung", "jugend", "familie", "völkerverständigung", "entwicklungshilfe"],
+    "hinweis": "Sie führt selbst keine Projekte durch, sie unterstützt Vorhaben im Umfeld des Kolpingwerkes der Diözese Würzburg mit Geld.",
+    "auftrittQuelle": "https://www.kolping-mainfranken.de"
+  },
+  "stiftung-lotto-hessen-lottomittel-land-hessen-128": {
+    "_grund": "Die Website lieferte weder Text noch Logo-Kandidaten, nur zwei schwache Farbwerte."
+  },
+  "stiftung-missio-aachen-muenchen-141": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#e30613",
+    "kurz": "missio ist ein internationales katholisches Hilfswerk. Es unterstützt über 1.000 Projekte, die einheimische kirchliche Partner vor Ort organisieren.",
+    "zweck": "missio steht Menschen bei, die unter Hunger, Gewalt, Armut, Verfolgung oder Vertreibung leiden. Gemeinsam mit Partnern setzt sich das Hilfswerk für Menschenrechte und Religionsfreiheit ein, gegen Missbrauch und moderne Sklaverei. Es hilft in Notlagen und in langfristigen Projekten, etwa für Bildung und für Frauen.",
+    "zielgruppen": ["Menschen in Not", "Kinder", "Frauen", "Ordensfrauen"],
+    "foerderbereiche": ["menschenrechte", "religionsfreiheit", "bildung", "frieden", "nothilfe", "frauen", "international"],
+    "hinweis": "Seine Projekte tragen einheimische kirchliche Partnerinnen und Partner in ihren Ländern.",
+    "auftrittQuelle": "https://www.missio-hilft.de"
+  },
+  "stiftung-renovabis-150": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#009574",
+    "akzent": "#fbba25",
+    "kurz": "Renovabis ist das Osteuropa-Hilfswerk der katholischen Kirche in Deutschland. Es fördert Projekte von Partnern in 29 Ländern Mittel-, Ost- und Südosteuropas.",
+    "zweck": "Seit 1993 stärkt Renovabis Kirche und Gesellschaft im Osten Europas durch Projektförderung, Bildung und Dialog. Gefördert werden Seelsorge, kirchliche Bauten, soziale Einrichtungen, Schulen und Berufsbildung, Medienarbeit und Nothilfe. Dazu vergibt das Hilfswerk Stipendien und Existenzhilfen.",
+    "zielgruppen": ["Kinder", "Jugendliche", "Familien", "Geflüchtete", "Menschen mit Behinderung"],
+    "foerderbereiche": ["seelsorge", "soziales", "bildung", "berufsbildung", "stipendium", "medien", "nothilfe", "international"],
+    "hinweis": "Renovabis arbeitet nach dem Partnerprinzip und nimmt in der Regel nur Anträge direkt aus Mittel- und Osteuropa an.",
+    "auftrittQuelle": "https://www.renovabis.de"
+  },
+  "stiftung-sozial-und-sportstiftung-der-kasseler-sparkasse-168": {
+    "logo": "kandidat-3.svg",
+    "hausfarbe": "#ee0000",
+    "kurz": "Die Stiftungen der Kasseler Sparkasse fördern gemeinnützige Projekte in Stadt und Landkreis Kassel, darunter Soziales und Sport.",
+    "zweck": "Die Sozial- und Sportstiftung entstand 1992, heute treten die Stiftungen als Kasseler Sparkassenstiftungen für Stadt und Landkreis auf. Sie fördern Jugend- und Altenhilfe, Menschen mit Behinderung, Jugend- und Breitensport, Kunst und Kultur, Denkmalschutz, Bildung sowie Wissenschaft. Wert legen sie auf Projekte, die Strukturen stärken und Organisationen vernetzen.",
+    "zielgruppen": ["Vereine", "Initiativen", "Jugendliche", "ältere Menschen", "Menschen mit Behinderung"],
+    "foerderbereiche": ["soziales", "sport", "jugend", "altenhilfe", "behindertenhilfe", "kultur", "denkmalschutz", "bildung"],
+    "hinweis": "Sie fördert nur gemeinnützige Einrichtungen mit Projekten in Stadt und Landkreis Kassel, über Anträge entscheiden die Kuratorien im Frühjahr.",
+    "auftrittQuelle": "https://www.kasseler-sparkasse.de/stiftungen"
+  },
+  "stiftung-stiftung-bewahrung-kirchl-baudenkmaeler-ekd-180": {
+    "logo": "kandidat-4.png",
+    "hausfarbe": "#551285",
+    "kurz": "Die Stiftung KiBa setzt sich für die Bewahrung kirchlicher Baudenkmäler in Deutschland ein. Sie hat ihren Sitz in Hannover.",
+    "foerderbereiche": ["denkmalschutz"],
+    "auftrittQuelle": "https://www.ekd.de/Stiftung-KiBa-15446.htm"
+  },
+  "stiftung-stiftung-kinder-und-familienfreundliches-melsung-206": {
+    "kurz": "Die Stiftung kinder- und familienfreundliches Melsungen wirkt seit 2005 mit dem Förderverein für ein zukunftsfähiges Melsungen für Kinder, Jugendliche und Familien in der Stadt.",
+    "zweck": "Stiftung und Förderverein setzen Projekte zu Bildung, Gesundheit, Vereinbarkeit von Familie und Beruf sowie Integration und Inklusion um. Dazu gehören ein Familienzentrum, ein Berufswahlbüro und ein Integrationsbüro, das Geflüchtete berät und begleitet.",
+    "zielgruppen": ["Kinder", "Jugendliche", "Familien", "Alleinerziehende", "Geflüchtete"],
+    "foerderbereiche": ["kinder", "familie", "jugend", "bildung", "gesundheit", "integration", "inklusion"],
+    "hinweis": "Sie arbeitet mit Fachleuten und Einrichtungen in Melsungen und seinen Stadtteilen zusammen.",
+    "auftrittQuelle": "https://www.melsungen-foerdert.de"
+  },
+  "stiftung-stiftung-rheinland-pfalz-für-kultur-200": {
+    "logo": "kandidat-3.svg",
+    "hausfarbe": "#0a4190",
+    "akzent": "#e40023",
+    "kurz": "Die Stiftung Rheinland-Pfalz für Kultur fördert Kulturprojekte mit Bezug zum Land und trägt den Kultursommer Rheinland-Pfalz.",
+    "zweck": "Die Stiftung fördert Kulturprojekte über ihre Regelförderung mit Antragsfristen zum 15. Februar und 15. August. Der Kultursommer vereint jedes Jahr über 200 Projekte vieler Sparten, ein eigenes Programm unterstützt ehrenamtliche kulturelle Kleinprojekte. Zur Stiftung gehören das Künstlerhaus Edenkoben und seit 2026 ein Regionalbüro in Nassau.",
+    "zielgruppen": ["Kulturschaffende", "Künstlerinnen und Künstler", "Kulturinitiativen"],
+    "foerderbereiche": ["kultur", "kunst", "ehrenamt"],
+    "hinweis": "In der Regelförderung braucht ein Projekt einen starken Bezug zu Rheinland-Pfalz und mindestens 10.000 Euro Gesamtkosten, die Stiftung trägt höchstens die Hälfte.",
+    "auftrittQuelle": "https://www.kulturstiftung-rlp.de"
+  },
+  "stiftung-werner-bonhoff-stiftung-219": {
+    "logo": "kandidat-1.png",
+    "hausfarbe": "#e5322d",
+    "kurz": "Die Werner Bonhoff Stiftung in Berlin wirkt mit zwei bundesweiten Projekten: Bürokratie-Therapie für Unternehmerinnen und Unternehmer und Nach der Tat gegen Mobbing und Gewalt an Schulen.",
+    "zweck": "Mit der Bürokratie-Therapie sammelt die Stiftung Erfahrungen von Unternehmerinnen und Unternehmern mit Bürokratie, damit Verwaltung und Gesetzgeber daraus lernen. Seit 2006 vergibt sie dazu den Werner-Bonhoff-Preis. Seit 2010 ermutigt sie Betroffene und Beobachter von Gewalt und Mobbing, an ihrer Schule etwas zu verbessern.",
+    "zielgruppen": ["Unternehmerinnen und Unternehmer", "Schülerinnen und Schüler"],
+    "foerderbereiche": ["bürokratieabbau", "unternehmertum", "gewaltprävention", "schule"],
+    "hinweis": "Sie arbeitet operativ in ihren zwei eigenen Projekten.",
+    "auftrittQuelle": "https://www.werner-bonhoff-stiftung.de"
+  },
+  "stiftung-zf-kunststiftung-229": {
+    "logo": "kandidat-1.svg",
+    "kurz": "Die ZF Kunststiftung fördert seit 1990 Kunst und Kultur in der Bodenseeregion. Heute arbeitet sie operativ mit einem Stipendium für bildende Kunst, einem Musikpreis und einem Kurzfilmpreis.",
+    "zweck": "Die ZF Friedrichshafen AG gründete die Stiftung zu ihrem 75-jährigen Bestehen. Neben der Förderung stehen Kunstvermittlung und Begegnung mit Künstlerinnen und Künstlern im Vordergrund, etwa in Ausstellungen, Konzerten und Meisterkursen. Ihre regionale Kulturförderung lief von 1990 bis 2019.",
+    "zielgruppen": ["bildende Künstlerinnen und Künstler", "Musikerinnen und Musiker", "Filmschaffende"],
+    "foerderbereiche": ["kunst", "kultur", "musik", "film", "stipendium"],
+    "hinweis": "Sie vergibt ihre Mittel heute über eigene Stipendien und Preise.",
+    "auftrittQuelle": "https://zf-kunststiftung.com"
+  }
+}

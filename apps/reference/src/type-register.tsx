@@ -86,7 +86,7 @@ function OrtOderProfil({ item }: ItemSlotProps) {
   if (komponenteAktiv(space?.data as Record<string, unknown> | undefined, STIFTUNGS_PROFIL) && traegtStiftungsProfil(daten)) {
     return (
       <Suspense fallback={<div className="h-40 w-full animate-pulse rounded-2xl bg-muted" />}>
-        <StiftungsProfilSeite key={item.id} daten={daten} bearbeitung={bearbeitung} />
+        <StiftungsProfilSeite key={item.id} daten={daten} bearbeitung={bearbeitung} bildUrl={bildUrl} />
       </Suspense>
     )
   }

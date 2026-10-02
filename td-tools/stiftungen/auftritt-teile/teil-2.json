@@ -1,0 +1,385 @@
+{
+  "stiftung-alfred-kaercher-foerderstiftung-5": {
+    "logo": "kandidat-1.jpg",
+    "hausfarbe": "#ffee00",
+    "kurz": "Die Alfred Kärcher-Förderstiftung fördert gemeinnützige Forschung zur Reinigungstechnik. Jedes Jahr schreibt sie ein Forschungsvorhaben aus.",
+    "zweck": "Sie fördert Wissenschaft und Forschung im Sinne von Alfred Kärcher. Im Mittelpunkt stehen Hygiene, Reinigung, Werterhaltung und Umweltschutz sowie die Mechanisierung manueller Arbeit. Für das ausgeschriebene Vorhaben übernimmt sie bis zu 100.000 Euro der Projektkosten.",
+    "foerderbereiche": [
+      "wissenschaft",
+      "forschung",
+      "umwelt",
+      "hygiene",
+      "reinigungstechnik"
+    ],
+    "hinweis": "Sie passt zu gemeinnütziger Forschung in der Reinigungstechnik; die Ausschreibung erscheint im Frühjahr, der Einsendeschluss liegt im Sommer.",
+    "auftrittQuelle": "https://www.kaercher-stiftung.de/de/"
+  },
+  "stiftung-bayerische-landesstiftung-23": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#00aeef",
+    "kurz": "Die Bayerische Landesstiftung fördert Vorhaben aus Kultur und Sozialem in Bayern. Ihr Schwerpunkt liegt auf der Instandsetzung bedeutender Baudenkmäler.",
+    "zweck": "Die Stiftung des öffentlichen Rechts besteht seit 1972 und verfolgt gemeinnützige und mildtätige Zwecke. Im Sozialen fördert sie vor allem Bauprojekte der Alten- und Behindertenhilfe sowie der Kinder- und Jugendhilfe, in der Kultur Kirchen, Klöster, Schlösser, Burgen und nichtstaatliche Museen. Jedes Jahr vergibt sie außerdem Preise für Kultur, Soziales und Umweltschutz.",
+    "zielgruppen": [
+      "ältere Menschen",
+      "Menschen mit Behinderung",
+      "Kinder und Jugendliche"
+    ],
+    "foerderbereiche": [
+      "kultur",
+      "soziales",
+      "denkmalschutz",
+      "museen",
+      "altenhilfe",
+      "behindertenhilfe",
+      "jugendhilfe",
+      "umwelt"
+    ],
+    "hinweis": "Sie passt zu Bau- und Sanierungsvorhaben in Bayern; Formulare und Regeln für Anträge stehen im Download-Bereich ihrer Website.",
+    "auftrittQuelle": "https://www.landesstiftung.bayern.de"
+  },
+  "stiftung-bürgerstiftung-berlin-33": {
+    "logo": "kandidat-1.png",
+    "hausfarbe": "#ef7303",
+    "akzent": "#bf2d0b",
+    "kurz": "Die Bürgerstiftung Berlin engagiert sich mit vielen Ehrenamtlichen für Kinder, Jugendliche und ältere Menschen in der Stadt. Sie trägt eigene Projekte in Schulen, Kitas und Senioreneinrichtungen.",
+    "zweck": "Ehrenamtliche Patinnen und Paten wecken in Schulen und Kitas die Freude am Lesen, an Naturwissenschaften und an der Umwelt. Weitere Projekte reichen von Sprachförderung und Handwerk bis zu Integration, Kultur und Vorlesen für ältere Menschen. Die Stiftung berät auch Menschen, die in Berlin eine Stiftung gründen oder sich ehrenamtlich einbringen wollen.",
+    "zielgruppen": [
+      "Kinder",
+      "Jugendliche",
+      "Seniorinnen und Senioren"
+    ],
+    "foerderbereiche": [
+      "kinder",
+      "jugend",
+      "bildung",
+      "integration",
+      "kultur",
+      "umweltbildung",
+      "ehrenamt",
+      "lesen"
+    ],
+    "hinweis": "Sie setzt vor allem eigene Projekte in Berlin um; Einrichtungen können sich für eine Zusammenarbeit melden.",
+    "auftrittQuelle": "https://buergerstiftung-berlin.de"
+  },
+  "stiftung-commerzbank-stiftung-44": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#ffd700",
+    "akzent": "#e9426d",
+    "kurz": "Die Commerzbank-Stiftung fördert Projekte aus Kultur, Sozialem und Wissenschaft, die gesellschaftliche Teilhabe stärken.",
+    "zweck": "In der Kultur unterstützt sie Museen, Theater und Opernhäuser, die Vermittlung und die Öffnung für neue Zielgruppen zur Aufgabe machen. Im Sozialen arbeitet sie mit etablierten Organisationen, die benachteiligten Menschen zu mehr Selbstbestimmung verhelfen, etwa in Schule und Beruf. In der Wissenschaft setzt sie Anreize für den wissenschaftlichen Nachwuchs.",
+    "zielgruppen": [
+      "benachteiligte Menschen",
+      "junge Menschen",
+      "Menschen mit Behinderung",
+      "wissenschaftlicher Nachwuchs"
+    ],
+    "foerderbereiche": [
+      "kultur",
+      "bildung",
+      "wissenschaft",
+      "inklusion",
+      "soziales",
+      "teilhabe",
+      "kulturvermittlung"
+    ],
+    "hinweis": "Sie sucht etablierte Kultureinrichtungen und soziale Organisationen als Partner, die Vermittlung oder Teilhabe zur zentralen Aufgabe machen.",
+    "auftrittQuelle": "https://commerzbank-stiftung.de"
+  },
+  "stiftung-deutsche-stiftung-denkmalschutz-62": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#0b3156",
+    "akzent": "#a6091d",
+    "kurz": "Die Deutsche Stiftung Denkmalschutz setzt sich bundesweit für den Erhalt bedrohter Baudenkmale ein. Sie fördert jedes Jahr Hunderte Sanierungen.",
+    "zweck": "Sie hilft Eigentümern, die den Erhalt eines Denkmals aus eigener Kraft kaum stemmen können, bevorzugt Privatleuten, Fördervereinen, Kirchengemeinden und Kommunen. Gefördert werden Handwerker- und Restauratorenleistungen zur Erhaltung der Originalsubstanz, an Kirchen, Schlössern, Wohnbauten, Technikdenkmalen, Gärten und Grabungen. Dazu kommen Jugendbauhütten, der Tag des offenen Denkmals und Katastrophenhilfe für Denkmale.",
+    "zielgruppen": [
+      "Denkmaleigentümer",
+      "Fördervereine",
+      "Kirchengemeinden",
+      "Kommunen"
+    ],
+    "foerderbereiche": [
+      "denkmalschutz",
+      "kultur",
+      "handwerk",
+      "jugend",
+      "katastrophenhilfe"
+    ],
+    "hinweis": "Sie passt zu Sanierungen formal geschützter Kulturdenkmale; Anträge sind jedes Jahr bis zum 31. August möglich, bei Katastrophenschäden ganzjährig.",
+    "auftrittQuelle": "https://www.denkmalschutz.de/aktuelles.html"
+  },
+  "stiftung-edeka-stiftung-74": {
+    "logo": "kandidat-1.webp",
+    "hausfarbe": "#005fae",
+    "akzent": "#f8d40a",
+    "kurz": "Die EDEKA Stiftung begeistert Kinder früh für ausgewogene Ernährung, Bewegung und Umweltbewusstsein. Dazu führt sie eigene Projekte in Kitas und Grundschulen durch.",
+    "zweck": "Unter dem Namen „Aus Liebe zum Nachwuchs“ bündelt sie ihre Bildungsprojekte, unter anderem mit dem WWF als Partner. Im Projekt „Gemüsebeete für Kids“ legen Vorschulkinder mit EDEKA-Kaufleuten als Paten eigene Hochbeete an; ein weiteres Projekt richtet sich an Grundschulkinder der dritten und vierten Klasse. Daneben unterstützt die Stiftung bedürftige Menschen und karitative Einrichtungen.",
+    "zielgruppen": [
+      "Kinder im Vorschulalter",
+      "Grundschulkinder"
+    ],
+    "foerderbereiche": [
+      "kinder",
+      "ernährung",
+      "sport",
+      "bildung",
+      "umwelt"
+    ],
+    "hinweis": "Sie setzt eigene Projekte um, an denen Kitas und Grundschulen teilnehmen.",
+    "auftrittQuelle": "https://stiftung.edeka"
+  },
+  "stiftung-freudenberg-stiftung-84": {
+    "logo": "kandidat-2.svg",
+    "hausfarbe": "#a808a8",
+    "akzent": "#5bc4bf",
+    "kurz": "Die Freudenberg Stiftung setzt sich für Bildung, soziale Inklusion und eine demokratische Kultur ein. Sie arbeitet dafür mit Partnern in Netzwerken und Programmen.",
+    "zweck": "Gesellschafterinnen und Gesellschafter der Firma Freudenberg gründeten sie 1984 für Bildung und ein friedliches Zusammenleben. Zu ihren Vorhaben gehören Bildungsnetzwerke für Kinder, Service-Learning an Schulen, Inklusionsfirmen und Community Art. Sie wirkt unter anderem in Sachsen, in Mannheim und in Tuzla in Bosnien und Herzegowina.",
+    "zielgruppen": [
+      "Kinder",
+      "Jugendliche",
+      "Menschen mit Behinderung"
+    ],
+    "foerderbereiche": [
+      "bildung",
+      "demokratie",
+      "inklusion",
+      "integration",
+      "jugend",
+      "beruf",
+      "kunst",
+      "gemeinwesen"
+    ],
+    "auftrittQuelle": "https://www.freudenbergstiftung.de/de/"
+  },
+  "stiftung-handwerkskammer-frankfurt-rhein-main-95": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#073070",
+    "akzent": "#b8003f",
+    "kurz": "Die Handwerkskammer Frankfurt-Rhein-Main ist die Kammer des Handwerks in der Region. Für Auszubildende sowie Gesellinnen und Gesellen bietet sie Stipendien und berät zu Förderprogrammen.",
+    "zweck": "Sie berät Betriebe und betreut die Berufsausbildung im Handwerk. Mit der Samstagsschule für begabte Handwerker fördert sie gute Gesellinnen und Gesellen auf dem Weg zu Führung, Meisterschaft und Selbstständigkeit. Dazu wirkt sie am Ausbildungsstipendium „Main-Potenzial“ der Stiftung Polytechnische Gesellschaft mit und nimmt Bewerbungen für das Weiterbildungsstipendium des Bundes an.",
+    "zielgruppen": [
+      "Auszubildende",
+      "Gesellinnen und Gesellen",
+      "Handwerksbetriebe"
+    ],
+    "foerderbereiche": [
+      "handwerk",
+      "ausbildung",
+      "beruf",
+      "bildung",
+      "weiterbildung",
+      "stipendium"
+    ],
+    "hinweis": "Ihre Förderung richtet sich an einzelne Auszubildende und Fachkräfte aus dem Kammergebiet Rhein-Main.",
+    "auftrittQuelle": "https://www.hwk-rhein-main.de/de/bildung/stipendien-und-foerderangebote"
+  },
+  "stiftung-inter-versicherung-ausbildungs-ass-104": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#001b41",
+    "akzent": "#dedc00",
+    "auftrittQuelle": "https://www.inter.de"
+  },
+  "stiftung-katholische-foerderstiftung-hamburg-115": {
+    "logo": "kandidat-2.png",
+    "hausfarbe": "#f08028",
+    "kurz": "Die Katholische Förderstiftung im Erzbistum Hamburg vergibt Stipendien an angehende sozialpädagogische Fachkräfte. Sie übernimmt Schulgeld oder Studiengebühren ganz oder anteilig und zahlt ein Büchergeld.",
+    "zweck": "Die 2010 gegründete Stiftung will Nachwuchs für sozialpädagogische Berufe gewinnen und so die Personallage in katholischen Kitas stärken. Zum Stipendium gehören auch Seminare und Treffen zu Glauben, Biografie und Religionspädagogik. Gefördert werden katholische Bewerberinnen und Bewerber sowie Beschäftigte katholischer Einrichtungen.",
+    "zielgruppen": [
+      "Auszubildende",
+      "Studierende",
+      "angehende Erzieherinnen und Erzieher"
+    ],
+    "foerderbereiche": [
+      "stipendium",
+      "ausbildung",
+      "bildung",
+      "sozialpädagogik",
+      "religionspädagogik",
+      "kita"
+    ],
+    "hinweis": "Sie fördert einzelne Menschen mit Ausbildungs- oder Studienplatz in Hamburg, Schleswig-Holstein oder dem Landesteil Mecklenburg; berufsbegleitend Lernende bewerben sich bis zum 1. November.",
+    "auftrittQuelle": "https://katholische-foerderstiftung.de"
+  },
+  "stiftung-kulturstiftung-des-freistaates-sachsen-124": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#198787",
+    "akzent": "#a5c83c",
+    "kurz": "Die Kulturstiftung des Freistaates Sachsen fördert Kunst- und Kulturprojekte in Sachsen, vergibt Stipendien und kauft zeitgenössische Kunst an.",
+    "zweck": "Der Freistaat errichtete die Stiftung öffentlichen Rechts 1993, ihr Sitz liegt in Dresden-Hellerau. Sie fördert Bildende und Darstellende Kunst, Musik, Literatur, Film, Soziokultur und Industriekultur, mit Schwerpunkt auf zeitgenössischer Kultur und interkulturellem Dialog. Eigene Programme wie der Kleinprojektefonds erreichen auch ländliche Regionen.",
+    "zielgruppen": [
+      "Künstlerinnen und Künstler",
+      "künstlerischer Nachwuchs"
+    ],
+    "foerderbereiche": [
+      "kunst",
+      "kultur",
+      "musik",
+      "literatur",
+      "film",
+      "soziokultur",
+      "stipendium",
+      "interkultur"
+    ],
+    "hinweis": "Sie passt zu Kunst- und Kulturvorhaben in Sachsen; ehrenamtliche Fachbeiräte prüfen die Anträge.",
+    "auftrittQuelle": "https://www.kdfs.de"
+  },
+  "stiftung-mahle-stiftung-134": {
+    "kurz": "Die MAHLE-STIFTUNG fördert gemeinnützige Einrichtungen, die auf Feldern der angewandten Anthroposophie arbeiten, in Deutschland und weltweit.",
+    "zweck": "Die Stifter Hermann und Ernst Mahle übertrugen 1964 ihre Unternehmensanteile in die Stiftung. Sie fördert Waldorfpädagogik und Bildung für benachteiligte Kinder und Jugendliche, biologisch-dynamische Landwirtschaft und Getreidezüchtung, anthroposophische Medizin und Pflege sowie Eurythmie und Theater. Die Vorhaben sollen zeitlich begrenzt sein und Entwicklung ermöglichen.",
+    "zielgruppen": [
+      "benachteiligte Kinder und Jugendliche"
+    ],
+    "foerderbereiche": [
+      "bildung",
+      "reformpädagogik",
+      "landwirtschaft",
+      "ernährung",
+      "gesundheit",
+      "pflege",
+      "kultur",
+      "kunst"
+    ],
+    "hinweis": "Anträge stellen gemeinnützige Organisationen, gefördert wird jeweils für ein Jahr; Träger im Ausland brauchen eine gemeinnützige Partnerorganisation in Deutschland.",
+    "auftrittQuelle": "https://www.mahle-stiftung.de/"
+  },
+  "stiftung-off-road-kids-stiftung-144": {
+    "hausfarbe": "#004e9e",
+    "akzent": "#eb4800",
+    "kurz": "Die Off Road Kids Stiftung hilft Straßenkindern und jungen Obdachlosen bundesweit, online und vor Ort. Ihre Sozialarbeiter begleiten sie zu Wohnung, Ausbildung und Arbeit.",
+    "zweck": "Seit 1993 berät sie junge Menschen bis 27 Jahre, die von Obdachlosigkeit bedroht oder betroffen sind. Sie bietet Nothilfe, Beratung, Gesundheitsvorsorge und Beschulung und begleitet den Weg ins Berufsleben. Vor Ort arbeitet sie in Berlin, Dortmund, Frankfurt, Hamburg und Köln.",
+    "zielgruppen": [
+      "Straßenkinder",
+      "junge Obdachlose",
+      "junge Erwachsene"
+    ],
+    "foerderbereiche": [
+      "kinder",
+      "jugend",
+      "obdachlosigkeit",
+      "armut",
+      "gesundheit",
+      "ausbildung"
+    ],
+    "hinweis": "Sie arbeitet selbst als Hilfsorganisation und finanziert sich vor allem aus Spenden.",
+    "auftrittQuelle": "https://offroadkids.de"
+  },
+  "stiftung-schoepflin-stiftung-156": {
+    "logo": "kandidat-1.svg",
+    "kurz": "Die Schöpflin Stiftung aus Lörrach setzt sich für kritisches Bewusstsein, eine lebendige Demokratie und eine vielfältige Gesellschaft ein. Sie fördert Organisationen in Europa und betreibt eigene Einrichtungen.",
+    "zweck": "Hans Schöpflin gründete die Stiftung 2001 mit seinen Geschwistern. Sie fördert zivilgesellschaftliche Initiativen für Demokratie, Schule als Ort der Mitwirkung, eine Wirtschaft für den gesellschaftlichen Zusammenhalt und stabile Strukturen für NGOs und Sozialunternehmen. In Lörrach betreibt sie die Schöpflin Schule, den Werkraum Schöpflin, das FABRIC und die Villa Schöpflin für Suchtprävention.",
+    "zielgruppen": [
+      "Kinder",
+      "Jugendliche",
+      "NGOs",
+      "Sozialunternehmen"
+    ],
+    "foerderbereiche": [
+      "demokratie",
+      "bildung",
+      "zivilgesellschaft",
+      "jugend",
+      "kinder",
+      "kultur",
+      "journalismus",
+      "suchtprävention"
+    ],
+    "hinweis": "Sie fördert gern im Verbund mit anderen Stiftungen und will ihre Partner dauerhaft in deren Wirkungsfeld verankern.",
+    "auftrittQuelle": "https://www.schoepflin-stiftung.de/"
+  },
+  "stiftung-sparkassenstiftung-landkreis-kassel-kultur-174": {
+    "logo": "kandidat-3.svg",
+    "hausfarbe": "#ee0000",
+    "kurz": "Die Stiftungen der Kasseler Sparkasse fördern gemeinnützige Projekte in Stadt und Landkreis Kassel. Ihre Felder sind Kultur, Soziales und Sport.",
+    "zweck": "Die Kulturstiftung für den Landkreis entstand 1993 und ist heute Teil der Kasseler Sparkassenstiftung Landkreis Kassel. Gefördert werden Kunst und Kultur, Denkmalpflege, Musik, Literatur und kulturelle Veranstaltungen mit Bezug zur Region, dazu soziale Anliegen, Jugend- und Breitensport und Bildung. Wert legen die Stiftungen auf Projekte, die Strukturen aufbauen und Organisationen vernetzen.",
+    "zielgruppen": [
+      "Vereine",
+      "Initiativen"
+    ],
+    "foerderbereiche": [
+      "kultur",
+      "musik",
+      "heimat",
+      "kunst",
+      "denkmalschutz",
+      "literatur",
+      "soziales",
+      "sport"
+    ],
+    "hinweis": "Sie fördert gemeinnützige Einrichtungen mit Projekten in Stadt und Landkreis Kassel; die Kuratorien entscheiden in ihren Sitzungen im Frühjahr.",
+    "auftrittQuelle": "https://www.kasseler-sparkasse.de/stiftungen"
+  },
+  "stiftung-stiftung-bürger-für-leipzig-187": {
+    "logo": "kandidat-1.jpg",
+    "hausfarbe": "#004c93",
+    "akzent": "#d1102c",
+    "kurz": "Die Bürgerstiftung Leipzig bündelt Zustiftungen, Spenden und Engagement für ihre Stadt. Sie trägt eigene Programme und gibt Spenden an Leipziger Einrichtungen weiter.",
+    "zweck": "Sie will Leipzig zu einem lebenswerten Ort für alle Menschen machen und betreut dafür Zustiftungen und Vermächtnisse auf Dauer. Zu ihren Vorhaben gehören das Wunderfinder-Programm, Patenschaften, gemeinsames Kochen mit Kindern und Jugendlichen in Jugendclubs, das Bürgersingen und Rikschafahrten mit Seniorinnen und Senioren.",
+    "zielgruppen": [
+      "Kinder",
+      "Jugendliche",
+      "Seniorinnen und Senioren"
+    ],
+    "foerderbereiche": [
+      "kinder",
+      "jugend",
+      "ehrenamt",
+      "senioren",
+      "ernährung",
+      "musik"
+    ],
+    "hinweis": "Sie wirkt in Leipzig und leitet Spenden an Einrichtungen der Stadt weiter, etwa an Jugendclubs.",
+    "auftrittQuelle": "https://www.buergerstiftung-leipzig.de"
+  },
+  "stiftung-stiftung-mercator-194": {
+    "logo": "kandidat-1.png",
+    "hausfarbe": "#00a6e2",
+    "kurz": "Die Stiftung Mercator ist eine private, unabhängige Stiftung aus Essen. Sie fördert Projekte für Demokratie, Teilhabe, ein handlungsfähiges Europa, digitale Grundrechte und Klimaresilienz.",
+    "zweck": "Seit 1996 tritt sie für eine solidarische und partizipative Gesellschaft ein und stützt sich dabei auf Wissenschaft und Projekterfahrung. Ihre vier Themen heißen Digitalisierte Gesellschaft, Europa in der Welt, Klimaresiliente Gesellschaft sowie Teilhabe und Zusammenhalt. Sie wirkt in Deutschland, Europa und weltweit und fühlt sich dem Ruhrgebiet besonders verbunden.",
+    "zielgruppen": [
+      "sozioökonomisch benachteiligte Menschen",
+      "unterrepräsentierte Menschen"
+    ],
+    "foerderbereiche": [
+      "demokratie",
+      "europa",
+      "digitalisierung",
+      "klima",
+      "teilhabe",
+      "zusammenhalt",
+      "integration"
+    ],
+    "hinweis": "Kriterien und Ablauf für Anträge stehen auf ihrer Website unter Informationen für Antragstellende.",
+    "auftrittQuelle": "https://www.stiftung-mercator.de/de/"
+  },
+  "stiftung-v-bodelschwinghsche-stiftungen-bethel-234": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#182260",
+    "kurz": "Die v. Bodelschwinghschen Stiftungen Bethel sind ein diakonisches Unternehmen. Sie begleiten Menschen mit Behinderung, mit Erkrankungen, im Alter und am Lebensende.",
+    "zweck": "Seit 1867 bietet Bethel Wohnen, Pflege, Arbeit, Bildung und medizinische Versorgung, heute an rund 300 Standorten in acht Bundesländern. Dazu gehören Epilepsie-Zentren, Kliniken, Werkstätten, Hospizarbeit und Hilfen für junge Menschen. Ziel ist ein selbstverständliches Zusammenleben von jungen und alten, gesunden und kranken, behinderten und nichtbehinderten Menschen.",
+    "zielgruppen": [
+      "Menschen mit Behinderung",
+      "Menschen mit Epilepsie",
+      "Menschen mit psychischen Erkrankungen",
+      "ältere Menschen",
+      "junge Menschen"
+    ],
+    "foerderbereiche": [
+      "inklusion",
+      "pflege",
+      "gesundheit",
+      "behindertenhilfe",
+      "epilepsie",
+      "psychiatrie",
+      "hospiz",
+      "bildung"
+    ],
+    "hinweis": "Bethel ist selbst Träger von Diensten und Einrichtungen und sammelt Spenden für die eigene Arbeit.",
+    "auftrittQuelle": "https://www.bethel.de"
+  },
+  "stiftung-wittelsbacher-ausgleichsfonds-wittelsbacher-land-222": {
+    "logo": "kandidat-2.gif",
+    "kurz": "Der Wittelsbacher Ausgleichsfonds ist eine Stiftung öffentlichen Rechts aus dem Jahr 1923. Er bewahrt das kulturelle Erbe des Hauses Wittelsbach und sichert dessen Versorgung.",
+    "zweck": "Er verwaltet Kunst und Tradition des Hauses Wittelsbach, die Standorte Berchtesgaden und Hohenschwangau sowie Immobilien. Seine Forstdirektion bewirtschaftet rund 12.000 Hektar Wald und landwirtschaftliche Flächen in Bayern.",
+    "hinweis": "Die Website beschreibt Kulturerbe und Vermögensverwaltung; Angaben zu einer Förderung für Projekte fehlen dort.",
+    "auftrittQuelle": "https://www.waf-bayern.de"
+  }
+}

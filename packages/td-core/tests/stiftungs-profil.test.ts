@@ -3,7 +3,7 @@
  * fehlt, fällt weg; `false` ist eine Antwort; Adressen nur sicher.
  */
 import { describe, expect, it } from "vitest"
-import { stiftungsProfil, traegtStiftungsProfil } from "../src/stiftungs-profil"
+import { stiftungsProfil, traegtStiftungsProfil, kontrast, lesbarAuf, lesbarAufHell, dunkler } from "../src/stiftungs-profil"
 import { ERWEITERUNGEN, STIFTUNGS_PROFIL, PROJEKT_PROFIL } from "../src/erweiterungen"
 import { musterItems } from "../src/musterdaten"
 
@@ -20,7 +20,9 @@ describe("Stiftungsprofil", () => {
     expect(p.foerderbereiche).toContain("Kinder")
     expect(p.kontakt).toMatchObject({ website: "https://auridis-stiftung.de", anschriftQuelle: expect.stringMatching(/impressum/) })
     expect(p.geben).toEqual({ zustiftung: true, spende: null, treuhand: null })
-    expect(p.zweck).toBeNull()
+    // Der Auftritt (02.10.2026): Logo bei uns, Herkunft genannt.
+    expect(p.bild).toBe("stiftungen/stiftung-auridis-stiftung-11.svg")
+    expect(p.auftritt?.quelle).toMatch(/auridis-stiftung\.de/)
   })
 
   it("nur Name und Art: das Profil steht trotzdem, ohne leere Abschnitte", () => {
@@ -91,5 +93,41 @@ describe("Im Verzeichnis", () => {
   it("führt das Stiftungsprofil für Orte, neben dem Project Profile", () => {
     expect(ERWEITERUNGEN.find((e) => e.id === STIFTUNGS_PROFIL)).toMatchObject({ art: "komponente", fuerTyp: "place", name: "Stiftungsprofil" })
     expect(STIFTUNGS_PROFIL).not.toBe(PROJEKT_PROFIL)
+  })
+})
+
+describe("Im Auftritt der Stiftung", () => {
+  it("zweite Farbe, Kurzsatz und Herkunft aus den Daten", () => {
+    const p = stiftungsProfil({ title: "A", hausfarbe: "#961E82", akzent: "#dc5082", kurz: " Hilft in Lateinamerika. ", auftrittQuelle: "https://adveniat.de", auftrittStand: "2026-10-02" })
+    expect(p.farbe).toBe("#961e82")
+    expect(p.akzent).toBe("#dc5082")
+    expect(p.kurz).toBe("Hilft in Lateinamerika.")
+    expect(p.auftritt).toEqual({ quelle: "https://adveniat.de", stand: "2026-10-02" })
+  })
+
+  it("ein helles Logo steht auf den Hausfarben", () => {
+    expect(stiftungsProfil({ title: "A", bild: "stiftungen/a.svg", bildHell: true }).bildHell).toBe(true)
+    expect(stiftungsProfil({ title: "A", bild: "stiftungen/a.svg", bildHell: "ja" }).bildHell).toBe(false)
+  })
+
+  it("ohne zweite Farbe eine dunklere Hausfarbe, ohne Herkunft nichts", () => {
+    const p = stiftungsProfil({ title: "A", hausfarbe: "#ffffff" })
+    expect(p.akzent).toBe(dunkler("#ffffff"))
+    expect(p.auftritt).toBeNull()
+  })
+
+  it("Text auf Farbe bleibt lesbar: auf Gelb dunkel, auf Dunkelblau hell", () => {
+    expect(lesbarAuf("#ffd500")).toBe("#111827")
+    expect(lesbarAuf("#00005f")).toBe("#ffffff")
+    expect(kontrast("#ffffff", "#000000")).toBeCloseTo(21, 0)
+    const p = stiftungsProfil({ title: "A", hausfarbe: "#e31519", akzent: "#a00f12" })
+    expect(kontrast(p.textAufFarbe, p.farbe)).toBeGreaterThanOrEqual(4.5)
+  })
+
+  it("Schrift in der Hausfarbe wird abgedunkelt, bis sie auf hellem Grund lesbar ist", () => {
+    const gelb = stiftungsProfil({ title: "A", hausfarbe: "#f6de30" })
+    expect(kontrast(gelb.farbeText, "#f8f8f8")).toBeGreaterThanOrEqual(4.5)
+    expect(stiftungsProfil({ title: "A", hausfarbe: "#00245c" }).farbeText).toBe("#00245c")
+    expect(lesbarAufHell("#ffffff")).not.toBe("#ffffff")
   })
 })

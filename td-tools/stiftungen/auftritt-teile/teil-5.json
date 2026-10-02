@@ -1,0 +1,334 @@
+{
+  "stiftung-allianz-kulturstiftung-8": {
+    "hausfarbe": "#3ce664",
+    "akzent": "#ff784b",
+    "kurz": "Die Allianz Foundation fördert Zivilgesellschaft, Umweltschutz sowie Kunst und Kultur in Europa. Sie unterstützt Vorhaben, die neue Wege für offene Gesellschaften und einen lebenswerten Planeten suchen.",
+    "zweck": "Sie entstand 2022 aus der Allianz Kulturstiftung und der Allianz Umweltstiftung. Ihre Förderschwerpunkte sind nachhaltige Städte, vertrauenswürdige Information und sozial engagierte Kunst. Dazu kommen eigene Programme wie Fellowships, regionale Hubs und eine Studie zur Sicht junger Generationen.",
+    "foerderbereiche": [
+      "kultur",
+      "kunst",
+      "demokratie",
+      "umwelt",
+      "klima",
+      "stadtentwicklung",
+      "journalismus",
+      "international"
+    ],
+    "hinweis": "Sie veröffentlicht regelmäßig Förderaufrufe zu bestimmten Themen und arbeitet europaweit.",
+    "auftrittQuelle": "https://allianzfoundation.org"
+  },
+  "stiftung-bewegungsstiftung-27": {
+    "logo": "kandidat-1.jpg",
+    "hausfarbe": "#cc0000",
+    "akzent": "#245f09",
+    "kurz": "Die Bewegungsstiftung unterstützt soziale Bewegungen, die sich für Ökologie, Frieden und Menschenrechte einsetzen. Sie hilft mit Geld und Beratung.",
+    "zweck": "Sie fördert Protest und Kampagnen von Initiativen und begleitet Aktive als Bewegungsarbeiterinnen und Bewegungsarbeiter. Geförderte Projekte erhalten über die Basisförderung auch langfristige Unterstützung. Stifterinnen, Stifter und Aktive treffen sich jährlich zur Strategiewerkstatt.",
+    "zielgruppen": [
+      "soziale Bewegungen",
+      "Aktivistinnen und Aktivisten"
+    ],
+    "foerderbereiche": [
+      "umwelt",
+      "klima",
+      "frieden",
+      "menschenrechte",
+      "demokratie"
+    ],
+    "hinweis": "Sie passt zu Bewegungen und Kampagnen für gesellschaftlichen Wandel; Anträge laufen über ihr Online-Förderportal.",
+    "auftrittQuelle": "https://www.bewegungsstiftung.de/magazin"
+  },
+  "stiftung-bürgerstiftung-hannover-36": {
+    "logo": "kandidat-2.png",
+    "hausfarbe": "#003388",
+    "akzent": "#eb6a05",
+    "kurz": "Die Bürgerstiftung Hannover fördert soziale, kulturelle und ökologische Projekte in Stadt und Region Hannover. Bürgerinnen und Bürger tragen sie gemeinsam.",
+    "zweck": "Seit 1997 unterstützt sie Vorhaben von Vereinen, Initiativen und Gruppen, von einmaligen Zuschüssen bis zu längerer Begleitung. Ein Schwerpunkt liegt auf Kindern und Jugendlichen. Unter ihrem Dach verwaltet sie auch Stiftungen und Stifterfonds.",
+    "zielgruppen": [
+      "Kinder",
+      "Jugendliche",
+      "Seniorinnen und Senioren"
+    ],
+    "foerderbereiche": [
+      "kinder",
+      "jugend",
+      "senioren",
+      "bildung",
+      "kultur",
+      "soziales",
+      "umwelt",
+      "engagement"
+    ],
+    "hinweis": "Sie fördert Vereine, Initiativen und Gruppen aus Stadt und Region Hannover.",
+    "auftrittQuelle": "https://buergerstiftung-hannover.de"
+  },
+  "stiftung-danner-stiftung-53": {
+    "logo": "kandidat-1.svg",
+    "kurz": "Die Danner-Stiftung fördert seit über 100 Jahren das Kunsthandwerk in Bayern. Sie unterstützt Kunsthandwerkerinnen und Kunsthandwerker und vergibt den Danner-Preis.",
+    "zweck": "Sie will Menschen im Kunsthandwerk finanziell stärken und die Wertschätzung für ihr Handwerk in der Gesellschaft mehren. Dazu dienen Diskussionsrunden, Nachwuchsförderung, Wettbewerbe und Ausstellungen. Sie fördert auch Messeauftritte, Kataloge und Ausstellungen.",
+    "zielgruppen": [
+      "Kunsthandwerkerinnen und Kunsthandwerker"
+    ],
+    "foerderbereiche": [
+      "kunsthandwerk",
+      "handwerk",
+      "kunst",
+      "nachwuchs",
+      "ausstellungen"
+    ],
+    "hinweis": "Sie passt zu Vorhaben aus dem Kunsthandwerk mit Bezug zu Bayern.",
+    "auftrittQuelle": "https://danner-stiftung.de"
+  },
+  "stiftung-deutsches-kinderhilfswerk-dkhw-66": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#0069b4",
+    "akzent": "#e30613",
+    "kurz": "Das Deutsche Kinderhilfswerk setzt sich für die Rechte von Kindern in Deutschland ein. Es fördert jedes Jahr Hunderte Projekte, die Kinder stärken.",
+    "zweck": "Im Mittelpunkt stehen die Überwindung von Kinderarmut und die Beteiligung von Kindern und Jugendlichen. Es fördert Vorhaben zu Kinderrechten, Demokratie, Spiel und Bewegung, Kultur und Medien. Mit dem Kindernothilfefonds hilft es Familien in individuellen Notlagen.",
+    "zielgruppen": [
+      "Kinder",
+      "Jugendliche",
+      "Familien"
+    ],
+    "foerderbereiche": [
+      "kinder",
+      "jugend",
+      "kinderrechte",
+      "armut",
+      "beteiligung",
+      "demokratie",
+      "kultur",
+      "medien"
+    ],
+    "hinweis": "Projekte für Kinder in Deutschland können sich um eine Projektförderung bewerben; Familien in Not stellen einen Antrag beim Kindernothilfefonds.",
+    "auftrittQuelle": "https://www.dkhw.de"
+  },
+  "stiftung-ev-stiftung-volmarstein-78": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#9c0008",
+    "kurz": "Die Evangelische Stiftung Volmarstein ist eine diakonische Einrichtung in Wetter (Ruhr). Sie bietet Rehabilitation, Pflege, Wohnangebote und Hilfen für Menschen mit Behinderung.",
+    "zweck": "Pfarrer Arndt gründete sie 1904 für die Pflege von Menschen mit Körperbehinderung. Heute bietet sie mit Tochterunternehmen schulische, berufliche und medizinische Rehabilitation, Forschung zur Behindertenhilfe und Dienste im Gesundheitswesen. Die volle Teilhabe von Menschen mit Behinderung ist ihr Leitgedanke.",
+    "zielgruppen": [
+      "Menschen mit Behinderung"
+    ],
+    "hinweis": "Ihre Website stellt eigene Dienste vor und nennt kein Förderprogramm für Projekte Dritter.",
+    "auftrittQuelle": "https://www.esv.de"
+  },
+  "stiftung-fuchs-foerderpreis-fuchs-se-87": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#004e9e",
+    "akzent": "#e3000f",
+    "auftrittQuelle": "https://www.fuchs.com"
+  },
+  "stiftung-hans-erich-und-marie-elfriede-dotter-stiftung-99": {
+    "logo": "kandidat-1.webp",
+    "hausfarbe": "#b7013a",
+    "kurz": "Die Dotter-Stiftung fördert Menschen, Einrichtungen und Projektideen im Darmstädter Stadtteil Eberstadt. Ihr Motto lautet, Kräfte vor Ort zu wecken und zu stärken.",
+    "zweck": "Sie unterstützt Vorhaben, die das bürgerschaftliche Engagement in Eberstadt stärken, der Allgemeinheit nutzen und die Lebensqualität heben. Gefördert wurden etwa ein Literaturfestival, ein Amateurtheater, Schülerpatenschaften und Ausflüge für ältere Menschen. Dazu kommen eigene Konzerte und Kooperationsprojekte.",
+    "zielgruppen": [
+      "Kinder",
+      "Jugendliche",
+      "Seniorinnen und Senioren"
+    ],
+    "foerderbereiche": [
+      "gemeinwesen",
+      "engagement",
+      "kultur",
+      "bildung",
+      "senioren"
+    ],
+    "hinweis": "Sie fördert nur Vorhaben mit direktem Bezug zu Darmstadt-Eberstadt; der Vorstand entscheidet viermal im Jahr über Anträge aus dem Antragsportal.",
+    "auftrittQuelle": "https://dotter-stiftung.de/"
+  },
+  "stiftung-joachim-herz-stiftung-109": {
+    "hausfarbe": "#4b0072",
+    "kurz": "Die Joachim Herz Stiftung aus Hamburg fördert Bildung, Wissenschaft und Forschung. Sie sucht Lösungen für Ressourceneffizienz, Klimaschutz und die Sicherung von Fachkräften.",
+    "zweck": "Sie unterstützt anwendungsnahe Forschung an der Schnittstelle von Ingenieur- und Naturwissenschaften und den Transfer in die Praxis, etwa durch Ausgründungen. In der beruflichen Bildung stärkt sie digitale Kompetenzen von Auszubildenden und Lehrkräften. Sie arbeitet operativ und fördernd, mit Projekt-, Individual- und Strukturförderung.",
+    "zielgruppen": [
+      "Forschende",
+      "Auszubildende",
+      "Lehrkräfte"
+    ],
+    "foerderbereiche": [
+      "bildung",
+      "wissenschaft",
+      "forschung",
+      "innovation",
+      "klima",
+      "digitalisierung"
+    ],
+    "hinweis": "Sie passt zu mutigen, auch riskanten Vorhaben aus Forschung, Transfer und beruflicher Bildung.",
+    "auftrittQuelle": "https://www.joachim-herz-stiftung.de"
+  },
+  "stiftung-kolping-bildungs-stiftung-bamberg-119": {
+    "logo": "kandidat-1.png",
+    "hausfarbe": "#ff8c00",
+    "kurz": "Die Kolping-Bildungs-Stiftung setzt sich für Menschen ohne Schul- oder Berufsabschluss ein. Sie unterstützt deren Förderung und dauerhafte Integration.",
+    "zielgruppen": [
+      "Menschen ohne Schulabschluss",
+      "Menschen ohne Berufsabschluss"
+    ],
+    "foerderbereiche": [
+      "bildung",
+      "ausbildung",
+      "integration"
+    ],
+    "hinweis": "Ihre Website gehört zum Kolping-Bildungswerk Bamberg, einem Bildungsträger in Ober- und Mittelfranken.",
+    "auftrittQuelle": "https://www.kolpingbildung.de"
+  },
+  "stiftung-körber-stiftung-127": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#e60000",
+    "akzent": "#5745ff",
+    "kurz": "Die Körber-Stiftung aus Hamburg stößt Debatten an und setzt eigene Projekte um. Ihre Felder sind die lebendige Bürgergesellschaft, Innovation und internationale Verständigung.",
+    "zweck": "Sie arbeitet mit eigenen Projekten, in Netzwerken und mit Partnern. Ihre Bereiche reichen von Alter und Demografie über Bildung, Demokratie, Gründen, Geschichte und internationale Politik bis zu Kultur und Wissenschaft. Dazu gehören Wettbewerbe und Preise wie der Deutsche Studienpreis.",
+    "zielgruppen": [
+      "Kinder",
+      "Jugendliche",
+      "Lehrkräfte",
+      "Forschende",
+      "Engagierte",
+      "ältere Menschen"
+    ],
+    "foerderbereiche": [
+      "bildung",
+      "wissenschaft",
+      "kultur",
+      "demokratie",
+      "international",
+      "geschichte",
+      "alter"
+    ],
+    "hinweis": "Sie arbeitet vor allem in eigenen Projekten, Netzwerken und Kooperationen.",
+    "auftrittQuelle": "https://koerber-stiftung.de"
+  },
+  "stiftung-merck-family-foundation-merck-finck-stiftung-137": {
+    "logo": "kandidat-2.png",
+    "hausfarbe": "#00666b",
+    "akzent": "#ad7a3c",
+    "kurz": "Die Merck Finck Stiftung wurde 2007 von der Privatbank Merck Finck gegründet. Ihre Kernthemen sind Bildung und Erziehung sowie Jugend- und Altenhilfe.",
+    "zweck": "Gemeinsam mit Kundinnen und Kunden der Bank fördert sie ausgewählte gemeinnützige Zwecke. Zustifter wählen aus einem breiten Katalog von Stiftungszwecken. Sie unterstützt Projekte für Kinder, Kranke und ältere Menschen und vergibt Stipendien an Studierende.",
+    "zielgruppen": [
+      "Kinder",
+      "Jugendliche",
+      "ältere Menschen",
+      "Studierende"
+    ],
+    "hinweis": "Sie fördert nach ihren Förderrichtlinien und auf schriftlichen Antrag.",
+    "auftrittQuelle": "https://www.merckfinckstiftung.de/de-de"
+  },
+  "stiftung-paritätischer-wohlfahrtsverband-bundesstiftung-147": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#005da8",
+    "akzent": "#cc051c",
+    "kurz": "Der Paritätische ist ein Dachverband gemeinnütziger sozialer Organisationen und einer der sechs Spitzenverbände der Freien Wohlfahrtspflege. Er ist keine Stiftung.",
+    "zweck": "Unter seinem Dach arbeiten Mitgliedsorganisationen von der Kita bis zum Hospiz. Er berät seine Mitglieder in fachlichen, rechtlichen und organisatorischen Fragen und hilft bei der Finanzierung von Projekten. Dazu vermittelt er Wege zu Mitteln wie Aktion Mensch, GlücksSpirale und zinslosen Darlehen aus dem Revolvingfonds des Bundes.",
+    "hinweis": "Seine Förderwege richten sich vor allem an Paritätische Mitgliedsorganisationen.",
+    "auftrittQuelle": "https://www.der-paritaetische.de"
+  },
+  "stiftung-sir-peter-ustinov-stiftung-162": {
+    "logo": "kandidat-2.svg",
+    "hausfarbe": "#af794f",
+    "akzent": "#223865",
+    "kurz": "Die Sir Peter Ustinov Stiftung hilft Kindern in schwierigen Lebenslagen weltweit. Sie fördert Bildung, Grundversorgung und kreative Projekte.",
+    "zweck": "Sir Peter Ustinov und sein Sohn Igor gründeten die Stiftung 1999. Sie will Kindern und jungen Menschen durch Zugang zu Bildung und Kreativität bessere Lebensbedingungen und eine eigenständige Zukunft geben. Sie unterstützt Schulen, Ernährung und Gesundheitsvorsorge sowie Kunst, Musik, Tanz und Schauspiel.",
+    "zielgruppen": [
+      "Kinder",
+      "Jugendliche"
+    ],
+    "foerderbereiche": [
+      "bildung",
+      "kinder",
+      "jugend",
+      "integration",
+      "kunst",
+      "kultur",
+      "ernährung",
+      "gesundheit"
+    ],
+    "hinweis": "Sie unterstützt Bildungsprojekte für benachteiligte Kinder in Europa, Afrika, Südamerika und Asien.",
+    "auftrittQuelle": "https://ustinov.org"
+  },
+  "stiftung-stiftergemeinschaft-sparkasse-saarbrücken-177": {
+    "logo": "kandidat-3.svg",
+    "hausfarbe": "#ee0000",
+    "auftrittQuelle": "https://www.sparkasse-saarbruecken.de/de/home.html"
+  },
+  "stiftung-stiftung-deutsche-jugendmarke-189": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#e6007e",
+    "akzent": "#4fa2af",
+    "kurz": "Die Stiftung Deutsche Jugendmarke fördert Vorhaben, die der Kinder- und Jugendhilfe neue Impulse geben. Das Geld stammt aus dem Zuschlag der Briefmarken „Für die Jugend“.",
+    "zweck": "Drei Bundesministerien gründeten sie 1965. Sie vergibt Zuschüsse für innovative Projekte und Praxisforschung sowie zinslose Darlehen für Bauvorhaben, bis zu 200.000 Euro. Gefördert werden Vorhaben anerkannter freier und öffentlicher Träger der Kinder- und Jugendhilfe.",
+    "zielgruppen": [
+      "Kinder",
+      "Jugendliche"
+    ],
+    "foerderbereiche": [
+      "kinder",
+      "jugend",
+      "jugendhilfe",
+      "innovation",
+      "forschung",
+      "bauvorhaben"
+    ],
+    "hinweis": "Sie fördert Vorhaben mit Wirkung über den Ort hinaus; vor dem Antrag steht eine Beratung, und die Mitglieder entscheiden zweimal im Jahr.",
+    "auftrittQuelle": "https://jugendmarke.de"
+  },
+  "stiftung-stiftung-polytechnische-gesellschaft-197": {
+    "logo": "kandidat-2.svg",
+    "hausfarbe": "#015daa",
+    "akzent": "#fece03",
+    "kurz": "Die Stiftung Polytechnische Gesellschaft stärkt seit 2005 Bildung und den gesellschaftlichen Zusammenhalt in Frankfurt am Main.",
+    "zweck": "Ihre Programme fördern Persönlichkeitsentwicklung und Teilhabe und befähigen Menschen, Verantwortung in der Bürgergesellschaft zu übernehmen. Sie fördert auch Projekte Dritter zum Wohl der Frankfurter Stadtgesellschaft. Gegründet wurde sie von der Polytechnischen Gesellschaft, einer Bürgervereinigung von 1816.",
+    "foerderbereiche": [
+      "bildung",
+      "engagement",
+      "demokratie",
+      "gemeinwesen"
+    ],
+    "hinweis": "Sie wirkt in Frankfurt; über den Frankfurter Miteinanderfonds erhalten Personen und gemeinnützige Organisationen bis zu 500 Euro für Ideen, die das Miteinander stärken.",
+    "auftrittQuelle": "https://sptg.de"
+  },
+  "stiftung-vodafone-stiftung-deutschland-216": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#e60000",
+    "kurz": "Die Vodafone Stiftung setzt sich für gute Bildung in einer digitalen Welt ein. Sie stärkt Lehrkräfte und Lernende für digitales Lernen und mehr Bildungsgerechtigkeit.",
+    "zweck": "Sie fördert Kompetenzen des 21. Jahrhunderts und wirkt an Reformen des Bildungswesens mit. Mit der Initiative Kliick stärkt sie die Medienkompetenz junger Menschen, mit Coding for Tomorrow die technologische Bildung an Schulen. Als Thinktank veröffentlicht sie Studien zur digitalen Bildung.",
+    "zielgruppen": [
+      "Schülerinnen und Schüler",
+      "Jugendliche",
+      "Lehrkräfte"
+    ],
+    "foerderbereiche": [
+      "bildung",
+      "digitalisierung",
+      "jugend",
+      "demokratie",
+      "medienkompetenz"
+    ],
+    "hinweis": "Sie arbeitet vor allem mit eigenen Initiativen und Partnern im Bildungswesen.",
+    "auftrittQuelle": "https://www.vodafone-stiftung.de/"
+  },
+  "stiftung-wuestenrot-stiftung-225": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#c90631",
+    "kurz": "Die Wüstenrot Stiftung kümmert sich um kulturelles Erbe und um Zukunftsfragen der Gesellschaft. Sie setzt eigene Projekte um und fördert Vorhaben anderer gemeinnütziger Einrichtungen.",
+    "zweck": "Ihre Themen sind Denkmale, Zukunftsfragen, Stadt und Land, Literatur, Kunst und Kultur sowie Bildung. Sie setzt Baudenkmale instand, unterstützt Museen, Bibliotheken und Archive und fördert Nachwuchsforschende mit Stipendien. Sie lobt Wettbewerbe aus und vergibt Preise.",
+    "zielgruppen": [
+      "Nachwuchsforschende",
+      "Museen, Bibliotheken und Archive"
+    ],
+    "foerderbereiche": [
+      "denkmalschutz",
+      "kultur",
+      "kunst",
+      "literatur",
+      "bildung",
+      "wissenschaft",
+      "forschung",
+      "stadtentwicklung"
+    ],
+    "hinweis": "Sie legt einen Schwerpunkt auf Kulturgüter, die nach 1945 entstanden sind.",
+    "auftrittQuelle": "https://wuestenrot-stiftung.de"
+  }
+}

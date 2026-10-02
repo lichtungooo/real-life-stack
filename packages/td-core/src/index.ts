@@ -94,6 +94,10 @@ export {
 export {
   stiftungsProfil,
   traegtStiftungsProfil,
+  kontrast,
+  lesbarAuf,
+  lesbarAufHell,
+  dunkler,
   type StiftungsProfil,
 } from "./stiftungs-profil.js"
 export {

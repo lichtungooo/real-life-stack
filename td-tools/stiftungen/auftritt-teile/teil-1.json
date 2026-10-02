@@ -1,0 +1,186 @@
+{
+  "stiftung-alexander-von-humboldt-stiftung-4": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#00aba9",
+    "akzent": "#003399",
+    "kurz": "Die Humboldt-Stiftung vergibt Stipendien und Forschungspreise an Forschende aus aller Welt, die in Deutschland arbeiten, und an deutsche Forschende für Aufenthalte im Ausland.",
+    "zweck": "Die Stiftung fördert Wissenschaftlerinnen und Wissenschaftler aller Fächer und Nationen und stärkt den Forschungsaustausch mit Deutschland. Sie begleitet ihre Geförderten über den Aufenthalt hinaus mit Alumni-Programmen. Dazu gehören Humboldt-Professuren, Forschungsstipendien und Preise.",
+    "zielgruppen": ["Forschende", "Postdocs", "Professorinnen und Professoren"],
+    "foerderbereiche": ["wissenschaft", "international", "forschung", "stipendium", "forschungspreis"],
+    "hinweis": "Sie fördert Personen und keine Projekte.",
+    "auftrittQuelle": "https://www.humboldt-foundation.de"
+  },
+  "stiftung-basf-stiftung-16": {
+    "hausfarbe": "#21a0d2",
+    "akzent": "#c50022",
+    "auftrittQuelle": "https://www.basf.com/global/de"
+  },
+  "stiftung-brot-fuer-die-welt-inland-31": {
+    "hausfarbe": "#ff6200",
+    "kurz": "Brot für die Welt ist das Hilfswerk der evangelischen Kirchen. Es fördert Projekte gegen Hunger und Armut und leistet Bildungsarbeit, auch mit einer eigenen Inlandsförderung.",
+    "zweck": "Brot für die Welt arbeitet mit lokalen, oft kirchlichen Partnerorganisationen im Globalen Süden zusammen. Es setzt sich für Ernährung, Menschenrechte, Frieden, Bildung und Klimagerechtigkeit ein. In Deutschland fördert es entwicklungspolitische Bildung und begleitet Gemeinden.",
+    "foerderbereiche": ["entwicklungszusammenarbeit", "ernährung", "menschenrechte", "klima", "bildung", "frieden", "armut"],
+    "auftrittQuelle": "https://www.brot-fuer-die-welt.de"
+  },
+  "stiftung-caritas-stiftung-im-bistum-fulda-42": {
+    "logo": "kandidat-2.jpg",
+    "hausfarbe": "#ce1e1b",
+    "kurz": "Die Caritas-Stiftung im Bistum Fulda sammelt Spenden und Zustiftungen und unterstützt damit Projekte der Caritas im Bistum.",
+    "zweck": "Die Stiftung gibt Menschen die Möglichkeit, die Arbeit der Caritas in der Diözese Fulda gezielt zu stärken. Der Diözesan-Caritasverband trägt Dienste und Einrichtungen der Altenhilfe, der Behindertenhilfe sowie der Kinder- und Jugendhilfe. Die Hilfe gilt allen Menschen in Not, gleich welcher Herkunft oder Religion.",
+    "zielgruppen": ["Hilfebedürftige Menschen"],
+    "foerderbereiche": ["soziales", "altenhilfe", "behindertenhilfe", "jugendhilfe"],
+    "hinweis": "Sie unterstützt die Arbeit der Caritas im Bistum Fulda und ihrer Dienste und Einrichtungen.",
+    "auftrittQuelle": "https://www.dicvfulda.caritas.de"
+  },
+  "stiftung-deutsche-sporthilfe-stiftung-61": {
+    "logo": "kandidat-1.png",
+    "hausfarbe": "#e10019",
+    "akzent": "#ffc300",
+    "kurz": "Die Stiftung Deutsche Sporthilfe fördert seit 1967 Nachwuchs- und Spitzensportlerinnen und -sportler mit Geld, bei der Karriereplanung und in der Persönlichkeitsentwicklung.",
+    "zweck": "Die Sporthilfe begleitet Athletinnen und Athleten über ihre ganze sportliche Laufbahn. Bundeskader erhalten eine Grundförderung, erfolgreiche Talente zusätzliche Elite-Förderungen. Nach dem Karriereende hilft ein Alumni-Stipendium beim Weg in Beruf oder Studium.",
+    "zielgruppen": ["Nachwuchsathletinnen und -athleten", "Spitzensportlerinnen und -sportler", "Ehemalige Athletinnen und Athleten"],
+    "foerderbereiche": ["sport", "stipendium", "nachwuchs", "beruf"],
+    "hinweis": "Gefördert werden einzelne Athletinnen und Athleten aus den Bundeskadern.",
+    "auftrittQuelle": "https://www.sporthilfe.de"
+  },
+  "stiftung-dsj-dfl-stiftung-48": {
+    "logo": "kandidat-1.png",
+    "hausfarbe": "#d20515",
+    "kurz": "Die Bundesliga Stiftung ist die Stiftung des Profifußballs. Sie stärkt Kinder, Jugendliche und junge Sporttalente mit eigenen Programmen und fördert Projekte Dritter.",
+    "zweck": "Die Stiftung wurde 2008 vom Bundesliga e.V. und der Bundesliga-Gruppe gegründet. Sie arbeitet in drei Feldern: gesundes und aktives Aufwachsen, gesellschaftliches Miteinander und Förderung des Spitzensports. Neben eigenen Leuchtturmprogrammen unterstützt sie viele meist lokale Projekte.",
+    "zielgruppen": ["Kinder", "Jugendliche", "Sporttalente"],
+    "foerderbereiche": ["jugend", "kinder", "sport", "gesundheit", "zusammenhalt", "spitzensport"],
+    "hinweis": "Derzeit nimmt sie keine Anträge an; in unregelmäßigen Abständen schreibt sie Projekte zu ausgewählten Themen aus.",
+    "auftrittQuelle": "https://www.bundesliga-stiftung.de"
+  },
+  "stiftung-frankfurter-bürgerstiftung-im-holzhausenschlössc-83": {
+    "logo": "kandidat-3.png",
+    "hausfarbe": "#ff5376",
+    "kurz": "Die Frankfurter Bürgerstiftung im Holzhausenschlösschen gestaltet das kulturelle und soziale Leben in Frankfurt mit Konzerten, Lesungen, Vorträgen und Kinderveranstaltungen.",
+    "zweck": "Bürgerinnen, Bürger und Institutionen gründeten die Stiftung 1989. Sie veranstaltet Konzerte, Lesereihen, Vorträge sowie Kinder- und Jugendangebote und erforscht die Geschichte der Stadt. Daneben wirkt sie in Sozialem, Bildung, Naturschutz und Flüchtlingshilfe.",
+    "zielgruppen": ["Kinder", "Jugendliche"],
+    "foerderbereiche": ["kultur", "kunst", "musik", "kinder", "bildung", "soziales", "natur", "geschichte"],
+    "hinweis": "Sie wirkt in Frankfurt am Main und setzt vor allem eigene Veranstaltungen und Projekte um.",
+    "auftrittQuelle": "https://www.frankfurter-buergerstiftung.de"
+  },
+  "stiftung-gls-zukunftsstiftung-bildung-89": {
+    "logo": "kandidat-1.jpg",
+    "hausfarbe": "#b00a44",
+    "akzent": "#0f0671",
+    "kurz": "Die GLS Zukunftsstiftung Bildung stärkt junge Menschen in Persönlichkeit, Demokratiefähigkeit und sozialem Lernen, vor allem mit Peer-Learning-Programmen an Schulen.",
+    "zweck": "Die Stiftung entstand im Jahr 2000 im GLS Treuhand e.V. Sie setzt auf persönliche Entwicklung, Mitbestimmung und Chancengerechtigkeit. In Programmen wie BildungsBande, BildungsTandems und ZukunftsBande lernen Ältere und Jüngere miteinander, dazu begleitet sie Schulen im Startchancenprogramm.",
+    "zielgruppen": ["Kinder", "Jugendliche", "Schulen"],
+    "foerderbereiche": ["bildung", "jugend", "kinder", "schule", "demokratie", "chancengerechtigkeit"],
+    "hinweis": "Sie setzt vor allem eigene Programme an Schulen und mit Ausbildungsbetrieben um.",
+    "auftrittQuelle": "https://zukunftsstiftung-bildung.de"
+  },
+  "stiftung-initiative-buergerstiftungen-aktive-buergerschaf-105": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#014476",
+    "akzent": "#96ba20",
+    "kurz": "Das Bündnis der Bürgerstiftungen Deutschlands vernetzt, berät und schult Bürgerstiftungen. Es ist selbst keine fördernde Stiftung für einzelne Projekte.",
+    "zweck": "Das Bündnis bietet Bürgerstiftungen Webseminare, Stammtische und einen jährlichen Kongress. Es vergibt das Gütesiegel für Bürgerstiftungen und begleitet Programme wie die Chancenpatenschaften. Für ausgewählte Aktionen können Bürgerstiftungen kleine Zuschüsse beantragen.",
+    "zielgruppen": ["Bürgerstiftungen"],
+    "foerderbereiche": ["bürgerstiftung", "ehrenamt", "gemeinwesen", "patenschaften"],
+    "hinweis": "Die Angebote richten sich an Bürgerstiftungen; über die Bürgerstiftungssuche finden Projekte die Stiftung an ihrem Ort.",
+    "auftrittQuelle": "https://www.buergerstiftungen.org/de/"
+  },
+  "stiftung-karl-schlecht-stiftung-putzmeister-113": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#d22719",
+    "kurz": "Die Karl Schlecht Stiftung fördert die werteorientierte Persönlichkeitsentwicklung junger Menschen und angehender Führungskräfte in Ethik, Leadership, Entrepreneurship, Kultur und Technik.",
+    "zweck": "Ihre Leitidee ist gute Führung in Wirtschaft und Gesellschaft auf Grundlage humanistischer Werte. Sie unterstützt vor allem gemeinnützige Projekte Dritter, dazu ausgewählte eigene Vorhaben. Gefördert werden etwa Schulprojekte, Stipendien, Lehrstühle und Kulturangebote.",
+    "zielgruppen": ["Schülerinnen und Schüler", "Auszubildende", "Studierende", "Lehrkräfte", "Gründerinnen und Gründer", "Führungskräfte"],
+    "foerderbereiche": ["bildung", "wissenschaft", "kultur", "beruf", "ethik", "leadership", "entrepreneurship", "technik"],
+    "hinweis": "Projekte, die die werteorientierte Persönlichkeitsentwicklung junger Menschen stärken, können einen Antrag stellen.",
+    "auftrittQuelle": "https://www.ksg-stiftung.de/"
+  },
+  "stiftung-kulturstiftung-des-bundes-123": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#ffab16",
+    "kurz": "Die Kulturstiftung des Bundes fördert zeitgenössische Kunst und Kultur in Deutschland und im internationalen Austausch, mit eigenen Programmen und einer allgemeinen Projektförderung.",
+    "zweck": "Die Stiftung wurde 2002 in Halle (Saale) gegründet und wird von der Beauftragten der Bundesregierung für Kultur und Medien gefördert. Sie hilft Kultureinrichtungen, Neues zu erproben und neues Publikum zu erreichen. In der Allgemeinen Projektförderung unterstützt sie große, internationale Vorhaben aller Sparten.",
+    "zielgruppen": ["Kultureinrichtungen", "Freie Initiativen"],
+    "foerderbereiche": ["kunst", "kultur", "international", "nachhaltigkeit"],
+    "hinweis": "Anträge stellen vor allem Kultureinrichtungen wie Museen, Theater oder Kunstvereine; Einzelkünstlerinnen und Einzelkünstler fördert sie nicht.",
+    "auftrittQuelle": "https://www.kulturstiftung-des-bundes.de/de"
+  },
+  "stiftung-lotto-stiftung-berlin-130": {
+    "logo": "kandidat-2.png",
+    "hausfarbe": "#e3051b",
+    "kurz": "Die LOTTO-Stiftung Berlin vergibt Lottomittel an gemeinnützige Projekte in Berlin, in Soziales, Umweltschutz, Kultur und staatsbürgerlichen Belangen.",
+    "zweck": "Die Stiftung des öffentlichen Rechts besteht seit 1975 und gehört zur Deutschen Klassenlotterie Berlin. Ein Stiftungsrat vergibt einen Teil der Lottoeinnahmen an Vorhaben, die das Leben in der Stadt stärken. Sie berichtet dem Abgeordnetenhaus regelmäßig über die Verwendung der Mittel.",
+    "foerderbereiche": ["soziales", "umwelt", "kultur", "demokratie", "ehrenamt"],
+    "hinweis": "Sie fördert Vorhaben in Berlin oder im Berliner Interesse; für Sport und Jugend sind der Landessportbund und die Senatsverwaltungen zuständig.",
+    "auftrittQuelle": "https://www.lotto-stiftung-berlin.de"
+  },
+  "stiftung-naturstiftung-david-143": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#78be3c",
+    "kurz": "Die Naturstiftung David ist die Stiftung des BUND Thüringen. Sie berät und fördert Projekte im Natur- und Artenschutz, vor allem in Ostdeutschland.",
+    "zweck": "Die Stiftung finanziert und koordiniert den Schutz naturnaher Lebensräume und bedrohter Arten. Sie fördert Projekte von Umweltgruppen und Initiativen und führt eigene Großprojekte wie in der Hohen Schrecke durch. Für Landschaftspflege gibt sie einmalige Zuschüsse, etwa für Weidetiere oder Technik.",
+    "zielgruppen": ["Umweltgruppen", "Naturschutzinitiativen"],
+    "foerderbereiche": ["natur", "umwelt", "artenschutz", "klima"],
+    "hinweis": "Sie fördert vor allem Naturschutz in Ostdeutschland und nimmt eigene Projektanträge an.",
+    "auftrittQuelle": "https://www.naturstiftung-david.de"
+  },
+  "stiftung-sap-stiftungsfonds-155": {
+    "kurz": "Der SAP-Stiftungsfonds wurde von der SAP AG gegründet und wird vom Deutschen Stiftungszentrum betreut. Er fördert Bildung, Wissenschaft und Aufbauhilfe vor allem in Schwellenländern.",
+    "zweck": "Die Stiftung fördert Bildung, Wissenschaft und Forschung, Entwicklungshilfe, Natur- und Umweltschutz und Völkerverständigung. Sie unterstützt Social Businesses in Schwellenländern, die Roboter-Wettbewerbe der FIRST LEGO League und Stipendien für Absolventen deutscher Auslandsschulen.",
+    "zielgruppen": ["Kinder", "Jugendliche"],
+    "foerderbereiche": ["bildung", "wissenschaft", "forschung", "natur", "umwelt", "international", "entwicklungszusammenarbeit", "technik"],
+    "hinweis": "Sie arbeitet operativ und nimmt derzeit keine Anträge an.",
+    "auftrittQuelle": "https://www.deutsches-stiftungszentrum.de/stiftungen/sap-stiftungsfonds"
+  },
+  "stiftung-sparkassen-kulturstiftung-rheinland-171": {
+    "logo": "kandidat-1.jpg",
+    "hausfarbe": "#ff0000",
+    "kurz": "Die Sparkassen-Kulturstiftung Rheinland fördert Kunst- und Kulturprojekte, die für das Kulturleben im Rheinland prägend sind, und vergibt Kulturpreise.",
+    "zweck": "Die rheinischen Sparkassen gründeten die Stiftung 1987; sie sitzt beim Rheinischen Sparkassen- und Giroverband in Düsseldorf. Sie fördert bildende und darstellende Kunst, Musik, Literatur, Kulturgeschichte und Denkmalpflege. Sie begleitet ihre Projekte und berät die Partner vor Ort.",
+    "zielgruppen": ["Kulturschaffende", "Kultureinrichtungen"],
+    "foerderbereiche": ["kultur", "kunst", "musik", "literatur", "denkmalpflege"],
+    "hinweis": "Gefördert werden gemeinnützige Kulturprojekte im Rheinland, die die örtliche Sparkasse unterstützt.",
+    "auftrittQuelle": "https://www.sks-rheinland.de/de"
+  },
+  "stiftung-stiftung-buergerengagement-saar-186": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#ed6b76",
+    "akzent": "#5ac5f2",
+    "kurz": "Die Stiftung Bürgerengagement Saar fördert ehrenamtliches Engagement im Saarland. Ihr Schwerpunkt ist das Projekt Lernpaten Saar für benachteiligte Kinder und Jugendliche.",
+    "zweck": "Die Stiftung wurde 2010 gegründet, um Gemeinsinn und Ehrenamt im Saarland zu stärken. Seit 2023 trägt sie das Projekt Lernpaten Saar allein. Sie setzt sich für bessere Bedingungen im Ehrenamt ein und vernetzt die saarländischen Stiftungen im Stiftungsforum Saar.",
+    "zielgruppen": ["Kinder", "Jugendliche"],
+    "foerderbereiche": ["jugend", "kinder", "bildung", "ehrenamt"],
+    "hinweis": "Sie wirkt im Saarland und arbeitet vor allem im eigenen Projekt Lernpaten Saar.",
+    "auftrittQuelle": "https://www.stiftung-buergerengagement-saar.de"
+  },
+  "stiftung-stiftung-lesen-193": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#003770",
+    "akzent": "#cdf700",
+    "kurz": "Die Stiftung Lesen stärkt die Lesekompetenz von Kindern und Jugendlichen mit Projekten, Lesetipps, Vorlese-Angeboten und dem Bundesweiten Vorlesetag.",
+    "zweck": "Die Stiftung bietet Familien, Kitas und Schulen geprüfte Buch- und Medientipps, Aktionsideen und Material. Mit Angeboten wie einfach vorlesen und Lese-Boxen bringt sie Geschichten zu Kindern. Über ihr Engagementportal gewinnen Einrichtungen Ehrenamtliche fürs Vorlesen.",
+    "zielgruppen": ["Kinder", "Jugendliche", "Familien", "Kitas", "Schulen"],
+    "foerderbereiche": ["bildung", "kinder", "jugend", "kultur", "lesen"],
+    "hinweis": "Sie arbeitet mit eigenen Angeboten; Einrichtungen können sich im Engagementportal registrieren.",
+    "auftrittQuelle": "https://www.stiftunglesen.de"
+  },
+  "stiftung-umweltstiftung-michael-otto-otto-group-209": {
+    "logo": "kandidat-2.svg",
+    "hausfarbe": "#74b12d",
+    "kurz": "Die Umweltstiftung Michael Otto setzt mit eigenen Projekten Impulse im Umwelt- und Naturschutz und bringt Naturschutz, Politik, Wissenschaft und Wirtschaft ins Gespräch.",
+    "zweck": "Die Stiftung will Ökosysteme schützen, erhalten und erneuern. Sie fördert Projekte zu Mooren, Biodiversität in der Landwirtschaft und Wasserbildung an Grundschulen. Mit Formaten wie den Hamburger Gesprächen für Naturschutz und der Plattform F20 fördert sie den Dialog.",
+    "foerderbereiche": ["umwelt", "natur", "klima", "wasser", "international", "nachhaltigkeit", "hamburg", "bildung"],
+    "auftrittQuelle": "https://www.umweltstiftungmichaelotto.de"
+  },
+  "stiftung-wilo-foundation-221": {
+    "logo": "kandidat-4.png",
+    "hausfarbe": "#009c82",
+    "akzent": "#143d59",
+    "kurz": "Die Wilo-Foundation ist die Familienstiftung der Unternehmerfamilie Opländer. Sie fördert Wissenschaft, Bildung und Soziales, Kultur und Sport.",
+    "zweck": "Die Stiftung wurde 2011 gegründet und ist Hauptanteilseignerin der WILO SE. Ihre Förderung folgt den Wirkbereichen Creating, Caring und Connecting. Schwerpunkte sind Wasser, Klimaschutz, Future Skills und Social Entrepreneurship.",
+    "zielgruppen": ["Junge Menschen", "Studierende"],
+    "foerderbereiche": ["wissenschaft", "bildung", "soziales", "kultur", "sport", "wasser", "klima", "international"],
+    "hinweis": "Sie setzt räumliche Schwerpunkte an den internationalen Standorten der Wilo Group.",
+    "auftrittQuelle": "https://www.wilo-foundation.de"
+  }
+}

@@ -13,10 +13,20 @@ export interface StiftungsProfil {
   titel: string
   /** Logo oder Bild; sonst zeigt die Seite das Monogramm. */
   bild: string | null
+  /** Das Logo ist hell (für dunklen Grund gemacht): Es steht auf den Hausfarben statt auf Weiß. */
+  bildHell: boolean
   /** Zwei Buchstaben für den Platzhalter, ohne „Stiftung“ und Füllwörter. */
   monogramm: string
   /** Hausfarbe (`hausfarbe`), sonst `color`, sonst das Blau der Stiftungen. */
   farbe: string
+  /** Die zweite Farbe des Auftritts (`akzent`), sonst eine dunklere Hausfarbe. */
+  akzent: string
+  /** Text auf dem Verlauf aus Haus- und Akzentfarbe: hell oder dunkel, je nach Kontrast. */
+  textAufFarbe: string
+  /** Die Hausfarbe als Schrift auf hellem Grund, so weit abgedunkelt, dass sie lesbar ist (4,5 zu 1). */
+  farbeText: string
+  /** Ein, zwei Sätze, was die Stiftung tut. */
+  kurz: string | null
   /** „Stiftung · fördernd“ */
   art: string[]
   sitz: string | null
@@ -49,13 +59,55 @@ export interface StiftungsProfil {
   geben: { zustiftung: boolean | null; spende: boolean | null; treuhand: boolean | null } | null
   /** Woher die Angaben stammen, solange die Stiftung sie nicht selbst pflegt. */
   quelle: string | null
+  /** Woher Logo, Farben und Texte stammen, und von wann. */
+  auftritt: { quelle: string | null; stand: string | null } | null
   muster: boolean
 }
 
 const BLAU = "#194294"
 const FUELLWOERTER = new Set(["stiftung", "foundation", "der", "die", "das", "für", "fuer", "und", "von", "zur", "zum", "e.v.", "gemeinnützige", "gemeinnuetzige"])
 
-const farbeAus = (v: unknown): string | null => (typeof v === "string" && /^#[0-9a-f]{6}$/i.test(v) ? v : null)
+const farbeAus = (v: unknown): string | null => (typeof v === "string" && /^#[0-9a-f]{6}$/i.test(v.trim()) ? v.trim().toLowerCase() : null)
+
+function rgb(hex: string): [number, number, number] {
+  return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)) as [number, number, number]
+}
+
+/** Relative Leuchtdichte nach WCAG. */
+function leuchte(hex: string): number {
+  const [r, g, b] = rgb(hex).map((c) => {
+    const x = c / 255
+    return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4
+  })
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b
+}
+
+/** Kontrast zweier Farben nach WCAG, 1 bis 21. */
+export function kontrast(a: string, b: string): number {
+  const [x, y] = [leuchte(a), leuchte(b)].sort((m, n) => n - m)
+  return (x + 0.05) / (y + 0.05)
+}
+
+const HELL = "#ffffff"
+const DUNKEL = "#111827"
+
+/** Hell oder dunkel: was auf allen genannten Farben am schlechtesten noch am besten lesbar ist. */
+export function lesbarAuf(...farben: string[]): string {
+  const min = (t: string) => Math.min(...farben.map((f) => kontrast(t, f)))
+  return min(HELL) >= min(DUNKEL) ? HELL : DUNKEL
+}
+
+/** Die Farbe, so weit abgedunkelt, dass sie auf hellem Grund lesbar ist. */
+export function lesbarAufHell(hex: string, ziel = 4.5): string {
+  let f = hex
+  for (let i = 0; i < 12 && kontrast(f, "#f8f8f8") < ziel; i++) f = dunkler(f, 0.12)
+  return f
+}
+
+/** Dieselbe Farbe, um einen Anteil zu Schwarz gemischt. */
+export function dunkler(hex: string, anteil = 0.3): string {
+  return "#" + rgb(hex).map((c) => Math.round(c * (1 - anteil)).toString(16).padStart(2, "0")).join("")
+}
 
 function monogramm(titel: string): string {
   const woerter = titel.split(/[\s-]+/).filter((w) => w && !FUELLWOERTER.has(w.toLowerCase()))
@@ -111,13 +163,21 @@ export function stiftungsProfil(daten: Roh | null | undefined): StiftungsProfil 
     ansprache: text(d.ansprache),
   }
   const geben = { zustiftung: janein(d.zustiftung), spende: janein(d.spende), treuhand: janein(d.treuhand) }
+  const farbe = farbeAus(d.hausfarbe) ?? farbeAus(d.color) ?? BLAU
+  const akzent = farbeAus(d.akzent) ?? dunkler(farbe)
+  const auftritt = { quelle: sichereUrl(d.auftrittQuelle), stand: text(d.auftrittStand) }
 
   return {
     titel,
     bild: sichererBildPfad(d.bild) ?? sichererBildPfad(d.image) ?? sichererBildPfad(d.logo),
+    bildHell: d.bildHell === true,
     monogramm: monogramm(titel),
     // Die Hausfarbe färbt das Profil; `color` bleibt das Blau der Stiftungen auf der Karte.
-    farbe: farbeAus(d.hausfarbe) ?? farbeAus(d.color) ?? BLAU,
+    farbe,
+    akzent,
+    textAufFarbe: lesbarAuf(farbe, akzent),
+    farbeText: lesbarAufHell(farbe),
+    kurz: text(d.kurz),
     art: [text(d.foerdererart), text(d.art)].filter((x): x is string => x !== null),
     sitz: text(d.sitz),
     reichweite: texte(d.reichweite).map(gross),
@@ -132,6 +192,7 @@ export function stiftungsProfil(daten: Roh | null | undefined): StiftungsProfil 
     kontakt: Object.values(kontakt).some((v) => v !== null) ? kontakt : null,
     geben: Object.values(geben).some((v) => v !== null) ? geben : null,
     quelle: text(d.quelle),
+    auftritt: auftritt.quelle || auftritt.stand ? auftritt : null,
     muster: d.muster === true,
   }
 }

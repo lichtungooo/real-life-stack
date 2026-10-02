@@ -59,12 +59,14 @@ export interface EingabeFeld {
 /** Die Felder eines Stiftungsprofils, in der Reihenfolge der Seite. */
 export const STIFTUNGS_PROFIL_FELDER: readonly EingabeFeld[] = /* @__PURE__ */ Object.freeze([
   { id: "title", name: "Name", frage: "Wie heißt die Stiftung?", form: "text", kern: true, abschnitt: "kopf", hinweis: "voller Name, wie im Register" },
+  { id: "kurz", name: "In einem Satz", frage: "Was tut die Stiftung, in ein, zwei Sätzen?", form: "longtext", abschnitt: "kopf", hinweis: "eigene Worte, kein Satzungstext" },
   { id: "foerdererart", name: "Art", frage: "Was für ein Förderer ist sie?", form: "text", kern: true, abschnitt: "kopf", hinweis: "Stiftung, Förderverein, Bürgerstiftung" },
   { id: "art", name: "Arbeitsweise", frage: "Fördert sie oder arbeitet sie selbst?", form: "text", abschnitt: "kopf", hinweis: "fördernd, operativ oder beides" },
   { id: "sitz", name: "Sitz", frage: "Wo hat sie ihren Sitz?", form: "text", abschnitt: "kopf", hinweis: "Ort" },
   { id: "reichweite", name: "Reichweite", frage: "Wo fördert sie?", form: "tags", abschnitt: "kopf", hinweis: "regional, Hessen, bundesweit" },
   { id: "bild", name: "Logo", frage: "Gibt es ein Logo?", form: "text", pruefung: "bild", abschnitt: "kopf", hinweis: "Adresse des Bildes (https://…)" },
   { id: "hausfarbe", name: "Hausfarbe", frage: "Welche Farbe trägt sie?", form: "text", pruefung: "farbe", abschnitt: "kopf", hinweis: "#990000" },
+  { id: "akzent", name: "Zweite Farbe", frage: "Welche zweite Farbe gehört zum Auftritt?", form: "text", pruefung: "farbe", abschnitt: "kopf", hinweis: "#d4a017" },
   { id: "antragsweg", name: "So läuft der Antrag", frage: "Wie kommt ein Projekt zur Förderung?", form: "longtext", abschnitt: "antrag", hinweis: "zwei, drei Sätze: erst anfragen, dann Antrag, wer entscheidet" },
   { id: "antragsportal", name: "Antragsportal", frage: "Gibt es ein eigenes Portal für Anträge?", form: "text", pruefung: "url", abschnitt: "antrag", hinweis: "https://…" },
   { id: "fristen", name: "Fristen", frage: "Welche Fristen gelten?", form: "list", abschnitt: "antrag", hinweis: "je Frist eine Zeile" },

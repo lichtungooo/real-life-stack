@@ -224,6 +224,27 @@ Gelernt:
 - **Schlagworte gehören an den Eintrag** (`Item.tags`); alte `data.tags` ziehen beim Speichern des Kopfs dorthin um.
 - **Stift auf die Ecke** (`-right-2 -top-2`), sonst deckt er in schmalen Abschnitten die Überschrift zu.
 
+## 4d. Im Auftritt der Stiftung (02.10.2026)
+
+Timo: *"auf die Webseite gucken … das stiftungseigene Logo … die Farben vom Logo übernehmen … erstmal schön schreiben, was wir machen … die Hashtags."* Definition: `DEFINITION.md` Teil 8, „Stiftungsprofil im Auftritt der Stiftung“ (Logos mit Hinweis).
+
+**Der Weg der Daten:**
+
+1. `python td-tools/stiftungen/auftritt.py holen --alle` liest je Website Startseite und bis zu vier Seiten (Stiftung, Förderung, Antrag), Logo-Kandidaten, Farben aus Seite, CSS und Logo. Ein Abruf je Sekunde und Host, `robots.txt` gilt. Alles landet in `%TEMP%/td-auftritt/`, nie im Repo.
+2. Agenten wählen je Stiftung Logo und Farben und schreiben `kurz`, `zweck`, `zielgruppen`, `hinweis`, `foerderbereiche`; Anleitung mit den Regeln (nichts erfinden, eigene Worte, Partner-Logos und Siegel aussortieren). Ergebnis: `td-tools/stiftungen/auftritt-teile/*.json`, eingecheckt.
+3. `auftritt.py blatt` baut einen Kontaktbogen, `node td-tools/stiftungen/blatt-foto.mjs` fotografiert ihn: Logos und Farben auf einen Blick prüfen.
+4. `auftritt.py anwenden` schreibt die Felder in `items.json` und legt Logos verkleinert unter `apps/reference/public/stiftungen/` ab (SVG ohne Skripte und fremde Verweise). Danach `SEED_VERSION` und `MUSTERDATEN_VERSION` hochzählen.
+
+**Darstellung:** Variablen `--td-haus`, `--td-akzent`, `--td-haus-text` am Profil; Flächen mischen mit `color-mix(in oklab, var(--td-haus) 8%, var(--card))`, damit hell und dunkel stimmen. Kontrast rechnet td-core: `lesbarAuf` (hell oder dunkel auf dem Verlauf) und `lesbarAufHell` (Hausfarbe als Schrift, abgedunkelt bis 4,5 zu 1).
+
+Gelernt:
+
+- **Gelb als Schrift ist unlesbar.** Ohne `farbeText` stand die Summe der Software AG gelb auf Weiß.
+- **Eine Kennzahl, die nur zählt, was daneben steht** („8 Förderbereiche“), fällt weg.
+- **TLS-Abfangen am Arbeitsrechner:** Etwa 20 Websites scheiterten lokal an „nicht vertrauenswürdiger Stammzertifizierung“, vom Server aus nicht. Prüfung nie abschalten; den Rest auf dem Server im Container `python:3.12-slim` holen und zurückkopieren.
+- **Die Musterstiftung gehört nicht in echte Spaces:** Der Import filtert `muster: true`.
+- **Der Import zieht den Auftritt nur nach, wo er fehlt** und solange der Eintrag unsere Recherche ist; Bearbeitetes bleibt.
+
 ## 5. Was als Nächstes kommt
 
 1. ~~Stiftungsprofil~~ gebaut am 02.10.2026 (Abschnitt 4b) (`fuerTyp: "place"` mit Stiftungsfeldern, oder eigener Typ über die Manifest-Schicht), mit den vier entschiedenen Verbesserungen: „Stiftung“ statt „Ort“, Website und Anschrift mit Quelle, Bild mit Platzhalter, Kontakt und Antrag oben.

@@ -1,0 +1,174 @@
+{
+  "stiftung-alfried-krupp-von-bohlen-und-halbach-stiftung-7": {
+    "logo": "kandidat-2.svg",
+    "kurz": "Die Krupp-Stiftung in Essen fördert Wissenschaft, Bildung, Kunst und Kultur, Gesundheit und Sport. Sie setzt ihre Förderung vor allem in eigenen Programmen um.",
+    "zweck": "Die Stiftung ist das Vermächtnis von Alfried Krupp von Bohlen und Halbach und arbeitet seit 1968. Sie verwendet die Erträge ihrer Beteiligung an thyssenkrupp für gemeinnützige Zwecke in fünf Satzungsbereichen. Dabei will sie Chancengleichheit ermöglichen, die Völkerverständigung stärken und die Ausbildung junger Menschen verbessern.",
+    "foerderbereiche": ["wissenschaft", "kultur", "bildung", "gesundheit", "sport"],
+    "hinweis": "Sie fördert vor allem über eigene Programme, die sie regelmäßig ausschreibt.",
+    "auftrittQuelle": "https://www.krupp-stiftung.de"
+  },
+  "stiftung-berthold-leibinger-stiftung-trumpf-26": {
+    "logo": "kandidat-1.svg",
+    "kurz": "Die Berthold Leibinger Stiftung fördert Wissenschaft, Kultur, Kirche und Soziales. Sie unterstützt gemeinnützige, mildtätige und kirchliche Einrichtungen und führt eigene Projekte und Preise durch.",
+    "zweck": "In der Wissenschaft fördert sie die Lasertechnologie, in der Kultur vor allem klassische Musik, Sprache und Literatur. Sie ist der Evangelischen Landeskirche in Württemberg verbunden und unterstützt Diakonie und Kirchengebäude. Im Sozialen hilft sie benachteiligten Menschen am Rand der Gesellschaft.",
+    "zielgruppen": ["Benachteiligte Menschen"],
+    "foerderbereiche": ["kultur", "wissenschaft", "forschung", "kirche", "sozial", "förderpreis"],
+    "hinweis": "Neben langjährigen Partnerschaften schreibt sie Förderlinien aus und nimmt Anfragen zu Projekten an, die in ihr Förderspektrum passen.",
+    "auftrittQuelle": "https://www.leibinger-stiftung.de"
+  },
+  "stiftung-bürgerstiftung-hamburg-35": {
+    "logo": "kandidat-2.png",
+    "hausfarbe": "#e4201e",
+    "kurz": "Die BürgerStiftung Hamburg stärkt Zusammenhalt, Engagement und Chancen in der Stadt. Sie fördert Initiativen in den Stadtteilen und betreibt eigene Projekte.",
+    "zweck": "Hamburgerinnen und Hamburger gründeten die Gemeinschaftsstiftung 1999 für ihre Stadt. Sie öffnet Kindern und Jugendlichen Erfahrungsräume in Bildung, Kultur, Bewegung, Engagement und Umwelt. Dazu kommen Projekte für Familien, für das Miteinander im Alter, für migrantisches Engagement und für die Demokratie.",
+    "zielgruppen": ["Kinder", "Jugendliche", "Familien", "Ältere Menschen", "Migrantenselbstorganisationen"],
+    "foerderbereiche": ["bildung", "jugend", "integration", "umwelt", "kultur", "demokratie", "engagement", "familie"],
+    "hinweis": "Sie fördert Ideen aus Hamburger Quartieren und richtet den Blick besonders auf sozial benachteiligte Stadtteile.",
+    "auftrittQuelle": "https://buergerstiftung-hamburg.de"
+  },
+  "stiftung-daimler-und-benz-stiftung-49": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#036783",
+    "kurz": "Die Daimler und Benz Stiftung in Ladenburg fördert Forschung aller Fachrichtungen und den Dialog zwischen den Disziplinen.",
+    "zweck": "Sie vergibt Stipendien an Postdoktoranden, fördert interdisziplinäre Forschungsverbünde, Tagungen und Kooperationen mit afrikanischen Einrichtungen. Sie unterstützt Veranstaltungen zur Wissenschaftsvermittlung und zeichnet mit dem Bertha-Benz-Preis Dissertationen von Ingenieurwissenschaftlerinnen aus.",
+    "zielgruppen": ["Wissenschaftlerinnen und Wissenschaftler", "Postdoktoranden", "Ingenieurwissenschaftlerinnen"],
+    "foerderbereiche": ["wissenschaft", "forschung", "stipendium", "förderpreis", "wissenschaftsvermittlung"],
+    "hinweis": "Sie fördert über ausgeschriebene Förderlinien mit eigenen Fristen; Anträge für Tagungen im Ladenburger Diskurs sind jederzeit möglich.",
+    "auftrittQuelle": "https://www.daimler-benz-stiftung.de"
+  },
+  "stiftung-deutsches-handwerksinstitut-e-v-dhi-65": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#108638",
+    "akzent": "#062e3a",
+    "kurz": "Das Deutsche Handwerksinstitut ist ein Verein, der Forschung für das Handwerk betreibt. Er bündelt fünf Forschungsinstitute unter einem Dach.",
+    "zweck": "Das DHI fördert Wissenschaft und Forschung im Handwerk, von Wirtschaft und Technik bis Recht, Berufsbildung und Kultur. Es unterstützt den Wandel des Handwerks mit Studien, Modellvorhaben und Empfehlungen, etwa zur Sicherung von Betrieben, Ausbildung und Fachkräften.",
+    "zielgruppen": ["Handwerksbetriebe", "Handwerkskammern", "Fachverbände"],
+    "foerderbereiche": ["handwerk", "forschung", "wissenschaft", "berufsbildung"],
+    "hinweis": "Das DHI forscht selbst; Themen gelangen über Vorschläge von Handwerkskammern, Fachverbänden und Wirtschaftsministerien in sein Forschungsprogramm.",
+    "auftrittQuelle": "https://dhi.zdh.de"
+  },
+  "stiftung-ein-herz-für-kinder-bild-hilft-77": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#e30613",
+    "kurz": "BILD hilft e.V. „Ein Herz für Kinder“ ist ein Verein, der Kindern in Not weltweit hilft. Er fördert Projekte rein finanziell und führt selbst keine durch.",
+    "zweck": "Der Verein unterstützt bedürftige und kranke Kinder bis 18 Jahre, etwa die Hälfte der Mittel geht nach Deutschland. Er fördert medizinische Forschung und Operationen, Bildungsprojekte, Bau und Ausstattung von Schulen, Kitas und Kinderkliniken, Essensangebote und Hilfe in Kriegs- und Katastrophengebieten.",
+    "zielgruppen": ["Kinder", "Jugendliche", "Familien", "Kinder mit besonderem Förderbedarf"],
+    "foerderbereiche": ["kinder", "familie", "armut", "gesundheit", "bildung", "forschung", "katastrophenhilfe"],
+    "hinweis": "Er nimmt Anträge aus aller Welt an und prüft jeden einzeln.",
+    "auftrittQuelle": "https://www.ein-herz-fuer-kinder.de"
+  },
+  "stiftung-fritz-thyssen-stiftung-86": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#d50920",
+    "akzent": "#00915a",
+    "kurz": "Die Fritz Thyssen Stiftung in Köln fördert Forschung an Hochschulen und Forschungsstätten, vor allem in Deutschland, und stärkt dabei besonders den wissenschaftlichen Nachwuchs.",
+    "zweck": "Die Stiftung wurde 1959 gegründet und fördert seit 1961 Forschende aus den Geistes- und Sozialwissenschaften und der Medizin. Sie finanziert befristete Forschungsprojekte, kleinere Tagungen und in begrenztem Umfang Publikationen aus geförderten Projekten.",
+    "zielgruppen": ["Forscherinnen und Forscher", "Wissenschaftlicher Nachwuchs"],
+    "foerderbereiche": ["forschung", "wissenschaft", "geisteswissenschaften", "sozialwissenschaften", "medizin"],
+    "hinweis": "Sie nimmt Projekt- und Tagungsanträge zu festen Fristen an, die auf ihrer Website stehen.",
+    "auftrittQuelle": "https://www.fritz-thyssen-stiftung.de"
+  },
+  "stiftung-hanns-voith-stiftung-98": {
+    "kurz": "Die Hanns-Voith-Stiftung in Heidenheim wurde 1953 gegründet, um das soziale Engagement der Unternehmerfamilie Voith dauerhaft zu verankern.",
+    "zweck": "Die Stiftung ist gemeinnützig und unabhängig. Sie fördert Projekte, vergibt Studienförderung und verleiht die Hanns-Voith-Stiftungspreise.",
+    "auftrittQuelle": "https://hanns-voith-stiftung.de"
+  },
+  "stiftung-iona-stichting-108": {
+    "logo": "kandidat-3.png",
+    "hausfarbe": "#007be9",
+    "kurz": "Die niederländische Iona Stichting unterstützt Projekte für eine sozial verantwortliche und nachhaltige Welt. Sie arbeitet im persönlichen Kontakt mit Schenkenden und Antragstellenden.",
+    "zweck": "Die Stiftung will tatkräftige Initiativen stärken, in denen Herz, Kopf und Hände zu einer gesunden Welt beitragen und Mensch, Erde und Geist verbunden sind. Sie fördert Projekte auf Antrag, führt eigene Initiativen durch und verwaltet besondere Fonds, darunter einen für Kinder.",
+    "auftrittQuelle": "https://iona.nl"
+  },
+  "stiftung-klaus-tschira-stiftung-117": {
+    "logo": "kandidat-2.svg",
+    "hausfarbe": "#123274",
+    "akzent": "#fbb900",
+    "kurz": "Die Klaus Tschira Stiftung fördert Naturwissenschaften, Mathematik und Informatik. Ihre Schwerpunkte sind Bildung, Forschung und Wissenschaftskommunikation.",
+    "zweck": "Die Stiftung will diese Fächer in der Gesellschaft stärker verankern und beginnt damit schon im Kindergarten. Ihr Engagement reicht über Schulen bis zu Hochschulen und Forschungseinrichtungen. Sie setzt eigene Projekte um und vergibt Fördermittel nach Antrag und Begutachtung.",
+    "zielgruppen": ["Kinder", "Jugendliche", "Fachkräfte in Kita und Grundschule", "Wissenschaftlerinnen und Wissenschaftler"],
+    "foerderbereiche": ["mint", "forschung", "wissenschaft", "bildung", "wissenschaftskommunikation"],
+    "hinweis": "Sie vergibt Fördermittel nach Antrag und positiver Begutachtung über ihr Förderportal.",
+    "auftrittQuelle": "https://klaus-tschira-stiftung.de"
+  },
+  "stiftung-kunststiftung-des-landes-sachsen-anhalt-126": {
+    "logo": "kandidat-2.svg",
+    "hausfarbe": "#670d70",
+    "kurz": "Die Kunststiftung des Landes Sachsen-Anhalt fördert zeitgenössische Kunst im Land mit Stipendien und Projektmitteln.",
+    "zweck": "Sie unterstützt Kunstschaffende bei der Umsetzung ihrer Ideen, von Malerei, Bildhauerei und Fotografie über Theater, Tanz, Film, Musik und Literatur bis zu Medienkunst. Dazu gehören Arbeits- und Auslandsstipendien sowie Förderungen für Ausstellungen, Messen, Publikationen und Kunstankäufe. Ihre Mitarbeitenden beraten und begleiten die geförderten Vorhaben.",
+    "zielgruppen": ["Künstlerinnen und Künstler", "Galerien", "Ensembles"],
+    "foerderbereiche": ["kunst", "kultur", "stipendium", "film", "musik", "literatur", "theater", "tanz"],
+    "hinweis": "Sie fördert Kunstschaffende und Projekte aus Sachsen-Anhalt; Anträge laufen über ihr Antragsportal, der Stiftungsrat entscheidet im Frühjahr und Herbst.",
+    "auftrittQuelle": "https://www.kunststiftung-sachsen-anhalt.de"
+  },
+  "stiftung-meisterstueck-stiftung-handwerkskammer-mannheim-136": {
+    "kurz": "Die Stiftung Meisterstück vergibt Stipendien an begabte Gesellinnen und Gesellen in traditionellen Handwerksberufen, die den Meister anstreben oder auf Wanderschaft gehen.",
+    "zweck": "Die Stiftung wurde 2013 errichtet und fördert die Berufsbildung in traditionellen Handwerken wie Instrumentenbau, Buchrestaurierung oder Möbeltischlerei. Sie gewährt Beihilfen für zwölf Monate an Menschen mit guten Leistungen und finanziellem Bedarf. Seit einigen Jahren unterstützt sie auch die Wanderschaft.",
+    "zielgruppen": ["Gesellinnen und Gesellen", "Angehende Meisterinnen und Meister"],
+    "foerderbereiche": ["handwerk", "ausbildung", "beruf", "stipendium"],
+    "hinweis": "Sie fördert einzelne Menschen statt Projekte; Bewerbungsschluss ist jeweils der 30. Juni.",
+    "auftrittQuelle": "https://stiftung-meisterstueck.de"
+  },
+  "stiftung-paritaetischer-wohlfahrtsverband-landesverband-h-146": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#005da8",
+    "akzent": "#cc051c",
+    "kurz": "Der Paritätische Hessen ist ein Wohlfahrtsverband mit rund 800 sozialen Mitgliedsorganisationen. Er berät sie bei Fördermitteln und hat eigene kleine Förderprogramme.",
+    "zweck": "Der Verband hilft seinen Mitgliedern bei Anträgen an Soziallotterien und Stiftungen und berät zum Fundraising. Mit der Paritätischen Mikroförderung und einem Programm für digitale Modernisierung unterstützt er die Arbeit und Ausstattung der Organisationen.",
+    "zielgruppen": ["Soziale Organisationen"],
+    "foerderbereiche": ["kinder", "jugend", "inklusion", "integration", "familie", "gesundheit", "ehrenamt", "digitalisierung"],
+    "hinweis": "Seine Förderprogramme und die Antragsberatung stehen nur Mitgliedsorganisationen offen.",
+    "auftrittQuelle": "https://www.paritaet-hessen.org/finanzen-und-foerdermittel/foerdermittel.html"
+  },
+  "stiftung-signal-iduna-stiftung-160": {
+    "hausfarbe": "#1a3691",
+    "kurz": "Die SIGNAL IDUNA Stiftung fördert gemeinnützige Organisationen in vielen Bereichen, von Jugend- und Altenhilfe bis Entwicklungszusammenarbeit.",
+    "zweck": "SIGNAL IDUNA gründete die Stiftung 2026 als Treuhandstiftung unter dem Dach des Stifterverbandes. Sie fördert unter anderem Umwelt- und Naturschutz, Gesundheit, Bildung und Berufsbildung, Wissenschaft, Kunst und Kultur sowie bürgerschaftliches Engagement. Den Umwelt- und Gesundheitspreis mit der Handwerkskammer Hamburg führt sie fort.",
+    "zielgruppen": ["Gemeinnützige Organisationen"],
+    "foerderbereiche": ["umwelt", "gesundheit", "bildung", "ausbildung", "wissenschaft", "kultur", "jugend", "entwicklungszusammenarbeit"],
+    "hinweis": "Sie fördert nur anerkannt gemeinnützige Organisationen, keine Einzelpersonen; der Antrag geht formlos per E-Mail mit Projektbeschreibung und Freistellungsbescheid.",
+    "auftrittQuelle": "https://stiftung.signal-iduna.de"
+  },
+  "stiftung-sparkassenstiftung-waldeck-frankenberg-176": {
+    "logo": "kandidat-3.svg",
+    "hausfarbe": "#ee0000",
+    "auftrittQuelle": "https://www.sparkasse-wa-fkb.de/de/home.html"
+  },
+  "stiftung-stiftung-der-kreissparkasse-schwalm-eder-4-teils-204": {
+    "logo": "kandidat-3.svg",
+    "hausfarbe": "#ee0000",
+    "auftrittQuelle": "https://www.kreissparkasse-schwalm-eder.de/de/home.html"
+  },
+  "stiftung-stiftung-nord-süd-brücken-196": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#005ea8",
+    "kurz": "Die Stiftung Nord-Süd-Brücken in Berlin fördert entwicklungspolitische Projekte ostdeutscher Vereine, im Inland wie im Globalen Süden.",
+    "zweck": "Die Stiftung entstand 1994 und will Armut, Ungerechtigkeit und ungleiche Chancen abbauen. Sie fördert entwicklungspolitische Bildungsarbeit im Inland sowie Projekte zur Armutsbekämpfung und für Menschenrechte im Globalen Süden. Dazu verwaltet sie Mittel von Bund und Ländern und bietet Seminare zur Antragstellung an.",
+    "zielgruppen": ["Gemeinnützige Vereine in Ostdeutschland und Berlin"],
+    "foerderbereiche": ["international", "entwicklungshilfe", "bildung", "menschenrechte", "armut", "nachhaltigkeit"],
+    "hinweis": "Antragsberechtigt sind gemeinnützige Vereine mit Sitz in Berlin, Brandenburg, Mecklenburg-Vorpommern, Sachsen, Sachsen-Anhalt oder Thüringen; Anträge sind laufend möglich.",
+    "auftrittQuelle": "https://nord-sued-bruecken.de"
+  },
+  "stiftung-vinci-stiftung-deutschland-212": {
+    "logo": "kandidat-1.png",
+    "hausfarbe": "#fdd516",
+    "akzent": "#0070ad",
+    "kurz": "Die VINCI-Stiftung unterstützt Projekte, die sozial ausgegrenzte Menschen in Arbeit bringen und den Zusammenhalt stärken. Sie ist in Deutschland und Österreich tätig.",
+    "zweck": "Die Stiftung des VINCI-Konzerns besteht seit 2010. Sie fördert dauerhafte Projekte zur beruflichen Eingliederung und Initiativen für mehr Solidarität. Mit dem Programm „Solidarische Stadt“ unterstützt sie jedes Jahr gemeinnützige Einrichtungen in benachteiligten Stadtvierteln einer Stadt.",
+    "zielgruppen": ["Sozial ausgegrenzte Menschen", "Gemeinnützige Einrichtungen"],
+    "foerderbereiche": ["bildung", "ausbildung", "integration", "inklusion", "armut", "beruf", "zusammenhalt"],
+    "hinweis": "Jedes geförderte Projekt bekommt zusätzlich zur finanziellen Hilfe eine Patin oder einen Paten aus dem VINCI-Konzern.",
+    "auftrittQuelle": "https://www.vinci-stiftung.de/"
+  },
+  "stiftung-wuebben-stiftung-bildung-224": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#10069f",
+    "akzent": "#ff8ea6",
+    "kurz": "Die Wübben Stiftung Bildung setzt sich für faire Bildungschancen ein und unterstützt Schulen im Brennpunkt. Sie arbeitet als operative Stiftung mit eigenen Projekten.",
+    "zweck": "Die private Bildungsstiftung aus Düsseldorf besteht seit 2013. Sie berät und begleitet Akteure des Bildungssystems bei der Weiterentwicklung von Schulen mit vielen sozial benachteiligten Kindern und Jugendlichen. Schwerpunkte sind das Startchancen-Programm, die Professionalisierung an Schulen und Familiengrundschulzentren.",
+    "zielgruppen": ["Kinder", "Jugendliche", "Schulen", "Familien"],
+    "foerderbereiche": ["bildung", "kinder", "jugend", "schule", "chancengerechtigkeit", "familie"],
+    "hinweis": "Sie führt eigene Projekte, Programme und Kooperationen durch und arbeitet mit Schulen, Schulaufsicht und Bildungsverwaltung.",
+    "auftrittQuelle": "https://wuebben-stiftung-bildung.org"
+  }
+}

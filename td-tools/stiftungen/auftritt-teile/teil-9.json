@@ -1,0 +1,158 @@
+{
+  "stiftung-baden-wuerttemberg-stiftung-18": {
+    "logo": "kandidat-2.svg",
+    "hausfarbe": "#e60a46",
+    "akzent": "#00dcc8",
+    "kurz": "Die Baden-Württemberg Stiftung ist die Stiftung des Landes. Sie entwickelt eigene Programme für Bildung, Forschung, Gesellschaft und Kultur und schreibt sie öffentlich aus.",
+    "zweck": "Ihr Auftrag ist, die Zukunftsfähigkeit Baden-Württembergs zu stärken. Sie arbeitet operativ, startet eigene Programme und führt sie durch. Ihre Themen reichen von Klimawandel, Lebenswissenschaften und Gesundheit über frühkindliche Bildung bis zu bürgerschaftlichem und kulturellem Engagement und demokratischer Bildung.",
+    "foerderbereiche": ["bildung", "forschung", "wissenschaft", "kultur", "gemeinwesen", "gesundheit", "klima", "demokratie"],
+    "hinweis": "Sie fördert über eigene Programme und Ausschreibungen in Baden-Württemberg, ein Projekt bewirbt sich also auf ein laufendes Programm.",
+    "auftrittQuelle": "https://www.bwstiftung.de/de/"
+  },
+  "stiftung-bonifatiuswerk-der-deutschen-katholiken-30": {
+    "logo": "kandidat-1.png",
+    "hausfarbe": "#d7193c",
+    "kurz": "Das Bonifatiuswerk ist ein katholisches Hilfswerk. Es unterstützt Katholiken, die in Deutschland, Nordeuropa und im Baltikum als Minderheit leben.",
+    "zweck": "Das Hilfswerk fördert Projekte über vier Hilfsarten: Bau-, Verkehrs-, Kinder- und Glaubenshilfe. Dazu gehören Projekte der Kinder- und Jugendpastoral, religiöse Bildungsmaßnahmen und die Religiösen Kinderwochen in Ostdeutschland.",
+    "zielgruppen": ["Kinder", "Jugendliche", "Familien", "katholische Gemeinden in der Diaspora"],
+    "foerderbereiche": ["glaube", "kinder", "jugend", "bildung", "kirchenbau", "mobilität"],
+    "hinweis": "Anträge müssen sechs Wochen vor Projektbeginn vollständig vorliegen; religiöse Bildungsmaßnahmen laufen über die Fachstelle des jeweiligen Bistums.",
+    "auftrittQuelle": "https://www.bonifatiuswerk.de/de/"
+  },
+  "stiftung-caritas-stiftung-deutschland-41": {
+    "logo": "kandidat-2.png",
+    "hausfarbe": "#e40613",
+    "akzent": "#f07d06",
+    "kurz": "Die Caritas-Stiftung Deutschland finanziert die soziale Arbeit des Deutschen Caritasverbandes im In- und Ausland. Sie verwaltet zudem mehr als 100 private Treuhandstiftungen.",
+    "zweck": "Der Deutsche Caritasverband gründete die Stiftung 1999, damit seine Arbeit finanziell unabhängig bleibt. Aus den Erträgen unterstützt sie Projekte der Verbandszentrale in Freiburg und die Arbeit von Caritas international. Leitgedanke ist Hilfe zur Selbsthilfe für Menschen in Not.",
+    "zielgruppen": ["Menschen in Not"],
+    "foerderbereiche": ["armut", "integration", "familie", "international"],
+    "hinweis": "Ihre Mittel fließen in die Arbeit des Deutschen Caritasverbandes und von Caritas international.",
+    "auftrittQuelle": "https://www.menschlichkeit-stiften.de"
+  },
+  "stiftung-deutsche-postcode-lotterie-60": {
+    "logo": "kandidat-2.svg",
+    "hausfarbe": "#d7980f",
+    "kurz": "Die Deutsche Postcode Lotterie ist eine Soziallotterie. Ein Teil jedes Losbeitrags fließt in soziale und ökologische Projekte in ganz Deutschland.",
+    "zweck": "Sie fördert gemeinnützige Organisationen mit Projekten für Mensch und Natur. Ein Beirat entscheidet über die Anträge und achtet auf Relevanz, Wirkung, Nachhaltigkeit und Reichweite. Wer sich zum ersten Mal bewirbt, startet mit einer Interessensbekundung für eine kleinere Summe.",
+    "zielgruppen": ["Kinder", "Senioren"],
+    "foerderbereiche": ["umwelt", "klima", "natur", "gemeinwesen", "kinder", "integration", "tierschutz"],
+    "hinweis": "Die letzte Förderrunde ist abgeschlossen; die nächste startet 2027 über das Förderportal der Lotterie.",
+    "auftrittQuelle": "https://www.postcode-lotterie.de"
+  },
+  "stiftung-dieter-schwarz-stiftung-72": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#0e4d6f",
+    "kurz": "Die Dieter Schwarz Stiftung fördert Bildung, Forschung und Unternehmertum. Ihre Projekte haben einen festen Bezug zur Region Heilbronn-Franken.",
+    "zweck": "Sie will lebenslanges Lernen in allen Altersgruppen stärken. In der Bildung liegt ihr Schwerpunkt auf MINT sowie Sprach- und Leseförderung, in der Forschung auf Künstlicher Intelligenz, Cyber Security und Quantencomputing. Zu ihren großen Vorhaben gehören der Bildungscampus Heilbronn, die experimenta und IPAI.",
+    "zielgruppen": ["Kinder", "Jugendliche", "Hochschulen", "Startups"],
+    "foerderbereiche": ["bildung", "wissenschaft", "forschung", "beruf", "digitalisierung", "unternehmertum", "mint"],
+    "hinweis": "Sie prüft Anträge für zukunftsorientierte Projekte, die einen deutlichen Bezug zu Heilbronn und der Region haben.",
+    "auftrittQuelle": "https://www.dieter-schwarz-stiftung.de"
+  },
+  "stiftung-foerderfonds-handwerk-stiftung-bildung-wolfgang-82": {
+    "logo": "kandidat-2.png",
+    "hausfarbe": "#009cb4",
+    "akzent": "#ed6707",
+    "kurz": "Der Förderfonds Handwerk der Stiftung Bildung unterstützt Projekte, in denen Kinder und Jugendliche Handwerk selbst erleben. Er besteht in Kooperation mit der Wolfgang Dürr Stiftung.",
+    "zweck": "Der Fonds fördert bundesweit Projektideen aus Kitas, Grundschulen und weiterführenden Schulen mit 500 bis 5.000 Euro. Die jungen Menschen planen und bauen selbst, vom Baumhaus bis zur Rutsche aus recyceltem Material. Wichtig sind Beteiligung, Inklusion und ein schonender Umgang mit Material.",
+    "zielgruppen": ["Kinder", "Jugendliche", "Kitas", "Schulen"],
+    "foerderbereiche": ["handwerk", "kinder", "jugend", "bildung", "ehrenamt", "nachhaltigkeit", "inklusion"],
+    "hinweis": "Anträge stellen Kita- und Schulfördervereine mit aktuellem Freistellungsbescheid, jederzeit über ein Online-Formular.",
+    "auftrittQuelle": "https://www.stiftungbildung.org/foerderfonds-handwerk/"
+  },
+  "stiftung-globus-stiftung-92": {
+    "_grund": "Die Startseite kam nur als unlesbarer, komprimierter Datenstrom an; es gibt weder lesbaren Text noch Logo-Kandidaten oder Farben."
+  },
+  "stiftung-ikk-classic-stiftung-103": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#0ba1e2",
+    "auftrittQuelle": "https://www.ikk-classic.de/pk"
+  },
+  "stiftung-karl-diehl-stiftung-irmgard-diehl-kinderstiftung-114": {
+    "logo": "kandidat-1.svg",
+    "auftrittQuelle": "https://new.diehl.com/group/de/"
+  },
+  "stiftung-kulturstiftung-der-kasseler-sparkasse-122": {
+    "logo": "kandidat-3.svg",
+    "hausfarbe": "#ee0000",
+    "kurz": "Die Stiftungen der Kasseler Sparkasse fördern Vereine und Initiativen in Stadt und Landkreis Kassel. Sie unterstützen Kultur, Soziales, Sport, Bildung, Denkmalschutz und Forschung.",
+    "zweck": "Die Kulturstiftung entstand 1992 und gehört heute zu den zusammengelegten Kasseler Sparkassenstiftungen für Stadt und Landkreis. Sie fördert Kunst und Kultur, Musik und Literatur, Denkmalpflege sowie Wissenschaft mit regionalem Bezug. Dazu kommen Projekte für Jugend, ältere Menschen, Menschen mit Behinderung und den Breitensport.",
+    "zielgruppen": ["Jugendliche", "ältere Menschen", "Menschen mit Behinderung", "Vereine"],
+    "foerderbereiche": ["kunst", "kultur", "musik", "soziales", "sport", "denkmalschutz", "bildung", "forschung"],
+    "hinweis": "Sie fördert gemeinnützige Einrichtungen mit Projekten in Stadt und Landkreis Kassel; die Kuratorien entscheiden im Frühjahr über die per Mail eingereichten Anträge.",
+    "auftrittQuelle": "https://www.kasseler-sparkasse.de/stiftungen"
+  },
+  "stiftung-lotto-rheinland-pfalz-stiftung-129": {
+    "hausfarbe": "#d22321",
+    "akzent": "#f7dc16",
+    "auftrittQuelle": "https://www.lotto-rlp.de/lotto-stiftung"
+  },
+  "stiftung-muenchener-rueck-stiftung-142": {
+    "logo": "kandidat-5.png",
+    "hausfarbe": "#28be3c",
+    "akzent": "#00b4dc",
+    "kurz": "Die Münchener Rück Stiftung arbeitet weltweit, vor allem in Schwellen- und Entwicklungsländern. Sie hilft Menschen, sich gegen Klima- und Katastrophenrisiken zu wappnen.",
+    "zweck": "Munich Re gründete die Stiftung 2005, um ihr Wissen über Risiken mit der Gesellschaft zu teilen. Sie arbeitet in drei Feldern: Klimarisiken und Anpassung, Klimaschutz und inklusive Versicherung. Dafür verbindet sie Forschung, Dialog, Bildung und direkte Hilfe für lokale Projekte.",
+    "zielgruppen": ["gefährdete Gemeinschaften in Schwellen- und Entwicklungsländern"],
+    "foerderbereiche": ["umwelt", "klima", "armut", "gesundheit", "international", "katastrophenvorsorge"],
+    "hinweis": "Sie passt zu Vorhaben, die gefährdete Gemeinschaften in Schwellen- und Entwicklungsländern widerstandsfähiger gegen Risiken machen.",
+    "auftrittQuelle": "https://www.munichre-foundation.org/en.html"
+  },
+  "stiftung-right-livelihood-foundation-151": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#003388",
+    "kurz": "Right Livelihood vergibt jedes Jahr den Right Livelihood Award an vier Menschen oder Organisationen. Danach begleitet sie die Preisträger langfristig.",
+    "zweck": "Jakob von Uexkull rief den Preis 1980 ins Leben, um Menschen mit praktischen Lösungen für drängende Weltprobleme eine Stimme zu geben. Die Stiftung setzt sich für Frieden, Gerechtigkeit und Nachhaltigkeit ein. Neben dem Preisgeld bietet sie Sichtbarkeit, Fürsprache bei den Vereinten Nationen, ein Schutzprogramm und Partnerschaften mit Hochschulen.",
+    "foerderbereiche": ["frieden", "nachhaltigkeit", "international", "demokratie", "menschenrechte"],
+    "hinweis": "Sie wirkt über ihren jährlichen Preis und die Begleitung der Preisträger.",
+    "auftrittQuelle": "https://rightlivelihood.org"
+  },
+  "stiftung-sparkassen-kulturstiftung-hessen-thueringen-169": {
+    "logo": "kandidat-2.png",
+    "hausfarbe": "#ff0000",
+    "auftrittQuelle": "https://www.dsgv.de"
+  },
+  "stiftung-stiftung-bildung-und-handwerk-183": {
+    "logo": "kandidat-1.png",
+    "hausfarbe": "#12467b",
+    "akzent": "#f7931d",
+    "kurz": "Die Stiftung Bildung & Handwerk trägt die SBH-Gruppe, einen Bildungsträger mit Standorten in ganz Deutschland. Sie bietet Ausbildung, Umschulung, Weiterbildung und Berufsorientierung an.",
+    "zweck": "Die gemeinnützige Stiftung dient der Bildungsförderung. Über die SBH-Gruppe bietet sie unter anderem Sprach- und Integrationskurse, berufliche Rehabilitation, frühkindliche Bildung sowie Kinder- und Jugendhilfe an. Viele Angebote laufen in Landes-, Bundes- und ESF-Programmen.",
+    "zielgruppen": ["Jugendliche", "Berufstätige", "Arbeitsuchende", "Geflüchtete", "Unternehmen"],
+    "foerderbereiche": ["bildung", "ausbildung", "beruf", "weiterbildung", "integration", "rehabilitation"],
+    "hinweis": "Sie arbeitet als Bildungsträger mit eigenen Angeboten und Projekten.",
+    "auftrittQuelle": "https://s-b-h.de"
+  },
+  "stiftung-stiftung-kirchenerhaltungsfonds-ekkw-192": {
+    "logo": "kandidat-1.png",
+    "hausfarbe": "#d71785",
+    "auftrittQuelle": "https://www.ekkw.de/index.php"
+  },
+  "stiftung-stiftung-wuerth-reinhold-wuerth-musikstiftung-201": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#cc0000",
+    "auftrittQuelle": "https://www.wuerth-philharmoniker.de"
+  },
+  "stiftung-wilhelm-sander-stiftung-220": {
+    "logo": "kandidat-2.svg",
+    "hausfarbe": "#5764de",
+    "kurz": "Die Wilhelm Sander-Stiftung fördert medizinische Forschung, vor allem die klinische und experimentelle Krebsforschung. Sie unterstützt Hochschulen, Kliniken und Forschende in Deutschland und der Schweiz.",
+    "zweck": "Der Unternehmer Wilhelm Sander vermachte der Stiftung sein Vermögen, sie arbeitet seit 1975. Sie fördert Forschung, die Prävention, Diagnose und Therapie von Krebs verbessert. Die Forschenden bringen ihre eigene Idee ein, die Stiftung schafft die finanzielle Grundlage.",
+    "zielgruppen": ["Forschende in der Krebsmedizin", "Hochschulen", "Kliniken"],
+    "foerderbereiche": ["forschung", "wissenschaft", "gesundheit", "medizin", "krebsforschung"],
+    "hinweis": "Sie passt zu Forschungsprojekten der Krebsmedizin an Hochschulen, Kliniken und wissenschaftlichen Einrichtungen in Deutschland und der Schweiz.",
+    "auftrittQuelle": "https://www.wilhelm-sander-stiftung.de"
+  },
+  "stiftung-zukunftsstiftung-landwirtschaft-232": {
+    "logo": "kandidat-1.jpg",
+    "hausfarbe": "#0f0671",
+    "akzent": "#e10d54",
+    "kurz": "Die Zukunftsstiftung Landwirtschaft fördert gemeinnützige Projekte für eine ökologische Landwirtschaft. Schwerpunkte sind ökologische Pflanzenzucht, Tierzucht und landwirtschaftliche Bildung.",
+    "zweck": "Die Stiftung unter dem Dach der GLS Treuhand finanziert sich aus Spenden. Sie fördert gentechnikfreie Saatgutzüchtung, artgemäße Tierzucht mit Blick auf die Tiergesundheit, Bildung zu ökologischer Landwirtschaft und Agrarpolitik sowie ganzheitliche Forschung. Ihr Kampagnenbüro Save our Seeds setzt sich in Berlin für gentechnikfreies Saatgut ein.",
+    "zielgruppen": ["Kinder", "Jugendliche", "Erwachsene", "gemeinnützige Träger"],
+    "foerderbereiche": ["landwirtschaft", "natur", "umwelt", "nachhaltigkeit", "forschung", "bildung", "saatgut", "tierzucht"],
+    "hinweis": "Sie fördert gemeinnützige Träger mit Vorhaben der ökologischen Landwirtschaft; der Stiftungsrat entscheidet bis zu viermal im Jahr zu festen Fristen.",
+    "auftrittQuelle": "https://zukunftsstiftung-landwirtschaft.de"
+  }
+}

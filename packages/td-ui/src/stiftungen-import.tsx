@@ -34,7 +34,8 @@ export type ImportStand =
  */
 async function stiftungen() {
   const { musterItems } = await import("@trustdonation/core/musterdaten")
-  return musterItems.filter((i) => String(i.id).startsWith("stiftung-"))
+  // Die erfundene Musterstiftung (`muster: true`) zeigt nur die Vorlage; in echte Spaces gehört sie nicht.
+  return musterItems.filter((i) => String(i.id).startsWith("stiftung-") && (i.data as { muster?: boolean } | undefined)?.muster !== true)
 }
 
 /**
@@ -48,6 +49,13 @@ export function importZiel<G extends { id: string; name: string; data?: unknown 
 
 /** Was ein zweiter Lauf an einer schon eingespielten Stiftung nachzieht. */
 const NACHZUG = ["icon", "address", "position", "sitz", "ortGenauigkeit", "website", "anschriftQuelle"] as const
+
+/**
+ * Der Auftritt der Stiftung (DEFINITION Teil 8, 02.10.2026): Logo, Farben,
+ * Texte. Kommt nur dazu, solange der Eintrag unsere Recherche ist, und nur
+ * wo das Feld fehlt; was jemand im Space schon selbst bearbeitet hat, bleibt.
+ */
+const AUFTRITT = ["bild", "hausfarbe", "akzent", "kurz", "zweck", "zielgruppen", "hinweis", "foerderbereiche", "auftrittQuelle", "auftrittStand"] as const
 
 /**
  * Namenlose Reste aus einem früheren Lauf (Kimi, 02.10.2026, kritisch).
@@ -80,7 +88,8 @@ async function orteImSpace(connector: DataInterface, ziel?: string): Promise<Ite
  * Das Symbol (01.10.2026) kommt immer, wenn es fehlt. Ort, Anschrift und
  * Website nur, solange der Eintrag noch unsere Recherche ist (`quelle`
  * unveraendert): Hat eine Stiftung ihn uebernommen und selbst gepflegt,
- * bleibt er, wie sie ihn haben will.
+ * bleibt er, wie sie ihn haben will. Der Auftritt (Logo, Farben, Texte)
+ * kommt nur dazu, wo er fehlt.
  */
 export function nachtrag(da: Record<string, unknown>, neu: Record<string, unknown>): Record<string, unknown> | null {
   const unsere = da.quelle === neu.quelle
@@ -90,6 +99,10 @@ export function nachtrag(da: Record<string, unknown>, neu: Record<string, unknow
     const fehlt = da[k] === undefined || da[k] === null || da[k] === ""
     const anders = JSON.stringify(da[k]) !== JSON.stringify(neu[k])
     if (k === "icon" ? fehlt : unsere && anders) patch[k] = neu[k]
+  }
+  for (const k of AUFTRITT) {
+    const fehlt = da[k] === undefined || da[k] === null || da[k] === "" || (Array.isArray(da[k]) && (da[k] as unknown[]).length === 0)
+    if (neu[k] !== undefined && unsere && fehlt) patch[k] = neu[k]
   }
   return Object.keys(patch).length ? patch : null
 }

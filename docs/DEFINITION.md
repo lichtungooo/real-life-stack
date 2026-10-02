@@ -481,6 +481,48 @@ Regeln wie beim Project Profile: Fehlendes fällt weg, Adressen nur sicher, nich
 **„Stiftung“ statt „Ort“:** Das Etikett „Ort“ setzt Antons Typ `place` im Kopf der Detailansicht. Die Komponente zeigt „Stiftung“ groß im eigenen Kopf. Das Etikett selbst ändert sich erst mit einem eigenen Typ `stiftung` (Manifest-Schicht, Umzug der 193 Einträge über den Import-Link); das ist ein eigener Schritt.
 
 
+#### Stiftungsprofil im Auftritt der Stiftung (freigegeben von Timo am 02.10.2026, Logos mit Hinweis)
+
+**Frage:** Was folgt daraus, dass jede Stiftung in ihrem eigenen Auftritt erscheinen soll?
+
+Timo am 02.10.2026: *"auf die Webseite gucken und das Stiftungsprofil so anpassen, wie die Stiftung wirklich ausgerichtet ist … das stiftungseigene Logo … die Farben vom Logo übernehmen … erstmal schön schreiben, was wir machen … die Hashtags, was wir fördern … den Antrag nicht gleich ganz oben … aus den Stiftungen die Feinheiten rausziehen."*
+
+**Neue Felder in `data`** (alle optional, die Vorlage wächst weiter mit):
+
+| Feld | Was | Woher |
+|---|---|---|
+| `bild` (gibt es) | das Logo der Stiftung, als Datei auf unserem Server (`/stiftungen/<id>.svg` oder `.png`) | Logo auf der Website |
+| `hausfarbe` (gibt es) | die Hauptfarbe des Auftritts | Logo und Website |
+| `akzent` | eine zweite Farbe | Logo und Website |
+| `kurz` | ein bis zwei Sätze, was die Stiftung tut, in eigenen Worten | Startseite, „Über uns“ |
+| `zweck`, `zielgruppen`, `hinweis`, `foerderbereiche` (gibt es) | die Feinheiten, nachgeschärft | Seiten zur Förderung |
+| `auftrittQuelle`, `auftrittStand` | woher Logo, Farben und Texte stammen, und wann | Adresse und Datum |
+
+**Neuer Aufbau der ganzen Ansicht**, von oben nach unten:
+
+1. **Kopf** im Verlauf von Hausfarbe zu Akzent, mit dem Logo und dem Satz `kurz`.
+2. **Was sie fördert:** Förderbereiche als Schlagworte (#Bildung #Kinder), Zweck, für wen, woran du erkennst, dass du passt.
+3. **Kennzahlen** (Summe, Volumen, Reichweite).
+4. **Schon gefördert.**
+5. **So kommst du zur Förderung** (Antragsweg, Fristen, Unterlagen), weiter unten statt ganz oben. Die schmale Antragskarte rechts mit Summe und Knopf bleibt.
+6. **Kontakt** und **Geben.**
+7. **Hinweis ganz unten:** *„Angaben aus öffentlichen Quellen (Website der Stiftung, Stand …). Name, Logo und Farben gehören der Stiftung; trustdonation ist nicht mit ihr verbunden. Fehler oder Wunsch nach Entfernung: mail@reallife.network.“* Dazu wie bisher „Profil übernehmen“.
+
+**Farben:** Flächen, Schatten und Hintergrund nehmen die Hausfarbe auf (zart gemischt), kein reines Weiß und kein Einheitsblau mehr. Lesbarkeit geht vor: Text auf Farbe wird auf Kontrast gerechnet (mindestens 4,5 zu 1), sonst dunkel oder hell gesetzt. Auf der Karte bleibt jede Stiftung blau.
+
+**Erfassen:** Ein Werkzeug (`td-tools/stiftungen/auftritt.py`) holt je Website Logo-Kandidaten, Farben aus Logo und Seite und die Texte der wichtigsten Seiten in einen Zwischenspeicher. Daraus schreiben Agenten je Stiftung die Felder: nichts erfinden, eigene Worte statt kopierter Sätze, im Zweifel weglassen. Erst zehn Stiftungen als Probe zum Ansehen, dann alle 190 mit Website.
+
+Regeln:
+
+1. **Logos liegen bei uns,** nicht von fremden Servern geladen (sonst geht die Adresse jedes Besuchers an die Stiftung).
+2. **Nichts erfunden:** Was die Website nicht hergibt, bleibt leer.
+3. **Herkunft sichtbar:** `auftrittQuelle` und der Hinweis unten.
+4. **Entfernen auf Wunsch** innerhalb eines Tages.
+5. **Was es nicht trägt:** keine Fotos von der Website, keine Schriften der Stiftung, keine Texte im Wortlaut.
+
+Der Import in echte Spaces zieht die neuen Felder über den Nachtrag nach (wie Anschrift und Förderbereiche).
+
+
 #### Profile bearbeiten (freigegeben von Timo am 02.10.2026)
 
 **Frage:** Was folgt daraus, dass ein Projekt oder eine Stiftung ihr Profil selbst in der App füllt?

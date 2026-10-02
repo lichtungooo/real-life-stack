@@ -108,7 +108,7 @@ describe("Ein zweiter Lauf traegt das Symbol nach (01.10.2026)", () => {
   it("eine schon eingespielte Stiftung ohne Symbol bekommt es, sonst wird nichts angefasst", async () => {
     const { stiftungenSchreiben } = await import("../src/stiftungen-import.js")
     const { musterItems } = await import("@trustdonation/core/musterdaten")
-    const erste = musterItems.find((i) => String(i.id).startsWith("stiftung-"))!
+    const erste = musterItems.find((i) => String(i.id).startsWith("stiftung-") && (i.data as { muster?: boolean }).muster !== true)!
     const titel = (erste.data as { title: string }).title
     const angelegt: unknown[] = []
     // Wie die echten Connectoren: `updateItem` ERSETZT data (Vertrag,
@@ -129,6 +129,15 @@ describe("Ein zweiter Lauf traegt das Symbol nach (01.10.2026)", () => {
   })
 })
 
+describe("Die Musterstiftung bleibt Muster (02.10.2026)", () => {
+  it("schreibt die erfundene Musterstiftung nie in einen echten Space", async () => {
+    const { connector, geschrieben } = attrappe()
+    await laufen(connector)
+    expect(geschrieben.some((g) => g.title === "Löwenherz Stiftung")).toBe(false)
+    expect(geschrieben.every((g) => (g.eingang as { data: { muster?: boolean } }).data.muster !== true)).toBe(true)
+  })
+})
+
 describe("Was ein zweiter Lauf nachzieht (01.10.2026)", () => {
   it("zieht Ort und Anschrift nach, solange der Eintrag noch unsere Recherche ist", async () => {
     const { nachtrag } = await import("../src/stiftungen-import.js")
@@ -143,6 +152,17 @@ describe("Was ein zweiter Lauf nachzieht (01.10.2026)", () => {
     const neu = { title: "A", quelle: "Recherche X", address: "Andere Anschrift", icon: "hands" }
     expect(nachtrag(da, neu)).toEqual({ icon: "hands" })
     expect(nachtrag({ ...da, icon: "eigenes" }, neu)).toBeNull()
+  })
+
+  it("der Auftritt kommt nur, wo er fehlt; Bearbeitetes bleibt (02.10.2026)", async () => {
+    const { nachtrag } = await import("../src/stiftungen-import.js")
+    const neu = { title: "A", quelle: "Recherche X", icon: "hands", bild: "stiftungen/a.svg", hausfarbe: "#961e82", kurz: "Neu recherchiert.", foerderbereiche: ["bildung"] }
+    expect(nachtrag({ title: "A", quelle: "Recherche X", icon: "hands", foerderbereiche: [] }, neu))
+      .toEqual({ bild: "stiftungen/a.svg", hausfarbe: "#961e82", kurz: "Neu recherchiert.", foerderbereiche: ["bildung"] })
+    expect(nachtrag({ title: "A", quelle: "Recherche X", icon: "hands", kurz: "Von Hand geschrieben.", foerderbereiche: ["kinder"] }, neu))
+      .toEqual({ bild: "stiftungen/a.svg", hausfarbe: "#961e82" })
+    // Eine übernommene Stiftung bleibt, wie sie ist, auch ohne Logo.
+    expect(nachtrag({ title: "A", quelle: "Die Stiftung selbst", icon: "hands" }, neu)).toBeNull()
   })
 })
 
@@ -186,7 +206,7 @@ describe("Namenlose Reste aus einem früheren Lauf (Kimi, 02.10.2026, kritisch)"
   it("ein Lauf räumt die Reste fort und schreibt die Stiftung vollständig", async () => {
     const { stiftungenSchreiben } = await import("../src/stiftungen-import.js")
     const { musterItems } = await import("@trustdonation/core/musterdaten")
-    const erste = musterItems.find((i) => String(i.id).startsWith("stiftung-"))!
+    const erste = musterItems.find((i) => String(i.id).startsWith("stiftung-") && (i.data as { muster?: boolean }).muster !== true)!
     const titel = (erste.data as { title: string }).title
     // Der Zustand nach dem alten Fehler: die Stiftung nur noch als Rest.
     const gespeichert = new Map<string, { type: string; data: Record<string, unknown> }>([
