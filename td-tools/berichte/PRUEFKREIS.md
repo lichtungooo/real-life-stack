@@ -24,3 +24,4 @@ steht in der Spalte Lehre (von Claude nachgetragen).
 | 2026-10-02-184916 | – | b29fb074 | – | – | – | – | ohne Kimi ausgeliefert | Kimi-Kontingent weiter leer (5-Stunden-Grenze); Timo: weiterarbeiten ohne Kimi. Auftritt der Stiftungen von Timo freigegeben. Nachprüfung folgt. |
 | 2026-10-02-190059-7404 | 1 | 31d13fc3 | 30 | 4 | 0 | 544 s | [kimi-2026-10-02-190059-7404-runde1.md](kimi-2026-10-02-190059-7404-runde1.md) | |
 | 2026-10-02-210005 | – | 64e1ce81 | – | – | – | – | ohne Kimi ausgeliefert | Kimi-Kontingent leer; Timo: weiterarbeiten ohne Kimi. Umbau von Timo freigegeben, Probe zum Ansehen. |
+| 2026-10-02-212646 | – | 7f2d2cfa | – | – | – | – | ohne Kimi ausgeliefert | Kimi-Kontingent leer; Timo: weiterarbeiten ohne Kimi und alle Stiftungen freigegeben. Nur Daten der zweiten Runde. |
