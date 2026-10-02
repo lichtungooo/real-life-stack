@@ -56,7 +56,7 @@ export const PROJEKT_ENTWURF_REGELN: readonly string[] = /* @__PURE__ */ Object.
   "Klare Sprache: kurze Sätze, aktive Verben, keine Werbesprache.",
 ])
 
-/** Größte Länge eines Entwurfs als JSON (DEFINITION 13.6, Regel 5). */
+/** Größte Länge eines Entwurfs als JSON in Bytes (UTF-8), DEFINITION 13.6, Regel 5. */
 export const ENTWURF_HOECHSTENS = 48_000
 
 export interface ProjektEntwurf {
@@ -83,6 +83,8 @@ const objekt = (v: unknown): Roh | null => (v && typeof v === "object" && !Array
 const liste = (v: unknown): unknown[] => (Array.isArray(v) ? v : [])
 const text = (v: unknown): string | null => (typeof v === "string" && v.trim() ? v.trim() : null)
 // Rein markiert: Wer nur die Feldliste braucht, zieht die Prüfung nicht in seinen Hauptteil (Budget).
+// Schlüssel, die ein Objekt verbiegen statt Daten zu tragen (Kimi, 02.10.2026).
+const GEFAEHRLICH = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"])
 const BEKANNT = /* @__PURE__ */ new Set([...PROJEKT_PROFIL_FELDER.map((f) => f.id), "muster", "color", "icon"])
 
 /** Ort aus `{ lat, lng }` oder GeoJSON-Punkt, als GeoJSON wie bei den Stiftungen. */
@@ -116,8 +118,9 @@ export function projektEntwurfPruefen(roh: unknown): EntwurfBericht {
   const p = projektProfil(d, [])
 
   const daten: Roh = {}
-  for (const [k, v] of Object.entries(d)) if (!BEKANNT.has(k) && k !== "tags") daten[k] = v
-  const unbekannt = Object.keys(d).filter((k) => !BEKANNT.has(k))
+  for (const [k, v] of Object.entries(d)) if (!BEKANNT.has(k) && k !== "tags" && !GEFAEHRLICH.has(k)) daten[k] = v
+  const unbekannt = Object.keys(d).filter((k) => !BEKANNT.has(k) && !GEFAEHRLICH.has(k))
+  for (const k of Object.keys(d)) if (GEFAEHRLICH.has(k)) verworfen.push(`${k}: kein zulässiger Feldname`)
 
   if (text(d.title)) daten.title = text(d.title)
   for (const k of ["kurz", "beduerfnis", "description", "address"] as const) {
@@ -207,7 +210,9 @@ function textAusBase64url(kette: string): string {
 /** Den Entwurf als Fragment (ohne `#`). Wirft, wenn er zu groß ist. */
 export function entwurfKodieren(entwurf: ProjektEntwurf): string {
   const json = JSON.stringify({ v: 1, ...entwurf })
-  if (json.length > ENTWURF_HOECHSTENS) throw new Error(`Der Entwurf ist zu groß (${json.length} Zeichen, höchstens ${ENTWURF_HOECHSTENS}). Bilder als Adressen, Texte kürzen.`)
+  // In Bytes gemessen, wie beim Lesen: Umlaute und Typografie zählen doppelt.
+  const bytes = new TextEncoder().encode(json).length
+  if (bytes > ENTWURF_HOECHSTENS) throw new Error(`Der Entwurf ist zu groß (${bytes} Bytes, höchstens ${ENTWURF_HOECHSTENS}). Bilder als Adressen, Texte kürzen.`)
   return PRAEFIX + base64urlAus(json)
 }
 
@@ -219,7 +224,8 @@ export function entwurfLesen(fragment: string): EntwurfBericht | null {
   const f = fragment.replace(/^#/, "")
   if (!f.startsWith(PRAEFIX)) return null
   const kette = f.slice(PRAEFIX.length)
-  if (kette.length > ENTWURF_HOECHSTENS * 2) return null
+  // Base64 macht aus drei Bytes vier Zeichen: dieselbe Grenze wie beim Schreiben.
+  if (kette.length > Math.ceil((ENTWURF_HOECHSTENS * 4) / 3) + 4) return null
   try {
     const roh = JSON.parse(textAusBase64url(kette)) as Roh
     if (!objekt(roh) || roh.v !== 1) return null

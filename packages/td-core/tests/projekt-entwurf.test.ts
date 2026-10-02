@@ -110,6 +110,22 @@ describe("Im Fragment des Links", () => {
     expect(entwurfLesen("#projekt-entwurf=" + btoa(JSON.stringify({ v: 2 })))).toBeNull()
   })
 
+  it("ein Entwurf an der Grenze, voller Umlaute, kommt hin und zurück (Kimi, 02.10.2026)", () => {
+    const text = "ä".repeat(Math.floor((ENTWURF_HOECHSTENS - 200) / 2))
+    const f = entwurfKodieren({ daten: { description: text }, tags: [] })
+    expect(entwurfLesen(f)!.entwurf.daten.description).toBe(text)
+  })
+
+  it("__proto__ im Fragment verbiegt nichts (Kimi, 02.10.2026)", () => {
+    const json = '{"v":1,"daten":{"__proto__":{"title":"untergeschoben"},"kurz":"x"},"tags":[]}'
+    const kette = btoa(json).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")
+    const b = entwurfLesen("projekt-entwurf=" + kette)!
+    expect(b.entwurf.daten.title).toBeUndefined()
+    expect(Object.getPrototypeOf(b.entwurf.daten)).toBe(Object.prototype)
+    expect(b.fehlt.map((f) => f.id)).toContain("title")
+    expect(b.unbekannt).toEqual([])
+  })
+
   it("lehnt zu große Entwürfe ab", () => {
     expect(() => entwurfKodieren({ daten: { description: "x".repeat(ENTWURF_HOECHSTENS) }, tags: [] })).toThrow(/zu groß/)
   })

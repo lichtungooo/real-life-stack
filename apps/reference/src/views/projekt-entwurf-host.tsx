@@ -48,13 +48,25 @@ export function ProjektEntwurfHost({ beispielwelt }: { beispielwelt: boolean }) 
       { type: "project", createdBy: ich?.id ?? "", data: entwurf.daten, tags: entwurf.tags },
       { group: spaceId },
     )) as { id?: string } | undefined
-    if (einschalten && typeof connector.updateGroup === "function") {
-      const g = groups?.find((x) => x.id === spaceId)
-      const schon = komponentenImSpace(g?.data as Record<string, unknown> | undefined)
-      await connector.updateGroup(spaceId, { data: { komponenten: [...schon, PROJEKT_PROFIL] } })
+    const weiter = () => {
+      schliessen()
+      navigate(neu?.id ? `/${spaceId}/map/${neu.id}` : `/${spaceId}/map`)
     }
-    schliessen()
-    navigate(neu?.id ? `/${spaceId}/map/${neu.id}` : `/${spaceId}/map`)
+    if (!einschalten) return { weiter }
+    // Ab hier ist das Projekt angelegt. Was jetzt scheitert, darf nicht als
+    // „nicht angelegt“ zurückkommen, sonst legt ein zweiter Klick es doppelt an.
+    try {
+      if (typeof connector.updateGroup !== "function") throw new Error("Dieser Zugang kann den Space nicht ändern.")
+      const g = groups?.find((x) => x.id === spaceId)
+      const daten = (g?.data ?? {}) as Record<string, unknown>
+      // Alle Daten mitschicken: Spec 04 (Regel 3) sagt Patch, Antons
+      // Supabase-Connector ersetzt die Spalte ganz (Kimi, 02.10.2026). So ist
+      // es unter beiden Lesarten sicher.
+      await connector.updateGroup(spaceId, { data: { ...daten, komponenten: [...komponentenImSpace(daten), PROJEKT_PROFIL] } })
+      return { weiter }
+    } catch (e) {
+      return { weiter, hinweis: `Das Project Profile ließ sich in diesem Space nicht einschalten (${e instanceof Error ? e.message : "unbekannter Fehler"}). Wer den Space verwaltet, schaltet es unter Erweiterungen → Komponenten ein.` }
+    }
   }
 
   return (

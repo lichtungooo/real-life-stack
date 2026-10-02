@@ -31,15 +31,25 @@ export interface ProjektEntwurfDialogProps {
   /** Demo: gespeichert wird nur im eigenen Browser. */
   beispielwelt?: boolean
   bildUrl?: (pfad: string) => string
-  /** Anlegen; gibt die Id des neuen Eintrags zurück. */
-  onAnlegen: (spaceId: string, entwurf: ProjektEntwurf, profilEinschalten: boolean) => Promise<string | void>
+  /**
+   * Anlegen. `weiter` führt zum neuen Projekt. Ein `hinweis` heißt: angelegt
+   * ist es, ein Nebenschritt (Profil einschalten) ging schief. Der Dialog
+   * zeigt ihn, statt „nicht angelegt“ zu melden (Kimi, 02.10.2026).
+   */
+  onAnlegen: (spaceId: string, entwurf: ProjektEntwurf, profilEinschalten: boolean) => Promise<{ weiter: () => void; hinweis?: string }>
   onSchliessen: () => void
 }
 
 export function ProjektEntwurfDialog(p: ProjektEntwurfDialogProps) {
   const bericht = useMemo(() => entwurfLesen(p.fragment), [p.fragment])
-  const [spaceId, setSpaceId] = useState(() => (p.spaces.some((s) => s.id === p.startSpace) ? p.startSpace! : (p.spaces[0]?.id ?? "")))
+  // Die Wahl abgeleitet, nicht eingefroren: Laden die Spaces erst nach dem
+  // Öffnen, greift die Vorauswahl trotzdem (Kimi, 02.10.2026).
+  const [gewaehlt, setSpaceId] = useState<string | null>(null)
+  const spaceId = gewaehlt && p.spaces.some((s) => s.id === gewaehlt)
+    ? gewaehlt
+    : (p.spaces.find((s) => s.id === p.startSpace)?.id ?? p.spaces[0]?.id ?? "")
   const space = p.spaces.find((s) => s.id === spaceId)
+  const [fertig, setFertig] = useState<{ weiter: () => void; hinweis: string } | null>(null)
   const [einschalten, setEinschalten] = useState(true)
   const [laeuft, setLaeuft] = useState(false)
   const [fehler, setFehler] = useState<string | null>(null)
@@ -50,7 +60,9 @@ export function ProjektEntwurfDialog(p: ProjektEntwurfDialogProps) {
     setLaeuft(true)
     setFehler(null)
     try {
-      await p.onAnlegen(space.id, bericht.entwurf, einschalten && !space.profilAktiv)
+      const r = await p.onAnlegen(space.id, bericht.entwurf, einschalten && !space.profilAktiv)
+      if (r.hinweis) setFertig({ weiter: r.weiter, hinweis: r.hinweis })
+      else r.weiter()
     } catch (e) {
       setFehler(e instanceof Error ? e.message : "Das Projekt ließ sich nicht anlegen.")
       setLaeuft(false)
@@ -67,7 +79,14 @@ export function ProjektEntwurfDialog(p: ProjektEntwurfDialogProps) {
           <button type="button" onClick={p.onSchliessen} aria-label="Schließen" className="rounded-full p-1.5 opacity-60 hover:opacity-100"><X className="h-5 w-5" /></button>
         </header>
 
-        {!bericht || !profil ? (
+        {fertig ? (
+          <div className="flex flex-col items-center gap-3 p-8 text-center">
+            <Check className="h-8 w-8 text-emerald-600" />
+            <p className="font-semibold">Das Projekt ist angelegt.</p>
+            <p className="max-w-md text-sm text-muted-foreground">{fertig.hinweis}</p>
+            <button type="button" onClick={fertig.weiter} className="rounded-xl bg-emerald-700 px-4 py-2.5 font-semibold text-white hover:bg-emerald-800">Zum Projekt</button>
+          </div>
+        ) : !bericht || !profil ? (
           <div className="p-8 text-center">
             <p className="font-semibold">Dieser Link trägt keinen lesbaren Entwurf.</p>
             <p className="mt-2 text-sm text-muted-foreground">Vielleicht wurde er beim Kopieren abgeschnitten. Lass dir den Link von deinem Agenten noch einmal geben.</p>

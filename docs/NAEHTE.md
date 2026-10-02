@@ -313,3 +313,4 @@ Der Bericht zählt die Nähte, gleicht sie mit dieser Datei ab und nennt jede Da
 | Wunsch | Warum |
 |---|---|
 | `description` und `author` im Modul-Register (`ModuleEntry`) | Die Erweiterungen zeigen je Modul Beschreibung und Erbauer. Heute stehen sie in unserem Verzeichnis `td-core/src/erweiterungen.ts`, verschlüsselt über die Modul-Id. Kennt sein Register die Felder, bringt jedes Modul sie selbst mit, auch fremde, und bei uns bleibt nur die Reife (geprüft oder Beta). |
+| Supabase-Connector: `updateGroup` als Patch auf `Group.data` (Spec 04, Regel 3) | Gefunden von Kimi am 02.10.2026. `packages/supabase-connector/src/supabase-connector.ts` schreibt `data` als ganze Spalte, local, mock und wot ergänzen nur. Wer auf Supabase einen einzelnen Schlüssel setzt (unser „Project Profile einschalten“, sein eigener Aufruf in `app-frame.tsx`), löscht Module, Bild und Netzwerk des Space. Wir schicken bis dahin die ganzen Daten mit; keine Naht in seinem Connector. |
