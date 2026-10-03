@@ -169,7 +169,7 @@ Stellen, die nur deshalb Nähte sind, weil wir in Antons Referenz-App gearbeitet
 
 | Datei | Umfang | Was wir tun | Danach |
 |---|---|---|---|
-| `apps/reference/src/App.tsx` | +163 / -13 | Komposition, Connector-Wahl, Musterdaten, Beispieldaten-Hinweis, Stiftungs-Import, Netzwerke-Import, Klassen für die Reiterleiste (siehe H), das Profil-Panel einer Einrichtung (`?profil=`) | unsere Datei |
+| `apps/reference/src/App.tsx` | +163 / -13 | Komposition, Connector-Wahl (seit 03.10.2026: Adresse, dann letzte eigene Wahl, dann Vorgabe der Instanz, `connector-wahl.ts`; Demo und Login bleiben getrennt), Musterdaten, Beispieldaten-Hinweis, Stiftungs-Import, Netzwerke-Import, Klassen für die Reiterleiste (siehe H), das Profil-Panel einer Einrichtung (`?profil=`) | unsere Datei |
 | `apps/reference/src/module-register-td.test.ts` | neu | Unsere Schicht im Register, in unserer Datei statt in seiner | unsere Datei |
 | `apps/reference/src/views/companion-view.tsx` | neu | Die Begleitung an das Register gehängt; die Fläche liegt in `td-ui` | unsere Datei |
 | `apps/reference/src/views/profil-panel.tsx` | neu | Das Profil einer Einrichtung im Panel rechts; die Fläche liegt in `td-ui` | unsere Datei |

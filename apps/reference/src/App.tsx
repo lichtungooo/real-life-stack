@@ -42,6 +42,7 @@ import { SpaceProfilPanel } from "./views/profil-panel"
 import { ERWEITERUNGEN_ABSCHNITT } from "./views/erweiterungen-abschnitt"
 import { SPENDEN_ABSCHNITT, SpendenKnopf } from "./views/spenden-abschnitt"
 import { ProjektEntwurfHost } from "./views/projekt-entwurf-host"
+import { connectorWahl } from "./connector-wahl"
 // Der Kreis bekommt seinen Raum von der App (Spec kreis, "Der Raum-Adapter").
 // LiveKit unter kreis.wir.ooo traegt Bild und Ton; `?kreis=lokal` waehlt den
 // Probe-Raum, der nur die Fenster auf einem Geraet verbindet, ohne Server.
@@ -729,10 +730,16 @@ const STORAGE_KEY_CONNECTOR = "rls-connector"
 const initialDevMode = new URLSearchParams(window.location.search).has('dev')
 
 function getInitialConnectorId(): string {
-  const params = new URLSearchParams(window.location.search)
-  // `?connector=` sticht die Instanz-Vorgabe (Spec 11).
-  const configured = getRuntimeConfig().defaultConnector
-  return params.get("connector") ?? configured ?? localStorage.getItem(STORAGE_KEY_CONNECTOR) ?? "wot"
+  // Adresse, dann die letzte eigene Wahl, dann die Vorgabe der Instanz:
+  // Demo und Login bleiben getrennt, ein Neuladen bleibt im Login (Timo, 03.10.2026).
+  let gespeichert: string | null = null
+  try { gespeichert = localStorage.getItem(STORAGE_KEY_CONNECTOR) } catch { /* ohne Speicher: Vorgabe */ }
+  return connectorWahl({
+    url: new URLSearchParams(window.location.search).get("connector"),
+    gespeichert,
+    vorgabe: getRuntimeConfig().defaultConnector,
+    bekannt: CONNECTOR_OPTIONS.map((o) => o.id),
+  })
 }
 
 // Lazy-load the DIDAuthScreen to keep WoT bundle separate
