@@ -79,7 +79,14 @@ export function lokalerKreisRaum(optionen: LokalerRaumOptionen = {}): KreisRaum 
         } else if (f.typ === "weg") {
           if (fremde.delete(f.id)) melden()
         } else if (f.typ === "nachricht") {
-          nachrichten.forEach((fn) => fn(f.inhalt, f.von))
+          // Jeder Empfaenger fuer sich (Pruefkreis Kimi, 02.10.2026, Befund 3).
+          for (const fn of nachrichten) {
+            try {
+              fn(f.inhalt, f.von)
+            } catch (e) {
+              console.warn("Kreis: ein Empfaenger einer Nachricht ist gescheitert", e)
+            }
+          }
         }
       }
       daSein()

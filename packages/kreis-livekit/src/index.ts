@@ -124,6 +124,23 @@ export function liveKitKreisRaum(optionen: LiveKitRaumOptionen = KREIS_WIR_OOO):
   // Laeuft ein Beitritt, wartet ein zweiter auf ihn, statt einen zweiten
   // Raum zu oeffnen, der das Mikrofon festhielte (Pruefkreis Kimi, Befund 4).
   let betritt: Promise<void> | null = null
+  // Laeuft ein Verlassen, wartet ein neuer Beitritt darauf: sonst oeffnete er
+  // einen zweiten Raum, waehrend der alte noch trennt (Pruefkreis Kimi,
+  // 02.10.2026, Befund 2).
+  let verlasst: Promise<void> | null = null
+
+  // Jeder Empfaenger fuer sich: Wirft einer, bekommen die uebrigen die
+  // Nachricht trotzdem, und der Fehler bleibt sichtbar (Pruefkreis Kimi,
+  // 02.10.2026, Befund 3).
+  function zustellen(inhalt: unknown, von: string) {
+    for (const fn of nachrichten) {
+      try {
+        fn(inhalt, von)
+      } catch (e) {
+        console.warn("Kreis: ein Empfaenger einer Nachricht ist gescheitert", e)
+      }
+    }
+  }
 
   async function betretenEinmal(raumName: string, name: string): Promise<void> {
     abgerissen = false
@@ -176,7 +193,7 @@ export function liveKitKreisRaum(optionen: LiveKitRaumOptionen = KREIS_WIR_OOO):
       try {
         const roh = JSON.parse(new TextDecoder().decode(nutzlast)) as { kreis?: unknown }
         if (!roh || !("kreis" in roh)) return
-        nachrichten.forEach((fn) => fn(roh.kreis, von?.identity ?? ""))
+        zustellen(roh.kreis, von?.identity ?? "")
       } catch {
         // Eine unlesbare Nachricht wird verworfen, der Raum laeuft weiter.
       }
@@ -204,11 +221,20 @@ export function liveKitKreisRaum(optionen: LiveKitRaumOptionen = KREIS_WIR_OOO):
 
     verbindungVerloren: () => abgerissen,
 
+    // Der Lebenszyklus laeuft der Reihe nach (Pruefkreis Kimi, 02.10.2026,
+    // Befund 1): Ging jemand, waehrend ein Beitritt lief, wartet ein neuer
+    // Beitritt, bis der alte abgebrochen ist, und beginnt dann selbst.
     async betreten(raumName, name) {
+      if (verlasst) await verlasst.catch(() => {})
+      if (betritt && !gewollt) return betritt
+      if (betritt) await betritt.catch(() => {})
       if (raum) return
       if (betritt) return betritt
-      betritt = betretenEinmal(raumName, name).finally(() => { betritt = null })
-      return betritt
+      const lauf: Promise<void> = betretenEinmal(raumName, name).finally(() => {
+        if (betritt === lauf) betritt = null
+      })
+      betritt = lauf
+      return lauf
     },
 
     async verlassen() {
@@ -216,7 +242,13 @@ export function liveKitKreisRaum(optionen: LiveKitRaumOptionen = KREIS_WIR_OOO):
       gewollt = true
       abgerissen = false
       raum = null
-      await r?.disconnect()
+      if (r) {
+        const lauf: Promise<void> = r.disconnect().finally(() => {
+          if (verlasst === lauf) verlasst = null
+        })
+        verlasst = lauf
+        await lauf
+      }
       melden()
     },
 

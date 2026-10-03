@@ -138,3 +138,20 @@ describe("Stille und Sitzungsdauer", () => {
     expect(sitzungRest(leereSitzung(T), T)).toBeNull()
   })
 })
+
+describe("Fremde Stände prüfen (Kimi, 02.10.2026, Befund 4)", () => {
+  const u = umfrageNeu("u1", "Wann treffen wir uns?", ["Montag", "Dienstag"], "anna") as Umfrage
+  it("Stimmen ohne passende Antwort fallen beim Einmischen weg, das Ergebnis bleibt heil", () => {
+    const fremde = { ...u, stimmen: { anna: { wahl: 1, wann: T }, x: { wahl: 99, wann: T }, y: { wahl: "a", wann: T }, z: { wahl: 0 } } } as never
+    const eingemischt = umfrageEinmischen(null, fremde)
+    expect(Object.keys(eingemischt.stimmen)).toEqual(["anna"])
+    expect(ergebnis(eingemischt)).toEqual([0, 1])
+    const meine = stimmeDazu(u, { umfrage: "u1", wer: "bert", wahl: 0, wann: T })
+    expect(ergebnis(umfrageEinmischen(meine, fremde))).toEqual([1, 1])
+  })
+
+  it("ergebnis zählt nur gültige Stimmen, auch wenn der Stand schon kaputt ankam", () => {
+    const kaputt = { ...u, stimmen: { a: { wahl: 0, wann: T }, b: { wahl: 7, wann: T } } } as never
+    expect(ergebnis(kaputt)).toEqual([1, 0])
+  })
+})

@@ -51,3 +51,12 @@ describe("Folien auf dem Zeichenpad", () => {
     expect(padSchluessel(padFolienSetzen(mitFolien, null, "anna"))).toBe("frei")
   })
 })
+
+describe("Unlesbares aus dem Raum (Kimi, 02.10.2026, Befund 3)", () => {
+  it("ein verstümmeltes Stück ergibt null statt eines Fehlers", () => {
+    const e = eingangNeu("a.txt", 2)
+    expect(stueckDazu(e, 0, "QUJD")).toBeNull()
+    expect(stueckDazu(e, 1, "%%% kein base64 %%%")).toBeNull()
+    expect(stueckDazu(e, 1.5, "QUJD")).toBeNull()
+  })
+})

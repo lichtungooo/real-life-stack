@@ -81,15 +81,32 @@ export function umfrageSchliessen(u: Umfrage): Umfrage {
 /** Stimmen je Antwort, in der Reihenfolge der Antworten. */
 export function ergebnis(u: Umfrage): number[] {
   const zahlen = u.antworten.map(() => 0)
-  for (const { wahl } of Object.values(u.stimmen)) zahlen[wahl] += 1
+  for (const st of Object.values(u.stimmen)) if (gueltigeStimme(st, u.antworten.length)) zahlen[st.wahl] += 1
   return zahlen
 }
 
-/** Einen ganzen Stand einmischen (Nachzuegler): Stimmen vereinigen, geschlossen bleibt geschlossen. */
+/** Eine Stimme, die zu dieser Umfrage passt: eine Antwort, die es gibt, und ein Zeitpunkt. */
+function gueltigeStimme(st: unknown, antworten: number): st is Stimme {
+  if (!st || typeof st !== "object") return false
+  const { wahl, wann } = st as Record<string, unknown>
+  return typeof wahl === "number" && Number.isInteger(wahl) && wahl >= 0 && wahl < antworten &&
+    typeof wann === "number" && Number.isFinite(wann)
+}
+
+/**
+ * Einen ganzen Stand einmischen (Nachzuegler): Stimmen vereinigen,
+ * geschlossen bleibt geschlossen. Fremde Stimmen, die zu keiner Antwort
+ * passen, fallen weg (Pruefkreis Kimi, 02.10.2026, Befund 4).
+ */
 export function umfrageEinmischen(eigene: Umfrage | null, fremde: Umfrage): Umfrage {
-  if (!eigene || eigene.id !== fremde.id) return fremde
+  const antworten = (eigene && eigene.id === fremde.id ? eigene : fremde).antworten.length
+  const fremdeStimmen = Object.entries(fremde.stimmen).filter(([, st]) => gueltigeStimme(st, antworten))
+  if (!eigene || eigene.id !== fremde.id) {
+    // Alles gueltig: derselbe Stand, damit die Oberflaeche nichts neu zeichnet.
+    return fremdeStimmen.length === Object.keys(fremde.stimmen).length ? fremde : { ...fremde, stimmen: Object.fromEntries(fremdeStimmen) }
+  }
   let u: Umfrage = { ...eigene, offen: eigene.offen && fremde.offen }
-  for (const [wer, st] of Object.entries(fremde.stimmen)) {
+  for (const [wer, st] of fremdeStimmen) {
     const bisher = u.stimmen[wer]
     if (!bisher || bisher.wann < st.wann) u = { ...u, stimmen: { ...u.stimmen, [wer]: st } }
   }

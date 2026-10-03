@@ -43,12 +43,20 @@ export function eingangNeu(name: string, teile: number): Eingang {
   return { name, teile, stuecke: new Array(teile).fill(undefined) }
 }
 
-/** Ein Stueck ablegen. Ist die Datei danach ganz, kommt sie zurueck. */
+/**
+ * Ein Stueck ablegen. Ist die Datei danach ganz, kommt sie zurueck. Kommt
+ * aus dem Raum Unlesbares (verstuemmelt oder manipuliert), bleibt es bei
+ * `null`, statt zu werfen (Pruefkreis Kimi, 02.10.2026, Befund 3).
+ */
 export function stueckDazu(e: Eingang, nr: number, stueck: string): Uint8Array | null {
-  if (nr < 0 || nr >= e.teile) return null
+  if (!Number.isInteger(nr) || nr < 0 || nr >= e.teile || typeof stueck !== "string") return null
   e.stuecke[nr] = stueck
   if (e.stuecke.some((x) => x === undefined)) return null
-  return ausBase64(e.stuecke.join(""))
+  try {
+    return ausBase64(e.stuecke.join(""))
+  } catch {
+    return null
+  }
 }
 
 /** Eine kurze, zufaellige Id fuer eine Datei im Raum. */
