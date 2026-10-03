@@ -52,7 +52,7 @@ export const PROJEKT_ENTWURF_REGELN: readonly string[] = /* @__PURE__ */ Object.
 export const ENTWURF_HOECHSTENS = 48_000
 
 export interface ProjektEntwurf {
-  /** Was in `Item.data` gespeichert wird: gültige Felder plus unbekannte. */
+  /** Was in `Item.data` gespeichert wird: nur Felder der Liste (Kimi, 03.10.2026). */
   daten: Record<string, unknown>
   /** Schlagworte für `Item.tags`. */
   tags: string[]
@@ -109,9 +109,11 @@ export function projektEntwurfPruefen(roh: unknown): EntwurfBericht {
   const tags = schlagworte(d.tags)
   const p = projektProfil(d, [])
 
+  // Nur Felder der Liste: Ein Link darf nichts Unsichtbares mitbringen, etwa
+  // `quelle` oder Einstellungen eines Space (Kimi, 03.10.2026, kritisch).
   const daten: Roh = {}
-  for (const [k, v] of Object.entries(d)) if (!BEKANNT.has(k) && k !== "tags" && !GEFAEHRLICH.has(k)) daten[k] = v
-  const unbekannt = Object.keys(d).filter((k) => !BEKANNT.has(k) && !GEFAEHRLICH.has(k))
+  const unbekannt = Object.keys(d).filter((k) => !BEKANNT.has(k) && k !== "tags" && !GEFAEHRLICH.has(k))
+  for (const k of unbekannt) verworfen.push(`${k}: kein Feld dieses Profils, nicht übernommen`)
   for (const k of Object.keys(d)) if (GEFAEHRLICH.has(k)) verworfen.push(`${k}: kein zulässiger Feldname`)
 
   if (text(d.title)) daten.title = text(d.title)

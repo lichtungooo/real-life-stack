@@ -93,7 +93,10 @@ function nachFeldliste(felder: readonly EingabeFeld[], roh: unknown, extra: read
   let tags: string[] = []
   for (const k of Object.keys(d)) if (GEFAEHRLICH.has(k)) verworfen.push(`${k}: kein zulässiger Feldname`)
   const unbekannt = Object.keys(d).filter((k) => !bekannt.has(k) && !GEFAEHRLICH.has(k))
-  for (const k of unbekannt) daten[k] = d[k]
+  // Nur Felder der Liste: Ein Link darf nichts Unsichtbares mitbringen, weder
+  // `quelle`, `gepflegtVon`, `uebernahme` noch Einstellungen eines Space wie
+  // `komponenten` oder `ki` (Kimi, 03.10.2026, kritisch).
+  for (const k of unbekannt) verworfen.push(`${k}: kein Feld dieses Profils, nicht übernommen`)
   for (const k of extra) if (d[k] !== undefined && k !== "tags") daten[k] = d[k]
   for (const f of felder) {
     const v = d[f.id]

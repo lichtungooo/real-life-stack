@@ -45,6 +45,8 @@ export function useOcStand(adresse: string | null | undefined, dienst: string = 
   useEffect(() => {
     if (!name) { setStand(null); setLaedt(false); return }
     let aktiv = true
+    // Erst leeren: sonst zeigt eine neue Adresse kurz Zahlen und Spenden-Link der vorigen (Kimi, 03.10.2026).
+    setStand(null)
     setLaedt(true)
     void abrufen(name, dienst).then((s) => { if (aktiv) { setStand(s); setLaedt(false) } })
     return () => { aktiv = false }

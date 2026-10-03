@@ -123,28 +123,36 @@ def _iri(url: str) -> str:
                                     urllib.parse.quote(t.query, safe="=&%+"), ""))
 
 
-def _curl(url: str, grenze: int) -> tuple[str, bytes, str]:
+def _curl(url: str, grenze: int, folgen: bool = True, kopf_aus: dict | None = None) -> tuple[str, bytes, str]:
     """Ausweg bei Zertifikatsketten ohne Zwischenzertifikat: curl unter Windows
-    prüft genauso, holt fehlende Zwischenzertifikate aber nach."""
+    prüft genauso, holt fehlende Zwischenzertifikate aber nach. Mit
+    `folgen=False` folgt curl keiner Weiterleitung; Status und Ziel stehen
+    dann in `kopf_aus`."""
     import subprocess
     kopf = tempfile.NamedTemporaryFile(delete=False)
     kopf.close()
     try:
-        r = subprocess.run(["curl", "-sSL", "--max-time", "25", "--max-filesize", str(grenze), "-A", AGENT,
+        r = subprocess.run(["curl", "-sSL" if folgen else "-sS", "--max-time", "25", "--max-filesize", str(grenze), "-A", AGENT,
                             "-H", "Accept-Language: de", "-D", kopf.name, "-w", "\n%{url_effective}", url],
                            capture_output=True, timeout=40)
         if r.returncode != 0:
             raise OSError(f"curl {r.returncode}: {r.stderr.decode('utf-8', 'replace').strip()[:120]}")
         koerper, _, end = r.stdout.rpartition(b"\n")
-        typ, status = "", 0
+        typ, status, ziel = "", 0, ""
         # Nach Weiterleitungen stehen mehrere Köpfe hintereinander; es gilt der letzte.
         for z in Path(kopf.name).read_text("latin-1").splitlines():
             if z.startswith("HTTP/"):
                 teile = z.split()
                 status = int(teile[1]) if len(teile) > 1 and teile[1].isdigit() else 0
-                typ = ""
+                typ, ziel = "", ""
             elif z.lower().startswith("content-type:"):
                 typ = z.split(":", 1)[1].strip()
+            elif z.lower().startswith("location:"):
+                ziel = z.split(":", 1)[1].strip()
+        if kopf_aus is not None:
+            kopf_aus.update(status=status, ziel=ziel)
+        if not folgen and 300 <= status < 400 and ziel:
+            return end.decode("utf-8", "replace"), b"", typ
         # Wie urlopen: ein Fehlerstatus ist ein Fehler, keine Seite (Kimi, 03.10.2026).
         # So greift auch für robots.txt dieselbe Regel wie auf dem direkten Weg.
         if status >= 400:
@@ -173,12 +181,23 @@ _OEFFNER = urllib.request.build_opener(urllib.request.HTTPSHandler(context=KONTE
 
 
 def _curl_geprueft(url: str, grenze: int) -> tuple[str, bytes, str]:
-    """curl folgt Weiterleitungen selbst; landet es auf einem anderen Host,
-    gilt dessen robots.txt, sonst wird verworfen."""
-    end, roh, typ = _curl(url, grenze)
-    if urllib.parse.urlsplit(end).netloc != urllib.parse.urlsplit(url).netloc and not _darf(end):
-        raise PermissionError(f"robots.txt verbietet {end} oder war nicht abrufbar")
-    return end, roh, typ
+    """curl folgt hier keiner Weiterleitung selbst: Jeden Sprung gehen wir
+    Schritt für Schritt, und vor einem fremden Host gelten dessen robots.txt
+    und Takt, bevor etwas von dort geladen wird (Kimi, 03.10.2026)."""
+    aktuell = url
+    for _ in range(6):
+        kopf: dict = {}
+        end, roh, typ = _curl(aktuell, grenze, folgen=False, kopf_aus=kopf)
+        status, ziel = kopf.get("status", 0), kopf.get("ziel", "")
+        if not (300 <= status < 400 and ziel):
+            return end or aktuell, roh, typ
+        weiter = _iri(urllib.parse.urljoin(aktuell, ziel))
+        if urllib.parse.urlsplit(weiter).netloc != urllib.parse.urlsplit(aktuell).netloc:
+            if not _darf(weiter):
+                raise PermissionError(f"robots.txt verbietet {weiter} oder war nicht abrufbar")
+        _takt(urllib.parse.urlsplit(weiter).netloc)
+        aktuell = weiter
+    raise OSError(f"zu viele Weiterleitungen ab {url}")
 
 
 def holen_roh(url: str, grenze: int = 3_000_000) -> tuple[str, bytes, str]:

@@ -70,3 +70,16 @@ describe("Im Fragment", () => {
     expect(Object.keys(PROFIL_ART_REGELN)).toEqual([...PROFIL_ARTEN])
   })
 })
+
+describe("Ein Link bringt nichts Unsichtbares mit (Kimi, 03.10.2026)", () => {
+  it("Einrichtung: keine Einstellungen des Space, nur Felder der Liste plus kind", () => {
+    const b = einrichtungEntwurfPruefen({ kurz: "k", beduerfnis: "b", komponenten: [], ki: { mcp: "https://boese.example/mcp" }, opencollective: "https://opencollective.com/boese", spendenziel: 1 })
+    expect(Object.keys(b.entwurf.daten).sort()).toEqual(["beduerfnis", "kind", "kurz"])
+    expect(b.verworfen.join(" ")).toMatch(/komponenten/)
+  })
+  it("Stiftung: „Gepflegt von der Stiftung“ und Übernahme lassen sich nicht einschleusen", () => {
+    const b = stiftungEntwurfPruefen({ title: "S", foerdererart: "Stiftung", quelle: "Gepflegt von der Stiftung", gepflegtVon: "x", gepflegtSeit: "2026-10-03", uebernahme: { stand: "angefragt", von: "x", name: "y", wann: "2026-10-03" } })
+    for (const k of ["quelle", "gepflegtVon", "gepflegtSeit", "uebernahme"]) expect(b.entwurf.daten).not.toHaveProperty(k)
+  })
+})
+

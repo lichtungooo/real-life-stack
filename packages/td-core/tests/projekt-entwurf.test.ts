@@ -61,10 +61,12 @@ describe("Prüfen", () => {
     expect(b.verworfen.join(" ")).toMatch(/spende\.opencollective/)
   })
 
-  it("unbekannte Felder bleiben liegen und werden gemeldet", () => {
-    const b = projektEntwurfPruefen({ title: "X", eigenesFeld: { a: 1 } })
-    expect(b.unbekannt).toEqual(["eigenesFeld"])
-    expect(b.entwurf.daten.eigenesFeld).toEqual({ a: 1 })
+  it("unbekannte Felder werden gemeldet und nicht übernommen (Kimi, kritisch)", () => {
+    const b = projektEntwurfPruefen({ title: "X", eigenesFeld: { a: 1 }, quelle: "Gepflegt von der Stiftung" })
+    expect(b.unbekannt).toEqual(["eigenesFeld", "quelle"])
+    expect(b.entwurf.daten).not.toHaveProperty("eigenesFeld")
+    expect(b.entwurf.daten).not.toHaveProperty("quelle")
+    expect(b.verworfen.join(" ")).toMatch(/eigenesFeld: kein Feld dieses Profils/)
   })
 
   it("Schlagworte wandern nach Item.tags, ohne # und ohne Dopplung", () => {
