@@ -256,9 +256,30 @@ Gelernt:
 - **Ohne eigene Schwerpunkte** zeigt die Seite die Förderbereiche als Karten mit Motiv (`motivFuer`): Jede Stiftung sieht fertig aus, auch vor der zweiten Runde.
 - **Zweite Runde mit tieferen Seiten:** `auftritt.py nachholen` holt Geschichte, Schwerpunkte, Projekte nach; mehrere Auswahl-Dateien je Stiftung werden zusammengeführt.
 
+## 4f. Der Baustein Open Collective (03.10.2026)
+
+Timo: *"Wenn wir Module bauen, muss es in alle Seiten offen sein und integrierbar sein."* Darum kein Teil des Project Profile, sondern ein **Baustein in drei Größen**, eigener Einstieg `@trustdonation/ui/opencollective`: `OcKnapp` (eine Zeile), `OcWidget` (Karte mit Betragsknöpfen), `OcGanz` (Dialog mit Zahlen, Ausgaben, Eingängen). Kern `td-core/src/opencollective.ts`, Dienst `trustdonation.org/oc/<name>` im td-mcp-Container.
+
+Gelernt:
+
+- **Ein Dienst vor der fremden Schnittstelle:** Die Besucher fragen unseren Dienst, er fragt Open Collective mit zehn Minuten Zwischenspeicher. So geht keine Adresse eines Besuchers hinaus, und viele Besuche fragen dort selten.
+- **Eingänge ohne Namen** (Timo): nur Betrag und Datum, schon im Kern, damit kein Träger sie versehentlich zeigt.
+- **Fremde Währung, kein Zielvergleich:** Das Ziel im Eintrag ist in Euro; rechnet die Seite in Dollar, entfällt der Balken statt falsch zu rechnen.
+- **Nächste Träger** als eigene kleine Schritte: Personenprofil, Space und Netzwerk, Widget auf der Landingpage.
+
+## 4g. Profil übernehmen (03.10.2026)
+
+Eine Stiftung nimmt ihr recherchiertes Profil selbst in die Hand: „Das ist meine Stiftung“, die Verwaltenden prüfen außerhalb der App und bestätigen, danach „Gepflegt von der Stiftung seit …“. Definition in `DEFINITION.md` Teil 8.
+
+Gelernt:
+
+- **Antons Regel für Verwaltende liegt im Toolkit, nicht exportiert** (`resolveAdminView`): `isAdmin` setzen nur Connectoren, die es wissen; lokal verwaltet das erste Mitglied. Nachgebildet in `verwaltetSpace`, statt für eine Zeile eine Naht zu öffnen. Ohne diese Regel hätte live im Demo-Modus niemand bestätigen können.
+- **Schritte als reine Funktionen** über die ganzen Daten: Die Oberfläche ruft nur `anfragen`, `bestaetigen`, `ablehnen`; Test mit echtem Zustand in einer kleinen Bühne.
+- **Das Grenz-Tor liest `did:` auch in Tests:** neutrale Kennungen wie `mensch-anna` nehmen.
+
 ## 5. Was als Nächstes kommt
 
 1. ~~Stiftungsprofil~~ gebaut am 02.10.2026 (Abschnitt 4b) (`fuerTyp: "place"` mit Stiftungsfeldern, oder eigener Typ über die Manifest-Schicht), mit den vier entschiedenen Verbesserungen: „Stiftung“ statt „Ort“, Website und Anschrift mit Quelle, Bild mit Platzhalter, Kontakt und Antrag oben.
-2. **Open Collective live:** Stand über die öffentliche GraphQL-Schnittstelle abrufen, statt ihn im Eintrag zu tragen.
+2. ~~Open Collective live~~ gebaut am 03.10.2026 als Baustein (Abschnitt 4f). Offen: Personenprofil, Space, Landingpage.
 3. ~~Bearbeiten~~ gebaut am 02.10.2026 (Abschnitt 4c), eigener Editor aus der Feldliste statt Antons `fields`. Später: Bilder hochladen, sobald Antons Stack Dateien trägt.
 4. **Widgets und HUD** als vierte Art (Gedächtnis `project_gamification_komponenten.md`).

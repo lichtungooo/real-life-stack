@@ -106,6 +106,18 @@ export {
 export { traegtStiftungsProfil } from "./stiftungs-erkennung.js"
 export { importZiel } from "./import-ziel.js"
 export {
+  GEPFLEGT_VON_DER_STIFTUNG,
+  uebernahmeAus,
+  gepflegtAus,
+  uebernahmeAnfragen,
+  uebernahmeBestaetigen,
+  uebernahmeAblehnen,
+  darfStiftungBearbeiten,
+  verwaltetSpace,
+  type UebernahmeAnfrage,
+  type Gepflegt,
+} from "./uebernahme.js"
+export {
   ocName,
   ocStandAusAntwort,
   ocStandAus,

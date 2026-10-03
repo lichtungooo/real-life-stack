@@ -638,6 +638,9 @@ Regeln:
 2. **Offen sichtbar:** Anfrage und Pflegende stehen am Eintrag, für alle Mitglieder lesbar.
 3. **Ein Import überschreibt nie:** Eine übernommene Stiftung bleibt, wie sie sie pflegt (das gilt schon über `quelle`).
 4. **Rechte bleiben Antons Regel:** Die Oberfläche zeigt das Bearbeiten den Pflegenden und Verwaltenden; geschrieben wird mit Antons Rechten.
+5. **Wer verwaltet, entscheidet Antons Regel** (`resolveAdminView` im Toolkit): Trägt ein Mitglied `isAdmin`, gilt das; kennt der Connector keine Angabe (lokal, Muster), verwaltet das erste Mitglied. Nachgebildet in `verwaltetSpace` (td-core), ohne Naht.
+
+**Gebaut am 03.10.2026:** Kern `packages/td-core/src/uebernahme.ts` (anfragen, bestätigen, ablehnen, je mit den ganzen Daten; `darfStiftungBearbeiten`, `verwaltetSpace`), Darstellung in `stiftungs-profil.tsx` (`Uebernahme`, ohne Anbindung bleibt der Weg per Mail), Bindung `StiftungMitUebernahme` in `apps/reference/src/type-register.tsx`. Tests: `td-core/tests/uebernahme.test.ts`, `apps/reference/src/uebernahme.test.tsx`.
 5. **Was es nicht trägt:** keine Mail aus der App, keine Ausweisprüfung, keine Gebühr.
 
 #### Modul Open Collective, überall einbindbar (freigegeben von Timo am 03.10.2026)

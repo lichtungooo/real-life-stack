@@ -16,9 +16,11 @@
 // `@trustdonation/core` (`stiftungsProfil`, Kontrast, Motive); hier wird nur
 // gezeigt. Eigener Einstieg `@trustdonation/ui/stiftungs-profil`, nachgeladen.
 
-import { useEffect, useMemo, useState, type ComponentType, type CSSProperties, type ReactNode } from "react"
+import { useEffect, useMemo, useState, type ComponentType, type CSSProperties, type FormEvent, type ReactNode } from "react"
 import {
   ArrowUpRight,
+  BadgeCheck,
+  Clock,
   Globe,
   HandHeart,
   History,
@@ -36,7 +38,17 @@ import {
   X,
 } from "lucide-react"
 import { Dialog, DialogContent, DialogTitle } from "@real-life-stack/toolkit"
-import { STIFTUNGS_PROFIL_FELDER, motivFuer, stiftungsProfil, type StiftungsProfil, type StiftungsSchwerpunkt } from "@trustdonation/core"
+import {
+  STIFTUNGS_PROFIL_FELDER,
+  gepflegtAus,
+  motivFuer,
+  stiftungsProfil,
+  uebernahmeAus,
+  type Gepflegt,
+  type StiftungsProfil,
+  type StiftungsSchwerpunkt,
+  type UebernahmeAnfrage,
+} from "@trustdonation/core"
 import {
   Bearbeitbar,
   BearbeitenKnopf,
@@ -50,8 +62,27 @@ import { Motiv } from "./stiftungs-motive"
 
 type Symbol = ComponentType<{ className?: string }>
 
-/** Wohin „Profil übernehmen“ und Hinweise zur Herkunft führen. */
+/** Wohin Hinweise zur Herkunft führen, und „Profil übernehmen“ ohne App-Anbindung. */
 const UEBERNAHME_MAIL = "mail@reallife.network"
+
+/**
+ * Profil übernehmen (DEFINITION Teil 8): der Stand am Eintrag und, von der
+ * App, wer schaut und was geht. Ohne Aktionen bleibt der Weg per Mail.
+ */
+export interface Uebernahme {
+  anfrage: UebernahmeAnfrage | null
+  gepflegt: Gepflegt | null
+  /** Wer angemeldet ist und schreiben darf; ohne Kennung kein Anfragen in der App. */
+  ich?: string | null
+  /** Verwaltet den Space: prüft und entscheidet. */
+  istAdmin?: boolean
+  anfragen?: (anfrage: { name: string; rolle: string; mail: string }) => Promise<unknown>
+  bestaetigen?: () => Promise<unknown>
+  ablehnen?: () => Promise<unknown>
+}
+
+const EINGABE = "w-full rounded-xl bg-muted/50 px-3 py-2 text-sm font-normal outline-none ring-1 ring-transparent transition focus:bg-background focus:ring-2 focus:ring-ring"
+const tag = (iso: string) => new Date(iso).toLocaleDateString("de-DE")
 
 /** Die Farben des Auftritts als Variablen; alle Flächen mischen daraus. */
 const auftritt = (p: StiftungsProfil) => ({ "--td-haus": p.farbe, "--td-akzent": p.akzent, "--td-haus-text": p.farbeText }) as CSSProperties
@@ -134,24 +165,153 @@ function WebsiteKnopf({ p, schmal = false }: { p: StiftungsProfil; schmal?: bool
   )
 }
 
-function Herkunft({ p }: { p: StiftungsProfil }) {
+function Herkunft({ p, u }: { p: StiftungsProfil; u?: Uebernahme }) {
   if (p.muster) {
     return <p className="text-xs text-muted-foreground">Musterstiftung mit erfundenen Angaben: So sieht ein vollständig gepflegtes Profil aus.</p>
+  }
+  if (u?.gepflegt) {
+    return (
+      <p className="flex items-center gap-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+        <BadgeCheck className="h-4 w-4 shrink-0" /> Gepflegt von der Stiftung seit {tag(u.gepflegt.seit)}
+      </p>
+    )
+  }
+  if (u?.anfrage && u.istAdmin && u.bestaetigen && u.ablehnen) return <AnfragePruefen p={p} u={u} anfrage={u.anfrage} />
+  if (u?.anfrage) {
+    return (
+      <p className="flex items-start gap-1.5 text-xs leading-relaxed text-muted-foreground">
+        <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+        {u.anfrage.von === u.ich
+          ? "Ihre Anfrage zur Übernahme liegt vor. Wer den Space verwaltet, prüft sie und meldet sich bei Ihnen."
+          : "Aus öffentlicher Recherche. Die Stiftung hat die Übernahme angefragt."}
+      </p>
+    )
   }
   if (!p.quelle && !p.auftritt) return null
   const betreff = encodeURIComponent(`Profil übernehmen: ${p.titel}`)
   return (
-    <p className="text-xs leading-relaxed text-muted-foreground">
+    <div className="text-xs leading-relaxed text-muted-foreground">
       <Search className="mr-1 inline h-3.5 w-3.5" />
       Aus öffentlicher Recherche. Ist das Ihre Stiftung?{" "}
-      <a href={`mailto:${UEBERNAHME_MAIL}?subject=${betreff}`} className="font-medium underline underline-offset-2">Profil übernehmen</a>
-    </p>
+      {u?.anfragen && u.ich
+        ? <AnfrageKnopf p={p} anfragen={u.anfragen} />
+        : <a href={`mailto:${UEBERNAHME_MAIL}?subject=${betreff}`} className="font-medium underline underline-offset-2">Profil übernehmen</a>}
+    </div>
+  )
+}
+
+/** „Das ist meine Stiftung“: Name, Rolle, Mail; die Prüfung folgt außerhalb der App. */
+function AnfrageKnopf({ p, anfragen }: { p: StiftungsProfil; anfragen: NonNullable<Uebernahme["anfragen"]> }) {
+  const [offen, setOffen] = useState(false)
+  const [name, setName] = useState("")
+  const [rolle, setRolle] = useState("")
+  const [mail, setMail] = useState("")
+  const [laeuft, setLaeuft] = useState(false)
+  const [fehler, setFehler] = useState<string | null>(null)
+  const senden = async (e: FormEvent) => {
+    e.preventDefault()
+    if (!name.trim() || laeuft) return
+    setLaeuft(true)
+    setFehler(null)
+    try {
+      await anfragen({ name, rolle, mail })
+      setOffen(false)
+    } catch {
+      setFehler("Das hat nicht geklappt. Bitte noch einmal versuchen.")
+    } finally {
+      setLaeuft(false)
+    }
+  }
+  return (
+    <>
+      <button type="button" onClick={() => setOffen(true)} className="font-medium text-foreground underline underline-offset-2">Das ist meine Stiftung</button>
+      <Dialog open={offen} onOpenChange={setOffen}>
+        <DialogContent className="max-w-md" style={auftritt(p)}>
+          <DialogTitle>Das ist meine Stiftung</DialogTitle>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Sie pflegen das Profil von {p.titel} künftig selbst. Wer diesen Space verwaltet, prüft Ihre Angaben außerhalb der App,
+            etwa über die Adresse im Impressum der Stiftung, und schaltet Sie dann frei.
+          </p>
+          <form onSubmit={senden} className="flex flex-col gap-3">
+            <label className="flex flex-col gap-1 text-sm font-semibold">Ihr Name
+              <input required value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" className={EINGABE} />
+            </label>
+            <label className="flex flex-col gap-1 text-sm font-semibold">Ihre Rolle in der Stiftung
+              <input value={rolle} onChange={(e) => setRolle(e.target.value)} placeholder="etwa Vorstand oder Geschäftsführung" className={EINGABE} />
+            </label>
+            <label className="flex flex-col gap-1 text-sm font-semibold">Ihre Mail
+              <input type="email" value={mail} onChange={(e) => setMail(e.target.value)} autoComplete="email" className={EINGABE} />
+            </label>
+            {fehler && <p role="alert" className="text-sm text-red-700 dark:text-red-400">{fehler}</p>}
+            <div className="mt-1 flex justify-end gap-2">
+              <button type="button" onClick={() => setOffen(false)} className="rounded-xl px-4 py-2 text-sm font-medium hover:bg-muted">Abbrechen</button>
+              <button type="submit" disabled={!name.trim() || laeuft}
+                className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50">
+                {laeuft ? "Sendet …" : "Anfrage senden"}
+              </button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+}
+
+/** Für die Verwaltenden: wer anfragt, wie man prüft, bestätigen oder ablehnen. */
+function AnfragePruefen({ p, u, anfrage: a }: { p: StiftungsProfil; u: Uebernahme; anfrage: UebernahmeAnfrage }) {
+  const [laeuft, setLaeuft] = useState(false)
+  const [fehler, setFehler] = useState<string | null>(null)
+  const tun = async (schritt?: () => Promise<unknown>) => {
+    if (!schritt || laeuft) return
+    setLaeuft(true)
+    setFehler(null)
+    try {
+      await schritt()
+    } catch {
+      setFehler("Das hat nicht geklappt. Bitte noch einmal versuchen.")
+    } finally {
+      setLaeuft(false)
+    }
+  }
+  return (
+    <section className="rounded-2xl bg-amber-50/70 p-4 text-sm dark:bg-amber-950/40" aria-label="Übernahme angefragt">
+      <p className="flex items-center gap-1.5 font-semibold"><Clock className="h-4 w-4" /> Übernahme angefragt</p>
+      <p className="mt-1">
+        von <strong>{a.name}</strong>{a.rolle ? `, ${a.rolle}` : ""}, am {tag(a.wann)}
+        {a.mail && <> · <a href={`mailto:${a.mail}`} className="underline underline-offset-2">{a.mail}</a></>}
+      </p>
+      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+        Bitte außerhalb der App prüfen: Anruf oder Mail an die Adresse aus dem Impressum
+        {p.kontakt?.website ? <> der <a href={p.kontakt.website} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">Website</a></> : ""}. Danach entscheiden.
+      </p>
+      {fehler && <p role="alert" className="mt-2 text-xs text-red-700 dark:text-red-400">{fehler}</p>}
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button type="button" disabled={laeuft} onClick={() => tun(u.bestaetigen)}
+          className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50">
+          <BadgeCheck className="h-4 w-4" /> Bestätigen
+        </button>
+        <button type="button" disabled={laeuft} onClick={() => tun(u.ablehnen)}
+          className="rounded-xl bg-background/80 px-3 py-2 text-sm font-medium hover:bg-background disabled:opacity-50">
+          Ablehnen
+        </button>
+      </div>
+    </section>
   )
 }
 
 /** Ganz unten: woher die Angaben stammen, wem Name, Logo und Farben gehören. */
-function Hinweis({ p }: { p: StiftungsProfil }) {
+function Hinweis({ p, gepflegt }: { p: StiftungsProfil; gepflegt?: Gepflegt | null }) {
   if (p.muster) return null
+  if (gepflegt) {
+    return (
+      <footer className="mx-auto max-w-6xl px-5 pb-28 sm:px-8 lg:pb-10">
+        <p className="flex gap-2 rounded-2xl bg-muted/40 p-4 text-xs leading-relaxed text-muted-foreground">
+          <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>Die Stiftung pflegt dieses Profil selbst, seit {tag(gepflegt.seit)}. Die Bilder sind eigene Zeichnungen.</span>
+        </p>
+      </footer>
+    )
+  }
   const stand = p.auftritt?.stand ? new Date(p.auftritt.stand).toLocaleDateString("de-DE") : null
   const betreff = encodeURIComponent(`Profil ${p.titel}`)
   return (
@@ -193,9 +353,10 @@ function Kontakt({ p, mitWebsite = true }: { p: StiftungsProfil; mitWebsite?: bo
 
 // ── Die Karte in der Detail-Leiste ──────────────────────────────────────────
 
-export function StiftungsProfilSeite({ profil: p, bearbeitung, bildUrl = (x) => x }: {
+export function StiftungsProfilSeite({ profil: p, bearbeitung, uebernahme, bildUrl = (x) => x }: {
   profil: StiftungsProfil
   bearbeitung?: ProfilBearbeitung
+  uebernahme?: Uebernahme
   bildUrl?: (pfad: string) => string
 }) {
   const [voll, setVoll] = useState(false)
@@ -244,7 +405,7 @@ export function StiftungsProfilSeite({ profil: p, bearbeitung, bildUrl = (x) => 
         </section>
       )}
 
-      <Herkunft p={p} />
+      <Herkunft p={p} u={uebernahme} />
 
       <button type="button" onClick={() => setVoll(true)}
         className="flex items-center justify-center gap-2 rounded-xl bg-foreground px-4 py-3 text-sm font-semibold text-background shadow-sm transition-opacity hover:opacity-90">
@@ -258,19 +419,20 @@ export function StiftungsProfilSeite({ profil: p, bearbeitung, bildUrl = (x) => 
       )}
 
       <StiftungsProfilVoll profil={p} bildUrl={bildUrl} offen={voll} onOffen={(x) => { setVoll(x); if (!x) setBearbeiten(false) }}
-        bearbeitung={bearbeitung} startBearbeiten={bearbeiten} />
+        bearbeitung={bearbeitung} uebernahme={uebernahme} startBearbeiten={bearbeiten} />
     </article>
   )
 }
 
 // ── Die ganze Ansicht über den Bildschirm ───────────────────────────────────
 
-export function StiftungsProfilVoll({ profil, offen, onOffen, bearbeitung, startBearbeiten = false, bildUrl = (x) => x }: {
+export function StiftungsProfilVoll({ profil, offen, onOffen, bearbeitung, uebernahme, startBearbeiten = false, bildUrl = (x) => x }: {
   profil: StiftungsProfil
   offen: boolean
   onOffen: (an: boolean) => void
   /** Nur wenn der Mensch bearbeiten darf (Antons Regel); sonst kein Knopf. */
   bearbeitung?: ProfilBearbeitung
+  uebernahme?: Uebernahme
   startBearbeiten?: boolean
   bildUrl?: (pfad: string) => string
 }) {
@@ -421,11 +583,11 @@ export function StiftungsProfilVoll({ profil, offen, onOffen, bearbeitung, start
                 <Kontakt p={p} mitWebsite={false} />
               </section>
             </Bearbeitbar>
-            <div className="rounded-3xl bg-muted/40 p-5"><Herkunft p={p} /></div>
+            <div className="rounded-3xl bg-muted/40 p-5"><Herkunft p={p} u={uebernahme} /></div>
           </aside>
         </div>
 
-        <Hinweis p={p} />
+        <Hinweis p={p} gepflegt={uebernahme?.gepflegt} />
         {p.muster && <div className="pb-28 lg:pb-10" />}
 
         {p.kontakt?.website && !b.an && (
@@ -444,13 +606,17 @@ export function StiftungsProfilVoll({ profil, offen, onOffen, bearbeitung, start
  * nachgeladenen Stück. Mit `bearbeitung` (nur wenn Antons Regel es erlaubt)
  * trägt die ganze Ansicht den Knopf „Profil bearbeiten“. `bildUrl` macht aus
  * einem Pfad der Instanz (`stiftungen/<id>.svg`) eine ladbare Adresse.
+ * `uebernahme` bringt, wer schaut und was geht; den Stand liest der Einstieg
+ * selbst aus den Daten.
  */
-export function StiftungsProfilAusDaten({ daten, bearbeitung, bildUrl }: {
+export function StiftungsProfilAusDaten({ daten, bearbeitung, uebernahme, bildUrl }: {
   daten: Record<string, unknown>
   bearbeitung?: ProfilBearbeitung
+  uebernahme?: Omit<Uebernahme, "anfrage" | "gepflegt">
   bildUrl?: (pfad: string) => string
 }) {
-  return <StiftungsProfilSeite profil={stiftungsProfil(daten)} bearbeitung={bearbeitung} bildUrl={bildUrl} />
+  const u = useMemo(() => ({ ...uebernahme, anfrage: uebernahmeAus(daten), gepflegt: gepflegtAus(daten) }), [uebernahme, daten])
+  return <StiftungsProfilSeite profil={stiftungsProfil(daten)} bearbeitung={bearbeitung} uebernahme={u} bildUrl={bildUrl} />
 }
 
 export default StiftungsProfilAusDaten

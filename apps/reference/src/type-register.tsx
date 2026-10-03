@@ -15,6 +15,8 @@ import {
   setTypeManifest,
   useCurrentGroup,
   useItemPermissions,
+  useMembers,
+  useOptionalCurrentUser,
   useUpdateItem,
   type ItemSlotProps,
 } from "@real-life-stack/toolkit"
@@ -27,6 +29,11 @@ import {
   traegtStiftungsProfil,
   PROJEKT_PROFIL,
   STIFTUNGS_PROFIL,
+  darfStiftungBearbeiten,
+  uebernahmeAblehnen,
+  uebernahmeAnfragen,
+  uebernahmeBestaetigen,
+  verwaltetSpace,
 } from "@trustdonation/core"
 // Nachgeladen: die Collage braucht erst, wer eine Stiftung öffnet (Budget,
 // 02.10.2026, Platz für die Naht A-Cluster im Kartenadapter).
@@ -77,18 +84,48 @@ function useBearbeitung(item: ItemSlotProps["item"]) {
 // Das Stiftungsprofil (DEFINITION Teil 8, zweite Komponente), nachgeladen.
 const StiftungsProfilSeite = lazy(() => import("@trustdonation/ui/stiftungs-profil"))
 
+/**
+ * Profil übernehmen (DEFINITION Teil 8). Anfragen darf, wer angemeldet ist
+ * und schreiben darf (Antons Regel: Mitglieder bearbeiten Inhalte); prüfen
+ * und entscheiden, wer den Space verwaltet. Eine übernommene Stiftung zeigt
+ * das Bearbeiten nur den Pflegenden und den Verwaltenden. Das ist Oberfläche,
+ * keine Grenze: Antons Schreibrecht bleibt, wie es ist.
+ */
+function StiftungMitUebernahme({ item, spaceId }: ItemSlotProps & { spaceId: string | null }) {
+  const bearbeitung = useBearbeitung(item)
+  const updateItem = useUpdateItem()
+  const { data: ich } = useOptionalCurrentUser()
+  const { data: mitglieder } = useMembers(spaceId)
+  const daten = (item.data ?? {}) as Record<string, unknown>
+  const istAdmin = verwaltetSpace(mitglieder, ich?.id)
+  const uebernahme = useMemo(() => {
+    const schreiben = async (neu: Record<string, unknown> | null) => {
+      if (!neu) throw new Error("Dieser Schritt passt nicht zum Stand des Eintrags.")
+      await updateItem(item.id, { data: neu })
+    }
+    return {
+      ich: bearbeitung && ich ? ich.id : null,
+      istAdmin,
+      anfragen: (a: { name: string; rolle: string; mail: string }) => schreiben(uebernahmeAnfragen(daten, { von: ich?.id ?? "", ...a })),
+      bestaetigen: () => schreiben(uebernahmeBestaetigen(daten)),
+      ablehnen: () => schreiben(uebernahmeAblehnen(daten)),
+    }
+  }, [bearbeitung, ich, istAdmin, daten, item.id, updateItem])
+  const darf = darfStiftungBearbeiten(daten, ich?.id, istAdmin)
+  return (
+    <Suspense fallback={<div className="h-40 w-full animate-pulse rounded-2xl bg-muted" />}>
+      <StiftungsProfilSeite key={item.id} daten={daten} bearbeitung={darf ? bearbeitung : undefined} uebernahme={uebernahme} bildUrl={bildUrl} />
+    </Suspense>
+  )
+}
+
 function OrtOderProfil({ item }: ItemSlotProps) {
   const space = useCurrentGroup()
-  const bearbeitung = useBearbeitung(item)
   const daten = (item.data ?? {}) as Record<string, unknown>
   // Hat der Space das Stiftungsprofil gewählt, zeigt eine Stiftung es; sonst
   // bleibt die bisherige Collage (oder Antons Meta-Box für einen echten Ort).
   if (komponenteAktiv(space?.data as Record<string, unknown> | undefined, STIFTUNGS_PROFIL) && traegtStiftungsProfil(daten)) {
-    return (
-      <Suspense fallback={<div className="h-40 w-full animate-pulse rounded-2xl bg-muted" />}>
-        <StiftungsProfilSeite key={item.id} daten={daten} bearbeitung={bearbeitung} bildUrl={bildUrl} />
-      </Suspense>
-    )
+    return <StiftungMitUebernahme item={item} spaceId={space?.id ?? null} />
   }
   const bauplan = traegtProfil(daten) ? bauplanFuer(daten) : null
   const profil = bauplan ? profilAufbauen(daten, bauplan) : null
