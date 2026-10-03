@@ -136,13 +136,49 @@ def _curl(url: str, grenze: int) -> tuple[str, bytes, str]:
         if r.returncode != 0:
             raise OSError(f"curl {r.returncode}: {r.stderr.decode('utf-8', 'replace').strip()[:120]}")
         koerper, _, end = r.stdout.rpartition(b"\n")
-        typ = ""
+        typ, status = "", 0
+        # Nach Weiterleitungen stehen mehrere Köpfe hintereinander; es gilt der letzte.
         for z in Path(kopf.name).read_text("latin-1").splitlines():
-            if z.lower().startswith("content-type:"):
+            if z.startswith("HTTP/"):
+                teile = z.split()
+                status = int(teile[1]) if len(teile) > 1 and teile[1].isdigit() else 0
+                typ = ""
+            elif z.lower().startswith("content-type:"):
                 typ = z.split(":", 1)[1].strip()
+        # Wie urlopen: ein Fehlerstatus ist ein Fehler, keine Seite (Kimi, 03.10.2026).
+        # So greift auch für robots.txt dieselbe Regel wie auf dem direkten Weg.
+        if status >= 400:
+            raise urllib.error.HTTPError(url, status, "curl", None, None)
         return end.decode("utf-8", "replace"), koerper[:grenze], typ
     finally:
         os.unlink(kopf.name)
+
+
+class _Weiterleitung(urllib.request.HTTPRedirectHandler):
+    """Eine Weiterleitung auf einen anderen Host prüft dessen robots.txt und
+    hält dessen Takt, bevor sie folgt (Kimi, 03.10.2026)."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        neu = _iri(urllib.parse.urljoin(req.full_url, newurl))
+        alt_host = urllib.parse.urlsplit(req.full_url).netloc
+        neu_host = urllib.parse.urlsplit(neu).netloc
+        if neu_host != alt_host:
+            if not _darf(neu):
+                raise PermissionError(f"robots.txt verbietet {neu} oder war nicht abrufbar")
+            _takt(neu_host)
+        return super().redirect_request(req, fp, code, msg, headers, neu)
+
+
+_OEFFNER = urllib.request.build_opener(urllib.request.HTTPSHandler(context=KONTEXT), _Weiterleitung())
+
+
+def _curl_geprueft(url: str, grenze: int) -> tuple[str, bytes, str]:
+    """curl folgt Weiterleitungen selbst; landet es auf einem anderen Host,
+    gilt dessen robots.txt, sonst wird verworfen."""
+    end, roh, typ = _curl(url, grenze)
+    if urllib.parse.urlsplit(end).netloc != urllib.parse.urlsplit(url).netloc and not _darf(end):
+        raise PermissionError(f"robots.txt verbietet {end} oder war nicht abrufbar")
+    return end, roh, typ
 
 
 def holen_roh(url: str, grenze: int = 3_000_000) -> tuple[str, bytes, str]:
@@ -152,14 +188,16 @@ def holen_roh(url: str, grenze: int = 3_000_000) -> tuple[str, bytes, str]:
     _takt(urllib.parse.urlsplit(url).netloc)
     req = urllib.request.Request(url, headers={"User-Agent": AGENT, "Accept-Language": "de"})
     try:
-        with urllib.request.urlopen(req, timeout=25, context=KONTEXT) as r:
+        with _OEFFNER.open(req, timeout=25) as r:
             return r.geturl(), r.read(grenze), r.headers.get("Content-Type", "")
+    except urllib.error.HTTPError:
+        raise
     except urllib.error.URLError as e:
         if "CERTIFICATE_VERIFY_FAILED" in str(e) or "timed out" in str(e):
-            return _curl(url, grenze)
+            return _curl_geprueft(url, grenze)
         raise
     except TimeoutError:
-        return _curl(url, grenze)
+        return _curl_geprueft(url, grenze)
 
 
 def _text_aus(h: str) -> str:

@@ -253,7 +253,10 @@ def kimi(auftrag, sitzung=None):
         sys.exit("Kimi hat vorzeitig aufgehört (keine Sitzung gemeldet). Letzte Antwort:\n"
                  + antworten[-1][:300] + "\n" + "\n".join(fehler[-5:] + r.stderr.splitlines()[-5:])
                  + f"\nRohausgabe: td-tools/berichte/.kimi-roh-{stempel}.jsonl")
-    return antworten[-1], neue_sitzung, round(time.time() - beginn)
+    # Alle Nachrichten in den Bericht: Kimi schreibt Befunde auch vor die
+    # letzte Nachricht, die oft nur die ERGEBNIS-Zeile trägt (Kimi, 03.10.2026).
+    antwort = "\n\n".join(a.strip() for a in antworten if a.strip())
+    return antwort, neue_sitzung, round(time.time() - beginn)
 
 
 def main():
