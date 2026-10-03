@@ -1,5 +1,5 @@
 /**
- * Der MCP-Server (DEFINITION 13.6): drei Werkzeuge, keins schreibt, alles
+ * Der MCP-Server (DEFINITION 13.6 und 13.8): Werkzeuge je Art, keins schreibt, alles
  * kommt aus td-core, der Link trägt denselben Entwurf, den die App liest.
  */
 import { describe, expect, it } from "vitest"
@@ -17,10 +17,10 @@ async function verbinden() {
 }
 
 describe("td-mcp", () => {
-  it("meldet genau die drei Werkzeuge, jedes mit Beschreibung", async () => {
+  it("meldet die zehn Werkzeuge, jedes mit Beschreibung", async () => {
     const client = await verbinden()
     const { tools } = await client.listTools()
-    expect(tools.map((t) => t.name).sort()).toEqual(["projekt_profil_link", "projekt_profil_pruefen", "projekt_profil_vorgabe"])
+    expect(tools.map((t) => t.name).sort()).toEqual(["einrichtung_profil_link", "einrichtung_profil_pruefen", "einrichtung_profil_vorgabe", "profil_art_klaeren", "projekt_profil_link", "projekt_profil_pruefen", "projekt_profil_vorgabe", "stiftung_profil_link", "stiftung_profil_pruefen", "stiftung_profil_vorgabe"])
     for (const t of tools) expect(t.description?.length, t.name).toBeGreaterThan(40)
   })
 
@@ -68,3 +68,29 @@ describe("td-mcp", () => {
     expect(r.content[0].text).toMatch(/zu groß/)
   })
 })
+
+describe("Stiftung und Einrichtung (DEFINITION 13.8)", () => {
+  it("Vorgabe je Art mit Feldern, Regeln und Beispiel, wo es eines gibt", () => {
+    expect(vorgabe("stiftung").felder.some((f) => f.id === "foerdererart")).toBe(true)
+    expect(vorgabe("stiftung").beispiel).toMatchObject({ title: expect.any(String) })
+    expect(vorgabe("einrichtung").beispiel).toBeNull()
+    expect(vorgabe("einrichtung").ablauf.join(" ")).toMatch(/einrichtung_profil_link/)
+  })
+
+  it("Link je Art trägt die Art im Fragment und ergänzt den Ort", async () => {
+    const r = await link({ title: "Stiftung Tal", foerdererart: "Stiftung", address: "Hauptstraße 1, Kassel" }, { art: "stiftung", geocode: async () => ({ lat: 51.3, lng: 9.5 }) })
+    expect(r.url).toMatch(/#stiftung-entwurf=/)
+    expect(r.bericht.entwurf.daten.position).toEqual({ type: "Point", coordinates: [9.5, 51.3] })
+    const e = await link({ kurz: "Wir reparieren Räder.", beduerfnis: "Ein Ort fehlt." }, { art: "einrichtung", ortErgaenzen: false })
+    expect(e.url).toMatch(/#einrichtung-entwurf=/)
+    expect(e.text).toMatch(/wer den Space verwaltet/)
+  })
+
+  it("die Klärung nennt alle drei Arten mit ihren Werkzeugen", async () => {
+    const client = await verbinden()
+    const r = (await client.callTool({ name: "profil_art_klaeren", arguments: {} })) as { content: { text: string }[] }
+    const j = JSON.parse(r.content[0].text)
+    expect(j.arten.map((a: { art: string }) => a.art)).toEqual(["projekt", "stiftung", "einrichtung"])
+  })
+})
+

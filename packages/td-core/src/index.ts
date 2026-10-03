@@ -162,3 +162,16 @@ export {
 
 /** Rohe Daten eines Eintrags, vor der Schleuse. */
 export type { Roh } from "./schleuse.js"
+export {
+  PROFIL_ARTEN,
+  PROFIL_ART_REGELN,
+  EINRICHTUNGS_PROFIL_FELDER,
+  PROFIL_ENTWURF_REGELN,
+  felderFuer,
+  stiftungEntwurfPruefen,
+  einrichtungEntwurfPruefen,
+  profilEntwurfPruefen,
+  profilEntwurfKodieren,
+  profilEntwurfLesen,
+  type ProfilArt,
+} from "./profil-entwurf.js"

@@ -1,18 +1,21 @@
-# td-mcp: Projektprofile mit dem eigenen Agenten
+# td-mcp: Profile mit dem eigenen Agenten
 
-Ein MCP-Server, mit dem dein eigener Agent (Claude, Kimi oder ein offenes Modell) aus deinen Notizen ein Projektprofil für trustdonation entwirft.
+Ein MCP-Server, mit dem dein eigener Agent (Claude, Kimi oder ein offenes Modell) aus deinen Notizen oder einem Gespräch ein Profil für trustdonation entwirft: ein Projekt, eine Stiftung oder das Profil deiner Einrichtung (Verein, Initiative). Am Handy sprichst du einfach mit deinem Agenten.
 
-**Er speichert nichts.** Am Ende steht ein Link. Du öffnest ihn, siehst die Vorschau, wählst deinen Space und legst das Projekt selbst an, mit deiner eigenen Identität. Der Entwurf steht im Teil des Links nach `#` und geht an keinen Server.
+**Er speichert nichts.** Am Ende steht ein Link. Du öffnest ihn, siehst die Vorschau, wählst deinen Space und speicherst selbst, mit deiner eigenen Identität. Das Profil einer Einrichtung speichert, wer ihren Space verwaltet. Der Entwurf steht im Teil des Links nach `#` und geht an keinen Server.
 
-Definition: `docs/DEFINITION.md`, Abschnitt 13.6.
+Definition: `docs/DEFINITION.md`, Abschnitte 13.6 und 13.8.
 
-## Die drei Werkzeuge
+## Die Werkzeuge
 
 | Werkzeug | Was es tut |
 |---|---|
-| `projekt_profil_vorgabe` | Ablauf, Felder mit Frage und Form, Regeln, ein vollständiges Beispiel |
-| `projekt_profil_pruefen` | was erscheint, was fehlt, was verworfen wird |
-| `projekt_profil_link` | prüft, ergänzt die Koordinaten zur Anschrift (OpenStreetMap) und gibt den Link |
+| `profil_art_klaeren` | die drei Arten (Projekt, Stiftung, Einrichtung) und woran man sie erkennt |
+| `<art>_profil_vorgabe` | Ablauf, Felder mit Frage und Form, Regeln, ein Beispiel (Projekt, Stiftung) |
+| `<art>_profil_pruefen` | was erscheint, was fehlt, was verworfen wird |
+| `<art>_profil_link` | prüft, ergänzt die Koordinaten zur Anschrift (OpenStreetMap) und gibt den Link |
+
+`<art>` ist `projekt`, `stiftung` oder `einrichtung`.
 
 ## Für alle: der Server des Netzwerks
 
@@ -71,7 +74,7 @@ claude mcp add trustdonation-profil -- node D:/Workspace/20-repos/rls-uebersicht
 
 Sag deinem Agenten etwa:
 
-> Erstelle aus diesen Notizen ein Projektprofil mit den Werkzeugen von trustdonation-profil. Erfinde nichts. Gib mir am Ende den Link.
+> Wir sind der Verein Radwerkstatt Nord, wir reparieren mit Jugendlichen Fahrräder … Bau uns daraus ein Profil mit den Werkzeugen von trustdonation-profil. Frag nach, was fehlt. Erfinde nichts. Gib mir am Ende den Link.
 
 Dann deine Notizen dazu: was entsteht, warum es fehlt, wo, was es kostet, wer Ansprechperson ist, Bild-Adressen.
 

@@ -1,27 +1,44 @@
-// Ein Projekt aus dem Entwurf eines Agenten anlegen (DEFINITION 13.6), die
-// Bindung. Der Link aus `td-mcp` trägt den Entwurf im Fragment
-// (`#projekt-entwurf=…`). Nur dann lädt der Dialog nach; sonst kostet das
-// nichts. Geschrieben wird hier, über den Connector, mit der Identität des
-// Menschen: `createItem(…, { group })`, und auf Wunsch die Wahl der
-// Komponente in `Group.data.komponenten`, beides Antons Wege.
+// Ein Profil aus dem Entwurf eines Agenten anlegen (DEFINITION 13.6 und
+// 13.8), die Bindung. Der Link aus `td-mcp` trägt den Entwurf im Fragment
+// (`#projekt-entwurf=…`, `#stiftung-entwurf=…`, `#einrichtung-entwurf=…`).
+// Nur dann lädt der Dialog nach; sonst kostet das nichts. Geschrieben wird
+// hier, über den Connector, mit der Identität des Menschen, auf Antons Wegen:
+// Projekt und Stiftung mit `createItem(…, { group })`, auf Wunsch die Wahl
+// der Komponente in `Group.data.komponenten`; das Profil einer Einrichtung
+// in `Group.data`, nur von dem, der den Space verwaltet.
 
 import { lazy, Suspense, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { useConnector, useCurrentUser, useGroups } from "@real-life-stack/toolkit"
-import type { Group } from "@real-life-stack/data-interface"
-import { komponenteAktiv, komponentenImSpace, PROJEKT_PROFIL, type ProjektEntwurf } from "@trustdonation/core"
+import type { Group, User } from "@real-life-stack/data-interface"
+import {
+  komponenteAktiv,
+  komponentenImSpace,
+  PROJEKT_PROFIL,
+  STIFTUNGS_PROFIL,
+  traegtProfil,
+  verwaltetSpace,
+  type ProfilArt,
+  type ProjektEntwurf,
+} from "@trustdonation/core"
 import { bildUrl } from "../type-register"
 
 const ProjektEntwurfDialog = lazy(() => import("@trustdonation/ui/projekt-entwurf"))
 
+const ENTWURF = /^#(projekt|stiftung|einrichtung)-entwurf=/
+
 // Beim Laden festhalten: Die App leitet von "/" auf einen Space um, bevor
 // der Dialog steht, und dabei kann das Fragment verloren gehen.
-let beimStart = typeof window !== "undefined" && window.location.hash.startsWith("#projekt-entwurf=") ? window.location.hash : null
+let beimStart = typeof window !== "undefined" && ENTWURF.test(window.location.hash) ? window.location.hash : null
 
 type Schreiber = {
   createItem?: (i: unknown, o?: { group?: string }) => Promise<{ id: string } | unknown>
   updateGroup?: (id: string, u: Partial<Group>) => Promise<unknown>
+  getMembers?: (groupId: string | null) => Promise<User[]>
 }
+
+const KOMPONENTE: Record<ProfilArt, string | null> = { projekt: PROJEKT_PROFIL, stiftung: STIFTUNGS_PROFIL, einrichtung: null }
+const KOMPONENTE_NAME: Record<ProfilArt, string> = { projekt: "Project Profile", stiftung: "Stiftungsprofil", einrichtung: "" }
 
 export function ProjektEntwurfHost({ beispielwelt }: { beispielwelt: boolean }) {
   const [fragment, setFragment] = useState<string | null>(beimStart)
@@ -38,34 +55,47 @@ export function ProjektEntwurfHost({ beispielwelt }: { beispielwelt: boolean }) 
     beimStart = null
     setFragment(null)
   }
-  const spaces = (groups ?? [])
+  const spaces = (art: ProfilArt) => (groups ?? [])
     .filter((g) => g.id !== "__overview__")
-    .map((g) => ({ id: g.id, name: g.name, profilAktiv: komponenteAktiv(g.data as Record<string, unknown> | undefined, PROJEKT_PROFIL) }))
+    .map((g) => {
+      const daten = g.data as Record<string, unknown> | undefined
+      const k = KOMPONENTE[art]
+      return { id: g.id, name: g.name, profilAktiv: k ? komponenteAktiv(daten, k) : true, hatProfil: traegtProfil(daten) }
+    })
 
-  const anlegen = async (spaceId: string, entwurf: ProjektEntwurf, einschalten: boolean) => {
+  /** Alle Daten mitschicken: Spec 04 (Regel 3) sagt Patch, Antons Supabase-Connector ersetzt die Spalte ganz (Kimi, 02.10.2026). */
+  const spaceDatenSetzen = async (spaceId: string, aendern: (daten: Record<string, unknown>) => Record<string, unknown>) => {
+    if (typeof connector.updateGroup !== "function") throw new Error("Dieser Zugang kann den Space nicht ändern.")
+    const g = groups?.find((x) => x.id === spaceId)
+    await connector.updateGroup(spaceId, { data: aendern({ ...((g?.data ?? {}) as Record<string, unknown>) }) })
+  }
+
+  const anlegen = async (spaceId: string, entwurf: ProjektEntwurf, einschalten: boolean, art: ProfilArt) => {
+    if (art === "einrichtung") {
+      // Das Profil einer Einrichtung ist der Space selbst (DEFINITION Teil 9): nur wer ihn verwaltet.
+      const mitglieder = typeof connector.getMembers === "function" ? await connector.getMembers(spaceId) : []
+      if (!verwaltetSpace(mitglieder, ich?.id)) throw new Error("Speichern kann, wer diesen Space verwaltet. Bitte die Person, die ihn verwaltet, den Link zu öffnen.")
+      await spaceDatenSetzen(spaceId, (daten) => ({ ...daten, ...entwurf.daten }))
+      return { weiter: () => { schliessen(); navigate(`/${spaceId}/map?profil=${spaceId}`) } }
+    }
     if (typeof connector.createItem !== "function") throw new Error("Dieser Zugang kann nichts anlegen. Melde dich an oder wähle die Demo.")
     const neu = (await connector.createItem(
-      { type: "project", createdBy: ich?.id ?? "", data: entwurf.daten, tags: entwurf.tags },
+      { type: art === "projekt" ? "project" : "place", createdBy: ich?.id ?? "", data: entwurf.daten, tags: entwurf.tags },
       { group: spaceId },
     )) as { id?: string } | undefined
     const weiter = () => {
       schliessen()
       navigate(neu?.id ? `/${spaceId}/map/${neu.id}` : `/${spaceId}/map`)
     }
-    if (!einschalten) return { weiter }
-    // Ab hier ist das Projekt angelegt. Was jetzt scheitert, darf nicht als
-    // „nicht angelegt“ zurückkommen, sonst legt ein zweiter Klick es doppelt an.
+    const k = KOMPONENTE[art]
+    if (!einschalten || !k) return { weiter }
+    // Ab hier ist der Eintrag angelegt. Was jetzt scheitert, darf nicht als
+    // „nicht angelegt“ zurückkommen, sonst legt ein zweiter Klick ihn doppelt an.
     try {
-      if (typeof connector.updateGroup !== "function") throw new Error("Dieser Zugang kann den Space nicht ändern.")
-      const g = groups?.find((x) => x.id === spaceId)
-      const daten = (g?.data ?? {}) as Record<string, unknown>
-      // Alle Daten mitschicken: Spec 04 (Regel 3) sagt Patch, Antons
-      // Supabase-Connector ersetzt die Spalte ganz (Kimi, 02.10.2026). So ist
-      // es unter beiden Lesarten sicher.
-      await connector.updateGroup(spaceId, { data: { ...daten, komponenten: [...komponentenImSpace(daten), PROJEKT_PROFIL] } })
+      await spaceDatenSetzen(spaceId, (daten) => ({ ...daten, komponenten: [...komponentenImSpace(daten), k] }))
       return { weiter }
     } catch (e) {
-      return { weiter, hinweis: `Das Project Profile ließ sich in diesem Space nicht einschalten (${e instanceof Error ? e.message : "unbekannter Fehler"}). Wer den Space verwaltet, schaltet es unter Erweiterungen → Komponenten ein.` }
+      return { weiter, hinweis: `Das ${KOMPONENTE_NAME[art]} ließ sich in diesem Space nicht einschalten (${e instanceof Error ? e.message : "unbekannter Fehler"}). Wer den Space verwaltet, schaltet es unter Erweiterungen → Komponenten ein.` }
     }
   }
 

@@ -971,6 +971,29 @@ Regeln:
 3. **Der Mensch speichert,** wie in 13.6, mit seiner eigenen Identität.
 4. **Was er nicht trägt:** Anmeldung, Schlüssel, Bezahlung, Schreibrechte in einen Space.
 
+### 13.8 Profile aus dem Gespräch (Stufe 1 freigegeben von Timo am 03.10.2026)
+
+Timo am 03.10.2026: *"Ich kann den einfach vollquatschen und kann sagen, hey, bau das mal so, wir sind der und der Verein, so und so, das, dies, das, und bau das mal ein Profil auf, bitte. … der muss halt auf die Skill-Vorlagen zurückgreifen können."*
+
+**Frage:** Was folgt daraus, dass ein Mensch frei erzählt, per Text oder Sprache, und daraus ein fertiges Profil wird?
+
+**Stufe 1, über den eigenen Agenten (heute baubar):** Der Mensch spricht mit seinem Agenten (Claude oder Kimi, am Handy mit Spracheingabe) und verbindet ihn mit `https://trustdonation.org/mcp`. Der MCP-Server gibt die Vorlagen für **alle drei Profilarten**:
+
+| Werkzeug | Was |
+|---|---|
+| `profil_art_klaeren` | aus dem Erzählten: Projekt, Stiftung oder Einrichtung (Space)? Mit Rückfrage, wenn unklar |
+| `projekt_profil_*` | gibt es schon: Vorgabe, Prüfung, Link |
+| `stiftung_profil_vorgabe`, `_pruefen`, `_link` | Feldliste `STIFTUNGS_PROFIL_FELDER`, Regeln, Musterstiftung |
+| `einrichtung_profil_vorgabe`, `_pruefen`, `_link` | das Profil einer Einrichtung in `Group.data` (Teil 9), Fragen aus einer Feldliste, die dem Bauplan entspricht |
+
+Der Agent fragt nach, was fehlt (gefragt, nicht erfunden), prüft den Entwurf und gibt einen Link. In der App öffnet der Link Vorschau und Prüfbericht; der Mensch wählt den Space und **speichert selbst**: Projekt und Stiftung als Eintrag, das Einrichtungsprofil in die Daten des Space (nur, wer ihn verwaltet).
+
+**Stufe 2, das Gespräch im Begleiter selbst (später, eigene Entscheidung):** Eingabefeld und Sprachnachricht im Begleiter, Sprache über unsere Mitschrift (eigener Zugang für einzelne Nachrichten), das Modell auf eigenem Server oder über ein Abo. Das hängt an 13.4 (woher das Modell kommt).
+
+Regeln: Der Agent entwirft, der Mensch speichert (13.6 bleibt). Eine Feldliste je Art ist die eine Quelle für Formular, Prüfung und Vorgabe. Der Skill td-profil wird aus diesen Feldlisten nachgezogen, damit Agent und App dasselbe meinen.
+
+**Stufe 1 gebaut am 03.10.2026:** Kern `td-core/src/profil-entwurf.ts` (`EINRICHTUNGS_PROFIL_FELDER`, `PROFIL_ART_REGELN`, Prüfung je Art über `feldHinweise` und `bereinigt` wie beim Bearbeiten, Fragment `<art>-entwurf=`), zehn Werkzeuge in `td-mcp` (`profil_art_klaeren`, je Art Vorgabe, Prüfen, Link), Dialog `@trustdonation/ui/projekt-entwurf` für alle drei Arten, Bindung `projekt-entwurf-host.tsx` (Einrichtung nur für Verwaltende, geprüft mit `verwaltetSpace`). Skill td-profil aus den Feldlisten nachgezogen.
+
 ### 13.5 Regeln
 
 1. Der Companion ist **eine** Fläche und trägt **eine** Werkzeug-Liste. Eine zweite Aufzählung von Werkzeugen ist ein Fehler (Muster 1).
