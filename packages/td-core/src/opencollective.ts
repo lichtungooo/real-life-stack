@@ -174,9 +174,12 @@ export function ocZiel(stand: Pick<OcStand, "eingegangen">, ziel: number | null 
 export function ocSpende(spende: ProjektSpende, stand: OcStand | null): ProjektSpende & { waehrung: string; live: string | null } {
   if (!stand) return { ...spende, waehrung: "EUR", live: null }
   const gesammelt = stand.eingegangen ?? spende.gesammelt
-  const z = ocZiel({ eingegangen: gesammelt }, spende.ziel)
+  // Das Ziel im Eintrag ist in Euro; rechnet die Seite in anderer Währung, kein Vergleich.
+  const ziel = stand.waehrung === "EUR" ? spende.ziel : null
+  const z = ocZiel({ eingegangen: gesammelt }, ziel)
   return {
     ...spende,
+    ziel,
     gesammelt,
     unterstuetzende: stand.unterstuetzende ?? spende.unterstuetzende,
     anteil: z ? z.anteil : null,

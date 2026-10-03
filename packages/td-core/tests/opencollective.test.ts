@@ -85,9 +85,14 @@ describe("Hilfen", () => {
 describe("Die Spendenkarte mit Live-Stand", () => {
   const spende = { ziel: 10000, gesammelt: 7340, unterstuetzende: 52, opencollective: "https://opencollective.com/x", anteil: 0.734, offen: 2660, beispiel: true, stufen: [] }
   it("live geht vor Eintrag, Beispiel gilt nicht mehr", () => {
-    const stand = { ...ocStandAusAntwort(antwort, "webpack", jetzt)!, eingegangen: 2500, unterstuetzende: 9 }
+    const stand = { ...ocStandAusAntwort(antwort, "webpack", jetzt)!, eingegangen: 2500, unterstuetzende: 9, waehrung: "EUR" }
     const s = ocSpende(spende, stand)
-    expect(s).toMatchObject({ gesammelt: 2500, unterstuetzende: 9, anteil: 0.25, offen: 7500, beispiel: false, waehrung: "USD", live: stand.stand })
+    expect(s).toMatchObject({ gesammelt: 2500, unterstuetzende: 9, anteil: 0.25, offen: 7500, beispiel: false, waehrung: "EUR", live: stand.stand })
+  })
+
+  it("andere Währung: kein Vergleich mit dem Ziel in Euro", () => {
+    const s = ocSpende(spende, ocStandAusAntwort(antwort, "webpack", jetzt))
+    expect(s).toMatchObject({ waehrung: "USD", ziel: null, anteil: null, offen: null })
   })
   it("ohne Stand bleibt der Eintrag", () => {
     expect(ocSpende(spende, null)).toMatchObject({ gesammelt: 7340, beispiel: true, live: null })
