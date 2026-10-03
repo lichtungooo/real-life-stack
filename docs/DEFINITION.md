@@ -740,6 +740,30 @@ Ein recherchierter Eintrag ist **noch kein Space**. Er ist ein `place`-Item mit 
 
 ---
 
+### 9.1 Das Profil eines Menschen, mit Sichtbarkeit je Angabe (freigegeben von Timo am 03.10.2026)
+
+Timo am 03.10.2026: *"Ein Profil, ähnlich wie die anderen Profile auch, nur für einen Menschen, für mich. Wenn ich oben rechts auf mein Account klicke, steht da Profil, und da steht bisher nur der Schlüssel. Bei meinem Profil ist es sehr, sehr wichtig, was ich wirklich freigeben will. Was will ich von mir eintragen, und was soll die Öffentlichkeit sehen, wenn sie auf mein Profil klicken?"*
+
+**Was man sieht:** Oben rechts → „Profil“ öffnet das eigene Profil im selben Aufbau wie Project Profile und Stiftungsprofil: Kopf mit Bild, Name und einem Satz; darunter Über mich, Was ich kann, Was ich anbiete, Was ich suche, Wo ich wirke, Kontakt und Links. Bearbeiten je Abschnitt wie bei den anderen Profilen. Ein Umschalter „So sehen mich andere“ zeigt die Seite, wie die Öffentlichkeit sie sieht.
+
+**Sichtbarkeit je Angabe:** Neben jeder Angabe ein Auge mit drei Stufen:
+
+| Stufe | Wer es sieht | Wie es heute technisch läuft |
+|---|---|---|
+| Öffentlich | alle, auch ohne Anmeldung | über Antons Profil-Server (signiert); heute trägt er nur Name, Über mich, Bild |
+| Kontakte und meine Spaces | wer mit mir verbunden ist | im Profil-Eintrag nach Spec 12; das Teilen mit anderen baut Anton noch, bis dahin sieht es nur der Mensch selbst |
+| Nur ich | niemand außer mir | im Profil-Eintrag in meinem persönlichen Space |
+
+Die Oberfläche sagt bei jeder Angabe ehrlich, wer sie **heute** sieht. Vorgabe für neue Angaben: „Nur ich“. Telefon und Anschrift nie öffentlich.
+
+**Wo es liegt:** ein `person`-Eintrag nach Antons Spec 12 (`id = DID`, persönlicher Space), alle Angaben plus `data.sichtbar` (Stufe je Feld). Name, Über mich und Bild gehen zusätzlich über Antons `updateMyProfile`, wenn sie öffentlich sind, damit Kopfzeile, Kontakte und Profil-Server stimmen. Eine Feldliste `PERSON_PROFIL_FELDER` in td-core für Formular, Prüfung und MCP.
+
+**Mit der KI bauen:** Der MCP-Server bekommt die vierte Art `person` (Vorgabe, Prüfen, Link); im KI-Modul erzählt man von sich, am Ende öffnet „Vorschau ansehen und speichern“ das eigene Profil. Die KI schlägt für jede Angabe eine Stufe vor, der Mensch entscheidet.
+
+**Wünsche an Anton:** Spec 12 Regel 12 (der Eintrag ist die Quelle), das Teilen des Profils mit Kontakten und Spaces, und `setFieldVisibility` in Spec 12 festlegen. Anwendungsfall: dieses Profil.
+
+**Nicht in diesem Schritt:** Bestätigungen anderer (Attestations), Profil in der Beispielwelt (der Local-Connector hat kein Profil; dort zeigt die Seite ein Musterprofil zum Ansehen).
+
 ## Teil 10: Matching
 
 **Frage:** Wie entsteht ein Vorschlag, und woran erkennt ein Mensch, ob er taugt?
