@@ -4,6 +4,7 @@
   "private": true,
   "license": "MIT",
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/src/index.js",
   "module": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -37,9 +38,21 @@
       "types": "./dist/src/projekt-profil.d.ts",
       "development": "./src/projekt-profil.tsx",
       "import": "./dist/src/projekt-profil.js"
+    },
+    "./stiftungen-import": {
+      "types": "./dist/src/stiftungen-import.d.ts",
+      "development": "./src/stiftungen-import.tsx",
+      "import": "./dist/src/stiftungen-import.js"
+    },
+    "./netzwerke-import": {
+      "types": "./dist/src/netzwerke-import.d.ts",
+      "development": "./src/netzwerke-import.tsx",
+      "import": "./dist/src/netzwerke-import.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "test": "vitest run",

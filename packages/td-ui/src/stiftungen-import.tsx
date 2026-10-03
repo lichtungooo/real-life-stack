@@ -38,14 +38,8 @@ async function stiftungen() {
   return musterItems.filter((i) => String(i.id).startsWith("stiftung-") && (i.data as { muster?: boolean } | undefined)?.muster !== true)
 }
 
-/**
- * Wohin die Stiftungen gehoeren, wenn kein Space offen ist: das Netzwerk
- * "trustdonation", sonst ein Space dieses Namens, sonst keiner.
- */
-export function importZiel<G extends { id: string; name: string; data?: unknown }>(groups: readonly G[]): G | undefined {
-  const heisst = (g: G) => g.name.trim().toLowerCase() === "trustdonation"
-  return groups.find((g) => heisst(g) && (g.data as { isNetwork?: boolean } | undefined)?.isNetwork) ?? groups.find(heisst)
-}
+/** Wohin die Stiftungen gehören, wenn kein Space offen ist (liegt in td-core, die App fragt es im Hauptteil). */
+export { importZiel } from "@trustdonation/core"
 
 /** Was ein zweiter Lauf an einer schon eingespielten Stiftung nachzieht. */
 const NACHZUG = ["icon", "address", "position", "sitz", "ortGenauigkeit", "website", "anschriftQuelle"] as const

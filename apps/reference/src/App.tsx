@@ -34,8 +34,10 @@ import { isAuthenticatable, hasMessaging, hasEncounterVerification, hasProfile }
 // Prototyp trustdonation: Die Musterdaten kommen als Seed aus unserem Paket,
 // nicht aus Antons Demodaten. Beide Connectoren nehmen einen Seed als
 // Parameter, darum bleiben seine Dateien unberuehrt (NAEHTE Abschnitt C).
-import { traegtProfil } from "@trustdonation/core"
-import { NetzwerkeImport, StiftungenImport, importZiel } from "@trustdonation/ui"
+import { importZiel, traegtProfil } from "@trustdonation/core"
+// Die Import-Dialoge starten nur über einen Link: erst dann laden (Budget, 03.10.2026).
+const NetzwerkeImport = lazy(() => import("@trustdonation/ui/netzwerke-import").then((m) => ({ default: m.NetzwerkeImport })))
+const StiftungenImport = lazy(() => import("@trustdonation/ui/stiftungen-import").then((m) => ({ default: m.StiftungenImport })))
 import { SpaceProfilPanel } from "./views/profil-panel"
 import { ERWEITERUNGEN_ABSCHNITT } from "./views/erweiterungen-abschnitt"
 import { ProjektEntwurfHost } from "./views/projekt-entwurf-host"
@@ -63,7 +65,6 @@ const kreisFabrik = new URLSearchParams(window.location.search).get("kreis") ===
   ? () => lokalerKreisRaum()
   : () => liveKitKreisRaum({ ...KREIS_WIR_OOO, video: videoAusAdresse(), codec: codecAusAdresse() })
 import { MapLibreAdapterProvider } from "@real-life-stack/toolkit/maplibre"
-import { MockConnector } from "@real-life-stack/mock-connector"
 import { LocalConnector } from "@real-life-stack/local-connector"
 // Der Rahmen mit Router: Fokus in der URL, Space/Modul/Item aus der URL,
 // Provider, Panel, Kopfzeile, Controller — einmal im Toolkit (Spec 01).
@@ -483,6 +484,8 @@ async function createConnector(type: string): Promise<DataInterface> {
     return connector
   }
   const { musterdaten } = await import("@trustdonation/core/musterdaten")
+  // Nur auf Wunsch (?connector=mock): nachgeladen, nicht im Hauptteil (Budget, 03.10.2026).
+  const { MockConnector } = await import("@real-life-stack/mock-connector")
   const c = new MockConnector(musterdaten)
   await c.init()
   return c
@@ -544,14 +547,17 @@ function NetzwerkeImportHost({ beispielwelt }: { beispielwelt: boolean }) {
     p.delete("import")
     setSearchParams(p)
   }, [searchParams, setSearchParams])
+  if (searchParams.get("import") !== "netzwerke") return null
   return (
-    <NetzwerkeImport
-      connector={connector}
-      aktiv={searchParams.get("import") === "netzwerke"}
-      beispielwelt={beispielwelt}
-      module={defaultModuleIds()}
-      onZu={zu}
-    />
+    <Suspense fallback={null}>
+      <NetzwerkeImport
+        connector={connector}
+        aktiv
+        beispielwelt={beispielwelt}
+        module={defaultModuleIds()}
+        onZu={zu}
+      />
+    </Suspense>
   )
 }
 
@@ -701,16 +707,18 @@ function StiftungenImportHost({ beispielwelt }: { beispielwelt: boolean }) {
   const ohneZiel = aktiv && !beispielwelt && !space && !ziel && !isLoading
     ? "Es gibt bei dir noch keinen Space „trustdonation“. Zuerst oben „Netzwerke übernehmen“ wählen, dann diesen Link noch einmal öffnen."
     : undefined
-  if (aktiv && !beispielwelt && !space && !ohneZiel) return null
+  if (!aktiv || (!beispielwelt && !space && !ohneZiel)) return null
   return (
-    <StiftungenImport
-      connector={connector}
-      aktiv={aktiv}
-      spaceName={space?.name}
-      beispielwelt={beispielwelt}
-      ohneZiel={ohneZiel}
-      zielId={space?.id}
-    />
+    <Suspense fallback={null}>
+      <StiftungenImport
+        connector={connector}
+        aktiv
+        spaceName={space?.name}
+        beispielwelt={beispielwelt}
+        ohneZiel={ohneZiel}
+        zielId={space?.id}
+      />
+    </Suspense>
   )
 }
 

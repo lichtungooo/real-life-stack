@@ -104,6 +104,7 @@ export {
   type StiftungsProfil,
 } from "./stiftungs-profil.js"
 export { traegtStiftungsProfil } from "./stiftungs-erkennung.js"
+export { importZiel } from "./import-ziel.js"
 export {
   PROJEKT_PROFIL_FELDER,
   PROJEKT_ENTWURF_REGELN,
