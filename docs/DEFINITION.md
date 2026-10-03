@@ -612,6 +612,64 @@ Gebaut am 02.10.2026 (proto-69): Feldlisten und `abschnittSpeichern` in `td-core
 
 ---
 
+#### Profil übernehmen (freigegeben von Timo am 03.10.2026)
+
+**Frage:** Was folgt daraus, dass eine Stiftung ihr recherchiertes Profil selbst in die Hand nehmen soll?
+
+Bisher führt „Profil übernehmen“ zu einer Mail an mail@reallife.network. Für den Pilot mit Stiftungen braucht es den Weg in der App.
+
+**Ablauf:**
+
+1. Ein angemeldeter Mensch, Mitglied des Space, öffnet eine recherchierte Stiftung und wählt **„Das ist meine Stiftung“**. Ohne Anmeldung oder Mitgliedschaft erklärt der Dialog, wie er dahin kommt (Login, Beitritt).
+2. Er nennt Namen, Rolle in der Stiftung und eine Mail-Adresse der Stiftung. Das wird eine **Übernahme-Anfrage** am Eintrag (`data.uebernahme`), sichtbar für alle Mitglieder.
+3. Wer den Space verwaltet (`isAdmin`), sieht im Profil **„Übernahme angefragt von …“** mit **Bestätigen** und **Ablehnen**. Geprüft wird außerhalb der App: ein Anruf oder eine Mail an die Adresse aus dem Impressum der Stiftung, das Profil zeigt sie dafür mit Quelle an.
+4. **Bestätigt:** `quelle` wird „Gepflegt von der Stiftung“, dazu `gepflegtVon` (Kennung des Menschen) und `gepflegtSeit`. Der Hinweis „aus öffentlicher Recherche“ und der Herkunfts-Hinweis unten weichen einem „Gepflegt von der Stiftung seit …“. „Profil bearbeiten“ zeigt sich für die Pflegenden und die Verwaltenden.
+5. **Abgelehnt:** Die Anfrage verschwindet, der Eintrag bleibt Recherche.
+
+| Feld in `data` | Was |
+|---|---|
+| `uebernahme` | `{ von, name, rolle, mail, wann, stand: "angefragt" }` |
+| `quelle` | nach Bestätigung „Gepflegt von der Stiftung“ |
+| `gepflegtVon`, `gepflegtSeit` | wer pflegt, seit wann |
+
+Regeln:
+
+1. **Ein Mensch bestätigt, keine Maschine:** Die Prüfung macht, wer den Space verwaltet. Später kann eine Bestätigung im Web of Trust (Attestation, mit Anton) sie tragen.
+2. **Offen sichtbar:** Anfrage und Pflegende stehen am Eintrag, für alle Mitglieder lesbar.
+3. **Ein Import überschreibt nie:** Eine übernommene Stiftung bleibt, wie sie sie pflegt (das gilt schon über `quelle`).
+4. **Rechte bleiben Antons Regel:** Die Oberfläche zeigt das Bearbeiten den Pflegenden und Verwaltenden; geschrieben wird mit Antons Rechten.
+5. **Was es nicht trägt:** keine Mail aus der App, keine Ausweisprüfung, keine Gebühr.
+
+#### Modul Open Collective, überall einbindbar (freigegeben von Timo am 03.10.2026)
+
+**Frage:** Was folgt daraus, dass Spenden über Open Collective überall dort erscheinen sollen, wo sie gebraucht werden?
+
+Timo am 03.10.2026: *"Ich möchte das Open Collective ja in die Profile einbinden, wenn es gebraucht wird. Und deswegen als eigenständiges Modul. Brauche ich es in einem Projekt, brauche ich es in einer Person oder … integriert in ein Netzwerk … wie so ein Spendenwidget … auf der Netzwerkseite. … wenn wir Module bauen, muss es in alle Seiten offen sein und integrierbar sein."*
+
+**Was es ist:** ein eigenständiger Baustein. Er steht für sich und wird in jede Seite eingebunden, die eine Open-Collective-Seite trägt. Keine Seite muss ihn kennen, um ihn zu tragen.
+
+**Die eine Angabe:** die Adresse der Seite bei Open Collective, am jeweiligen Träger: `spende.opencollective` am Projekt (gibt es schon), `opencollective` an einer Person, an einem Space oder Netzwerk (`Group.data.opencollective`).
+
+**Drei Größen aus einem Guss:**
+
+| Größe | Wo | Was |
+|---|---|---|
+| **Knapp** | in einer Profilkarte, etwa der Spendenkarte des Project Profile | gesammelt, Unterstützende, Balken zum Ziel, Knopf „Unterstützen“ |
+| **Widget** | auf einer Netzwerk- oder Landingpage, in einer Seitenspalte | Kopf mit Logo, die Zahlen, Beträge zur Wahl, Knopf |
+| **Ganz** | als eigene Ansicht über den Bildschirm, aus Knapp oder Widget geöffnet | dazu „Wohin das Geld geht“ (bezahlte Ausgaben) und „Woher es kommt“ (Eingänge) |
+
+**Woher die Zahlen kommen:** über unseren Dienst `trustdonation.org/oc/<name>` (neben der Begleitung unter `/mcp`), zehn Minuten Zwischenspeicher. Keine Adresse eines Besuchers geht an Open Collective.
+
+**Was zuerst gebaut wird:** der Baustein mit allen drei Größen und der Dienst; eingebunden zuerst im **Project Profile** (Spendenkarte live, „Ganz“ zum Öffnen). Die Einbindung in Personen, Space-Profil, Netzwerkseite und Landingpage folgt je als eigener kleiner Schritt; in den Erweiterungen steht der Baustein als Modul.
+
+Regeln:
+
+1. **Nur, was Open Collective öffentlich zeigt.** Kein Schlüssel, kein Konto, nichts darüber hinaus. Bei den Eingängen nur Betrag und Datum, keine Namen (Timo, 03.10.2026).
+2. **Lesen, nie schreiben:** Spenden und Ausgaben geschehen bei Open Collective.
+3. **Ohne Seite oder bei Fehler:** Der Träger zeigt, was er selbst trägt (Beispielzahlen gekennzeichnet), ohne Fehlermeldung.
+4. **Eine Quelle:** Der Kern in `td-core` liest die Antwort; jede Größe zeigt sie, keine rechnet selbst.
+5. **Offen für alle Seiten:** eigener Einstieg `@trustdonation/ui/opencollective`, Eingabe nur die Adresse und optional ein Ziel.
+
 ### Was die Erweiterungen nicht sind
 
 Kein Laden, keine Bezahlung, keine Bewertungen, keine Rangliste. Wer etwas sucht, sieht, was es tut, wer es gebaut hat und ob es freigegeben ist.

@@ -40,7 +40,8 @@ import {
   X,
 } from "lucide-react"
 import { Dialog, DialogContent, DialogTitle } from "@real-life-stack/toolkit"
-import { PROJEKT_PROFIL_FELDER, euro, projektProfil, spendenLink, type ProjektProfil, type ProjektSpende } from "@trustdonation/core"
+import { PROJEKT_PROFIL_FELDER, euro, ocBetrag, ocSpende, projektProfil, spendenLink, type ProjektProfil, type ProjektSpende } from "@trustdonation/core"
+import { OcGanz, useOcStand } from "./opencollective"
 import {
   Bearbeitbar,
   BearbeitenKnopf,
@@ -96,8 +97,13 @@ function Fortschritt({ anteil, dick = false }: { anteil: number; dick?: boolean 
   )
 }
 
+/** Die Spendenkarte, mit Live-Stand von Open Collective, wenn es ihn gibt (Baustein Open Collective). */
+type Spende = ProjektSpende & { waehrung?: string; live?: string | null }
+const geld = (s: Spende, v: number) => (s.waehrung && s.waehrung !== "EUR" ? ocBetrag(v, s.waehrung) : euro(v))
+
 /** Gesammelt, Ziel, Balken und wer schon gibt. Von Karte und ganzer Ansicht geteilt. */
-function SpendenStand({ s, gross = false }: { s: ProjektSpende; gross?: boolean }) {
+function SpendenStand({ s, gross = false }: { s: Spende; gross?: boolean }) {
+  const euro = (v: number) => geld(s, v)
   return (
     <>
       {s.gesammelt !== null && (
@@ -119,7 +125,8 @@ function SpendenStand({ s, gross = false }: { s: ProjektSpende; gross?: boolean 
   )
 }
 
-function SpendenKnopf({ s, betrag, schmal = false }: { s: ProjektSpende; betrag?: number | null; schmal?: boolean }) {
+function SpendenKnopf({ s, betrag, schmal = false }: { s: Spende; betrag?: number | null; schmal?: boolean }) {
+  const euro = (v: number) => geld(s, v)
   const link = spendenLink(s.opencollective, betrag)
   const klasse = `flex items-center justify-center gap-2 rounded-xl px-4 ${schmal ? "py-2.5" : "py-3"} text-sm font-semibold text-white shadow-sm`
   if (!link) {
@@ -136,11 +143,18 @@ function SpendenKnopf({ s, betrag, schmal = false }: { s: ProjektSpende; betrag?
   )
 }
 
-function SpendenHinweis({ s }: { s: ProjektSpende }) {
+function SpendenHinweis({ s, onMehr }: { s: Spende; onMehr?: () => void }) {
   return (
-    <p className="mt-2 text-center text-[11px] text-muted-foreground">
-      {s.beispiel ? "Beispielzahlen. " : ""}Das Geld läuft offen und nachvollziehbar über Open Collective.
-    </p>
+    <div className="mt-2 flex flex-col items-center gap-1 text-center text-[11px] text-muted-foreground">
+      {s.live ? (
+        <p>Stand bei Open Collective, {new Date(s.live).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} Uhr. Das Geld läuft offen und nachvollziehbar.</p>
+      ) : (
+        <p>{s.beispiel ? "Beispielzahlen. " : ""}Das Geld läuft offen und nachvollziehbar über Open Collective.</p>
+      )}
+      {s.live && onMehr && (
+        <button type="button" onClick={onMehr} className="text-xs font-medium text-emerald-800 underline-offset-2 hover:underline dark:text-emerald-200">Wohin das Geld geht</button>
+      )}
+    </div>
   )
 }
 
@@ -164,7 +178,9 @@ function Grossbild({ src, onZu }: { src: string; onZu: () => void }) {
 export function ProjektProfilSeite({ profil: p, bildUrl = (x) => x, bearbeitung }: ProjektProfilSeiteProps) {
   const [voll, setVoll] = useState(false)
   const [bearbeiten, setBearbeiten] = useState(false)
-  const s = p.spende
+  const { stand } = useOcStand(p.spende?.opencollective)
+  const s = p.spende ? ocSpende(p.spende, stand) : null
+  const [geldGanz, setGeldGanz] = useState(false)
   return (
     <article className="flex flex-col gap-4" aria-label={`Projektprofil ${p.titel}`}>
       <button type="button" onClick={() => setVoll(true)} aria-label="Ganzes Profil öffnen"
@@ -193,9 +209,10 @@ export function ProjektProfilSeite({ profil: p, bildUrl = (x) => x, bearbeitung 
         <section className="rounded-2xl bg-emerald-50/60 p-4 dark:bg-emerald-950/40" aria-label="Unterstützen">
           <SpendenStand s={s} />
           <div className="mt-4"><SpendenKnopf s={s} schmal /></div>
-          <SpendenHinweis s={s} />
+          <SpendenHinweis s={s} onMehr={() => setGeldGanz(true)} />
         </section>
       )}
+      {stand && <OcGanz stand={stand} ziel={p.spende?.ziel} offen={geldGanz} onOffen={setGeldGanz} />}
 
       {p.beduerfnis && (
         <section className="rounded-2xl bg-amber-50/60 p-4 dark:bg-amber-950/40" aria-label="Was fehlt">
@@ -234,7 +251,9 @@ export function ProjektProfilVoll({
   const b = useProfilBearbeiten(PROJEKT_PROFIL_FELDER, bearbeitung)
   // Während der Arbeit zeigt die Seite die Arbeitskopie: Sie ist die Vorschau.
   const p = useMemo(() => (b.vorschau ? projektProfil(b.vorschau, []) : profil), [b.vorschau, profil])
-  const s = p.spende
+  const { stand } = useOcStand(p.spende?.opencollective)
+  const s = p.spende ? ocSpende(p.spende, stand) : null
+  const [geldGanz, setGeldGanz] = useState(false)
   const k = p.kontakt
   const [gross, setGross] = useState<string | null>(null)
   // Vorgewaehlt: der zweite Betrag, wie es Kampagnenseiten tun. Nicht der
@@ -426,7 +445,7 @@ export function ProjektProfilVoll({
                         return (
                           <button key={`${i}-${st.betrag}`} type="button" role="radio" aria-checked={an} onClick={() => setBetrag(st.betrag)}
                             className={`flex flex-col items-start gap-0.5 rounded-2xl p-3 text-left transition-colors ${an ? "bg-emerald-700 text-white shadow-md" : "bg-emerald-50/70 hover:bg-emerald-100/80 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50"}`}>
-                            <span className="text-lg font-bold">{euro(st.betrag)}</span>
+                            <span className="text-lg font-bold">{geld(s, st.betrag)}</span>
                             {st.bewirkt && <span className={`text-xs leading-snug ${an ? "text-white/85" : "text-muted-foreground"}`}>{st.bewirkt}</span>}
                           </button>
                         )
@@ -434,7 +453,7 @@ export function ProjektProfilVoll({
                     </div>
                   )}
                   <div className="mt-4"><SpendenKnopf s={s} betrag={betrag} /></div>
-                  <SpendenHinweis s={s} />
+                  <SpendenHinweis s={s} onMehr={() => setGeldGanz(true)} />
                 </section>
               )}
             </Bearbeitbar>
@@ -463,7 +482,7 @@ export function ProjektProfilVoll({
         {s && !b.an && (
           <div className="sticky bottom-0 z-20 flex items-center gap-3 bg-background/90 px-4 py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
             <div className="min-w-0 flex-1">
-              {s.gesammelt !== null && <p className="text-sm font-bold">{euro(s.gesammelt)}{s.ziel !== null && <span className="font-normal text-muted-foreground"> von {euro(s.ziel)}</span>}</p>}
+              {s.gesammelt !== null && <p className="text-sm font-bold">{geld(s, s.gesammelt)}{s.ziel !== null && <span className="font-normal text-muted-foreground"> von {geld(s, s.ziel)}</span>}</p>}
               {s.anteil !== null && <div className="mt-1"><Fortschritt anteil={s.anteil} /></div>}
             </div>
             <button type="button" onClick={() => document.getElementById("projekt-spenden")?.scrollIntoView({ behavior: "smooth", block: "center" })}
@@ -474,6 +493,7 @@ export function ProjektProfilVoll({
         )}
 
         {gross && <Grossbild src={bildUrl(gross)} onZu={() => setGross(null)} />}
+        {stand && <OcGanz stand={stand} ziel={p.spende?.ziel} offen={geldGanz} onOffen={setGeldGanz} />}
         </BearbeitenRahmen>
       </DialogContent>
     </Dialog>

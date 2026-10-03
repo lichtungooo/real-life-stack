@@ -16,7 +16,7 @@ services:
     mem_limit: 256m
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.td-mcp.rule=Host(`trustdonation.org`) && PathPrefix(`/mcp`)"
+      - "traefik.http.routers.td-mcp.rule=Host(`trustdonation.org`) && (PathPrefix(`/mcp`) || PathPrefix(`/oc/`))"
       - "traefik.http.routers.td-mcp.entrypoints=websecure"
       - "traefik.http.routers.td-mcp.tls.certresolver=letsencrypt"
       # Vor der App: /mcp gehört diesem Dienst.

@@ -106,6 +106,18 @@ export {
 export { traegtStiftungsProfil } from "./stiftungs-erkennung.js"
 export { importZiel } from "./import-ziel.js"
 export {
+  ocName,
+  ocStandAusAntwort,
+  ocStandAus,
+  ocBetrag,
+  ocZiel,
+  ocSpende,
+  OC_ABFRAGE,
+  type OcStand,
+  type OcAusgabe,
+  type OcEingang,
+} from "./opencollective.js"
+export {
   PROJEKT_PROFIL_FELDER,
   PROJEKT_ENTWURF_REGELN,
   ENTWURF_HOECHSTENS,

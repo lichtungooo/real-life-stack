@@ -15,6 +15,7 @@ import { createServer as httpServer, type IncomingMessage, type Server } from "n
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js"
 import { createServer, nominatim, type ServerOptionen } from "./server.js"
 import { gedrosselteOrtsuche } from "./ort.js"
+import { ocDienst, type OcHolen } from "./oc.js"
 
 /** Größte Anfrage: ein Entwurf bis 48 KB, als JSON-RPC verpackt, mit Luft. */
 const HOECHSTENS_BYTES = 200_000
@@ -33,14 +34,29 @@ async function koerper(req: IncomingMessage): Promise<unknown> {
 
 export interface NetzwerkServerOptionen extends ServerOptionen {
   netzwerk?: string
+  /** Der Abruf bei Open Collective (Tests setzen ihn). */
+  ocHolen?: OcHolen
 }
 
 /** Den HTTP-Server bauen (nicht starten). Für Tests und für den Einstieg unten. */
 export function netzwerkServer(optionen: NetzwerkServerOptionen = {}): { server: Server; aufrufe: () => number } {
   let aufrufe = 0
   const geocode = optionen.geocode ?? gedrosselteOrtsuche({ suche: nominatim })
+  const oc = ocDienst(optionen.ocHolen)
   const server = httpServer(async (req, res) => {
     const pfad = (req.url ?? "/").split("?")[0].replace(/\/+$/, "") || "/"
+    // Der Baustein Open Collective (DEFINITION Teil 8): GET /oc/<name>, offen für jede Seite.
+    if (pfad.startsWith("/oc/")) {
+      const kopf = { "Content-Type": "application/json; charset=utf-8", "Access-Control-Allow-Origin": "*" }
+      if (req.method === "OPTIONS") { res.writeHead(204, { ...kopf, "Access-Control-Allow-Methods": "GET" }).end(); return }
+      if (req.method !== "GET") { res.writeHead(405, { ...kopf, Allow: "GET" }).end(); return }
+      let name = ""
+      try { name = decodeURIComponent(pfad.slice(4)).toLowerCase() } catch { /* bleibt leer: ungültig */ }
+      const antwort = await oc(name)
+      res.writeHead(antwort.status, { ...kopf, ...(antwort.status === 200 ? { "Cache-Control": "public, max-age=300" } : {}) })
+        .end(JSON.stringify(antwort.stand ?? { fehler: antwort.fehler }))
+      return
+    }
     if (pfad !== "/" && pfad !== "/mcp") {
       res.writeHead(404).end()
       return

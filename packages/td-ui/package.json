@@ -48,6 +48,11 @@
       "types": "./dist/src/netzwerke-import.d.ts",
       "development": "./src/netzwerke-import.tsx",
       "import": "./dist/src/netzwerke-import.js"
+    },
+    "./opencollective": {
+      "types": "./dist/src/opencollective.d.ts",
+      "development": "./src/opencollective.tsx",
+      "import": "./dist/src/opencollective.js"
     }
   },
   "files": [
