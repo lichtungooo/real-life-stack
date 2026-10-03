@@ -17,10 +17,10 @@ async function verbinden() {
 }
 
 describe("td-mcp", () => {
-  it("meldet die zehn Werkzeuge, jedes mit Beschreibung", async () => {
+  it("meldet die dreizehn Werkzeuge, jedes mit Beschreibung", async () => {
     const client = await verbinden()
     const { tools } = await client.listTools()
-    expect(tools.map((t) => t.name).sort()).toEqual(["einrichtung_profil_link", "einrichtung_profil_pruefen", "einrichtung_profil_vorgabe", "profil_art_klaeren", "projekt_profil_link", "projekt_profil_pruefen", "projekt_profil_vorgabe", "stiftung_profil_link", "stiftung_profil_pruefen", "stiftung_profil_vorgabe"])
+    expect(tools.map((t) => t.name).sort()).toEqual(["einrichtung_profil_link", "einrichtung_profil_pruefen", "einrichtung_profil_vorgabe", "person_profil_link", "person_profil_pruefen", "person_profil_vorgabe", "profil_art_klaeren", "projekt_profil_link", "projekt_profil_pruefen", "projekt_profil_vorgabe", "stiftung_profil_link", "stiftung_profil_pruefen", "stiftung_profil_vorgabe"])
     for (const t of tools) expect(t.description?.length, t.name).toBeGreaterThan(40)
   })
 
@@ -90,7 +90,7 @@ describe("Stiftung und Einrichtung (DEFINITION 13.8)", () => {
     const client = await verbinden()
     const r = (await client.callTool({ name: "profil_art_klaeren", arguments: {} })) as { content: { text: string }[] }
     const j = JSON.parse(r.content[0].text)
-    expect(j.arten.map((a: { art: string }) => a.art)).toEqual(["projekt", "stiftung", "einrichtung"])
+    expect(j.arten.map((a: { art: string }) => a.art)).toEqual(["projekt", "stiftung", "einrichtung", "person"])
   })
 })
 

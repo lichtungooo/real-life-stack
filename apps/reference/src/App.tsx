@@ -42,6 +42,7 @@ import { SpaceProfilPanel } from "./views/profil-panel"
 import { ERWEITERUNGEN_ABSCHNITT } from "./views/erweiterungen-abschnitt"
 import { SPENDEN_ABSCHNITT, SpendenKnopf } from "./views/spenden-abschnitt"
 import { KI_ABSCHNITT } from "./views/ki-abschnitt"
+import { MeinProfil, persoenlicherSpace } from "./views/mein-profil"
 import { ProjektEntwurfHost } from "./views/projekt-entwurf-host"
 import { connectorWahl } from "./connector-wahl"
 // Der Kreis bekommt seinen Raum von der App (Spec kreis, "Der Raum-Adapter").
@@ -282,6 +283,18 @@ export function ProfilePanelHost({
       avatar: foreign?.avatarUrl,
     }
   }, [userId, isOwn, currentUser, foreign, myBio])
+
+  // Das eigene Profil im Aufbau der anderen Profile, mit Sichtbarkeit je
+  // Angabe (DEFINITION 9.1). Fremde Profile zeigt weiter Antons Fläche.
+  // Mit persönlichem Space (WoT) das neue Profil; ganz ohne Profil (Beispielwelt)
+  // das Muster; sonst (etwa Supabase) bleibt Antons Panel.
+  const persoenlich = isOwn ? persoenlicherSpace(connector) : null
+  if (isOwn && (persoenlich || !hasProfile(connector))) {
+    return (
+      <MeinProfil connector={connector} persoenlich={persoenlich} ich={currentUser} bio={myBio} offen={userId !== null} onOffen={(x) => { if (!x) onClose() }}
+        profilLink={`${window.location.origin}${window.location.pathname}?profile=${encodeURIComponent(userId ?? "")}`} />
+    )
+  }
 
   return (
     <AdaptivePanel

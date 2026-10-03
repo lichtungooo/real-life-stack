@@ -19,6 +19,7 @@ import {
   PROFIL_ART_REGELN,
   PROFIL_ENTWURF_REGELN,
   felderFuer,
+  MUSTER_PERSON,
   profilEntwurfPruefen,
   profilEntwurfKodieren,
   type EntwurfBericht,
@@ -50,15 +51,20 @@ export async function nominatim(anschrift: string): Promise<{ lat: number; lng: 
   }
 }
 
-const ART_NAME: Record<ProfilArt, string> = { projekt: "Projekt", stiftung: "Stiftung", einrichtung: "Einrichtung" }
+const ART_NAME: Record<ProfilArt, string> = { projekt: "Projekt", stiftung: "Stiftung", einrichtung: "Einrichtung", person: "Mensch" }
 const ANLEGEN: Record<ProfilArt, string> = {
   projekt: "Er öffnet ihn, sieht die Vorschau, wählt den Space und legt das Projekt selbst an.",
   stiftung: "Er öffnet ihn, sieht die Vorschau, wählt den Space und legt die Stiftung selbst an.",
   einrichtung: "Er öffnet ihn, sieht die Vorschau und speichert das Profil in seinen Space; das darf, wer den Space verwaltet.",
+  person: "Er öffnet ihn, sieht sein Profil, wie andere es sehen, und speichert es als sein eigenes; die Stufen je Angabe kann er dort ändern.",
 }
 
 /** Ein vollständiges Beispiel aus den Musterdaten, ohne die Kennzeichen des Musters. */
 function beispielFuer(art: ProfilArt): Record<string, unknown> | null {
+  if (art === "person") {
+    const { muster: _m, ...beispiel } = MUSTER_PERSON
+    return beispiel
+  }
   const id = art === "projekt" ? "projekt-gruenes-klassenzimmer" : art === "stiftung" ? "stiftung-muster-loewenherz" : null
   const m = id ? musterItems.find((i) => i.id === id) : undefined
   if (!m) return null

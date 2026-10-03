@@ -170,6 +170,7 @@ export {
   felderFuer,
   stiftungEntwurfPruefen,
   einrichtungEntwurfPruefen,
+  personEntwurfPruefen,
   profilEntwurfPruefen,
   profilEntwurfKodieren,
   profilEntwurfLesen,
@@ -188,3 +189,18 @@ export {
   type KiNachricht,
   type KiEreignis,
 } from "./ki.js"
+export {
+  PERSON_PROFIL_FELDER,
+  SICHTBARKEITEN,
+  SICHTBARKEIT_NAME,
+  HEUTE_OEFFENTLICH,
+  NIE_OEFFENTLICH,
+  MUSTER_PERSON,
+  sichtbarkeit,
+  sichtbarkeitSetzen,
+  werSiehtHeute,
+  personProfil,
+  oeffentlichesProfil,
+  type Sichtbarkeit,
+  type PersonProfil,
+} from "./person-profil.js"

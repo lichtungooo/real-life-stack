@@ -31,7 +31,7 @@ describe("td-mcp über HTTP", () => {
     const { url } = await starten("Macher-Map")
     const c = await client(`${url}/mcp`)
     const { tools } = await c.listTools()
-    expect(tools.map((t) => t.name).sort()).toEqual(["einrichtung_profil_link", "einrichtung_profil_pruefen", "einrichtung_profil_vorgabe", "profil_art_klaeren", "projekt_profil_link", "projekt_profil_pruefen", "projekt_profil_vorgabe", "stiftung_profil_link", "stiftung_profil_pruefen", "stiftung_profil_vorgabe"])
+    expect(tools.map((t) => t.name).sort()).toEqual(["einrichtung_profil_link", "einrichtung_profil_pruefen", "einrichtung_profil_vorgabe", "person_profil_link", "person_profil_pruefen", "person_profil_vorgabe", "profil_art_klaeren", "projekt_profil_link", "projekt_profil_pruefen", "projekt_profil_vorgabe", "stiftung_profil_link", "stiftung_profil_pruefen", "stiftung_profil_vorgabe"])
     expect(tools.find((t) => t.name === "projekt_profil_vorgabe")!.description).toMatch(/Netzwerk Macher-Map/)
     await c.close()
   })

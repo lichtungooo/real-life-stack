@@ -63,6 +63,11 @@
       "types": "./dist/src/ki-chat.d.ts",
       "development": "./src/ki-chat.tsx",
       "import": "./dist/src/ki-chat.js"
+    },
+    "./person-profil": {
+      "types": "./dist/src/person-profil.d.ts",
+      "development": "./src/person-profil.tsx",
+      "import": "./dist/src/person-profil.js"
     }
   },
   "files": [

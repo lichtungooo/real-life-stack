@@ -762,6 +762,8 @@ Die Oberfläche sagt bei jeder Angabe ehrlich, wer sie **heute** sieht. Vorgabe 
 
 **Wünsche an Anton:** Spec 12 Regel 12 (der Eintrag ist die Quelle), das Teilen des Profils mit Kontakten und Spaces, und `setFieldVisibility` in Spec 12 festlegen. Anwendungsfall: dieses Profil.
 
+**Gebaut am 03.10.2026:** Kern `td-core/src/person-profil.ts` (`PERSON_PROFIL_FELDER`, `sichtbarkeit`, `sichtbarkeitSetzen`, `werSiehtHeute`, `personProfil`, `oeffentlichesProfil`, `MUSTER_PERSON`), Seite `@trustdonation/ui/person-profil`, Bindung `apps/reference/src/views/mein-profil.tsx` (`ersterStand` übernimmt, was heute schon öffentlich ist), MCP-Art `person` (Vorgabe, Prüfen, Link mit vorgeschlagenen Stufen), Entwurfs-Dialog speichert als eigenes Profil.
+
 **Nicht in diesem Schritt:** Bestätigungen anderer (Attestations), Profil in der Beispielwelt (der Local-Connector hat kein Profil; dort zeigt die Seite ein Musterprofil zum Ansehen).
 
 ## Teil 10: Matching

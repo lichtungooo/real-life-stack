@@ -9,7 +9,7 @@
 
 import { lazy, Suspense, useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { useConnector, useCurrentUser, useGroups } from "@real-life-stack/toolkit"
+import { useConnector, useCurrentUser, useGroups, usePersonalGroupId } from "@real-life-stack/toolkit"
 import type { Group, User } from "@real-life-stack/data-interface"
 import {
   komponenteAktiv,
@@ -22,10 +22,11 @@ import {
   type ProjektEntwurf,
 } from "@trustdonation/core"
 import { bildUrl } from "../type-register"
+import { meinProfilSpeichern } from "./mein-profil"
 
 const ProjektEntwurfDialog = lazy(() => import("@trustdonation/ui/projekt-entwurf"))
 
-const ENTWURF = /^#(projekt|stiftung|einrichtung)-entwurf=/
+const ENTWURF = /^#(projekt|stiftung|einrichtung|person)-entwurf=/
 
 // Beim Laden festhalten: Die App leitet von "/" auf einen Space um, bevor
 // der Dialog steht, und dabei kann das Fragment verloren gehen.
@@ -37,14 +38,15 @@ type Schreiber = {
   getMembers?: (groupId: string | null) => Promise<User[]>
 }
 
-const KOMPONENTE: Record<ProfilArt, string | null> = { projekt: PROJEKT_PROFIL, stiftung: STIFTUNGS_PROFIL, einrichtung: null }
-const KOMPONENTE_NAME: Record<ProfilArt, string> = { projekt: "Project Profile", stiftung: "Stiftungsprofil", einrichtung: "" }
+const KOMPONENTE: Record<ProfilArt, string | null> = { projekt: PROJEKT_PROFIL, stiftung: STIFTUNGS_PROFIL, einrichtung: null, person: null }
+const KOMPONENTE_NAME: Record<ProfilArt, string> = { projekt: "Project Profile", stiftung: "Stiftungsprofil", einrichtung: "", person: "" }
 
 export function ProjektEntwurfHost({ beispielwelt }: { beispielwelt: boolean }) {
   const [fragment, setFragment] = useState<string | null>(beimStart)
   const connector = useConnector() as unknown as Schreiber
   const { data: groups, isLoading: spacesLaden } = useGroups()
   const { data: ich } = useCurrentUser()
+  const persoenlich = usePersonalGroupId()
   const { scope } = useParams()
   const navigate = useNavigate()
   // Ein Entwurf kann auch später kommen, etwa aus dem Chat des KI-Moduls (13.10).
@@ -77,6 +79,13 @@ export function ProjektEntwurfHost({ beispielwelt }: { beispielwelt: boolean }) 
   }
 
   const anlegen = async (spaceId: string, entwurf: ProjektEntwurf, einschalten: boolean, art: ProfilArt) => {
+    if (art === "person") {
+      // Das eigene Profil (DEFINITION 9.1): `person`-Eintrag im persönlichen Space.
+      if (!ich?.id || !persoenlich) throw new Error("Dein Profil speicherst du, wenn du eingeloggt bist. In der Beispielwelt gibt es kein eigenes Profil.")
+      const vorhanden = ((await (connector as unknown as { getItem?: (id: string) => Promise<{ type?: string } | null> }).getItem?.(ich.id)) ?? null)?.type === "person"
+      await meinProfilSpeichern(connector as never, { did: ich.id, persoenlich, vorhanden, data: entwurf.daten })
+      return { weiter: () => { schliessen(); navigate({ search: `?profile=${encodeURIComponent(ich.id)}` }) } }
+    }
     if (art === "einrichtung") {
       // Das Profil einer Einrichtung ist der Space selbst (DEFINITION Teil 9): nur wer ihn verwaltet.
       const mitglieder = typeof connector.getMembers === "function" ? await connector.getMembers(spaceId) : []

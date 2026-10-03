@@ -41,6 +41,9 @@ const TITEL: Record<string, string> = {
   projekt_profil_link: "Stellt das Profil fertig",
   stiftung_profil_link: "Stellt das Profil fertig",
   einrichtung_profil_link: "Stellt das Profil fertig",
+  person_profil_vorgabe: "Holt die Vorlage für dein Profil",
+  person_profil_pruefen: "Prüft den Entwurf",
+  person_profil_link: "Stellt das Profil fertig",
 }
 
 /** `mcp__profil__stiftung_profil_link` → `stiftung_profil_link`. */
@@ -53,7 +56,7 @@ export function schrittTitel(werkzeug: string): string {
   return TITEL[name] ?? `Nutzt ${name.replace(/_/g, " ")}`
 }
 
-const FRAGMENT = /#((?:projekt|stiftung|einrichtung)-entwurf=[A-Za-z0-9_-]+)/
+const FRAGMENT = /#((?:projekt|stiftung|einrichtung|person)-entwurf=[A-Za-z0-9_-]+)/
 
 /** Der Entwurf im Ergebnis eines Link-Werkzeugs (der Teil nach `#`), sonst `null`. */
 export function entwurfAusText(text: string): string | null {

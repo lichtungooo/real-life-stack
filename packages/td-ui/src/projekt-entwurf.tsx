@@ -19,6 +19,9 @@ import {
   profilEntwurfLesen,
   projektProfil,
   stiftungsProfil,
+  personProfil,
+  sichtbarkeit,
+  SICHTBARKEIT_NAME,
   type ProfilArt,
   type ProjektEntwurf,
 } from "@trustdonation/core"
@@ -60,6 +63,7 @@ const WORTE: Record<ProfilArt, { titel: string; knopf: string; laeuft: string; f
   projekt: { titel: "Projektprofil aus deinem Entwurf", knopf: "Projekt anlegen", laeuft: "Wird angelegt …", fertig: "Das Projekt ist angelegt.", zum: "Zum Projekt", komponente: "Project Profile", fehler: "Das Projekt ließ sich nicht anlegen." },
   stiftung: { titel: "Stiftungsprofil aus deinem Entwurf", knopf: "Stiftung anlegen", laeuft: "Wird angelegt …", fertig: "Die Stiftung ist angelegt.", zum: "Zur Stiftung", komponente: "Stiftungsprofil", fehler: "Die Stiftung ließ sich nicht anlegen." },
   einrichtung: { titel: "Profil eurer Einrichtung aus deinem Entwurf", knopf: "Profil im Space speichern", laeuft: "Wird gespeichert …", fertig: "Das Profil ist gespeichert.", zum: "Zum Space", komponente: null, fehler: "Das Profil ließ sich nicht speichern." },
+  person: { titel: "Dein Profil aus deinem Entwurf", knopf: "Als mein Profil speichern", laeuft: "Wird gespeichert …", fertig: "Dein Profil ist gespeichert.", zum: "Zu meinem Profil", komponente: null, fehler: "Dein Profil ließ sich nicht speichern." },
 }
 
 function Vorschau({ art, entwurf, bildUrl, spaceName }: { art: ProfilArt; entwurf: ProjektEntwurf; bildUrl?: (pfad: string) => string; spaceName?: string }) {
@@ -68,6 +72,37 @@ function Vorschau({ art, entwurf, bildUrl, spaceName }: { art: ProfilArt; entwur
     return <><h3 className="mb-1 text-xl font-semibold">{p.titel}</h3><ProjektProfilSeite profil={p} bildUrl={bildUrl} /></>
   }
   if (art === "stiftung") return <StiftungsProfilSeite profil={stiftungsProfil(entwurf.daten)} bildUrl={bildUrl} />
+  if (art === "person") {
+    const p = personProfil(entwurf.daten)
+    const zeile = (feld: string, name: string, wert: string | null | undefined | string[]) => {
+      const w = Array.isArray(wert) ? wert.join(" · ") : wert
+      if (!w) return null
+      return (
+        <li key={feld} className="flex flex-col gap-0.5 rounded-2xl bg-muted/40 p-3">
+          <span className="flex items-center justify-between gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{name}<span className="normal-case tracking-normal">{SICHTBARKEIT_NAME[sichtbarkeit(entwurf.daten, feld)]}</span></span>
+          <span className="whitespace-pre-line text-sm">{w}</span>
+        </li>
+      )
+    }
+    return (
+      <div className="flex flex-col gap-3">
+        <h3 className="text-xl font-semibold">{p.name}</h3>
+        {p.kurz && <p className="text-muted-foreground">{p.kurz}</p>}
+        <ul className="flex flex-col gap-2">
+          {zeile("bio", "Über mich", p.ueber)}
+          {zeile("kann", "Was ich kann", p.kann)}
+          {zeile("bietet", "Was ich anbiete", p.bietet)}
+          {zeile("sucht", "Was ich suche", p.sucht)}
+          {zeile("mitmachen", "Wo ich mitmache", p.mitmachen)}
+          {zeile("locationName", "Wo ich wirke", p.ort)}
+          {zeile("website", "Website", p.kontakt.website)}
+          {zeile("mail", "Mail", p.kontakt.mail)}
+          {zeile("telefon", "Telefon", p.kontakt.telefon)}
+        </ul>
+        <p className="text-xs text-muted-foreground">Neben jeder Angabe steht, wer sie sehen soll. Ändern kannst du das jederzeit in deinem Profil unter „Wer sieht was“.</p>
+      </div>
+    )
+  }
   return <ProfilFlaeche name={spaceName} profil={profilAufbauen(entwurf.daten, BAUPLAN_PROJEKT)} ordnungsId="entwurf-einrichtung" />
 }
 
@@ -90,11 +125,11 @@ export function ProjektEntwurfDialog(p: ProjektEntwurfDialogProps) {
   const [fehler, setFehler] = useState<string | null>(null)
 
   const anlegen = async () => {
-    if (!bericht || !space) return
+    if (!bericht || (!space && art !== "person")) return
     setLaeuft(true)
     setFehler(null)
     try {
-      const r = await p.onAnlegen(space.id, bericht.entwurf, Boolean(w.komponente) && einschalten && !space.profilAktiv, art)
+      const r = await p.onAnlegen(space?.id ?? "", bericht.entwurf, Boolean(w.komponente) && einschalten && !space?.profilAktiv, art)
       if (r.hinweis) setFertig({ weiter: r.weiter, hinweis: r.hinweis })
       else r.weiter()
     } catch (e) {
@@ -150,7 +185,16 @@ export function ProjektEntwurfDialog(p: ProjektEntwurfDialogProps) {
                 )}
               </section>
 
-              {spaces.length === 0 && p.spacesLaden ? (
+              {art === "person" ? (
+                <section className="flex flex-col gap-3 rounded-2xl bg-emerald-50/60 p-4 text-sm dark:bg-emerald-950/40" aria-label="Speichern">
+                  <p>Das wird dein eigenes Profil. Was öffentlich sein soll, siehst du in der Vorschau; ändern kannst du es danach jederzeit.</p>
+                  {fehler && <p className="text-rose-700 dark:text-rose-300">{fehler}</p>}
+                  <button type="button" onClick={() => void anlegen()} disabled={laeuft}
+                    className="flex items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 font-semibold text-white hover:bg-emerald-800 disabled:opacity-50">
+                    <Check className="h-4 w-4" /> {laeuft ? w.laeuft : w.knopf}
+                  </button>
+                </section>
+              ) : spaces.length === 0 && p.spacesLaden ? (
                 <p className="rounded-2xl bg-muted/50 p-4 text-sm text-muted-foreground">Deine Spaces werden geladen …</p>
               ) : spaces.length === 0 ? (
                 <p className="rounded-2xl bg-amber-50/70 p-4 text-sm dark:bg-amber-950/40">Du bist noch in keinem Space. Lege zuerst einen an oder tritt einem bei, dann öffne den Link noch einmal.</p>

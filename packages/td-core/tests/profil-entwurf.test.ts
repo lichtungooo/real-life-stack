@@ -59,7 +59,7 @@ describe("Einrichtung", () => {
 describe("Im Fragment", () => {
   it("jede Art hin und zurück; das Projekt bleibt lesbar wie bisher", () => {
     for (const art of PROFIL_ARTEN) {
-      const roh = art === "projekt" ? { title: "P", kurz: "k", beduerfnis: "b", address: "a" } : art === "stiftung" ? { title: "S", foerdererart: "Stiftung" } : { kurz: "k", beduerfnis: "b" }
+      const roh = art === "projekt" ? { title: "P", kurz: "k", beduerfnis: "b", address: "a" } : art === "stiftung" ? { title: "S", foerdererart: "Stiftung" } : art === "person" ? { displayName: "Mira", kurz: "k" } : { kurz: "k", beduerfnis: "b" }
       const f = profilEntwurfKodieren(art, { daten: roh, tags: [] })
       const gelesen = profilEntwurfLesen(f)!
       expect(gelesen.art).toBe(art)

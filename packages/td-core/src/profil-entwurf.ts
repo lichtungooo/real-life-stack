@@ -14,11 +14,12 @@
 import { STIFTUNGS_PROFIL_FELDER, bereinigt, feldHinweise, schlagworte, type EingabeFeld } from "./profil-felder.js"
 import { ENTWURF_HOECHSTENS, PROJEKT_PROFIL_FELDER, projektEntwurfPruefen, ortAus, type EntwurfBericht } from "./projekt-entwurf.js"
 import { stiftungsProfil } from "./stiftungs-profil.js"
+import { PERSON_PROFIL_FELDER, SICHTBARKEITEN, personProfil, type Sichtbarkeit } from "./person-profil.js"
 
 /** Die drei Arten eines Profils. */
-export type ProfilArt = "projekt" | "stiftung" | "einrichtung"
+export type ProfilArt = "projekt" | "stiftung" | "einrichtung" | "person"
 
-export const PROFIL_ARTEN: readonly ProfilArt[] = ["projekt", "stiftung", "einrichtung"]
+export const PROFIL_ARTEN: readonly ProfilArt[] = ["projekt", "stiftung", "einrichtung", "person"]
 
 /**
  * Woran der Agent erkennt, welche Art entsteht. Er fragt nach, wenn das
@@ -28,6 +29,7 @@ export const PROFIL_ART_REGELN: Readonly<Record<ProfilArt, string>> = /* @__PURE
   projekt: "Ein Vorhaben, das Unterstützung sucht: etwas soll entstehen, es braucht Geld, Hände oder Material. Wird ein Eintrag im Space, mit Spendenkarte.",
   stiftung: "Wer fördert: eine Stiftung, ein Förderprogramm, ein Unternehmen, das Geld für Projekte gibt. Wird ein Eintrag auf der Karte, für Projekte auf Fördersuche.",
   einrichtung: "Ein Verein, eine Initiative oder Gemeinschaft stellt sich als Ganzes vor, mit eigenem Space. Wird das Profil dieses Space; speichern kann nur, wer ihn verwaltet.",
+  person: "Ein Mensch stellt sich selbst vor: wer er ist, was er kann, anbietet und sucht. Wird sein eigenes Profil; je Angabe entscheidet er, wer sie sieht (öffentlich, Kontakte, nur ich). Schlag für jede Angabe eine Stufe vor, Telefon nie öffentlich.",
 })
 
 /**
@@ -75,7 +77,7 @@ const objekt = (v: unknown): Roh | null => (v && typeof v === "object" && !Array
 
 /** Die Feldliste einer Art. */
 export function felderFuer(art: ProfilArt): readonly EingabeFeld[] {
-  return art === "projekt" ? PROJEKT_PROFIL_FELDER : art === "stiftung" ? STIFTUNGS_PROFIL_FELDER : EINRICHTUNGS_PROFIL_FELDER
+  return art === "projekt" ? PROJEKT_PROFIL_FELDER : art === "stiftung" ? STIFTUNGS_PROFIL_FELDER : art === "person" ? PERSON_PROFIL_FELDER : EINRICHTUNGS_PROFIL_FELDER
 }
 
 /**
@@ -144,9 +146,38 @@ export function einrichtungEntwurfPruefen(roh: unknown): EntwurfBericht {
   return { ...b, zeigt }
 }
 
+/**
+ * Einen Entwurf für das Profil eines Menschen prüfen (DEFINITION 9.1). Die
+ * vorgeschlagenen Stufen (`sichtbar`) bleiben, soweit sie gültig sind.
+ */
+export function personEntwurfPruefen(roh: unknown): EntwurfBericht {
+  const b = nachFeldliste(PERSON_PROFIL_FELDER, roh, ["sichtbar"])
+  const d = b.entwurf.daten
+  const vorschlag = objekt(d.sichtbar) ?? {}
+  const sichtbar: Record<string, Sichtbarkeit> = {}
+  for (const f of PERSON_PROFIL_FELDER) {
+    const s = vorschlag[f.id]
+    if (typeof s === "string" && (SICHTBARKEITEN as readonly string[]).includes(s)) sichtbar[f.id] = f.id === "telefon" && s === "oeffentlich" ? "kontakte" : (s as Sichtbarkeit)
+  }
+  if (Object.keys(vorschlag).some((k) => !(k in sichtbar))) b.verworfen.push("sichtbar: unbekannte Felder oder Stufen weggelassen (Stufen: oeffentlich, kontakte, privat)")
+  if (Object.keys(sichtbar).length) d.sichtbar = sichtbar
+  else delete d.sichtbar
+  const p = personProfil(d)
+  const zeigt: string[] = []
+  if (p.kurz || p.bild) zeigt.push("Kopf")
+  if (p.ueber) zeigt.push("Über mich")
+  if (p.kann.length) zeigt.push("Was ich kann")
+  if (p.bietet.length) zeigt.push("Was ich anbiete")
+  if (p.sucht.length) zeigt.push("Was ich suche")
+  if (p.mitmachen.length) zeigt.push("Wo ich mitmache")
+  if (p.ort) zeigt.push("Wo ich wirke")
+  if (p.kontakt.website || p.kontakt.mail || p.kontakt.telefon || p.kontakt.links.length) zeigt.push("Kontakt")
+  return { ...b, zeigt }
+}
+
 /** Die Prüfung einer Art. */
 export function profilEntwurfPruefen(art: ProfilArt, roh: unknown): EntwurfBericht {
-  return art === "projekt" ? projektEntwurfPruefen(roh) : art === "stiftung" ? stiftungEntwurfPruefen(roh) : einrichtungEntwurfPruefen(roh)
+  return art === "projekt" ? projektEntwurfPruefen(roh) : art === "stiftung" ? stiftungEntwurfPruefen(roh) : art === "person" ? personEntwurfPruefen(roh) : einrichtungEntwurfPruefen(roh)
 }
 
 // ── Im Fragment des Links ──────────────────────────────────────────────────
