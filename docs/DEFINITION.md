@@ -685,6 +685,17 @@ Regeln:
 
 **Nicht in diesem Schritt:** Person (das Profil eines Menschen ist bei Anton kein Item und trägt keine eigenen Felder; Wunsch an Anton), Landingpage (eigenes Skript für die statische Seite, eigener Schritt).
 
+##### Live mitschneiden: Kling, es ist Geld reingekommen (vorgemerkt, Timo am 03.10.2026: später, nach proto-74)
+
+Timo am 03.10.2026: *"Und vielleicht sogar noch als Widget auf dem Handy. Dass du siehst, oh, guck mal, klingen, schon wieder Kohle reingekommen. Dass du live mitschneiden kannst, was dein Projekt so gerade bekommt."*
+
+**Stufe 1, in der App (klein, ohne neue Rechte):** Solange ein Widget offen ist, fragt es jede Minute nach (der Dienst hält eine Minute statt zehn für offene Widgets). Kommt ein neuer Eingang, zählt die Summe sichtbar hoch und eine leise Zeile erscheint: „Gerade eingegangen: 25 €“. Ein Ton nur, wenn der Mensch ihn einschaltet. Gilt in jeder Größe und an jedem Träger.
+
+**Stufe 2, aufs Handy (größer):** Die App wird installierbar (Web-App-Manifest, Service Worker). Wer ein Projekt oder einen Space pflegt, schaltet „Bei neuer Spende melden“ ein. Der Dienst merkt sich je Anmeldung nur die Push-Adresse des Geräts und den Namen der Seite bei Open Collective, schaut alle fünf Minuten nach und schickt bei einem neuen Eingang eine Meldung: „25 € für Grünes Klassenzimmer“. Abmelden löscht den Eintrag. Ein echtes Startbildschirm-Widget erlaubt der Browser nicht; die Meldung und die installierte App mit Zähler kommen dem am nächsten.
+
+Regeln: keine Namen von Gebenden (wie überall), nur Betrag und Seite; die Push-Adressen bleiben auf unserem Server und gehen nirgends hin.
+
+
 ### Was die Erweiterungen nicht sind
 
 Kein Laden, keine Bezahlung, keine Bewertungen, keine Rangliste. Wer etwas sucht, sieht, was es tut, wer es gebaut hat und ob es freigegeben ist.
