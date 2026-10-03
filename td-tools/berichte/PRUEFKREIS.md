@@ -36,3 +36,4 @@ steht in der Spalte Lehre (von Claude nachgetragen).
 | 2026-10-03-101621-6416 | 1 | e22bb8a0 | 10 | 3 | 0 | 933 s | [kimi-2026-10-03-101621-6416-runde1.md](kimi-2026-10-03-101621-6416-runde1.md) | |
 | 2026-10-03-103157-4572 | 1 | e22bb8a0 | 2 | 1 | 0 | 316 s | [kimi-2026-10-03-103157-4572-runde1.md](kimi-2026-10-03-103157-4572-runde1.md) | |
 | 2026-10-03-122201 | – | 4f6b6b04 | – | – | – | – | ohne Kimi ausgeliefert | Kimi-Kontingent leer (5-Stunden-Grenze); Timo hat am 03.10.2026 ausdrücklich freigegeben: jetzt ausliefern, Kimi prüft danach (Warteschlange ab 4f553cac läuft). |
+| 2026-10-03-125636 | – | 98c8ad41 | – | – | – | – | ohne Kimi ausgeliefert | Timo 03.10.2026: fertig Gebautes ausliefern, Kimi prüft nach (feedback_ausliefern_vor_kimi) |
