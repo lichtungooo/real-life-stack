@@ -86,6 +86,21 @@ describe("Project Profile bearbeiten", () => {
     expect("tags" in aenderung.data).toBe(false)
   })
 
+  it("schnelles Zweitspeichern schreibt keine Schlagworte in data (Kimi, 03.10.2026)", async () => {
+    const speichern = vi.fn(async () => ({}))
+    // Die App meldet die neuen Daten hier nie zurück: genau das Zeitfenster vor der Rückmeldung.
+    zeigen(<ProjektProfilVoll profil={projektProfil(projektDaten, ["garten"])} offen onOffen={() => {}}
+      bearbeitung={{ daten: projektDaten, eintrag: { tags: ["garten"] }, speichern }} />)
+    klicken("Profil bearbeiten")
+    klicken("Kopf bearbeiten")
+    await act(async () => { knopf("Speichern")!.click() })
+    klicken("Was fehlt bearbeiten")
+    await act(async () => { knopf("Speichern")!.click() })
+    const [, zweite] = speichern.mock.calls as unknown as [unknown, [{ data: Record<string, unknown> }]]
+    expect("tags" in zweite[0].data).toBe(false)
+    expect(zweite[0].data.fremd).toEqual({ bleibt: true })
+  })
+
   it("Abbrechen verwirft die Arbeit", () => {
     const speichern = vi.fn(async () => ({}))
     zeigen(<ProjektProfilVoll profil={projektProfil(projektDaten, [])} offen onOffen={() => {}}

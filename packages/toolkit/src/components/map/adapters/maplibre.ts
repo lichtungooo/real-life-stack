@@ -101,6 +101,42 @@ const MARKER_FREE_GLOW_LAYER = "rls-marker-glow-free"
 const FAN_RADIUS_PX = 32
 /** NAHT trustdonation (A-Cluster): markers closer than this count as one spot. */
 const FAN_METERS = 40
+/**
+ * NAHT trustdonation (A-Cluster): the ring stays this small in real metres. Zoomed
+ * out, a 32 px ring would span kilometres and scatter markers far from their
+ * place (Kimi, 03.10.2026); there the spot stays one spot (clusters take over).
+ */
+const FAN_MAX_METERS = 250
+
+/**
+ * NAHT trustdonation (A-Cluster): where markers on one spot sit on their fan
+ * ring at this zoom. Pure, so it can be tested; empty when nothing fans out.
+ */
+export function fanPositions(markers: readonly MapMarkerSpec[], zoom: number): Map<string, LngLat> {
+  const sameSpot: MapMarkerSpec[][] = []
+  for (const m of markers) {
+    const near = sameSpot.find((g) => metersApart(g[0].position, m.position) < FAN_METERS)
+    if (near) near.push(m)
+    else sameSpot.push([m])
+  }
+  const fan = new Map<string, LngLat>()
+  for (const group of sameSpot) {
+    if (group.length < 2) continue
+    const [lng0, lat0] = group[0].position
+    // Ring of fixed screen size: metres per pixel at this zoom and latitude.
+    const mProPx = (40_075_016.686 * Math.cos(lat0 * (Math.PI / 180))) / (512 * 2 ** zoom)
+    const rM = (FAN_RADIUS_PX + Math.max(0, group.length - 6) * 3) * mProPx
+    if (rM > FAN_MAX_METERS) continue
+    group.forEach((m, i) => {
+      const a = (2 * Math.PI * i) / group.length - Math.PI / 2
+      const dLat = (Math.sin(a) * rM) / 111_320
+      const dLng = (Math.cos(a) * rM) / (111_320 * Math.cos(lat0 * (Math.PI / 180)))
+      fan.set(m.id, [lng0 + dLng, lat0 + dLat])
+    })
+  }
+  return fan
+}
+
 /** NAHT trustdonation (A-Cluster): rough distance in metres, good enough for "same building". */
 function metersApart(a: LngLat, b: LngLat): number {
   const dLat = (a[1] - b[1]) * 111_320
@@ -630,29 +666,11 @@ export class MapLibreMapAdapter implements MapAdapter, GlobeCapable, ClusterCapa
     // NAHT trustdonation (A-Cluster): markers closer than FAN_METERS fan out on a
     // ring, so none hides another (Timo, 02.10.2026: "nicht sauber gefächert";
     // in Kassel sitzen sechs Stiftungen im selben Haus).
-    const sameSpot: MapMarkerSpec[][] = []
-    for (const m of markers) {
-      const near = sameSpot.find((g) => metersApart(g[0].position, m.position) < FAN_METERS)
-      if (near) near.push(m)
-      else sameSpot.push([m])
-    }
     // The spot itself moves, not the image: glow and pin stay together, and
     // MapLibre keeps no arrays in feature properties.
-    const fan = new Map<string, LngLat>()
-    for (const group of sameSpot) {
-      if (group.length < 2) continue
-      const [lng0, lat0] = group[0].position
-      // Ring of fixed screen size: metres per pixel at this zoom and latitude.
-      const mProPx = (40_075_016.686 * Math.cos(lat0 * (Math.PI / 180))) / (512 * 2 ** map.getZoom())
-      const rM = (FAN_RADIUS_PX + Math.max(0, group.length - 6) * 3) * mProPx
-      group.forEach((m, i) => {
-        const a = (2 * Math.PI * i) / group.length - Math.PI / 2
-        const dLat = (Math.sin(a) * rM) / 111_320
-        const dLng = (Math.cos(a) * rM) / (111_320 * Math.cos(lat0 * (Math.PI / 180)))
-        fan.set(m.id, [lng0 + dLng, lat0 + dLat])
-      })
-    }
-    this.fanActive = fan.size > 0
+    const fan = fanPositions(markers, map.getZoom())
+    // Recompute on zoom while any spot is shared, also when it does not fan yet.
+    this.fanActive = markers.some((m, i) => markers.some((o, j) => j > i && metersApart(m.position, o.position) < FAN_METERS))
     const free: GeoJSON.Feature[] = []
     for (const m of markers) {
       const position = fan.get(m.id) ?? m.position

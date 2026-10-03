@@ -232,8 +232,10 @@ def kimi(auftrag, sitzung=None):
             sitzung_gemeldet = True
     # Das Kontingent ist der häufigste Grund für Stille (01.10.2026 zweimal,
     # einmal ganz ohne Meldung). Klar sagen, damit niemand am Code zweifelt.
+    # Nur wenn keine Antwort kam: Eine fertige Prüfung gilt, auch wenn
+    # unterwegs eine Fehlerzeile mit 403 auftauchte (Kimi, 03.10.2026).
     fehlerzeilen = [z for z in (r.stdout + r.stderr).splitlines() if z.startswith("error:")]
-    if any("usage limit" in z or "403" in z for z in fehlerzeilen):
+    if not antworten and any("usage limit" in z or "403" in z for z in fehlerzeilen):
         sys.exit("Kimi-Kontingent erschöpft (Limit je 5 Stunden oder je Woche). Später erneut, "
                  "oder Timo entscheidet über ausliefer-tor.py --ohne-kimi \"Grund\".\n"
                  + "\n".join(fehlerzeilen)[:300])

@@ -26,7 +26,7 @@ type Schreiber = {
 export function ProjektEntwurfHost({ beispielwelt }: { beispielwelt: boolean }) {
   const [fragment, setFragment] = useState<string | null>(beimStart)
   const connector = useConnector() as unknown as Schreiber
-  const { data: groups } = useGroups()
+  const { data: groups, isLoading: spacesLaden } = useGroups()
   const { data: ich } = useCurrentUser()
   const { scope } = useParams()
   const navigate = useNavigate()
@@ -74,6 +74,7 @@ export function ProjektEntwurfHost({ beispielwelt }: { beispielwelt: boolean }) 
       <ProjektEntwurfDialog
         fragment={fragment}
         spaces={spaces}
+        spacesLaden={spacesLaden}
         startSpace={scope}
         beispielwelt={beispielwelt}
         bildUrl={bildUrl}

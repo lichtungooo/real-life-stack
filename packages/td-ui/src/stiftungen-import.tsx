@@ -21,7 +21,7 @@ import type { DataInterface, CreateItemInput, Item } from "@real-life-stack/data
 
 export type ImportStand =
   | { art: "ruht" }
-  | { art: "fragt"; anzahl: number; vorhanden: number; reste: number }
+  | { art: "fragt"; anzahl: number; vorhanden: number; reste: number; resteOrte?: string[] }
   | { art: "laeuft"; fertig: number; gesamt: number }
   | { art: "fertig"; geschrieben: number; uebersprungen: number; entfernt: number }
   | { art: "fehler"; text: string }
@@ -65,6 +65,10 @@ const AUFTRITT = ["bild", "hausfarbe", "akzent", "kurz", "zweck", "zielgruppen",
  * im Space lag, schrumpfte so auf Symbol, Ort und Anschrift, ohne Namen. Der
  * nächste Lauf fand sie am Namen nicht mehr und schrieb sie neu. Übrig bleibt
  * ein Ort ohne Namen, dessen Felder alle aus dem Nachtrag stammen.
+ *
+ * Und er trägt das Symbol unserer Stiftungen (`icon: "hands"`): Ein fremder
+ * Ort ohne Titel, nur mit Position und Farbe, ist kein Rest und bleibt
+ * (Kimi, 03.10.2026, kritisch).
  */
 export function stiftungsReste<I extends { id: string; type?: string; data?: unknown }>(items: readonly I[]): I[] {
   const erlaubt = new Set<string>([...NACHZUG, "color"])
@@ -73,7 +77,7 @@ export function stiftungsReste<I extends { id: string; type?: string; data?: unk
     const d = (i.data ?? {}) as Record<string, unknown>
     const titel = typeof d.title === "string" ? d.title.trim() : ""
     const felder = Object.keys(d)
-    return titel === "" && felder.length > 0 && felder.every((k) => erlaubt.has(k))
+    return titel === "" && d.icon === "hands" && felder.every((k) => erlaubt.has(k))
   })
 }
 
@@ -248,10 +252,16 @@ export function StiftungenImport({
       Promise.all([stiftungen(), connector ? orteImSpace(connector, zielId).catch(() => [] as Item[]) : Promise.resolve([] as Item[])])
         .then(([liste, orte]) => {
           if (lauf.current !== meins) return
-          const reste = stiftungsReste(orte).length
+          const gefunden = stiftungsReste(orte)
+          const reste = gefunden.length
+          // Was gelöscht wird, sieht der Mensch vorher (Kimi, 03.10.2026).
+          const resteOrte = gefunden.map((r) => {
+            const d = (r.data ?? {}) as { address?: unknown; sitz?: unknown }
+            return typeof d.address === "string" && d.address.trim() ? d.address.trim() : typeof d.sitz === "string" && d.sitz.trim() ? d.sitz.trim() : "ohne Anschrift"
+          })
           const titel = new Set(liste.map((i) => String((i.data as { title?: string })?.title ?? "")))
           const vorhanden = orte.filter((o) => titel.has(String((o.data as { title?: string })?.title ?? ""))).length
-          setStand({ art: "fragt", anzahl: liste.length, vorhanden, reste })
+          setStand({ art: "fragt", anzahl: liste.length, vorhanden, reste, resteOrte })
         })
         .catch(() => { if (lauf.current === meins) setStand({ art: "fehler", text: "Die Daten ließen sich nicht laden. Seite neu laden und noch einmal versuchen." }) })
     }
@@ -279,9 +289,14 @@ export function StiftungenImport({
             </p>
             {stand.reste > 0 && (
               <p className="mt-2 rounded-md bg-amber-50/70 p-2 text-sm dark:bg-amber-950/40">
-                {stand.reste} namenlose Reste aus einem früheren Lauf gefunden: Orte nur mit Symbol und
-                Anschrift, ohne Namen. Sie werden entfernt; die Stiftungen selbst werden vollständig
-                geschrieben.
+                {stand.reste} namenlose Reste aus einem früheren Lauf gefunden: Orte nur mit dem
+                Stiftungs-Symbol und Anschrift, ohne Namen. Sie werden entfernt; die Stiftungen selbst
+                werden vollständig geschrieben.
+                {stand.resteOrte && stand.resteOrte.length > 0 && (
+                  <span className="mt-1 block max-h-28 overflow-y-auto text-xs text-muted-foreground">
+                    {stand.resteOrte.slice(0, 50).join(" · ")}{stand.resteOrte.length > 50 ? ` · und ${stand.resteOrte.length - 50} weitere` : ""}
+                  </span>
+                )}
               </p>
             )}
             <div className="mt-5 flex justify-end gap-2">

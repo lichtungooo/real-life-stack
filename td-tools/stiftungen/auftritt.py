@@ -56,7 +56,8 @@ STICHWORTE = re.compile(r"(über|ueber|about|wir|stiftung|förder|foerder|antrag
 
 _letzter: dict[str, float] = {}
 _sperre = threading.Lock()
-_robots: dict[str, urllib.robotparser.RobotFileParser | None] = {}
+# None: keine robots.txt (erlaubt); False: nicht abrufbar (lieber nicht holen).
+_robots: dict[str, urllib.robotparser.RobotFileParser | None | bool] = {}
 
 
 def _takt(host: str) -> None:
@@ -89,9 +90,15 @@ def _darf(url: str) -> bool:
                 inhalt = roh.decode("utf-8", "replace") if "text/plain" in typ else ""
             rp.parse(inhalt.splitlines())
             _robots[basis] = rp
+        except urllib.error.HTTPError as e:
+            # Nur „gibt es nicht“ heißt erlaubt; jeder andere Fehler: lieber
+            # nicht abrufen (Kimi, 03.10.2026).
+            _robots[basis] = None if e.code in (404, 410) else False
         except Exception:
-            _robots[basis] = None  # keine robots.txt: erlaubt
+            _robots[basis] = False
     rp = _robots[basis]
+    if rp is False:
+        return False
     return True if rp is None else rp.can_fetch(AGENT, url)
 
 
@@ -141,7 +148,7 @@ def _curl(url: str, grenze: int) -> tuple[str, bytes, str]:
 def holen_roh(url: str, grenze: int = 3_000_000) -> tuple[str, bytes, str]:
     url = _iri(url)
     if not _darf(url):
-        raise PermissionError(f"robots.txt verbietet {url}")
+        raise PermissionError(f"robots.txt verbietet {url} oder war nicht abrufbar")
     _takt(urllib.parse.urlsplit(url).netloc)
     req = urllib.request.Request(url, headers={"User-Agent": AGENT, "Accept-Language": "de"})
     try:
@@ -559,7 +566,16 @@ def _logo_ablegen(sid: str, datei: str) -> str | None:
         # Nur Zeichnung: keine Skripte, keine Verweise nach außen.
         t = re.sub(r"(?is)<script\b.*?</script>", "", t)
         t = re.sub(r'\s(on\w+)=["\'][^"\']*["\']', "", t)
+        t = re.sub(r"(?i)\s(on\w+)\s*=\s*[^\s>\"']+", "", t)
         t = re.sub(r'(?i)(xlink:)?href=["\'](https?:|//)[^"\']*["\']', "", t)
+        # Verweise nur innerhalb der Datei (#…) oder eingebettete Rasterbilder;
+        # alles andere fort (Kimi, 03.10.2026).
+        erlaubt = r"(?!#|data:image/(?:png|jpe?g|gif|webp)[;,])"
+        t = re.sub(rf'(?i)\s(xlink:)?href\s*=\s*("{erlaubt}[^"]*"|\'{erlaubt}[^\']*\')', "", t)
+        t = re.sub(r"(?is)<foreignObject\b.*?</foreignObject>", "", t)
+        if re.search(r"(?i)javascript:|@import|xml-stylesheet|url\(\s*[\"']?\s*(https?:|//|data:|javascript:)", t):
+            print(f"{sid}: SVG trägt aktive Inhalte oder fremde Verweise, Logo weggelassen")
+            return None
         t = _svg_heil(t)
         if t is None:
             print(f"{sid}: SVG lässt sich nicht lesen, Logo weggelassen")

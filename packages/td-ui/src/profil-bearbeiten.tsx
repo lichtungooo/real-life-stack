@@ -61,13 +61,18 @@ export function useProfilBearbeiten(felder: readonly EingabeFeld[], b: ProfilBea
   const [an, setAn] = useState(false)
   const [offen, setOffen] = useState<string | null>(null)
   const [arbeit, setArbeit] = useState<Roh>({})
-  const [gespeichert, setGespeichert] = useState<Roh | null>(null)
+  // Das zuletzt Gespeicherte roh, Daten und Eintrag getrennt: In die Basis
+  // des nächsten Speicherns gehört nur `data`, nie die für die Vorschau
+  // eingemischten Felder am Eintrag (Kimi, 03.10.2026: sonst landete `tags`
+  // nach schnellem Zweitspeichern in `data`).
+  const [zuletzt, setZuletzt] = useState<{ data: Roh; eintrag: Roh | undefined } | null>(null)
   const [laeuft, setLaeuft] = useState(false)
   const [fehler, setFehler] = useState<string | null>(null)
 
   // Kommen neue Daten aus der App, gilt wieder das Gespeicherte von dort.
-  useEffect(() => setGespeichert(null), [b?.daten])
+  useEffect(() => setZuletzt(null), [b?.daten])
 
+  const gespeichert = useMemo(() => (zuletzt ? arbeitskopie(felder, zuletzt.data, zuletzt.eintrag) : null), [zuletzt, felder])
   const stand = gespeichert ?? (b ? arbeitskopie(felder, b.daten, b.eintrag) : null)
 
   const kontext: Bearbeiten | null = b ? {
@@ -88,13 +93,13 @@ export function useProfilBearbeiten(felder: readonly EingabeFeld[], b: ProfilBea
       if (!offen || laeuft) return
       // Die aktuellen Daten aus der App, nicht die vom Öffnen: Was andere
       // inzwischen in anderen Abschnitten geschrieben haben, bleibt.
-      const basis = gespeichert ?? b.daten
+      const basis = zuletzt?.data ?? b.daten
       const { data, eintrag } = abschnittSpeichern(felder, offen, basis, arbeit)
       setLaeuft(true)
       setFehler(null)
       b.speichern({ data, ...eintrag })
         .then(() => {
-          setGespeichert(arbeitskopie(felder, data, Object.keys(eintrag).length ? eintrag : b.eintrag))
+          setZuletzt({ data, eintrag: Object.keys(eintrag).length ? eintrag : (zuletzt?.eintrag ?? b.eintrag) })
           setOffen(null)
         })
         .catch((e: unknown) => setFehler(e instanceof Error ? e.message : String(e)))

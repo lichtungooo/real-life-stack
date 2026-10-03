@@ -199,6 +199,10 @@ describe("Namenlose Reste aus einem früheren Lauf (Kimi, 02.10.2026, kritisch)"
       { id: "fremder-ort", type: "place", data: { beschreibung: "Ein Garten ohne Titel" } },
       { id: "leer", type: "place", data: {} },
       { id: "aufgabe", type: "task", data: { icon: "hands" } },
+      // Kimi, 03.10.2026, kritisch: fremde Orte ohne Titel bleiben, auch mit Feldern aus der Nachtrag-Menge.
+      { id: "fremd-position", type: "place", data: { position: { type: "Point", coordinates: [9, 51] }, color: "#ff0000" } },
+      { id: "fremd-website", type: "place", data: { website: "https://garten.de" } },
+      { id: "fremd-anderes-symbol", type: "place", data: { icon: "tree", address: "Weg 1" } },
     ])
     expect(reste.map((r) => r.id)).toEqual(["rest-1", "rest-2"])
   })

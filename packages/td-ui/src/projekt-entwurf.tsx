@@ -26,6 +26,8 @@ export interface ProjektEntwurfDialogProps {
   /** `location.hash`, mit oder ohne `#`. */
   fragment: string
   spaces: readonly EntwurfSpace[]
+  /** Die Spaces laden noch: kein „noch in keinem Space“, solange das gilt (Kimi, 03.10.2026). */
+  spacesLaden?: boolean
   /** Vorgewählter Space, etwa der offene. */
   startSpace?: string
   /** Demo: gespeichert wird nur im eigenen Browser. */
@@ -117,7 +119,9 @@ export function ProjektEntwurfDialog(p: ProjektEntwurfDialogProps) {
                 )}
               </section>
 
-              {p.spaces.length === 0 ? (
+              {p.spaces.length === 0 && p.spacesLaden ? (
+                <p className="rounded-2xl bg-muted/50 p-4 text-sm text-muted-foreground">Deine Spaces werden geladen …</p>
+              ) : p.spaces.length === 0 ? (
                 <p className="rounded-2xl bg-amber-50/70 p-4 text-sm dark:bg-amber-950/40">Du bist noch in keinem Space. Lege zuerst einen an oder tritt einem bei, dann öffne den Link noch einmal.</p>
               ) : (
                 <section className="flex flex-col gap-3 rounded-2xl bg-emerald-50/60 p-4 text-sm dark:bg-emerald-950/40" aria-label="Anlegen">
