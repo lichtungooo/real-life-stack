@@ -795,6 +795,14 @@ export function AuthGate({ connector, wot, children }: { connector: DataInterfac
         </div>
       }
     >
+      {/* Demo und Login getrennt (Timo, 03.10.2026): Hat die Instanz eine
+          Demo, führt ein Link zurück; ein Neuladen bleibt im Login. */}
+      {getRuntimeConfig().defaultConnector === "local" && (
+        <a href={`${import.meta.env.BASE_URL.replace(/\/+$/, "")}/?connector=local`}
+          className="fixed left-4 top-4 z-50 rounded-full bg-background/90 px-3 py-1.5 text-sm text-muted-foreground shadow-sm hover:text-foreground">
+          ← Zu den Beispieldaten
+        </a>
+      )}
       <LazyDIDAuthScreen
         connector={connector as unknown as import("@real-life-stack/wot-connector").WotConnector}
         onAuthenticated={() => setAuthenticated(true)}
