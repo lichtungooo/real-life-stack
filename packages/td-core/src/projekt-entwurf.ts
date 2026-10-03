@@ -11,7 +11,7 @@
 // `projektProfil()`.
 
 import { projektProfil } from "./projekt-profil.js"
-import type { EingabeFeld, EingabeForm } from "./profil-felder.js"
+import { schlagworte, type EingabeFeld, type EingabeForm } from "./profil-felder.js"
 
 /** Die Formen und Felder kommen aus `profil-felder.ts`; die alten Namen bleiben für den MCP-Server. */
 export type EntwurfForm = EingabeForm
@@ -105,8 +105,8 @@ export function projektEntwurfPruefen(roh: unknown): EntwurfBericht {
   const verworfen: string[] = []
   if (!objekt(roh)) verworfen.push("Der Entwurf ist kein Objekt mit Feldern.")
 
-  const tagsRoh = liste(d.tags)
-  const tags = [...new Set(tagsRoh.map(text).filter((t): t is string => t !== null).map((t) => t.replace(/^#/, "")))]
+  // Eine Stelle für Schlagworte (Kimi, 03.10.2026): ohne Raute, ohne Leere, ohne Doppelte.
+  const tags = schlagworte(d.tags)
   const p = projektProfil(d, [])
 
   const daten: Roh = {}

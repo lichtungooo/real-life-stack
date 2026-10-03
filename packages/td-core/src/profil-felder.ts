@@ -233,5 +233,5 @@ export function arbeitskopie(felder: readonly EingabeFeld[], daten: Roh | null |
 
 /** Schlagworte wie bei `Item.tags`: ohne Raute, ohne Doppelte. */
 export function schlagworte(v: unknown): string[] {
-  return [...new Set(liste(v).map(text).filter((t): t is string => t !== null).map((t) => t.replace(/^#/, "")).filter(Boolean))]
+  return [...new Set(liste(v).map(text).filter((t): t is string => t !== null).map((t) => t.replace(/^#+/, "").trim()).filter(Boolean))]
 }

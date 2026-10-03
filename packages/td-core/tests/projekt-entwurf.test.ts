@@ -71,6 +71,8 @@ describe("Prüfen", () => {
     const b = projektEntwurfPruefen({ title: "X", tags: ["#Garten", "Garten", "Kinder", 3] })
     expect(b.entwurf.tags).toEqual(["Garten", "Kinder"])
     expect(b.entwurf.daten.tags).toBeUndefined()
+    // Kimi, 03.10.2026: eine Raute allein ergibt kein leeres Schlagwort.
+    expect(projektEntwurfPruefen({ title: "X", tags: ["#", "##Werkstatt", " # "] }).entwurf.tags).toEqual(["Werkstatt"])
   })
 
   it("kaputter Entwurf wirft nicht", () => {
