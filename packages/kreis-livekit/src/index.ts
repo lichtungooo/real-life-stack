@@ -128,6 +128,11 @@ export function liveKitKreisRaum(optionen: LiveKitRaumOptionen = KREIS_WIR_OOO):
   // einen zweiten Raum, waehrend der alte noch trennt (Pruefkreis Kimi,
   // 02.10.2026, Befund 2).
   let verlasst: Promise<void> | null = null
+  // Jedes "gehen" zaehlt eine Runde weiter. Ein Beitritt merkt sich die Runde
+  // beim Einstieg und bricht ab, sobald sie sich nach einem Warten geaendert
+  // hat: sonst ginge ein "gehen" waehrend des Wartens verloren, und man saesse
+  // mit Mikrofon im Raum (Pruefkreis Kimi, 03.10.2026, Befund 1).
+  let zyklus = 0
 
   // Jeder Empfaenger fuer sich: Wirft einer, bekommen die uebrigen die
   // Nachricht trotzdem, und der Fehler bleibt sichtbar (Pruefkreis Kimi,
@@ -142,7 +147,7 @@ export function liveKitKreisRaum(optionen: LiveKitRaumOptionen = KREIS_WIR_OOO):
     }
   }
 
-  async function betretenEinmal(raumName: string, name: string): Promise<void> {
+  async function betretenEinmal(raumName: string, name: string, mein: number): Promise<void> {
     abgerissen = false
     gewollt = false
     const zugang = await json<{ moderator: string }>(
@@ -156,7 +161,7 @@ export function liveKitKreisRaum(optionen: LiveKitRaumOptionen = KREIS_WIR_OOO):
     const { token } = await json<{ token: string }>(adresse.toString(), "Das Zutritts-Token zu holen")
     // Hat jemand "gehen" gesagt, waehrend der Beitritt lief? Dann nicht weiter
     // (Pruefkreis Kimi, 01.10.2026, zweite Runde: sonst ungewollt drin, Mikro an).
-    if (gewollt) return
+    if (gewollt || zyklus !== mein) return
 
     const { Room: RaumKlasse, RoomEvent, VideoPresets } = await ladeLiveKit()
     // Leistung (Timo, 01.10.2026: "wir brauchen die volle Performance").
@@ -205,7 +210,7 @@ export function liveKitKreisRaum(optionen: LiveKitRaumOptionen = KREIS_WIR_OOO):
       await r.disconnect().catch(() => {})
       throw e
     }
-    if (gewollt) { await r.disconnect().catch(() => {}); return }
+    if (gewollt || zyklus !== mein) { await r.disconnect().catch(() => {}); return }
     raum = r
     zugangsToken = token
     if (optionen.mikroBeimBetreten ?? true) {
@@ -225,12 +230,15 @@ export function liveKitKreisRaum(optionen: LiveKitRaumOptionen = KREIS_WIR_OOO):
     // Befund 1): Ging jemand, waehrend ein Beitritt lief, wartet ein neuer
     // Beitritt, bis der alte abgebrochen ist, und beginnt dann selbst.
     async betreten(raumName, name) {
+      const mein = zyklus
       if (verlasst) await verlasst.catch(() => {})
+      if (zyklus !== mein) return
       if (betritt && !gewollt) return betritt
       if (betritt) await betritt.catch(() => {})
+      if (zyklus !== mein) return
       if (raum) return
       if (betritt) return betritt
-      const lauf: Promise<void> = betretenEinmal(raumName, name).finally(() => {
+      const lauf: Promise<void> = betretenEinmal(raumName, name, mein).finally(() => {
         if (betritt === lauf) betritt = null
       })
       betritt = lauf
@@ -239,6 +247,7 @@ export function liveKitKreisRaum(optionen: LiveKitRaumOptionen = KREIS_WIR_OOO):
 
     async verlassen() {
       const r = raum
+      zyklus++
       gewollt = true
       abgerissen = false
       raum = null

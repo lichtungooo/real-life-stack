@@ -4,7 +4,7 @@
  * Ort, statt kilometerweit verstreut zu werden (Kimi, 03.10.2026).
  */
 import { describe, expect, it } from "vitest"
-import { fanPositions } from "../src/components/map/adapters/maplibre"
+import { fanPositions, sameSpotGroups } from "../src/components/map/adapters/maplibre"
 
 const kassel: [number, number] = [9.4932, 51.3162]
 const marker = (id: string, position: [number, number]) => ({ id, position }) as never
@@ -38,5 +38,18 @@ describe("Fächer für Marker am selben Ort", () => {
 
   it("Marker an verschiedenen Orten fächern nie", () => {
     expect(fanPositions([marker("a", kassel), marker("b", [9.6, 51.4])], 18).size).toBe(0)
+  })
+
+  it("ein geteilter Ort zählt auch dann, wenn er weit herausgezoomt noch nicht fächert", () => {
+    const zwei = [marker("a", kassel), marker("b", [kassel[0] + 0.0001, kassel[1]]), marker("c", [9.6, 51.4])]
+    const gruppen = sameSpotGroups(zwei)
+    expect(gruppen.map((g) => g.length)).toEqual([2, 1])
+    expect(gruppen.some((g) => g.length > 1)).toBe(true)
+    expect(fanPositions(zwei, 5, gruppen).size).toBe(0)
+    expect(fanPositions(zwei, 18, gruppen)).toEqual(fanPositions(zwei, 18))
+  })
+
+  it("lauter verschiedene Orte: kein geteilter Ort", () => {
+    expect(sameSpotGroups([marker("a", kassel), marker("b", [9.6, 51.4])]).every((g) => g.length === 1)).toBe(true)
   })
 })

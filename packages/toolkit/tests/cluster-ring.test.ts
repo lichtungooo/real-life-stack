@@ -4,7 +4,7 @@
  * (Timo, 03.10.2026).
  */
 import { describe, expect, it } from "vitest"
-import { clusterRingShares } from "../src/components/map/adapters/maplibre"
+import { clusterRingShares, evictOldest } from "../src/components/map/adapters/maplibre"
 
 describe("Ring je Art um einen Sammelpunkt", () => {
   it("nur Stiftungen: ein einfarbiger Ring", () => {
@@ -29,5 +29,25 @@ describe("Ring je Art um einen Sammelpunkt", () => {
     expect(clusterRingShares("")).toEqual([])
     expect(clusterRingShares(undefined)).toEqual([])
     expect(clusterRingShares(";;;")).toEqual([])
+  })
+})
+
+describe("Ring-Bilder bleiben gedeckelt (Prüfkreis Kimi, 03.10.2026, Befund 3)", () => {
+  it("über der Grenze gehen die ältesten zuerst", () => {
+    const ids = new Set(["rls-ring:a", "rls-ring:b", "rls-ring:c", "rls-ring:d"])
+    expect(evictOldest(ids, 2)).toEqual(["rls-ring:a", "rls-ring:b"])
+    expect([...ids]).toEqual(["rls-ring:c", "rls-ring:d"])
+  })
+
+  it("unter der Grenze bleibt alles", () => {
+    const ids = new Set(["rls-ring:a"])
+    expect(evictOldest(ids, 200)).toEqual([])
+    expect(ids.size).toBe(1)
+  })
+
+  it("bei 201 Bildern fällt genau das erste heraus", () => {
+    const ids = new Set(Array.from({ length: 201 }, (_, i) => `rls-ring:${i}`))
+    expect(evictOldest(ids, 200)).toEqual(["rls-ring:0"])
+    expect(ids.size).toBe(200)
   })
 })

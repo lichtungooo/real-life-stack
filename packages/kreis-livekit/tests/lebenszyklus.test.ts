@@ -107,6 +107,51 @@ describe("Beitreten, während der alte Raum noch trennt (Befund 2)", () => {
   })
 })
 
+describe("Gehen, während ein Beitritt auf das Trennen wartet (Prüfkreis Kimi, 03.10.2026, Befund 1)", () => {
+  it("wer erneut geht, bevor das alte Trennen fertig ist, bleibt draußen und ohne Mikrofon", async () => {
+    const k = liveKitKreisRaum(optionen)
+    const a = k.betreten("raum-a", "Anna")
+    await warten(); await warten()
+    raeume[0].verbinden.loesen()
+    await a
+    const gehen = k.verlassen()
+    const neu = k.betreten("raum-a", "Anna")
+    const nochmalGehen = k.verlassen()
+    await warten(); await warten()
+    raeume[0].trennen.loesen()
+    await Promise.all([gehen, nochmalGehen])
+    await warten(); await warten()
+    // Öffnet der wartende Beitritt doch einen Raum, darf er ihn verbinden.
+    for (const r of raeume.slice(1)) r.verbinden.loesen()
+    await neu
+    await warten(); await warten()
+    expect(raeume.filter((r) => r.verbunden && !r.getrennt)).toHaveLength(0)
+    expect(raeume.slice(1).every((r) => r.localParticipant.setMicrophoneEnabled.mock.calls.length === 0)).toBe(true)
+    expect(k.ich()).toBeNull()
+  })
+
+  it("geht jemand, während der neue Raum verbindet, wird er sofort wieder getrennt", async () => {
+    const k = liveKitKreisRaum(optionen)
+    const a = k.betreten("raum-a", "Anna")
+    await warten(); await warten()
+    raeume[0].verbinden.loesen()
+    await a
+    const gehen = k.verlassen()
+    const neu = k.betreten("raum-a", "Anna")
+    raeume[0].trennen.loesen()
+    await gehen
+    await warten(); await warten()
+    expect(raeume).toHaveLength(2)
+    await k.verlassen()
+    raeume[1].trennen.loesen()
+    raeume[1].verbinden.loesen()
+    await neu
+    expect(raeume[1].getrennt).toBe(true)
+    expect(raeume[1].localParticipant.setMicrophoneEnabled).not.toHaveBeenCalled()
+    expect(k.ich()).toBeNull()
+  })
+})
+
 describe("Nachrichten (Befund 3)", () => {
   it("wirft ein Empfänger, bekommen die übrigen die Nachricht trotzdem", async () => {
     const warnung = vi.spyOn(console, "warn").mockImplementation(() => {})

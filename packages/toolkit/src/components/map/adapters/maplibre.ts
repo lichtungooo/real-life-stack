@@ -109,16 +109,29 @@ const FAN_METERS = 40
 const FAN_MAX_METERS = 250
 
 /**
- * NAHT trustdonation (A-Cluster): where markers on one spot sit on their fan
- * ring at this zoom. Pure, so it can be tested; empty when nothing fans out.
+ * NAHT trustdonation (A-Cluster): markers closer than FAN_METERS, grouped by
+ * spot. Pure; a group of two or more is a shared spot.
  */
-export function fanPositions(markers: readonly MapMarkerSpec[], zoom: number): Map<string, LngLat> {
+export function sameSpotGroups(markers: readonly MapMarkerSpec[]): MapMarkerSpec[][] {
   const sameSpot: MapMarkerSpec[][] = []
   for (const m of markers) {
     const near = sameSpot.find((g) => metersApart(g[0].position, m.position) < FAN_METERS)
     if (near) near.push(m)
     else sameSpot.push([m])
   }
+  return sameSpot
+}
+
+/**
+ * NAHT trustdonation (A-Cluster): where markers on one spot sit on their fan
+ * ring at this zoom. Pure, so it can be tested; empty when nothing fans out.
+ * Pass `sameSpot` when the groups are already known, to group only once.
+ */
+export function fanPositions(
+  markers: readonly MapMarkerSpec[],
+  zoom: number,
+  sameSpot: readonly MapMarkerSpec[][] = sameSpotGroups(markers),
+): Map<string, LngLat> {
   const fan = new Map<string, LngLat>()
   for (const group of sameSpot) {
     if (group.length < 2) continue
@@ -285,6 +298,23 @@ const CLUSTER_COLOR_PROPERTIES = {
 const CLUSTER_RING_LAYER = "rls-marker-cluster-ring"
 const CLUSTER_RING_PREFIX = "rls-ring:"
 const CLUSTER_RING_REST = "#9ca3af"
+/** NAHT trustdonation (A-Cluster, Ring): at most this many ring images stay in the style. */
+const CLUSTER_RING_MAX = 200
+
+/**
+ * NAHT trustdonation (A-Cluster, Ring): drop the oldest ids until at most `max`
+ * remain; returns the dropped ones (a Set keeps insertion order). Pure apart
+ * from the Set it trims, so it can be tested.
+ */
+export function evictOldest(ids: Set<string>, max: number): string[] {
+  const dropped: string[] = []
+  for (const id of ids) {
+    if (ids.size - dropped.length <= max) break
+    dropped.push(id)
+  }
+  for (const id of dropped) ids.delete(id)
+  return dropped
+}
 
 /**
  * NAHT trustdonation (A-Cluster, Ring): the shares of the leaf colours in a
@@ -382,6 +412,8 @@ export class MapLibreMapAdapter implements MapAdapter, GlobeCapable, ClusterCapa
    */
   private userPosition: UserPosition | null = null
   private addedImages = new Set<string>()
+  /** NAHT trustdonation (A-Cluster, Ring): ring images we added, oldest first. */
+  private ringImages = new Set<string>()
   private markersVersion = 0
   // Clustering config (null = off). Read when the source is created; a radius/
   // on-off change rebuilds the source (`lastMarkers` re-applies data then). The
@@ -613,6 +645,7 @@ export class MapLibreMapAdapter implements MapAdapter, GlobeCapable, ClusterCapa
       // in between.
       this.markerLayersReady = false
       this.addedImages.clear()
+      this.ringImages.clear()
       this.renderedMarkers.clear()
       // Projection is a style property, so it reset along with the style.
       map.setProjection({ type: this.currentProjection })
@@ -654,6 +687,7 @@ export class MapLibreMapAdapter implements MapAdapter, GlobeCapable, ClusterCapa
     this.markerLayersReady = false
     this.markerEventsWired = false
     this.addedImages.clear()
+    this.ringImages.clear()
     this.renderedMarkers.clear()
     this.lastMarkers = []
     // Auch die Ortung endet mit der Karte: Der gehaltene Standort gehoert
@@ -723,9 +757,10 @@ export class MapLibreMapAdapter implements MapAdapter, GlobeCapable, ClusterCapa
     // in Kassel sitzen sechs Stiftungen im selben Haus).
     // The spot itself moves, not the image: glow and pin stay together, and
     // MapLibre keeps no arrays in feature properties.
-    const fan = fanPositions(markers, map.getZoom())
+    const sameSpot = sameSpotGroups(markers)
+    const fan = fanPositions(markers, map.getZoom(), sameSpot)
     // Recompute on zoom while any spot is shared, also when it does not fan yet.
-    this.fanActive = markers.some((m, i) => markers.some((o, j) => j > i && metersApart(m.position, o.position) < FAN_METERS))
+    this.fanActive = sameSpot.some((g) => g.length > 1)
     const free: GeoJSON.Feature[] = []
     for (const m of markers) {
       const position = fan.get(m.id) ?? m.position
@@ -973,7 +1008,14 @@ export class MapLibreMapAdapter implements MapAdapter, GlobeCapable, ClusterCapa
     map.on("styleimagemissing", (e: { id: string }) => {
       if (!e.id.startsWith(CLUSTER_RING_PREFIX) || map.hasImage(e.id)) return
       const image = clusterRingImage(e.id.slice(CLUSTER_RING_PREFIX.length))
-      if (image) map.addImage(e.id, image, { pixelRatio: 2 })
+      if (!image) return
+      map.addImage(e.id, image, { pixelRatio: 2 })
+      // Capped, so a long session over many compositions does not grow the style
+      // without end; an evicted ring still in view is simply drawn again.
+      this.ringImages.add(e.id)
+      for (const id of evictOldest(this.ringImages, CLUSTER_RING_MAX)) {
+        if (map.hasImage(id)) map.removeImage(id)
+      }
     })
     map.on("zoomend", () => {
       if (this.fanActive && this.lastMarkers) this.reapplyMarkersSafely(this.lastMarkers)
@@ -1061,6 +1103,9 @@ export class MapLibreMapAdapter implements MapAdapter, GlobeCapable, ClusterCapa
     if (map.getSource(MARKER_SOURCE)) map.removeSource(MARKER_SOURCE)
     // NAHT trustdonation (A-Cluster)
     if (map.getSource(MARKER_FREE_SOURCE)) map.removeSource(MARKER_FREE_SOURCE)
+    // NAHT trustdonation (A-Cluster, Ring): the ring images go with their layer.
+    for (const id of this.ringImages) if (map.hasImage(id)) map.removeImage(id)
+    this.ringImages.clear()
     this.markerLayersReady = false
     // The new source starts empty → forget what was rendered so the next
     // setMarkers re-adds every feature.
