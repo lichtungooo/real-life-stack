@@ -54,3 +54,16 @@ describe("Profil eines Menschen", () => {
     expect(oeffentlichesProfil(d)).toEqual({ name: "Timo", bio: "Ich baue Netzwerke.", avatar: "https://x.org/t.png" })
   })
 })
+
+describe("Real Life Profil im Space", () => {
+  it("zeigt, was für Kontakte freigegeben ist, nie „Nur ich“", async () => {
+    const { PersonProfilSeite } = await import("@trustdonation/ui/person-profil")
+    zeigen(<PersonProfilSeite daten={{ ...MUSTER_PERSON, telefon: "0561 999", sichtbar: { ...(MUSTER_PERSON.sichtbar as object), telefon: "privat" } }} />)
+    expect(document.body.textContent).toContain("Real Life Profil")
+    expect(document.body.textContent).toContain("Mira Beispiel")
+    expect(document.body.textContent).toContain("Werkzeugspenden")
+    act(() => knopf("Ganzes Profil öffnen")!.click())
+    expect(document.body.textContent).not.toContain("0561 999")
+    expect(document.querySelector('[aria-label="Wer sieht was"]')).toBeNull()
+  })
+})

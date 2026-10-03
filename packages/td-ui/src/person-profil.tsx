@@ -1,5 +1,5 @@
-// Das Profil eines Menschen (DEFINITION 9.1, freigegeben von Timo am
-// 03.10.2026), die Darstellung.
+// Das Real Life Profil, das Profil eines Menschen (DEFINITION 9.1, Name und
+// Freigabe von Timo am 03.10.2026), die Darstellung.
 //
 // Timo: *"Was will ich von mir eintragen? Und was soll die Öffentlichkeit
 // sehen, wenn sie auf mein Profil klicken? Das ist ganz, ganz wichtig."*
@@ -8,10 +8,13 @@
 // Bearbeiten je Abschnitt. Dazu je Angabe eine Stufe (öffentlich, Kontakte,
 // nur ich), ein Umschalter „So sehen mich andere“ und bei jeder Angabe die
 // ehrliche Zeile, wer sie heute wirklich sieht. Gerechnet wird in td-core.
-// Eigener Einstieg `@trustdonation/ui/person-profil`, nachgeladen.
+// Zwei Ansichten wie bei den anderen Komponenten: die Karte für die Leiste
+// (`PersonProfilSeite`) und die ganze Ansicht (`PersonProfilVoll`). Im Space
+// sieht man einen Menschen, wie er für Kontakte freigegeben ist; „Nur ich“
+// sieht nur er selbst. Eigener Einstieg `@trustdonation/ui/person-profil`.
 
 import { useMemo, useState, type ComponentType, type ReactNode } from "react"
-import { Check, Copy, Eye, Globe, HandHeart, Handshake, KeyRound, Link2, Lock, Mail, MapPin, Phone, Search, Sparkles, UserRound, Users, X } from "lucide-react"
+import { Check, Copy, Eye, Globe, HandHeart, Handshake, KeyRound, Link2, Lock, Mail, MapPin, Maximize2, Phone, Search, Sparkles, UserRound, Users, X } from "lucide-react"
 import { Dialog, DialogContent, DialogTitle } from "@real-life-stack/toolkit"
 import {
   NIE_OEFFENTLICH,
@@ -20,6 +23,7 @@ import {
   personProfil,
   sichtbarkeit,
   werSiehtHeute,
+  type PersonAnsicht,
   type Sichtbarkeit,
 } from "@trustdonation/core"
 import { Bearbeitbar, BearbeitenKnopf, BearbeitenRahmen, OffenesFormular, StiftKnopf, useProfilBearbeiten, type ProfilBearbeitung } from "./profil-bearbeiten"
@@ -131,15 +135,17 @@ export interface PersonProfilVollProps {
   profilLink?: string
   /** Ein Hinweis unter dem Kopf, etwa in der Beispielwelt. */
   hinweis?: ReactNode
+  /** Ein fremdes Profil: für wen es rechnet (im Space: Kontakte). */
+  fuer?: PersonAnsicht
 }
 
-export function PersonProfilVoll({ daten, offen, onOffen, bearbeitung, onSichtbarkeit, did, profilLink, hinweis }: PersonProfilVollProps) {
+export function PersonProfilVoll({ daten, offen, onOffen, bearbeitung, onSichtbarkeit, did, profilLink, hinweis, fuer = "kontakte" }: PersonProfilVollProps) {
   const b = useProfilBearbeiten(PERSON_PROFIL_FELDER, bearbeitung)
   const [ansicht, setAnsicht] = useState<"ich" | "andere">("ich")
   const roh = (b.vorschau ?? daten) as Roh
   const eigen = Boolean(bearbeitung || onSichtbarkeit)
   const fuerAndere = ansicht === "andere"
-  const p = useMemo(() => personProfil(roh, fuerAndere ? "oeffentlich" : "ich"), [roh, fuerAndere])
+  const p = useMemo(() => personProfil(roh, eigen ? (fuerAndere ? "oeffentlich" : "ich") : fuer), [roh, fuerAndere, eigen, fuer])
   const stufe = (feld: string) => (eigen && !fuerAndere ? sichtbarkeit(roh, feld) : undefined)
   const initialen = p.name.split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase()
   const kontakt = p.kontakt.website || p.kontakt.mail || p.kontakt.telefon || p.kontakt.links.length > 0
@@ -172,6 +178,7 @@ export function PersonProfilVoll({ daten, offen, onOffen, bearbeitung, onSichtba
                 <StiftKnopf abschnitt="kopf" name="Kopf" className="absolute -right-2 -top-2" />
               </div>
               <div className="min-w-0 flex-1">
+                <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-white/75">Real Life Profil{roh.muster === true ? " · Muster" : ""}</p>
                 <DialogTitle className="text-3xl font-bold tracking-tight sm:text-4xl">{p.name}</DialogTitle>
                 {p.kurz && <p className="mt-2 max-w-2xl text-lg text-white/90">{p.kurz}</p>}
                 {p.ort && <p className="mt-2 flex items-center gap-1.5 text-sm text-white/80"><MapPin className="h-4 w-4" /> {p.ort}</p>}
@@ -234,4 +241,41 @@ export function PersonProfilVoll({ daten, offen, onOffen, bearbeitung, onSichtba
   )
 }
 
-export default PersonProfilVoll
+/**
+ * Die Karte in der Detail-Leiste eines Space: Bild, Name, ein Satz, was er
+ * kann, anbietet und sucht, und der Weg zur ganzen Ansicht. Rohe Daten
+ * hinein; gezeigt wird, was für Kontakte freigegeben ist.
+ */
+export function PersonProfilSeite({ daten, fuer = "kontakte" }: { daten: Roh; fuer?: PersonAnsicht }) {
+  const [voll, setVoll] = useState(false)
+  const p = useMemo(() => personProfil(daten, fuer), [daten, fuer])
+  const initialen = p.name.split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase()
+  return (
+    <article className="flex flex-col gap-4" aria-label={`Real Life Profil ${p.name}`}>
+      <header className="flex items-center gap-3 rounded-2xl bg-emerald-50/70 p-4 dark:bg-emerald-950/40">
+        {p.bild
+          ? <img src={p.bild} alt="" className="h-16 w-16 rounded-2xl object-cover shadow-md" />
+          : <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-800 to-teal-600 text-xl font-bold text-white shadow-md">{initialen || <UserRound className="h-7 w-7" />}</span>}
+        <div className="min-w-0">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">Real Life Profil{daten.muster === true ? " · Muster" : ""}</p>
+          <p className="truncate text-lg font-semibold leading-tight">{p.name}</p>
+          {p.ort && <p className="flex items-center gap-1 text-sm text-muted-foreground"><MapPin className="h-3.5 w-3.5" />{p.ort}</p>}
+        </div>
+      </header>
+      {p.kurz && <p className="text-sm leading-relaxed">{p.kurz}</p>}
+      {p.kann.length > 0 && <ul className="flex flex-wrap gap-1.5">{p.kann.map((k, i) => <li key={i} className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200">{k}</li>)}</ul>}
+      {p.bietet.length > 0 && <section><Ueberschrift icon={HandHeart}>Bietet an</Ueberschrift><Punkte werte={p.bietet.slice(0, 3)} /></section>}
+      {p.sucht.length > 0 && <section><Ueberschrift icon={Search}>Sucht</Ueberschrift><Punkte werte={p.sucht.slice(0, 3)} /></section>}
+      <button type="button" onClick={() => setVoll(true)}
+        className="flex items-center justify-center gap-2 rounded-xl bg-foreground px-4 py-3 text-sm font-semibold text-background shadow-sm hover:opacity-90">
+        <Maximize2 className="h-4 w-4" /> Ganzes Profil öffnen
+      </button>
+      <PersonProfilVoll daten={daten} offen={voll} onOffen={setVoll} fuer={fuer} />
+    </article>
+  )
+}
+
+/** Der Einstieg für das Typ-Register: rohe Daten hinein. */
+export default function PersonProfilAusDaten({ daten }: { daten: Roh }) {
+  return <PersonProfilSeite daten={daten} />
+}

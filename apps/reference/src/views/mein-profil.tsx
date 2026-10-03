@@ -10,7 +10,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react
 import { hasProfile, type DataInterface, type Item, type User } from "@real-life-stack/data-interface"
 import { MUSTER_PERSON, oeffentlichesProfil, sichtbarkeitSetzen, type Sichtbarkeit } from "@trustdonation/core"
 
-const PersonProfilVoll = lazy(() => import("@trustdonation/ui/person-profil"))
+const PersonProfilVoll = lazy(() => import("@trustdonation/ui/person-profil").then((m) => ({ default: m.PersonProfilVoll })))
 
 type Roh = Record<string, unknown>
 type Schreiber = {

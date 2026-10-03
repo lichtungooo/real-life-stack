@@ -28,7 +28,9 @@ import {
   traegtProjektProfil,
   traegtStiftungsProfil,
   PROJEKT_PROFIL,
+  PERSON_PROFIL,
   STIFTUNGS_PROFIL,
+  traegtPersonProfil,
   darfStiftungBearbeiten,
   uebernahmeAblehnen,
   uebernahmeAnfragen,
@@ -201,4 +203,27 @@ function ProjektOderMeta({ item }: ItemSlotProps) {
 
 registerTypePresentation("trustdonation-projekt-profil", {
   extensions: [{ id: "project", detail: ProjektOderMeta }],
+})
+
+// Das Real Life Profil (DEFINITION 9.1): ein Mensch im Space, wie er für
+// Kontakte freigegeben ist. Eigene Schicht wie beim Project Profile; ohne
+// gewählte Komponente bleibt Antons Darstellung. Keine Naht.
+const PERSON_META: ComponentType<ItemSlotProps> = resolveTypePresentation("person").detail
+const PersonProfilSeite = lazy(() => import("@trustdonation/ui/person-profil"))
+
+function PersonOderMeta({ item }: ItemSlotProps) {
+  const space = useCurrentGroup()
+  const daten = (item.data ?? {}) as Record<string, unknown>
+  if (!komponenteAktiv(space?.data as Record<string, unknown> | undefined, PERSON_PROFIL) || !traegtPersonProfil(daten)) {
+    return PERSON_META ? <PERSON_META item={item} /> : null
+  }
+  return (
+    <Suspense fallback={<div className="h-40 w-full animate-pulse rounded-2xl bg-muted" />}>
+      <PersonProfilSeite key={item.id} daten={daten} />
+    </Suspense>
+  )
+}
+
+registerTypePresentation("trustdonation-real-life-profil", {
+  extensions: [{ id: "person", detail: PersonOderMeta }],
 })

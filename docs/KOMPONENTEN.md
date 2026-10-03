@@ -24,7 +24,7 @@ Jeder Baustein mit eigenem Einstieg wird nachgeladen und belastet den Hauptteil 
 | `opencollective` | der Baustein Open Collective in drei Größen, überall einbindbar | 4f |
 | `begleiter` | Reinsprechen im Begleiter: Mikrofon, Mitschrift wie in Circeling, Weitergabe an den eigenen Agenten | DEFINITION 13.9 |
 | `ki` | Das KI-Modul: Chat in der Mitte, Arbeitsschritte sichtbar, am Ende die Karte mit dem fertigen Profil | DEFINITION 13.10 |
-| `person-profil` | Das Profil eines Menschen mit Sichtbarkeit je Angabe und „So sehen mich andere“ | DEFINITION 9.1 |
+| `person-profil` | **Real Life Profil**, die Komponente für Menschen (`real-life-profil`, Typ `person`): Karte in der Leiste, ganze Ansicht, Sichtbarkeit je Angabe, „So sehen mich andere“ | DEFINITION 9.1 |
 
 ## 1. Was eine Komponente ist
 

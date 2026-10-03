@@ -36,7 +36,8 @@
       ],
       "komponenten": [
         "projekt-profil",
-        "stiftungs-profil"
+        "stiftungs-profil",
+        "real-life-profil"
       ]
     }
   },

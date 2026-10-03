@@ -78,13 +78,21 @@ export interface PersonProfil {
   kennung: string | null
 }
 
+/** Für wen die Seite rechnet: man selbst, Kontakte und Spaces, die Öffentlichkeit. */
+export type PersonAnsicht = "ich" | "kontakte" | "oeffentlich"
+
 /**
  * Das Profil für die Anzeige. `fuer: "oeffentlich"` zeigt nur, was auf
- * „Öffentlich“ steht, so wie andere es sehen sollen.
+ * „Öffentlich“ steht; `fuer: "kontakte"` dazu, was auf „Kontakte“ steht
+ * (so erscheint ein Mensch in einem Space). „Nur ich“ sieht nur er selbst.
  */
-export function personProfil(daten: Roh | null | undefined, fuer: "ich" | "oeffentlich" = "ich"): PersonProfil {
+export function personProfil(daten: Roh | null | undefined, fuer: PersonAnsicht = "ich"): PersonProfil {
   const d = daten ?? {}
-  const zeigt = (feld: string) => fuer === "ich" || sichtbarkeit(d, feld) === "oeffentlich"
+  const zeigt = (feld: string) => {
+    if (fuer === "ich") return true
+    const s = sichtbarkeit(d, feld)
+    return s === "oeffentlich" || (fuer === "kontakte" && s === "kontakte")
+  }
   const nur = <T>(feld: string, wert: T, leer: T): T => (zeigt(feld) ? wert : leer)
   return {
     name: text(d.displayName) ?? text(d.title) ?? "Ohne Namen",
@@ -104,6 +112,11 @@ export function personProfil(daten: Roh | null | undefined, fuer: "ich" | "oeffe
     },
     kennung: text(d.did),
   }
+}
+
+/** Trägt dieser Eintrag ein Profil eines Menschen? Ein Name genügt. */
+export function traegtPersonProfil(daten: Roh | null | undefined): boolean {
+  return Boolean(text(daten?.displayName))
 }
 
 /**

@@ -28,6 +28,8 @@ const ANTON = "Anton Tranelis · Real Life Stack"
 
 /** Die Id der ersten Komponente. */
 export const PROJEKT_PROFIL = "projekt-profil"
+/** Die Id des Real Life Profils, des Profils eines Menschen (DEFINITION 9.1, Name von Timo am 03.10.2026). */
+export const PERSON_PROFIL = "real-life-profil"
 /** Die Id der zweiten Komponente (DEFINITION Teil 8, 02.10.2026). */
 export const STIFTUNGS_PROFIL = "stiftungs-profil"
 
@@ -42,6 +44,7 @@ export const ERWEITERUNGEN: readonly ErweiterungsEintrag[] = [
   { id: "graph", art: "modul", erbauer: ANTON, reife: "geprueft", beschreibung: "Wie Einträge miteinander verbunden sind, als Netz." },
   { id: "video", art: "modul", erbauer: "Timo Martin und Eli · Real Life Network", reife: "beta", beschreibung: "Treffen mit Bild und Ton, Kreis mit Redestab, Zeichenpad, Gruppenräume und Mitschrift auf dem eigenen Server." },
   { id: PROJEKT_PROFIL, art: "komponente", name: "Project Profile", fuerTyp: "project", erbauer: "Timo Martin und Eli · trustdonation", reife: "beta", beschreibung: "Die Seite, mit der sich ein Projekt zeigt: Titelbild, was fehlt, was sich ändert, wohin das Geld geht, Schritte, Team, Kontakt und Spenden über Open Collective." },
+  { id: PERSON_PROFIL, art: "komponente", name: "Real Life Profil", fuerTyp: "person", erbauer: "Timo Martin und Eli · trustdonation", reife: "beta", beschreibung: "Das Profil eines Menschen: wer er ist, was er kann, anbietet und sucht, wo er mitmacht. Je Angabe entscheidet er selbst, wer sie sieht: öffentlich, Kontakte oder nur er." },
   { id: STIFTUNGS_PROFIL, art: "komponente", name: "Stiftungsprofil", fuerTyp: "place", erbauer: "Timo Martin und Eli · trustdonation", reife: "beta", beschreibung: "Die Seite einer Stiftung für Projekte, die Förderung suchen: wie man beantragt, wofür sie fördert, wie viel, wen man anspricht. Wächst mit, wenn die Stiftung ihr Profil übernimmt." },
   { id: "ki", art: "modul", erbauer: "Timo Martin und Eli · trustdonation", reife: "beta", beschreibung: "Ein Chat in der Mitte, in den man reinsprechen kann. Die KI arbeitet mit dem MCP-Server des Space, man sieht jeden Schritt, am Ende steht das fertige Profil zum Speichern." },
   { id: "companion", art: "modul", erbauer: "Eli · trustdonation", reife: "beta", beschreibung: "Eine Begleitung, die die Einträge des Space liest und beim nächsten Schritt hilft." },

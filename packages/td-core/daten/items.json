@@ -303,6 +303,65 @@
   },
   {
     "@context": [
+      "https://real-life-stack.org/vocab/base/v1"
+    ],
+    "id": "person-muster-mira",
+    "type": "person",
+    "createdAt": "2026-10-03T18:00:00.000Z",
+    "createdBy": "timo",
+    "tags": [
+      "Holzbau",
+      "Jugend",
+      "Kassel"
+    ],
+    "data": {
+      "displayName": "Mira Beispiel",
+      "muster": true,
+      "kurz": "Ich baue Werkstätten, in denen Jugendliche ein Handwerk lernen.",
+      "bio": "Gelernte Tischlerin, seit zehn Jahren in der offenen Jugendarbeit.\n\nMich treibt an, dass Hände und Köpfe zusammen wachsen.",
+      "kann": [
+        "Holzbau",
+        "Moderation",
+        "Förderanträge"
+      ],
+      "bietet": [
+        "Werkstattführungen für Schulklassen",
+        "Beratung beim Aufbau einer offenen Werkstatt"
+      ],
+      "sucht": [
+        "Werkzeugspenden",
+        "Menschen, die einmal im Monat mitschrauben"
+      ],
+      "mitmachen": [
+        "Radwerkstatt Nord",
+        "Netzwerk offene Werkstätten"
+      ],
+      "locationName": "Kassel",
+      "position": {
+        "type": "Point",
+        "coordinates": [
+          9.4924,
+          51.3155
+        ]
+      },
+      "website": "https://example.org",
+      "telefon": "0000 000000",
+      "sichtbar": {
+        "displayName": "oeffentlich",
+        "kurz": "oeffentlich",
+        "bio": "oeffentlich",
+        "kann": "oeffentlich",
+        "bietet": "kontakte",
+        "sucht": "kontakte",
+        "mitmachen": "oeffentlich",
+        "locationName": "oeffentlich",
+        "website": "oeffentlich",
+        "telefon": "privat"
+      }
+    }
+  },
+  {
+    "@context": [
       "https://real-life-stack.org/vocab/base/v1",
       "https://real-life-stack.org/vocab/place/v1"
     ],

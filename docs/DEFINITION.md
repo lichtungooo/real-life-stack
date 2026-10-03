@@ -740,7 +740,9 @@ Ein recherchierter Eintrag ist **noch kein Space**. Er ist ein `place`-Item mit 
 
 ---
 
-### 9.1 Das Profil eines Menschen, mit Sichtbarkeit je Angabe (freigegeben von Timo am 03.10.2026)
+### 9.1 Das Real Life Profil: das Profil eines Menschen, mit Sichtbarkeit je Angabe (freigegeben von Timo am 03.10.2026)
+
+**Name:** „Real Life Profil“ (Timo, 03.10.2026: *"Es wird wahrscheinlich ganz viele Profile für Menschen geben. Deswegen müssen wir da einen Namen verpassen."*). Eine Komponente im Verzeichnis (`real-life-profil`, Typ `person`), wählbar je Space wie Project Profile und Stiftungsprofil. Im Space erscheint ein Mensch, wie er für Kontakte freigegeben ist (Öffentlich und Kontakte), nie mit „Nur ich“. Dasselbe Bild öffnet oben rechts „Profil“.
 
 Timo am 03.10.2026: *"Ein Profil, ähnlich wie die anderen Profile auch, nur für einen Menschen, für mich. Wenn ich oben rechts auf mein Account klicke, steht da Profil, und da steht bisher nur der Schlüssel. Bei meinem Profil ist es sehr, sehr wichtig, was ich wirklich freigeben will. Was will ich von mir eintragen, und was soll die Öffentlichkeit sehen, wenn sie auf mein Profil klicken?"*
 

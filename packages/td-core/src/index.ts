@@ -72,6 +72,7 @@ export {
   komponenteAktiv,
   modulSchalten,
   PROJEKT_PROFIL,
+  PERSON_PROFIL,
   STIFTUNGS_PROFIL,
   type Erweiterung,
   type ErweiterungsArt,
@@ -201,6 +202,8 @@ export {
   werSiehtHeute,
   personProfil,
   oeffentlichesProfil,
+  traegtPersonProfil,
+  type PersonAnsicht,
   type Sichtbarkeit,
   type PersonProfil,
 } from "./person-profil.js"
