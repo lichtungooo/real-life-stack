@@ -578,24 +578,46 @@ function KonferenzBeitrittHost() {
   const { data: groups, isLoading } = useGroups()
   const gruppeId = searchParams.get("konferenz")
   const gruppeName = searchParams.get("gruppe") ?? "Konferenz"
-  const mitglied = !!gruppeId && (groups ?? []).some((g) => g.id === gruppeId)
+  const gruppe = gruppeId ? (groups ?? []).find((g) => g.id === gruppeId) : undefined
+  const mitglied = !!gruppe
+  // Führt die Gruppe keine Konferenz, leitete der Weg still auf den Feed um,
+  // und der Eingeladene verstand nicht, warum (Prüfkreis Kimi, 02.10.2026).
+  const ohneKonferenz = !!gruppe && !resolveSpaceModules(gruppe.data?.modules as string[] | undefined).includes("video")
 
   useEffect(() => {
-    if (!gruppeId || !mitglied) return
+    if (!gruppeId || !mitglied || ohneKonferenz) return
     const p = new URLSearchParams(searchParams)
     p.delete("konferenz")
     p.delete("gruppe")
     const rest = p.toString()
     navigate(`/${gruppeId}/video${rest ? `?${rest}` : ""}${location.hash}`, { replace: true })
-  }, [gruppeId, mitglied, searchParams, navigate, location.hash])
+  }, [gruppeId, mitglied, ohneKonferenz, searchParams, navigate, location.hash])
 
-  if (!gruppeId || isLoading || mitglied) return null
   const schliessen = () => {
     const p = new URLSearchParams(searchParams)
     p.delete("konferenz")
     p.delete("gruppe")
     setSearchParams(p)
   }
+  if (gruppeId && ohneKonferenz) {
+    return (
+      <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 p-4">
+        <div role="dialog" aria-label="Keine Konferenz in dieser Gruppe" className="w-full max-w-sm rounded-2xl bg-card p-6 text-card-foreground shadow-xl">
+          <h2 className="text-lg font-semibold">{gruppe?.name ?? gruppeName} führt keine Konferenz</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Die Einladung führt in die Konferenz dieser Gruppe, doch Circeling ist hier nicht eingeschaltet.
+            Wer die Gruppe verwaltet, schaltet es im Space-Dialog unter Erweiterungen ein.
+          </p>
+          <div className="mt-5 flex justify-end gap-2">
+            <button type="button" onClick={schliessen} className="rounded-xl px-4 py-2 text-sm font-medium hover:bg-muted">Schließen</button>
+            <button type="button" onClick={() => { schliessen(); navigate(`/${gruppeId}`) }}
+              className="rounded-xl bg-foreground px-4 py-2 text-sm font-semibold text-background hover:opacity-90">Zur Gruppe</button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+  if (!gruppeId || isLoading || mitglied) return null
   return (
     <div className="fixed inset-0 z-[70] bg-slate-950">
       <Suspense fallback={<div className="flex h-full items-center justify-center text-sm text-slate-400">Einen Moment …</div>}>

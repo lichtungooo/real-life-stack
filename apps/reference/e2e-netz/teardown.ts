@@ -23,7 +23,7 @@ interface ServerState {
   tmpDir: string
 }
 
-async function beenden(pid: number): Promise<void> {
+export async function beenden(pid: number): Promise<void> {
   if (process.platform === "win32") {
     const { spawnSync } = await import("child_process")
     const r = spawnSync("taskkill", ["/PID", String(pid), "/T", "/F"], {

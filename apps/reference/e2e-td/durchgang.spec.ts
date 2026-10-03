@@ -176,10 +176,13 @@ test.describe("E. Die Module", () => {
   })
 
   test("fuehrt die recherchierten Stiftungen als Eintraege", async ({ page }) => {
-    // 234 Stiftungen liegen als place-Items im Netzwerk. Geprüft wird hier
-    // die Liste und nicht die Karte: Die Karte hängt an einem fremden
+    // Die Stiftungen liegen als place-Items im Netzwerk. Geprüft wird hier
+    // der Feed und nicht die Karte: Die Karte hängt an einem fremden
     // Kachel-Dienst, und ein Test, der daran hängt, misst dessen Laune.
-    await appOeffnen(page, `/${TRUSTDONATION}/collection`)
+    // trustdonation führt keine Liste (collection); dorthin leitete die App
+    // still auf den Feed um, der Test hieß also falsch (Kimi, 02.10.2026).
+    await appOeffnen(page, `/${TRUSTDONATION}/feed`)
+    await expect(page).toHaveURL(new RegExp(`/${TRUSTDONATION}/feed`))
     const inhalt = page.locator("main")
     await expect(inhalt).toContainText("Stiftung", { timeout: 30_000 })
 

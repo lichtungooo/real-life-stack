@@ -5,6 +5,7 @@ import { join, dirname } from "path"
 import { fileURLToPath } from "url"
 import { tmpdir } from "os"
 import net from "net"
+import { beenden } from "./teardown"
 
 /**
  * Relay, Profilverzeichnis und Vault hochfahren — auch auf Windows.
@@ -133,7 +134,25 @@ function dienstStarten(
   return kind
 }
 
+/** Antwortet schon jemand auf diesem Port? Dann liefe der Test gegen alte Dienste. */
+function portBelegt(port: number): Promise<boolean> {
+  return new Promise((fertig) => {
+    const s = net.connect(port, "127.0.0.1")
+    s.once("connect", () => { s.destroy(); fertig(true) })
+    s.once("error", () => fertig(false))
+  })
+}
+
 export default async function setup() {
+  // Laufen noch Dienste eines frueheren Laufs, meldete `waitForPort` sofort
+  // Erfolg gegen die alten Prozesse mit alter Datenbank (Pruefkreis Kimi,
+  // 02.10.2026). Dann lieber laut abbrechen.
+  for (const port of [RELAY_PORT, PROFILES_PORT, VAULT_PORT]) {
+    if (await portBelegt(port)) {
+      throw new Error(`[netz] Port ${port} ist schon belegt, vermutlich von einem frueheren Lauf. Erst beenden, dann neu starten.`)
+    }
+  }
+
   const tmpDir = await mkdtemp(join(tmpdir(), "rls-netz-"))
   process.stdout.write(`[netz] Dienste starten (tmp: ${tmpDir})\n`)
 
@@ -153,16 +172,8 @@ export default async function setup() {
     "vault",
   )
 
-  await Promise.all([
-    waitForPort(RELAY_PORT),
-    waitForPort(PROFILES_PORT),
-    waitForPort(VAULT_PORT),
-  ])
-
-  process.stdout.write(
-    `[netz] Dienste bereit (relay ${RELAY_PORT}, profile ${PROFILES_PORT}, vault ${VAULT_PORT})\n`,
-  )
-
+  // Die Zustandsdatei sofort: Bricht das Warten ab, raeumt `teardown` trotzdem
+  // auf, und hier selbst werden die gestarteten Kinder beendet.
   const state: ServerState = {
     relayPid: relay.pid!,
     profilesPid: profiles.pid!,
@@ -170,4 +181,20 @@ export default async function setup() {
     tmpDir,
   }
   await writeFile(STATE_FILE, JSON.stringify(state), "utf8")
+
+  try {
+    await Promise.all([
+      waitForPort(RELAY_PORT),
+      waitForPort(PROFILES_PORT),
+      waitForPort(VAULT_PORT),
+    ])
+  } catch (e) {
+    for (const pid of [relay.pid, profiles.pid, vault.pid]) if (pid) await beenden(pid)
+    throw e
+  }
+
+  process.stdout.write(
+    `[netz] Dienste bereit (relay ${RELAY_PORT}, profile ${PROFILES_PORT}, vault ${VAULT_PORT})\n`,
+  )
+
 }
