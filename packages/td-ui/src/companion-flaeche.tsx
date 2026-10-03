@@ -22,7 +22,7 @@
  * 13.4), und solange sie offen ist, sagt die Flaeche das.
  */
 
-import { useMemo } from "react"
+import { useMemo, type ReactNode } from "react"
 import { Sparkles } from "lucide-react"
 import type { Item } from "@real-life-stack/data-interface"
 import { useItems } from "@real-life-stack/toolkit"
@@ -50,7 +50,7 @@ export const COMPANION_WERKZEUGE: readonly CompanionWerkzeug[] = [
     id: "suche-im-space",
     name: "Im Space suchen",
     beschreibung:
-      "Sieht die Eintraege dieses Space durch und nennt die, die zu einer Frage passen. Liest nur.",
+      "Sieht die Einträge dieses Space durch und nennt die, die zu einer Frage passen. Liest nur.",
     art: "lesend",
   },
 ]
@@ -101,7 +101,12 @@ export function sichtbareWerkzeuge(
   return alle.filter((w) => w.beschreibung.trim().length > 0)
 }
 
-export function CompanionFlaeche(): React.ReactElement {
+/**
+ * `gespraech`: das Reinsprechen (DEFINITION 13.9), von der App hereingereicht,
+ * weil es den Dienst der Mitschrift kennt. Ohne bleibt der Hinweis, dass das
+ * Gespräch fehlt.
+ */
+export function CompanionFlaeche({ gespraech }: { gespraech?: ReactNode } = {}): React.ReactElement {
   const { data: items } = useItems()
   const ueberblick = useMemo(() => ueberblickAus(items ?? []), [items])
   const werkzeuge = sichtbareWerkzeuge()
@@ -113,30 +118,32 @@ export function CompanionFlaeche(): React.ReactElement {
         <div>
           <h2 className="text-lg font-medium">Begleitung</h2>
           <p className="text-sm text-muted-foreground">
-            Eine Begleitung, die die Eintraege dieses Space kennt.
+            Eine Begleitung, die die Einträge dieses Space kennt.
           </p>
         </div>
       </header>
+
+      {gespraech}
 
       {/*
         ⚠ Die sichtbare Degradierung (DEFINITION 13.5, Regel 3).
         Nicht ein Fehler, nicht eine leere Flaeche: der Stand, und warum.
       */}
-      <section
+      {!gespraech && <section
         className="rounded-md border border-dashed p-4 text-sm"
         aria-label="Stand der Anbindung"
       >
-        <p className="font-medium">Das Gespraech fehlt noch.</p>
+        <p className="font-medium">Das Gespräch fehlt noch.</p>
         <p className="mt-1 text-muted-foreground">
-          Woher das Modell kommt, ist noch nicht entschieden. Ein Schluessel im Browser
-          waere ein Schluessel in fremder Hand, darum steht hier keiner. Der Weg, der zum
+          Woher das Modell kommt, ist noch nicht entschieden. Ein Schlüssel im Browser
+          wäre ein Schlüssel in fremder Hand, darum steht hier keiner. Der Weg, der zum
           Rest passt: ein MCP-Server, den dieser Space nennt, und jeder bringt seinen
           eigenen Agenten mit.
         </p>
-      </section>
+      </section>}
 
-      <section aria-label="Was die Begleitung weiss">
-        <h3 className="text-sm font-medium">Was sie ueber diesen Space weiss</h3>
+      <section aria-label="Was die Begleitung weiß">
+        <h3 className="text-sm font-medium">Was sie über diesen Space weiß</h3>
         {ueberblick.eintraege === 0 ? (
           <p className="mt-2 text-sm text-muted-foreground">
             In diesem Space liegt noch kein Eintrag.
@@ -144,7 +151,7 @@ export function CompanionFlaeche(): React.ReactElement {
         ) : (
           <>
             <p className="mt-2 text-sm text-muted-foreground">
-              {ueberblick.eintraege} Eintraege, {ueberblick.felder.length} verschiedene Felder.
+              {ueberblick.eintraege} Einträge, {ueberblick.felder.length} verschiedene Felder.
             </p>
             <ul className="mt-2 space-y-1 text-sm">
               {ueberblick.felder.slice(0, 8).map(({ feld, anzahl }) => (

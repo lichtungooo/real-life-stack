@@ -994,6 +994,25 @@ Regeln: Der Agent entwirft, der Mensch speichert (13.6 bleibt). Eine Feldliste j
 
 **Stufe 1 gebaut am 03.10.2026:** Kern `td-core/src/profil-entwurf.ts` (`EINRICHTUNGS_PROFIL_FELDER`, `PROFIL_ART_REGELN`, Prüfung je Art über `feldHinweise` und `bereinigt` wie beim Bearbeiten, Fragment `<art>-entwurf=`), zehn Werkzeuge in `td-mcp` (`profil_art_klaeren`, je Art Vorgabe, Prüfen, Link), Dialog `@trustdonation/ui/projekt-entwurf` für alle drei Arten, Bindung `projekt-entwurf-host.tsx` (Einrichtung nur für Verwaltende, geprüft mit `verwaltetSpace`). Skill td-profil aus den Feldlisten nachgezogen.
 
+### 13.9 Reinsprechen wie im Chat (freigegeben von Timo am 03.10.2026)
+
+Timo am 03.10.2026: *"Das Sprachmodell ist gar nicht so wichtig. Wichtig ist, dass ich wirklich rein sprechen kann, wie im normalen Chat. Dann wird meine Sprache verschlüsselt, transkribiert, und dann gibt die KI die MCP-Antwort."*
+
+**Der Weg:**
+
+1. Im Begleiter steht ein Chat: Eingabefeld, Verlauf, ein Mikrofon-Knopf.
+2. Gedrückt halten oder antippen, sprechen. Die Sprache geht verschlüsselt (wss, TLS) an **unsere Mitschrift** auf dem eigenen Server (Nemotron, deutsch, live). Nichts wird gespeichert; der Text erscheint, während man spricht, und lässt sich vor dem Senden korrigieren.
+3. Gesendet antwortet eine KI, die die Werkzeuge unseres MCP-Servers nutzt (13.8): Art klären, nachfragen, prüfen, am Ende der Link mit Vorschau. Der Mensch speichert selbst.
+
+**Was dafür gebaut wird:** ein Zugang zur Mitschrift für einzelne Nachrichten (heute nur mit Konferenz-Token), der Chat im Begleiter, die Verbindung der KI zu `trustdonation.org/mcp`.
+
+**Wie in Circeling, ohne neuen Dienst** (Timo: *"Vielleicht nutzen wir genau das Modell, genau mit der Konfiguration"*): dasselbe Sprachmodell (NVIDIA Nemotron, transcribe.cpp, CPU), dieselbe Mitschrift `wss://kreis.wir.ooo/mitschrift`, derselbe Token-Dienst. Der Begleiter holt ein Raum-Token für einen eigenen, privaten Raum (`begleiter-<zufall>`), betritt keinen Raum und schickt seine Sprache mit dem Aufnahme-Code aus `kreis-ui` (`mitschrift-aufnahme.ts`). Am Server ändert sich nichts.
+
+**Zum Testen:** Der Text erscheint im Chat und lässt sich korrigieren; ein Knopf gibt ihn an den eigenen Agenten weiter (kopieren, am Handy teilen), der über `trustdonation.org/mcp` das Profil baut.
+
+**Später, Timos Wahl:** eine KI, die direkt im Begleiter antwortet (13.4).
+
+**Gebaut am 03.10.2026:** `@trustdonation/ui/begleiter` (`BegleiterGespraech`, `auftragFuerAgent`), Platz `gespraech` in `CompanionFlaeche`, Bindung `apps/reference/src/views/diktat.ts` (`useDiktat`: Token für `begleiter-<zufall>` vom Token-Dienst, `MitschriftAufnahme` aus `@kreis/ui`, beides erst beim ersten Druck aufs Mikrofon geladen). Tests: `apps/reference/src/begleiter-gespraech.test.tsx`.
 ### 13.5 Regeln
 
 1. Der Companion ist **eine** Fläche und trägt **eine** Werkzeug-Liste. Eine zweite Aufzählung von Werkzeugen ist ein Fehler (Muster 1).

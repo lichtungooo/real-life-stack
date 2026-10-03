@@ -22,6 +22,7 @@ Jeder Baustein mit eigenem Einstieg wird nachgeladen und belastet den Hauptteil 
 | `stiftungen-import` | recherchierte Stiftungen in einen Space holen, ergänzt nur, was fehlt | 4d |
 | `netzwerke-import` | Netzwerke als Orte in einen Space holen | |
 | `opencollective` | der Baustein Open Collective in drei Größen, überall einbindbar | 4f |
+| `begleiter` | Reinsprechen im Begleiter: Mikrofon, Mitschrift wie in Circeling, Weitergabe an den eigenen Agenten | DEFINITION 13.9 |
 
 ## 1. Was eine Komponente ist
 

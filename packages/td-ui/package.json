@@ -53,6 +53,11 @@
       "types": "./dist/src/opencollective.d.ts",
       "development": "./src/opencollective.tsx",
       "import": "./dist/src/opencollective.js"
+    },
+    "./begleiter": {
+      "types": "./dist/src/begleiter-gespraech.d.ts",
+      "development": "./src/begleiter-gespraech.tsx",
+      "import": "./dist/src/begleiter-gespraech.js"
     }
   },
   "files": [
