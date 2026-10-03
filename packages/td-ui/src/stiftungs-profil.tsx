@@ -351,7 +351,8 @@ export function StiftungsProfilVoll({ profil, offen, onOffen, bearbeitung, start
                 <ul className="grid gap-4 sm:grid-cols-2">
                   {punkte.map((s, i) => (
                     <li key={`${i}-${s.titel}`} className={`overflow-hidden rounded-3xl ${FLAECHE} ${SCHATTEN}`}>
-                      <div className={BILDGRUND}><Motiv name={s.motiv} className="aspect-[16/9] w-full" /></div>
+                      {/* Wiederholt sich ein Motiv, steht es gespiegelt: kein Doppelbild nebeneinander. */}
+                      <div className={BILDGRUND}><Motiv name={s.motiv} className={`aspect-[16/9] w-full ${punkte.slice(0, i).filter((x) => x.motiv === s.motiv).length % 2 ? "-scale-x-100" : ""}`} /></div>
                       <div className="p-5">
                         <h4 className={`text-lg font-semibold leading-snug ${HAUSTEXT}`}>{s.titel}</h4>
                         {s.text && <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{s.text}</p>}

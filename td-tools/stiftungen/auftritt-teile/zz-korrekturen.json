@@ -1,0 +1,85 @@
+{
+  "stiftung-sparkassen-kulturstiftung-hessen-thueringen-169": {
+    "logo": "kandidat-1.svg",
+    "hausfarbe": "#ee0000",
+    "kurz": "Die Sparkassen-Kulturstiftung Hessen-Thüringen fördert Kunst, Kultur und Bildung in beiden Ländern, besonders auch jenseits der großen Städte.",
+    "zweck": "Sie fördert und begleitet Initiativen in bildender Kunst, Musik, Theater und Film, Denkmal- und Heimatpflege, Wissenschaft, Bildung und Literatur. Dazu entwickelt sie eigene Kooperationsprojekte und berät Sparkassen und deren Stiftungen bei der Projektförderung.",
+    "foerderbereiche": [
+      "kultur",
+      "musik",
+      "denkmalschutz",
+      "literatur",
+      "bildung",
+      "wissenschaft",
+      "theater"
+    ],
+    "zielgruppen": [
+      "Kulturvereine",
+      "Museen",
+      "Bibliotheken",
+      "Kinder und Jugendliche"
+    ],
+    "schwerpunkte": [
+      {
+        "titel": "Historische Orgeln",
+        "text": "Sie hilft, historische Orgeln in Hessen und Thüringen zu restaurieren.",
+        "motiv": "musik"
+      },
+      {
+        "titel": "Musik für junge Menschen",
+        "text": "Sie unterstützt Jugend musiziert, Schulmusik und ein Projekt für Musik- und Grundschullehrende.",
+        "motiv": "musik"
+      },
+      {
+        "titel": "Lesen und Bibliotheken",
+        "text": "Sie fördert Leseförderung für Kinder, Literaturfestivals und vergibt einen Bibliothekspreis in Thüringen.",
+        "motiv": "bildung"
+      },
+      {
+        "titel": "Museen und Kunst",
+        "text": "Sie vergibt einen Museumspreis und Künstlerstipendien in der Willingshäuser Malerkolonie.",
+        "motiv": "kultur"
+      },
+      {
+        "titel": "Festivals in der Fläche",
+        "text": "Sie trägt Kultursommer und Musikfestivals mit, die Kultur in ländliche Regionen bringen.",
+        "motiv": "kultur"
+      }
+    ],
+    "beispiele": [
+      {
+        "titel": "Künstlerstipendien Willingshausen",
+        "text": "Unterstützung junger Künstlerinnen und Künstler in der Willingshäuser Malerkolonie.",
+        "ort": "Willingshausen"
+      },
+      {
+        "titel": "Thüringer Orgelsommer",
+        "text": "Ein Festival für den Erhalt der Orgellandschaft in Thüringen."
+      },
+      {
+        "titel": "Ich bin eine Leseratte",
+        "text": "Ein Programm zur Leseförderung für Kinder."
+      },
+      {
+        "titel": "Faszination Mathematik",
+        "text": "Eine Wanderausstellung für Schülerinnen und Schüler der Klassen 5 und 6."
+      },
+      {
+        "titel": "Thüringer Bibliothekspreis",
+        "text": "Ein Preis für beispielgebende Bibliothekskonzepte in Thüringen."
+      }
+    ],
+    "zahlen": [
+      {
+        "wert": "1989",
+        "was": "gegründet"
+      },
+      {
+        "wert": "gut 30 Mio. €",
+        "was": "Stiftungskapital"
+      }
+    ],
+    "herkunft": "Die Stiftung entstand am 9. November 1989 als Hessische Sparkassenstiftung. Seit 1992 beteiligen sich die Thüringer Sparkassen; Stifter sind die Sparkassen beider Länder, die Landesbank Hessen-Thüringen und die SV SparkassenVersicherung.",
+    "auftrittQuelle": "https://www.sparkassen-kulturstiftung.de"
+  }
+}
