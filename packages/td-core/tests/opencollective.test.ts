@@ -5,7 +5,7 @@
  */
 import { describe, expect, it } from "vitest"
 import antwort from "./vorlagen/oc-webpack.json"
-import { ocBetrag, ocName, ocSpende, ocStandAus, ocStandAusAntwort, ocZiel } from "../src/opencollective"
+import { ocBetrag, ocName, ocSpende, spaceSpenden, spaceSpendenAenderung, ocStandAus, ocStandAusAntwort, ocZiel } from "../src/opencollective"
 
 const jetzt = new Date("2026-10-03T12:00:00Z")
 
@@ -96,5 +96,21 @@ describe("Die Spendenkarte mit Live-Stand", () => {
   })
   it("ohne Stand bleibt der Eintrag", () => {
     expect(ocSpende(spende, null)).toMatchObject({ gesammelt: 7340, beispiel: true, live: null })
+  })
+})
+
+describe("Spenden eines Space", () => {
+  it("liest Adresse und Ziel geprüft", () => {
+    expect(spaceSpenden({ opencollective: "opencollective.com/Real-Life", spendenziel: 5000 })).toEqual({ adresse: "https://opencollective.com/real-life", ziel: 5000 })
+    expect(spaceSpenden({ opencollective: "https://example.org/x", spendenziel: -3 })).toEqual({ adresse: null, ziel: null })
+    expect(spaceSpenden(undefined)).toEqual({ adresse: null, ziel: null })
+  })
+
+  it("macht aus der Eingabe eine Änderung oder einen Fehler", () => {
+    expect(spaceSpendenAenderung({ adresse: " https://opencollective.com/real-life/donate ", ziel: "5.000" }))
+      .toEqual({ aenderung: { opencollective: "https://opencollective.com/real-life", spendenziel: 5000 } })
+    expect(spaceSpendenAenderung({ adresse: "real-life", ziel: "" })).toHaveProperty("fehler")
+    expect(spaceSpendenAenderung({ adresse: "opencollective.com/real-life", ziel: "viel" })).toHaveProperty("fehler")
+    expect(spaceSpendenAenderung({ adresse: "", ziel: "100" })).toEqual({ aenderung: { opencollective: null, spendenziel: null } })
   })
 })

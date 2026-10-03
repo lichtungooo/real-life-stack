@@ -189,3 +189,34 @@ export function ocSpende(spende: ProjektSpende, stand: OcStand | null): ProjektS
     live: stand.stand,
   }
 }
+
+/** Spenden eines Space oder Netzwerks (DEFINITION Teil 8, „Nächster Träger“). */
+export interface SpaceSpenden {
+  /** Die Seite bei Open Collective, geprüft; sonst `null`. */
+  adresse: string | null
+  /** Ziel in Euro, sonst `null`. */
+  ziel: number | null
+}
+
+/** Aus `Group.data`: `opencollective` und `spendenziel`, geprüft. */
+export function spaceSpenden(daten: Roh | null | undefined): SpaceSpenden {
+  const name = ocName(daten?.opencollective)
+  const ziel = zahl(daten?.spendenziel)
+  return { adresse: name ? `https://opencollective.com/${name}` : null, ziel: ziel !== null && ziel > 0 ? ziel : null }
+}
+
+/**
+ * Die Eingabe aus dem Abschnitt „Spenden“ als Änderung für Antons
+ * `patchData`. Leere Adresse entfernt die Spenden; eine Adresse, die nicht
+ * zu Open Collective führt, gibt einen Fehler zurück statt zu speichern.
+ */
+export function spaceSpendenAenderung(eingabe: { adresse: string; ziel: string }): { aenderung: Roh } | { fehler: string } {
+  const roh = eingabe.adresse.trim()
+  if (!roh) return { aenderung: { opencollective: null, spendenziel: null } }
+  const name = ocName(roh)
+  if (!name) return { fehler: "Bitte die Adresse einer Seite bei Open Collective eingeben, etwa https://opencollective.com/euer-name." }
+  const zielText = eingabe.ziel.trim().replace(/\./g, "").replace(",", ".")
+  const ziel = zielText ? Number(zielText) : null
+  if (ziel !== null && !(Number.isFinite(ziel) && ziel > 0)) return { fehler: "Das Ziel ist ein Betrag in Euro, etwa 5000." }
+  return { aenderung: { opencollective: `https://opencollective.com/${name}`, spendenziel: ziel === null ? null : Math.round(ziel) } }
+}

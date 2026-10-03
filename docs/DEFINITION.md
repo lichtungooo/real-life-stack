@@ -673,6 +673,18 @@ Regeln:
 4. **Eine Quelle:** Der Kern in `td-core` liest die Antwort; jede Größe zeigt sie, keine rechnet selbst.
 5. **Offen für alle Seiten:** eigener Einstieg `@trustdonation/ui/opencollective`, Eingabe nur die Adresse und optional ein Ziel.
 
+##### Nächster Träger: Space und Netzwerk (freigegeben von Timo am 03.10.2026)
+
+**Frage:** Wo trägt ein Space oder ein Netzwerk seine Spenden, ohne Antons Code zu öffnen?
+
+1. **Abschnitt „Spenden“ im Space-Dialog** (eigener App-Abschnitt wie „Erweiterungen“, `spaceSections`): Wer verwaltet, trägt die Adresse bei Open Collective ein und optional ein Ziel in Euro. Gespeichert in `Group.data.opencollective` und `Group.data.spendenziel` über Antons `patchData`. Darunter die Vorschau als Widget.
+2. **Knopf „Unterstützen“ in der Kopfzeile** des Space (`navbarEnd`, wie der Profil-Knopf), nur wenn der Space eine Adresse trägt. Er öffnet das Widget mit Zahlen und Beträgen, von dort „Ganz“.
+3. **Gilt für jeden Space**, Netzwerk wie Gruppe; ein Netzwerk zeigt so sein Spendenwidget.
+
+**Gebaut am 03.10.2026:** `spaceSpenden` und `spaceSpendenAenderung` (td-core), `OcEinstellungen` und `OcWidgetDialog` (td-ui), Bindung `apps/reference/src/views/spenden-abschnitt.tsx` (`SPENDEN_ABSCHNITT`, `SpendenKnopf`). Tests: `td-core/tests/opencollective.test.ts`, `apps/reference/src/spenden-abschnitt.test.tsx`.
+
+**Nicht in diesem Schritt:** Person (das Profil eines Menschen ist bei Anton kein Item und trägt keine eigenen Felder; Wunsch an Anton), Landingpage (eigenes Skript für die statische Seite, eigener Schritt).
+
 ### Was die Erweiterungen nicht sind
 
 Kein Laden, keine Bezahlung, keine Bewertungen, keine Rangliste. Wer etwas sucht, sieht, was es tut, wer es gebaut hat und ob es freigegeben ist.

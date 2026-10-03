@@ -280,7 +280,9 @@ Gelernt:
 - **Ein Dienst vor der fremden Schnittstelle:** Die Besucher fragen unseren Dienst, er fragt Open Collective mit zehn Minuten Zwischenspeicher. So geht keine Adresse eines Besuchers hinaus, und viele Besuche fragen dort selten.
 - **Eingänge ohne Namen** (Timo): nur Betrag und Datum, schon im Kern, damit kein Träger sie versehentlich zeigt.
 - **Fremde Währung, kein Zielvergleich:** Das Ziel im Eintrag ist in Euro; rechnet die Seite in Dollar, entfällt der Balken statt falsch zu rechnen.
-- **Nächste Träger** als eigene kleine Schritte: Personenprofil, Space und Netzwerk, Widget auf der Landingpage.
+- **Space und Netzwerk** (03.10.2026): Abschnitt „Spenden“ im Space-Dialog über `spaceSections`, Knopf „Unterstützen“ in der Kopfzeile über `navbarEnd`; beides ohne Naht. Das Ziel steht in Euro; Knapp und Widget vergleichen nur bei einer Euro-Seite.
+- **Widget, kein Modul** (Timo, 03.10.2026): Ein Modul ist bei Anton eine Fläche (Reiter). Open Collective ist ein Widget, das jede Seite trägt. Ein Modul „Spenden“ entstünde erst für eine eigene Fläche, etwa die Summe aller Projekte eines Netzwerks.
+- **Nächste Träger** als eigene kleine Schritte: Personenprofil (braucht Anton), Widget auf der Landingpage, Meldung aufs Handy bei neuer Spende.
 
 ## 4g. Profil übernehmen (03.10.2026)
 

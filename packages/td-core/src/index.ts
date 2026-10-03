@@ -124,7 +124,10 @@ export {
   ocBetrag,
   ocZiel,
   ocSpende,
+  spaceSpenden,
+  spaceSpendenAenderung,
   OC_ABFRAGE,
+  type SpaceSpenden,
   type OcStand,
   type OcAusgabe,
   type OcEingang,
@@ -156,3 +159,6 @@ export {
   type EingabePruefung,
   type AbschnittGespeichert,
 } from "./profil-felder.js"
+
+/** Rohe Daten eines Eintrags, vor der Schleuse. */
+export type { Roh } from "./schleuse.js"

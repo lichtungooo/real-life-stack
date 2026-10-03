@@ -14,10 +14,10 @@
 //
 // Eigener Einstieg `@trustdonation/ui/opencollective`, nachgeladen.
 
-import { useEffect, useState, type ReactNode } from "react"
+import { useEffect, useState, type FormEvent, type ReactNode } from "react"
 import { ArrowUpRight, ExternalLink, HandHeart, Loader2, Receipt, Users, Wallet, X } from "lucide-react"
 import { Dialog, DialogContent, DialogTitle } from "@real-life-stack/toolkit"
-import { ocBetrag, ocName, ocStandAus, ocZiel, type OcStand } from "@trustdonation/core"
+import { ocBetrag, ocName, ocStandAus, ocZiel, spaceSpendenAenderung, type OcStand } from "@trustdonation/core"
 
 /** Unser Dienst; eine andere Instanz setzt ihre eigene Adresse. */
 export const OC_DIENST = "https://trustdonation.org/oc"
@@ -54,6 +54,8 @@ export function useOcStand(adresse: string | null | undefined, dienst: string = 
 
 const uhrzeit = (iso: string) => new Date(iso).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })
 const tag = (iso: string) => new Date(iso).toLocaleDateString("de-DE", { day: "numeric", month: "short", year: "numeric" })
+/** Das Ziel steht in Euro; rechnet die Seite in anderer Währung, kein Vergleich. */
+const zielIn = (s: OcStand, ziel: number | null | undefined) => (s.waehrung === "EUR" ? ziel ?? null : null)
 const spendenAdresse = (s: OcStand, betrag?: number | null) => `${s.adresse}/donate${betrag ? `?amount=${Math.round(betrag)}` : ""}`
 
 function Balken({ anteil }: { anteil: number }) {
@@ -95,6 +97,7 @@ export function OcKnapp({ adresse, ziel, dienst, ersatz, mehr = true }: {
   const { stand: s, laedt } = useOcStand(adresse, dienst)
   const [ganz, setGanz] = useState(false)
   if (!s) return laedt ? <p className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Stand bei Open Collective …</p> : <>{ersatz}</>
+  ziel = zielIn(s, ziel)
   const z = ocZiel(s, ziel)
   return (
     <div className="flex flex-col gap-3">
@@ -137,6 +140,7 @@ export function OcWidget({ adresse, ziel, betraege = [10, 25, 50, 100], dienst }
     if (!laedt) return null
     return <div className="flex h-40 items-center justify-center rounded-3xl bg-card text-sm text-muted-foreground shadow-xl shadow-black/5"><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Open Collective …</div>
   }
+  ziel = zielIn(s, ziel)
   const z = ocZiel(s, ziel)
   return (
     <section aria-label={`Spenden für ${s.titel}`} className="flex flex-col gap-4 rounded-3xl bg-card p-6 shadow-xl shadow-black/5 dark:shadow-black/30">
@@ -165,6 +169,109 @@ export function OcWidget({ adresse, ziel, betraege = [10, 25, 50, 100], dienst }
       <Stand s={s} />
       <OcGanz stand={s} ziel={ziel} offen={ganz} onOffen={setGanz} />
     </section>
+  )
+}
+
+// ── Träger Space und Netzwerk ───────────────────────────────────────────────
+
+/**
+ * Das Widget im Dialog, für den Knopf „Unterstützen“ in der Kopfzeile eines
+ * Space (DEFINITION Teil 8, „Nächster Träger: Space und Netzwerk“).
+ */
+export function OcWidgetDialog({ adresse, ziel, titel, offen, onOffen, dienst }: {
+  adresse: string | null | undefined
+  ziel?: number | null
+  titel: string
+  offen: boolean
+  onOffen: (an: boolean) => void
+  dienst?: string
+}) {
+  const { stand, laedt } = useOcStand(offen ? adresse : null, dienst)
+  return (
+    <Dialog open={offen} onOpenChange={onOffen}>
+      <DialogContent className="max-w-md border-0 bg-transparent p-0 shadow-none" aria-describedby={undefined}>
+        <DialogTitle className="sr-only">{titel} unterstützen</DialogTitle>
+        {stand || laedt
+          ? <OcWidget adresse={adresse} ziel={ziel} dienst={dienst} />
+          : (
+            <div className="rounded-3xl bg-card p-6 text-sm shadow-xl shadow-black/5">
+              <p className="font-semibold">Open Collective antwortet gerade nicht.</p>
+              {ocName(adresse) && <a href={`https://opencollective.com/${ocName(adresse)}`} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1 underline underline-offset-2">Direkt zur Seite <ExternalLink className="h-3.5 w-3.5" /></a>}
+            </div>
+          )}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+const EINGABE = "w-full rounded-xl bg-muted/50 px-3 py-2 text-sm outline-none ring-1 ring-transparent transition focus:bg-background focus:ring-2 focus:ring-ring disabled:opacity-60"
+
+/**
+ * Der Abschnitt „Spenden“ im Space-Dialog: Adresse und Ziel eintragen, die
+ * Vorschau als Widget. `onSpeichern` bekommt die geprüfte Änderung für
+ * Antons `patchData`.
+ */
+export function OcEinstellungen({ adresse, ziel, darfAendern, onSpeichern, dienst }: {
+  adresse: string | null
+  ziel: number | null
+  darfAendern: boolean
+  onSpeichern: (aenderung: Record<string, unknown>) => Promise<unknown> | void
+  dienst?: string
+}) {
+  const [eingabe, setEingabe] = useState(adresse ?? "")
+  const [zielText, setZielText] = useState(ziel ? String(ziel) : "")
+  const [fehler, setFehler] = useState<string | null>(null)
+  const [laeuft, setLaeuft] = useState(false)
+  const [gespeichert, setGespeichert] = useState(false)
+  const speichern = async (e: FormEvent) => {
+    e.preventDefault()
+    const r = spaceSpendenAenderung({ adresse: eingabe, ziel: zielText })
+    if ("fehler" in r) { setFehler(r.fehler); return }
+    setFehler(null)
+    setLaeuft(true)
+    try {
+      await onSpeichern(r.aenderung)
+      setGespeichert(true)
+    } catch {
+      setFehler("Das hat nicht geklappt. Bitte noch einmal versuchen.")
+    } finally {
+      setLaeuft(false)
+    }
+  }
+  return (
+    <div className="flex flex-col gap-5">
+      <p className="text-sm leading-relaxed text-muted-foreground">
+        Sammelt dieser Space über Open Collective, steht oben ein Knopf „Unterstützen“. Er zeigt, was schon eingegangen ist, und wohin das Geld geht.
+        Die Zahlen kommen öffentlich von Open Collective; gespendet wird dort.
+      </p>
+      <form onSubmit={speichern} className="flex flex-col gap-3">
+        <label className="flex flex-col gap-1 text-sm font-semibold">Seite bei Open Collective
+          <input value={eingabe} onChange={(e) => { setEingabe(e.target.value); setGespeichert(false) }} disabled={!darfAendern}
+            placeholder="https://opencollective.com/euer-name" className={EINGABE} />
+        </label>
+        <label className="flex flex-col gap-1 text-sm font-semibold">Ziel in Euro <span className="text-xs font-normal text-muted-foreground">(freiwillig, zeigt einen Balken)</span>
+          <input value={zielText} onChange={(e) => { setZielText(e.target.value); setGespeichert(false) }} disabled={!darfAendern}
+            inputMode="numeric" placeholder="etwa 5000" className={EINGABE} />
+        </label>
+        {fehler && <p role="alert" className="text-sm text-red-700 dark:text-red-400">{fehler}</p>}
+        {darfAendern
+          ? (
+            <div className="flex items-center gap-3">
+              <button type="submit" disabled={laeuft} className="rounded-xl bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-800 disabled:opacity-50">
+                {laeuft ? "Speichert …" : "Speichern"}
+              </button>
+              {gespeichert && <span className="text-sm text-emerald-700 dark:text-emerald-400">Gespeichert</span>}
+            </div>
+          )
+          : <p className="text-xs text-muted-foreground">Ändern kann, wer den Space verwaltet.</p>}
+      </form>
+      {adresse && (
+        <div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">So sieht es aus</p>
+          <OcWidget adresse={adresse} ziel={ziel} dienst={dienst} />
+        </div>
+      )}
+    </div>
   )
 }
 

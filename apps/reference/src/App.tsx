@@ -40,6 +40,7 @@ const NetzwerkeImport = lazy(() => import("@trustdonation/ui/netzwerke-import").
 const StiftungenImport = lazy(() => import("@trustdonation/ui/stiftungen-import").then((m) => ({ default: m.StiftungenImport })))
 import { SpaceProfilPanel } from "./views/profil-panel"
 import { ERWEITERUNGEN_ABSCHNITT } from "./views/erweiterungen-abschnitt"
+import { SPENDEN_ABSCHNITT, SpendenKnopf } from "./views/spenden-abschnitt"
 import { ProjektEntwurfHost } from "./views/projekt-entwurf-host"
 // Der Kreis bekommt seinen Raum von der App (Spec kreis, "Der Raum-Adapter").
 // LiveKit unter kreis.wir.ooo traegt Bild und Ton; `?kreis=lokal` waehlt den
@@ -384,7 +385,8 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
         // ist das erste Modul des Space, wie beim Space-Wechsel.
         // Die Erweiterungen im Space-Dialog, ueber Antons App-Abschnitte
         // (rls#551, DEFINITION Teil 8). Der Baukasten als Modul ist raus.
-        spaceSections={[ERWEITERUNGEN_ABSCHNITT]}
+        // Spenden über Open Collective (DEFINITION Teil 8, 03.10.2026).
+        spaceSections={[ERWEITERUNGEN_ABSCHNITT, SPENDEN_ABSCHNITT]}
         spaceSectionsTitle="Mehr"
         spaceLink={(id, domain) => {
           const start = resolveSpaceModules(spaceModule(id))[0]
@@ -395,6 +397,7 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
             <BeispieldatenHinweis aktiv={activeConnectorId === "local"} />
             <NetzwerkeKnopf aktiv={activeConnectorId !== "local"} />
             {hasMessaging(connector) ? <RelayStatusBadgeWrapper /> : null}
+            <SpendenKnopf />
             <SpaceProfilKnopf />
           </>
         }
