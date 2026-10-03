@@ -40,3 +40,4 @@ steht in der Spalte Lehre (von Claude nachgetragen).
 | 2026-10-03-133022 | – | 4e56d8ee | – | – | – | – | ohne Kimi ausgeliefert | Timo 03.10.2026: fertig Gebautes ausliefern, Kimi prüft nach (feedback_ausliefern_vor_kimi) |
 | 2026-10-03-134844 | – | 289e8d42 | – | – | – | – | ohne Kimi ausgeliefert | Fehlerbehebung Login nach Neuladen; Timo 03.10.2026: ausliefern, Kimi prüft nach |
 | 2026-10-03-140425 | – | 8f41d338 | – | – | – | – | ohne Kimi ausgeliefert | Kleiner Link auf dem Anmeldebildschirm; Timo 03.10.2026: ausliefern, Kimi prüft nach |
+| 2026-10-03-144633 | – | 6e0f94ac | – | – | – | – | ohne Kimi ausgeliefert | Timo 03.10.2026: fertig Gebautes ausliefern, Kimi prüft nach (feedback_ausliefern_vor_kimi) |
