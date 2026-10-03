@@ -43,6 +43,7 @@ export const ERWEITERUNGEN: readonly ErweiterungsEintrag[] = [
   { id: "video", art: "modul", erbauer: "Timo Martin und Eli · Real Life Network", reife: "beta", beschreibung: "Treffen mit Bild und Ton, Kreis mit Redestab, Zeichenpad, Gruppenräume und Mitschrift auf dem eigenen Server." },
   { id: PROJEKT_PROFIL, art: "komponente", name: "Project Profile", fuerTyp: "project", erbauer: "Timo Martin und Eli · trustdonation", reife: "beta", beschreibung: "Die Seite, mit der sich ein Projekt zeigt: Titelbild, was fehlt, was sich ändert, wohin das Geld geht, Schritte, Team, Kontakt und Spenden über Open Collective." },
   { id: STIFTUNGS_PROFIL, art: "komponente", name: "Stiftungsprofil", fuerTyp: "place", erbauer: "Timo Martin und Eli · trustdonation", reife: "beta", beschreibung: "Die Seite einer Stiftung für Projekte, die Förderung suchen: wie man beantragt, wofür sie fördert, wie viel, wen man anspricht. Wächst mit, wenn die Stiftung ihr Profil übernimmt." },
+  { id: "ki", art: "modul", erbauer: "Timo Martin und Eli · trustdonation", reife: "beta", beschreibung: "Ein Chat in der Mitte, in den man reinsprechen kann. Die KI arbeitet mit dem MCP-Server des Space, man sieht jeden Schritt, am Ende steht das fertige Profil zum Speichern." },
   { id: "companion", art: "modul", erbauer: "Eli · trustdonation", reife: "beta", beschreibung: "Eine Begleitung, die die Einträge des Space liest und beim nächsten Schritt hilft." },
 ]
 

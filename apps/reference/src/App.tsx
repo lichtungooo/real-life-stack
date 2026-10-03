@@ -41,6 +41,7 @@ const StiftungenImport = lazy(() => import("@trustdonation/ui/stiftungen-import"
 import { SpaceProfilPanel } from "./views/profil-panel"
 import { ERWEITERUNGEN_ABSCHNITT } from "./views/erweiterungen-abschnitt"
 import { SPENDEN_ABSCHNITT, SpendenKnopf } from "./views/spenden-abschnitt"
+import { KI_ABSCHNITT } from "./views/ki-abschnitt"
 import { ProjektEntwurfHost } from "./views/projekt-entwurf-host"
 import { connectorWahl } from "./connector-wahl"
 // Der Kreis bekommt seinen Raum von der App (Spec kreis, "Der Raum-Adapter").
@@ -387,7 +388,7 @@ function Home({ activeConnectorId, onConnectorChange }: { activeConnectorId: str
         // Die Erweiterungen im Space-Dialog, ueber Antons App-Abschnitte
         // (rls#551, DEFINITION Teil 8). Der Baukasten als Modul ist raus.
         // Spenden über Open Collective (DEFINITION Teil 8, 03.10.2026).
-        spaceSections={[ERWEITERUNGEN_ABSCHNITT, SPENDEN_ABSCHNITT]}
+        spaceSections={[ERWEITERUNGEN_ABSCHNITT, SPENDEN_ABSCHNITT, KI_ABSCHNITT]}
         spaceSectionsTitle="Mehr"
         spaceLink={(id, domain) => {
           const start = resolveSpaceModules(spaceModule(id))[0]

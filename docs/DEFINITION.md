@@ -1013,6 +1013,26 @@ Timo am 03.10.2026: *"Das Sprachmodell ist gar nicht so wichtig. Wichtig ist, da
 **Später, Timos Wahl:** eine KI, die direkt im Begleiter antwortet (13.4).
 
 **Gebaut am 03.10.2026:** `@trustdonation/ui/begleiter` (`BegleiterGespraech`, `auftragFuerAgent`), Platz `gespraech` in `CompanionFlaeche`, Bindung `apps/reference/src/views/diktat.ts` (`useDiktat`: Token für `begleiter-<zufall>` vom Token-Dienst, `MitschriftAufnahme` aus `@kreis/ui`, beides erst beim ersten Druck aufs Mikrofon geladen). Tests: `apps/reference/src/begleiter-gespraech.test.tsx`.
+### 13.10 Das KI-Modul: ein Chat, der arbeitet (freigegeben von Timo am 03.10.2026, Claude Code)
+
+Timo am 03.10.2026: *"So ähnlich aufgebaut wie GPT, nicht so mit so viel Schnickschnack, ganz normal in der Mitte ein Chat-Fenster, wo man reinsprechen kann, und dann arbeitet es. Man sieht, wie es arbeitet, und nachher steht das fertige ausgefüllte Profil. Es soll richtig das Gefühl vermitteln, als wenn eine AI integriert ist. Als Modul, wo man in den Einstellungen sein eigenes MCP eingeben kann."*
+
+**Was man sieht:**
+
+1. Ein eigener Reiter „KI“ im Space (ein Modul im Register, Beta). In der Mitte der Chat, unten das Eingabefeld mit Mikrofon (die Mitschrift aus 13.9).
+2. Man erzählt. Die KI antwortet im Verlauf, fragt nach, was fehlt, und zeigt dabei als schmale Zeilen, was sie tut: „Kläre die Art des Profils“, „Prüfe den Entwurf: zwei Felder fehlen“. Antworten laufen Wort für Wort ein.
+3. Ist der Entwurf fertig, steht im Chat eine Karte mit der Vorschau des Profils und dem Knopf „Speichern“ (derselbe Dialog wie 13.6/13.8). Der Mensch speichert, nie die KI.
+
+**Einstellungen des Moduls** (im Space-Dialog unter „Mehr“, wer den Space verwaltet): die Adresse des MCP-Servers, mit dem die KI arbeitet. Vorgabe: der Server des Netzwerks (`trustdonation.org/mcp`); ein Space trägt seinen eigenen (`Group.data.ki.mcp`).
+
+**Wie es arbeitet, wie in VS Code** (Timo: *"Ich möchte, dass es den MCP nutzt. Ähnlich wie in VS Code. Da arbeite ich ja auch nicht mit dem API-Modell, sondern mit einem MCP."*): Auf unserem Server läuft ein Agent wie Claude Code oder Kimi Code, angemeldet mit einem Abo, ohne API-Schlüssel. Er bekommt den MCP-Server aus den Einstellungen des Space und arbeitet mit dessen Werkzeugen. Der Browser spricht mit unserem Agent-Dienst (`trustdonation.org/ki`), der den Agenten startet, seine Arbeitsschritte und Antworten in den Chat streamt und nichts speichert. Kein Schlüssel im Browser (13.4).
+
+**Grenze des Abos:** Ein Abo gilt für einen Menschen. Zum Testen mit Timo und dem Team trägt es; für viele fremde Menschen braucht es später einen eigenen Zugang beim Anbieter. Der Dienst bleibt austauschbar.
+
+Regeln: Die KI entwirft, der Mensch speichert. Nur Werkzeuge des eingestellten MCP-Servers. Grenze je Gespräch (Länge, Zahl der Schritte), damit niemand den Dienst ausreizt.
+
+**Gebaut am 03.10.2026:** Kern `td-core/src/ki.ts` (Ereignisse, Datenstrom, Entwurf erkennen, erlaubte MCP-Adresse, Verlauf kürzen), Dienst `packages/td-ki` (Claude Agent SDK: keine eigenen Werkzeuge, nur `mcp__profil__*`, keine Einstellungen von der Platte, keine Sitzung; Zugangswort, höchstens zwei Gespräche, vier Minuten), Chat `@trustdonation/ui/ki`, Modul `ki` (Beta, `frame: bare`), Einstellung „KI“ im Space-Dialog (MCP-Server je Space, Zugangswort je Browser), Deploy `deploy/ki/`. Lokal mit echtem Claude Code geprüft: vier Schritte, Profil in rund 20 Sekunden.
+
 ### 13.5 Regeln
 
 1. Der Companion ist **eine** Fläche und trägt **eine** Werkzeug-Liste. Eine zweite Aufzählung von Werkzeugen ist ein Fehler (Muster 1).

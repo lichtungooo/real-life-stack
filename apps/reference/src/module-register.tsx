@@ -7,7 +7,7 @@
 // ausdruecklich ersetzt (`extensions` mit `replaces: ["view"]`).
 
 import { Suspense, lazy } from "react"
-import { Sparkles, Video } from "lucide-react"
+import { Bot, Sparkles, Video } from "lucide-react"
 import {
   TOOLKIT_DEFINITION,
   composeModules,
@@ -26,6 +26,9 @@ const laedt = <div className="flex h-full items-center justify-center text-sm te
 // Signal), die weiter in die App leitet. Nur die App kennt ihre Adresse.
 export const einladungsLink = (gruppeId: string, gruppeName: string) =>
   `${window.location.origin}/einladung/?konferenz=${encodeURIComponent(gruppeId)}&gruppe=${encodeURIComponent(gruppeName)}`
+// Das KI-Modul (DEFINITION 13.10): Chat nachgeladen, erst wer den Reiter öffnet.
+const KiViewLazy = lazy(() => import("./views/ki-view").then((m) => ({ default: m.KiView })))
+const KiModul = () => <Suspense fallback={laedt}><KiViewLazy /></Suspense>
 const VideoModul = (p: ModuleViewProps) => <Suspense fallback={laedt}><VideoLazy {...p} einladungsLink={einladungsLink} /></Suspense>
 
 // Einmal komponiert, einmal gebunden, danach unveraenderlich (Spec 01, Regel 3).
@@ -48,6 +51,7 @@ export const MODULE_REGISTRY = composeModules([
     // Feld-Praesenz haengt, macht sie zur Karte fuer ein Feld, das es nicht
     // gibt.
     { id: "companion", label: "Begleitung", icon: Sparkles, maxWidth: "max-w-3xl", view: CompanionView },
+    { id: "ki", label: "KI", icon: Bot, fill: "bleed", frame: "bare", view: KiModul },
   ] },
   // Das Video (docs/spec/modules/video.md), eine eigene Schicht, damit es
   // ohne trustdonation zu Anton hinuebergehen kann. Der Kreis mit Redestab

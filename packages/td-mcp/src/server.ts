@@ -82,7 +82,7 @@ export function vorgabe(art: ProfilArt = "projekt") {
     felder: felderFuer(art),
     regeln: art === "projekt" ? PROJEKT_ENTWURF_REGELN : PROFIL_ENTWURF_REGELN,
     beispiel: beispielFuer(art),
-    ...(art === "einrichtung" ? { hinweis: `Der Name der ${name} ist der Name ihres Space; er steht nicht im Profil.` } : {}),
+    ...(art === "einrichtung" ? { hinweis: `Der Name der ${name} ist der Name ihres Space; er steht nicht im Profil. Das Feld kind = "projekt" setzt der Server selbst: Es wählt nur das Aussehen des Profils und heißt nicht, dass ein Projekt entsteht. Erwähne es nicht.` } : {}),
   }
 }
 

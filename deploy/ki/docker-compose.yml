@@ -1,0 +1,32 @@
+# Das KI-Modul von trustdonation unter https://trustdonation.org/ki
+# (DEFINITION 13.10). Eigenes Compose-Projekt neben App und td-mcp.
+#
+#   cd ~/build/td-app && docker build -f deploy/ki/Dockerfile -t trustdonation-ki:<n> .
+#   cd ~/apps/td-ki && docker compose up -d
+#
+# .env (nur auf dem Server, nie im Repo):
+#   TD_KI_TAG=<n>
+#   TD_KI_ZUGANG=<Zugangswort, das der Mensch in seinem Browser einträgt>
+#   CLAUDE_CODE_OAUTH_TOKEN=<aus `claude setup-token`, ein Abo gilt für einen Menschen>
+services:
+  ki:
+    image: trustdonation-ki:${TD_KI_TAG:?TD_KI_TAG fehlt}
+    container_name: td-ki
+    restart: unless-stopped
+    network_mode: bridge
+    env_file: .env
+    environment:
+      TD_KI_HERKUNFT: https://trustdonation.org,https://wir.ooo,http://localhost:5173
+    # Jedes Gespräch startet Claude Code mit rund einem Gigabyte; höchstens zwei zugleich.
+    mem_limit: 2g
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.td-ki.rule=Host(`trustdonation.org`) && PathPrefix(`/ki`)"
+      - "traefik.http.routers.td-ki.entrypoints=websecure"
+      - "traefik.http.routers.td-ki.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.td-ki.priority=100"
+      - "traefik.http.middlewares.td-ki-takt.ratelimit.average=20"
+      - "traefik.http.middlewares.td-ki-takt.ratelimit.period=1m"
+      - "traefik.http.middlewares.td-ki-takt.ratelimit.burst=10"
+      - "traefik.http.routers.td-ki.middlewares=td-ki-takt"
+      - "traefik.http.services.td-ki.loadbalancer.server.port=8788"

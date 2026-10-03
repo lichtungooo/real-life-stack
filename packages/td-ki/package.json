@@ -1,0 +1,27 @@
+{
+  "name": "@trustdonation/ki",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "description": "Der Agent-Dienst des KI-Moduls: Claude Code mit den Werkzeugen eines MCP-Servers, gestreamt in den Chat der App (DEFINITION 13.10).",
+  "type": "module",
+  "main": "./dist/src/http.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "start": "node dist/src/http.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "0.3.288",
+    "@trustdonation/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.15",
+    "typescript": "~5.7.2",
+    "vitest": "^4.1.0"
+  }
+}

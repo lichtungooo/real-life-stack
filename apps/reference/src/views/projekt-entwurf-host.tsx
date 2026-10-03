@@ -7,7 +7,7 @@
 // der Komponente in `Group.data.komponenten`; das Profil einer Einrichtung
 // in `Group.data`, nur von dem, der den Space verwaltet.
 
-import { lazy, Suspense, useState } from "react"
+import { lazy, Suspense, useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { useConnector, useCurrentUser, useGroups } from "@real-life-stack/toolkit"
 import type { Group, User } from "@real-life-stack/data-interface"
@@ -47,6 +47,12 @@ export function ProjektEntwurfHost({ beispielwelt }: { beispielwelt: boolean }) 
   const { data: ich } = useCurrentUser()
   const { scope } = useParams()
   const navigate = useNavigate()
+  // Ein Entwurf kann auch später kommen, etwa aus dem Chat des KI-Moduls (13.10).
+  useEffect(() => {
+    const hoeren = () => { if (ENTWURF.test(window.location.hash)) setFragment(window.location.hash) }
+    window.addEventListener("hashchange", hoeren)
+    return () => window.removeEventListener("hashchange", hoeren)
+  }, [])
   if (!fragment) return null
 
   const schliessen = () => {

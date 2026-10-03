@@ -23,6 +23,7 @@ Jeder Baustein mit eigenem Einstieg wird nachgeladen und belastet den Hauptteil 
 | `netzwerke-import` | Netzwerke als Orte in einen Space holen | |
 | `opencollective` | der Baustein Open Collective in drei Größen, überall einbindbar | 4f |
 | `begleiter` | Reinsprechen im Begleiter: Mikrofon, Mitschrift wie in Circeling, Weitergabe an den eigenen Agenten | DEFINITION 13.9 |
+| `ki` | Das KI-Modul: Chat in der Mitte, Arbeitsschritte sichtbar, am Ende die Karte mit dem fertigen Profil | DEFINITION 13.10 |
 
 ## 1. Was eine Komponente ist
 
