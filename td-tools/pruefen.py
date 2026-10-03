@@ -10,6 +10,7 @@ docs/ARCHITEKTUR.md Teil 7.
 Rückgabe 0, wenn alles grün ist. Sonst 1: so lässt es sich in eine CI
 hängen, ohne dass jemand den Text lesen muss.
 """
+import json
 import re
 import shutil
 import subprocess
@@ -202,18 +203,43 @@ else:
         tor("Durchgang", False, "Durchgang scheitert", "\n".join(fehl) or text[-300:])
 
 # --- Tor 8: Gedächtnis ------------------------------------------------------
-# Das Gedächtnis liegt im Arbeitsbereich, nicht im Repo. Auf einem fremden
-# Rechner oder in der CI gibt es das nicht, und das ist kein Fehler: Dort
-# bleibt das Tor offen, statt einen Bau abzubrechen, der sonst grün wäre.
-stand = Path("D:/Workspace/memory/stand_trustdonation.md")
-if not stand.parent.exists():
-    tor("Gedaechtnis", None, "Arbeitsbereich nicht vorhanden (fremder Rechner oder CI)")
-elif not stand.exists():
-    tor("Gedaechtnis", False, "stand_trustdonation.md fehlt")
+# Streng seit 03.10.2026 (Timo: "Ich möchte, dass das automatisiert läuft,
+# egal ob die Session lang ist oder nicht"). Rot, wenn etwas Gebautes nicht
+# festgehalten ist:
+# - jeder Einstieg von td-ui im Werkstattbuch (docs/KOMPONENTEN.md), im Repo,
+#   darum auch in der CI;
+# - jeder Einstieg im Skill td-erweiterung, die jüngste Auslieferung im Stand
+#   und in den Erfahrungen der Forge. Das liegt im Arbeitsbereich; auf einem
+#   fremden Rechner oder in der CI bleibt dieser Teil offen.
+WORKSPACE = Path("D:/Workspace")
+fehlt = []
+einstiege = [k[2:] for k in json.loads((REPO / "packages/td-ui/package.json").read_text(encoding="utf-8"))["exports"] if k.startswith("./")]
+werkstattbuch = (REPO / "docs/KOMPONENTEN.md").read_text(encoding="utf-8")
+fehlt += ["KOMPONENTEN.md: Einstieg " + e for e in einstiege if e not in werkstattbuch]
+lieferungen = [int(n) for n in re.findall(r"\*\*proto-(\d+)\*\*", (REPO / "docs/AUSLIEFERUNGEN.md").read_text(encoding="utf-8"))]
+juengste = f"proto-{max(lieferungen)}" if lieferungen else None
+stand = WORKSPACE / "memory/stand_trustdonation.md"
+skill = WORKSPACE / ".claude/skills/td-erweiterung/SKILL.md"
+erfahrungen = WORKSPACE / "40-forge/Real-Life-Forge/ERFAHRUNGEN.md"
+if WORKSPACE.exists():
+    for datei in (stand, skill, erfahrungen):
+        if not datei.exists():
+            fehlt.append(f"{datei.name} fehlt")
+    if skill.exists():
+        text = skill.read_text(encoding="utf-8")
+        fehlt += ["Skill td-erweiterung: Einstieg " + e for e in einstiege if e not in text]
+    if juengste:
+        for datei in (stand, erfahrungen):
+            if datei.exists() and not re.search(re.escape(juengste) + r"(?!\d)", datei.read_text(encoding="utf-8")):
+                fehlt.append(f"{datei.name}: {juengste} fehlt (Lehren nach jeder Auslieferung)")
+if fehlt:
+    tor("Gedaechtnis", False, f"{len(fehlt)} Dinge nicht festgehalten", "\n".join(fehlt[:8]))
+elif not WORKSPACE.exists():
+    tor("Gedaechtnis", None, "Werkstattbuch vollständig; Arbeitsbereich nicht vorhanden (fremder Rechner oder CI)")
 else:
     kopf = stand.read_text(encoding="utf-8")[:600]
     m = re.search(r"Gepflegt:\s*(\d{4}-\d{2}-\d{2})", kopf)
-    tor("Gedaechtnis", True, "Stand gepflegt " + (m.group(1) if m else "ohne Datum"))
+    tor("Gedaechtnis", True, f"Stand {m.group(1) if m else 'ohne Datum'}, {len(einstiege)} Einstiege, {juengste} in Stand und Erfahrungen")
 
 # --- Ausgabe -----------------------------------------------------------------
 print()

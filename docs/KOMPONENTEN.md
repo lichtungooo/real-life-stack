@@ -8,6 +8,21 @@ Die Definition steht in `DEFINITION.md` Teil 8, Abschnitt „Was eine Komponente
 
 ---
 
+## 0. Die Einstiege von td-ui
+
+Jeder Baustein mit eigenem Einstieg wird nachgeladen und belastet den Hauptteil nicht. Das Gedächtnis-Tor prüft, dass jeder Einstieg hier steht.
+
+| Einstieg `@trustdonation/ui/…` | Was | Abschnitt |
+|---|---|---|
+| `erweiterungen` | der Reiter „Erweiterungen“ im Space-Dialog: Komponenten wählen | 2 |
+| `projekt-profil` | Project Profile, die erste Komponente: Karte und ganze Ansicht | 2, 4c |
+| `stiftungs-profil` | Stiftungsprofil im Auftritt der Stiftung, mit Bearbeiten und Profil übernehmen | 4b, 4d, 4e, 4g |
+| `profil-flaeche` | die Collage für Orte mit Profil-Bauplan (Rückfall ohne gewählte Komponente) | 4e |
+| `projekt-entwurf` | Profil-Entwurf aus dem eigenen Agenten: Vorschau, Prüfbericht, Space-Wahl | DEFINITION 13.6 |
+| `stiftungen-import` | recherchierte Stiftungen in einen Space holen, ergänzt nur, was fehlt | 4d |
+| `netzwerke-import` | Netzwerke als Orte in einen Space holen | |
+| `opencollective` | der Baustein Open Collective in drei Größen, überall einbindbar | 4f |
+
 ## 1. Was eine Komponente ist
 
 Eine **fertige Darstellung für einen Typ**. Ein Modul ist eine Fläche im Space, eine Komponente bestimmt, wie ein Eintrag aussieht, wenn man ihn öffnet.
