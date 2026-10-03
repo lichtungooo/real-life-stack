@@ -1068,3 +1068,48 @@ Regeln: Die KI entwirft, der Mensch speichert. Nur Werkzeuge des eingestellten M
 3. Eine fehlende Anbindung **degradiert sichtbar**: Die Fläche steht, das Gespräch fehlt, und sie sagt warum. Nie eine leere Fläche, nie ein Fehler.
 4. Der Schlüssel, wenn einer kommt, steht **nicht** im Quelltext und **nicht** in den Musterdaten.
 5. Kein `did:key`, kein JWS, kein Yjs. Die Grenze gilt hier wie überall.
+
+---
+
+## Teil 14: Das Real Life Game (freigegeben von Timo am 03.10.2026)
+
+Timo am 03.10.2026: *"Ich würde mich gerne um die Gamification kümmern: den HUD, den Skilltree, den Avatar und den Questdrop … Im Action Button unten fehlt noch der Punkt Quest: Man erstellt eine Quest, und vordefiniert ist, was man dadurch gewinnt, in der Realität. Wir brauchen eine Experience-Point-Logik, damit wir das auf Level münzen können … verschiedenste Bereiche oder Gewerke, etwa für Macher-Map oder Macher-Network. Der HUD nicht in die Kopfzeile, sondern unten mittig, wie im Onlinespiel: Erfahrungspunkte, Level, drei oder vier Punkte: Quest-Log, Charakter mit Avatar und Attributen, Skilltree, extra anwählbar, vielleicht in einem großen Modal, zwischen denen man wechselt."*
+
+**Quelle und Abweichung:** Antons `real-life-game` (Konzept, keine Lizenz: Ideen ja, Code nein) und RLNP v0.1 (CC BY 4.0) geben Quest, QuestRun, Bestätigung und die Entwicklungskarte (Feld-Baum über `parent`). Anton schließt XP und Level in v0 aus; wir nehmen sie dazu, weil Quests sie tragen. Unser Grundsatz bleibt seiner: **XP werden nie gespeichert, sondern aus bestätigten Quests gerechnet**; die Seite behauptet nicht mehr, als die Bestätigungen tragen.
+
+### 14.1 Das Modell
+
+| Baustein | Was | Wo |
+|---|---|---|
+| **Bereich** (Gewerk) | ein Feld im Baum, etwa Holz → Möbelbau; Wurzeln je Netzwerk (Macher: Holz, Metall, Elektro, Garten, Textil, Digital, Gemeinschaft) | Spielpaket des Netzwerks in `Group.data.spiel` |
+| **Quest** | Titel, was zu tun ist, Ort und Zeit, **Bereiche mit XP** (je Bereich ein Wert), **was man in der Realität gewinnt** (Lohn: Wissen, Werkzeug, Essen, Kontakt), wer bestätigt (Gastgeber, Mentor, wer dabei war), wie viele mitmachen | Eintrag `quest` im Space, angelegt über den Aktionsknopf unten (neuer Punkt „Quest“) |
+| **Teilnahme** (QuestRun) | wer eine Quest angenommen hat, Stand (angenommen, gemeldet, bestätigt) | Eintrag `quest-run`, verbunden mit der Quest |
+| **Bestätigung** | wer bezeugt, dass es geschehen ist; im Web of Trust signiert | Antons Bestätigungen (`issueConfirmation`, `attests` auf die Teilnahme) |
+
+### 14.2 Die XP-Logik
+
+1. Eine **bestätigte** Teilnahme bringt die XP der Quest, je Bereich. Gemeldet ohne Bestätigung zählt sichtbar als „wartet auf Bestätigung“, nie als XP.
+2. XP eines Bereichs fließen auch in seine Eltern (Möbelbau → Holz) und in die **Gesamtstufe**.
+3. **Stufe** aus XP über eine Kurve (Vorschlag aus unserem rln-Bestand: 100 · n^1,5 XP bis Stufe n), je Bereich und gesamt.
+4. **Vertrauen zählt:** Nur Bestätigungen im Web of Trust (signiert) zählen voll; in der Beispielwelt zählt die Demo, deutlich gekennzeichnet.
+5. **Weiße Mechanik** (Anton, Octalysis): keine Rangliste, keine Streaks, keine Lootboxen. Die Stufe gehört dem Menschen; öffentlich nur, wenn er sie im Real Life Profil freigibt.
+
+### 14.3 Was man sieht
+
+- **HUD unten mittig**, schwebend wie im Onlinespiel: Stufe, XP-Balken, drei Knöpfe **Quest-Log**, **Charakter**, **Skilltree**. Auf dem Handy über der unteren Leiste. Ein Widget des Moduls „Spiel“ (Teil 8: Modul trägt Funktion, Widgets zeigen sie).
+- **Großes Fenster** mit drei Reitern, zwischen denen man wechselt:
+  - **Quest-Log:** angenommene, laufende, bestätigte Quests, mit Lohn und XP.
+  - **Charakter:** Avatar, Name, Stufe, Attribute (Rollenspiellogik, Vorschlag: aus den Bereichen abgeleitet, etwa Handwerk, Wissen, Gemeinschaft, Natur), zuletzt bestätigte Taten.
+  - **Skilltree:** der Baum der Bereiche mit Stufe und Balken je Bereich.
+- **Aktionsknopf unten:** neuer Punkt „Quest“; das Formular fragt Bereiche, XP und den Lohn in der Realität.
+
+### 14.4 Reihenfolge
+
+1. Modell und XP-Rechnung in td-core, mit Tests; Spielpaket Macher als Muster.
+2. Quest über den Aktionsknopf anlegen, annehmen, melden, bestätigen.
+3. HUD unten mittig.
+4. Großes Fenster: Quest-Log, dann Skilltree, dann Charakter mit Avatar.
+
+**Schritt 1 gebaut am 03.10.2026:** `td-core/src/spiel.ts` (`SPIELPAKET_MACHER` mit Bereichen als Baum und vier Attributen, `XP_GROESSEN` 10/25/50, Kurve `stufeAus` aus dem rln-Bestand, `questAus`, `teilnahmeAus`, `spielstand` nur aus bestätigten Teilnahmen, niemand bestätigt sich selbst, eine Quest zählt einmal), Tests `td-core/tests/spiel.test.ts`.
+
+**Offen für Timo:** die Bereiche des Macher-Pakets, feste XP-Stufen je Quest (klein 10, mittel 25, groß 50) oder frei, wer bestätigen darf, und die Attribute des Charakters.
