@@ -127,6 +127,9 @@ registerTypePresentation("trustdonation", {
       // bleibt über den blauen Sammelpunkten sichtbar (Naht A-Cluster).
       marker: { icon: "sprout", color: "#EA580C", shape: "round", cluster: false },
     },
+    // Menschen in Tannengrün aus dem Logo, eckig (DEFINITION Teil 6, Timo
+    // am 03.10.2026 freigegeben): Stiftungen blau, Projekte orange, Menschen grün.
+    { id: "person", marker: { icon: "person", color: "#1B5E40", shape: "square" } },
   ],
 })
 

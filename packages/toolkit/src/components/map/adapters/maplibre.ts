@@ -281,6 +281,61 @@ const CLUSTER_COLOR_PROPERTIES = {
   ],
 } as const
 
+/** NAHT trustdonation (A-Cluster, Ring): the shares ring around a cluster bubble. */
+const CLUSTER_RING_LAYER = "rls-marker-cluster-ring"
+const CLUSTER_RING_PREFIX = "rls-ring:"
+const CLUSTER_RING_REST = "#9ca3af"
+
+/**
+ * NAHT trustdonation (A-Cluster, Ring): the shares of the leaf colours in a
+ * cluster, largest first. The three largest keep their colour, the rest is
+ * grey (Timo, 03.10.2026: "außenrum ein anderer Kreis … drei Farben").
+ */
+export function clusterRingShares(list: unknown): { color: string; share: number }[] {
+  if (typeof list !== "string" || list.length === 0) return []
+  const counts = new Map<string, number>()
+  let total = 0
+  for (const color of list.split(CLUSTER_COLOR_SEP)) {
+    if (!color) continue
+    counts.set(color, (counts.get(color) ?? 0) + 1)
+    total++
+  }
+  if (total === 0) return []
+  const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1])
+  const shares = sorted.slice(0, 3).map(([color, n]) => ({ color, share: n / total }))
+  const rest = sorted.slice(3).reduce((sum, [, n]) => sum + n, 0)
+  if (rest > 0) shares.push({ color: CLUSTER_RING_REST, share: rest / total })
+  return shares
+}
+
+/** NAHT trustdonation (A-Cluster, Ring): draw the ring for one composition, 2× for sharp edges. */
+function clusterRingImage(list: string): ImageData | null {
+  const shares = clusterRingShares(list)
+  if (shares.length === 0 || typeof document === "undefined") return null
+  const size = 128
+  const canvas = document.createElement("canvas")
+  canvas.width = size
+  canvas.height = size
+  const ctx = canvas.getContext("2d")
+  if (!ctx) return null
+  // Outer radius 32 px, inner 28 px at the largest bubble (26 px + white stroke).
+  const mitte = size / 2
+  const r = 60
+  ctx.lineWidth = 8
+  ctx.lineCap = "butt"
+  const luecke = shares.length > 1 ? 0.06 : 0
+  let start = -Math.PI / 2
+  for (const { color, share } of shares) {
+    const ende = start + share * Math.PI * 2
+    ctx.strokeStyle = color
+    ctx.beginPath()
+    ctx.arc(mitte, mitte, r, start + luecke / 2, Math.max(start + luecke / 2, ende - luecke / 2))
+    ctx.stroke()
+    start = ende
+  }
+  return ctx.getImageData(0, 0, size, size)
+}
+
 /**
  * Most-frequent colour in a `colorList` cluster property (a `;`-joined list of
  * the leaf marker colours). Ties resolve to the first one reaching the max.
@@ -795,6 +850,22 @@ export class MapLibreMapAdapter implements MapAdapter, GlobeCapable, ClusterCapa
         },
       })
     }
+    // NAHT trustdonation (A-Cluster, Ring): shares of the kinds inside, around the bubble.
+    if (!map.getLayer(CLUSTER_RING_LAYER)) {
+      map.addLayer({
+        id: CLUSTER_RING_LAYER,
+        type: "symbol",
+        source: MARKER_SOURCE,
+        filter: ["has", "point_count"],
+        layout: {
+          "icon-image": ["concat", CLUSTER_RING_PREFIX, ["get", "colorList"]] as never,
+          // Same steps as the bubble radius (16, 20, 26 px), image drawn for 26 px.
+          "icon-size": ["step", ["get", "point_count"], 22 / 32, 25, 26 / 32, 100, 1] as never,
+          "icon-allow-overlap": true,
+          "icon-ignore-placement": true,
+        },
+      })
+    }
     if (!map.getLayer(CLUSTER_COUNT_LAYER)) {
       map.addLayer({
         id: CLUSTER_COUNT_LAYER,
@@ -898,6 +969,12 @@ export class MapLibreMapAdapter implements MapAdapter, GlobeCapable, ClusterCapa
     })
     map.on("mouseenter", MARKER_FREE_LAYER, () => { map.getCanvas().style.cursor = "pointer" })
     // NAHT trustdonation (A-Cluster): the fan keeps its screen size across zoom levels.
+    // NAHT trustdonation (A-Cluster, Ring): each composition gets its ring image on first use.
+    map.on("styleimagemissing", (e: { id: string }) => {
+      if (!e.id.startsWith(CLUSTER_RING_PREFIX) || map.hasImage(e.id)) return
+      const image = clusterRingImage(e.id.slice(CLUSTER_RING_PREFIX.length))
+      if (image) map.addImage(e.id, image, { pixelRatio: 2 })
+    })
     map.on("zoomend", () => {
       if (this.fanActive && this.lastMarkers) this.reapplyMarkersSafely(this.lastMarkers)
     })
@@ -978,7 +1055,7 @@ export class MapLibreMapAdapter implements MapAdapter, GlobeCapable, ClusterCapa
    *  settings (clustering on/off, or a changed cluster radius). Wired event
    *  handlers persist (keyed by layer id) and are not re-added. */
   private teardownMarkerLayers(map: MlMap): void {
-    for (const id of [CLUSTER_COUNT_LAYER, CLUSTER_CIRCLE_LAYER, MARKER_SYMBOL_LAYER, MARKER_GLOW_LAYER, MARKER_GLOW_ROUND_LAYER, MARKER_FREE_LAYER, MARKER_FREE_GLOW_LAYER]) {
+    for (const id of [CLUSTER_COUNT_LAYER, CLUSTER_RING_LAYER, CLUSTER_CIRCLE_LAYER, MARKER_SYMBOL_LAYER, MARKER_GLOW_LAYER, MARKER_GLOW_ROUND_LAYER, MARKER_FREE_LAYER, MARKER_FREE_GLOW_LAYER]) {
       if (map.getLayer(id)) map.removeLayer(id)
     }
     if (map.getSource(MARKER_SOURCE)) map.removeSource(MARKER_SOURCE)

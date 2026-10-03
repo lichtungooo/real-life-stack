@@ -253,6 +253,25 @@ Timo: *"Für Stiftungen ein schönes Icon im Pin. Die Projekte hätte ich gern r
 
 Regeln: Die eine Quelle ist das Feld `marker` der Typ-Darstellung (Naht A-Marker, Wunsch an Anton). Was ein Eintrag selbst trägt (`data.color`, `data.icon`), gewinnt. Eine Art ohne Vorgabe fällt auf Antons Regel zurück (Farbe aus Schlagwort oder Space, Symbol aus dem ersten Schlagwort). Der Marker trägt keine Bewertung und keine Rechte.
 
+#### Sammelpunkt mit Ring je Art (freigegeben von Timo am 03.10.2026)
+
+**Frage:** Was folgt daraus, dass man einem Sammelpunkt ansehen soll, was in ihm steckt?
+
+Timo am 02.10.2026, nach dem Vorbild der Utopia Map: *"Clustering … außenrum ein anderer Kreis … drei Farben … Umrandungen"*, und: *"Ja super, das können wir dann machen."*
+
+**Wie es aussieht:** Der Sammelpunkt bleibt ein Kreis mit der Zahl in der Mitte. Um ihn liegt ein Ring, geteilt nach Anteilen: so viel Blau, wie Stiftungen darin sind, so viel Orange wie Projekte, so viel Tannengrün wie Menschen, Grau für alles andere. Ein Punkt nur aus Stiftungen trägt einen ganz blauen Ring, wie heute.
+
+**Woher die Anteile kommen:** aus den Farben der Marker im Sammelpunkt. Antons Karte sammelt sie schon (`colorList`, daraus färbt sie den Punkt nach der häufigsten Farbe). Der Ring liest dieselbe Liste; je Zusammensetzung entsteht ein kleines Ringbild beim ersten Bedarf und bleibt im Speicher der Karte.
+
+**Menschen in Tannengrün:** Die Art `person` bekommt die Vorgabe `#1B5E40` (Tannengrün aus dem Logo) mit eckigem Marker, wie in der Tabelle oben vorgeschlagen.
+
+Regeln:
+
+1. **Keine neue Quelle:** Die Anteile kommen aus den Markerfarben, keine zweite Zählung.
+2. **Projekte bleiben ungebündelt** (Regel oben); der Ring zeigt, was gebündelt ist.
+3. **Wo es sitzt:** eine Erweiterung der Naht A-Cluster in Antons Kartenadapter (eine Symbolebene über dem Kreis), eingetragen in NAEHTE.md, mit Wunsch an Anton.
+4. **Lesbar:** Ring und Zahl bleiben auf hellen und dunklen Karten erkennbar; bei einem einzigen Anteil ist der Ring einfarbig.
+
 ## Teil 7: Das Feld-Register
 
 **Frage, die dieser Abschnitt beantwortet:** Was folgt daraus, dass ein Datensatz dieses Feld trägt?
